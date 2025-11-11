@@ -7,19 +7,40 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+# Documentación ModoAhorro
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Estructura actual implementada
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Proyecto Laravel con Blade y base de datos SQLite.
+- Modelos y migraciones para:
+	- Usuarios, planes, entidades (hogar, comercio, oficina), habitaciones (rooms), localidades y provincias.
+	- Medidores (contracts), tipos de suministro (supplies), empresas proveedoras (utility_companies), facturas (invoices).
+	- Catálogo de categorías y tipos de equipos (equipment_categories, equipment_types).
+	- Equipos reales (devices) con historial, estado, baja, reemplazo, backup y consumo standby.
+	- Uso de equipos por factura (device_usages).
+- Relaciones Eloquent implementadas para todos los modelos principales.
+- Migraciones preparadas para soft delete, historial y escalabilidad.
+
+## Siguiente pasos recomendados
+
+1. Crear seeders para poblar provincias, localidades, categorías y tipos de equipos.
+2. Implementar controladores y rutas para flujos de carga de datos (usuarios, entidades, habitaciones, equipos, facturas, etc.).
+3. Crear carpeta `app/Services` y servicios para cálculos energéticos, recomendaciones y análisis de ROI.
+4. Preparar vistas Blade para cada flujo principal.
+5. Implementar roles y permisos para usuario admin y panel de monitoreo.
+6. Documentar endpoints y flujos en README y ETAPAS_DESARROLLO.md.
+7. Testear migraciones y relaciones con datos reales.
+8. Preparar el sistema para futuras extensiones (paneles solares, medidores inteligentes, integración IoT).
+
+## Notas
+- La estructura está lista para escalar y agregar nuevas funcionalidades sin romper el sistema.
+- Se recomienda avanzar por etapas, probando cada flujo antes de agregar nuevas lógicas complejas.
+- El sistema está preparado para análisis de consumo, recomendaciones, historial y gestión eficiente de equipos.
+
+---
+
+Para dudas, ideas o nuevas funcionalidades, escribir en `ETAPAS_DESARROLLO.md` y seguir el flujo de trabajo.
 
 ## Learning Laravel
 
