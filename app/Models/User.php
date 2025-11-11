@@ -45,4 +45,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    // Relación con entidades a través de la tabla pivote y plan
+    public function entities()
+    {
+        return $this->belongsToMany(Entity::class, 'entity_user')
+            ->withPivot('plan_id', 'subscribed_at', 'expires_at')
+            ->withTimestamps();
+    }
 }
