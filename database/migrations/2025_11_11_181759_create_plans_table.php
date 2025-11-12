@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name'); // Gratuito, Premium, etc.
             $table->text('features')->nullable(); // JSON o texto para escalabilidad
             $table->decimal('price', 8, 2)->default(0); // Precio del plan
+            $table->unsignedInteger('max_entities')->default(1); // Límite de entidades por plan
             $table->timestamps();
         });
     }

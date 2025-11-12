@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Entity extends Model
 {
+    public function contracts()
+    {
+        return $this->hasMany(Contract::class);
+    }
     protected $fillable = [
         'name',
         'type',
@@ -28,6 +32,7 @@ class Entity extends Model
     {
         return $this->belongsTo(Locality::class);
     }
+
 
     public function rooms()
     {

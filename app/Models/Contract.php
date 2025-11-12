@@ -8,8 +8,8 @@ class Contract extends Model
 {
     protected $fillable = [
         'entity_id',
-        'supply_id',
-        'utility_company_id',
+        'proveedor_id',
+        'supply_number',
         'contract_identifier',
         'rate_name',
         'contracted_power_kw_p1',
@@ -25,13 +25,14 @@ class Contract extends Model
         return $this->belongsTo(Entity::class);
     }
 
-    public function supply()
+
+    public function proveedor()
     {
-        return $this->belongsTo(Supply::class);
+        return $this->belongsTo(Proveedor::class, 'proveedor_id');
     }
 
-    public function utilityCompany()
+    public function invoices()
     {
-        return $this->belongsTo(UtilityCompany::class);
+        return $this->hasMany(Invoice::class, 'contract_id');
     }
 }

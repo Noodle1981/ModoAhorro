@@ -14,8 +14,11 @@ return new class extends Migration
         Schema::create('contracts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('entity_id')->constrained('entities')->onDelete('cascade');
-            $table->foreignId('supply_id')->constrained('supplies')->onDelete('cascade');
-            $table->foreignId('utility_company_id')->constrained('utility_companies')->onDelete('cascade');
+            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
+            // Datos del medidor
+            $table->string('serial_number')->nullable();
+            // Contrato
+            $table->string('supply_number');
             $table->string('contract_identifier')->nullable();
             $table->string('rate_name');
             $table->decimal('contracted_power_kw_p1', 8, 3)->nullable();

@@ -1,11 +1,3 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
 
 
 # Documentación ModoAhorro
@@ -14,15 +6,32 @@
 
 - Proyecto Laravel con Blade y base de datos SQLite.
 - Modelos y migraciones para:
-	- Usuarios, planes, entidades (hogar, comercio, oficina), habitaciones (rooms), localidades y provincias.
-	- Medidores (contracts), tipos de suministro (supplies), empresas proveedoras (utility_companies), facturas (invoices).
-	- Catálogo de categorías y tipos de equipos (equipment_categories, equipment_types).
-	- Equipos reales (devices) con historial, estado, baja, reemplazo, backup y consumo standby.
-	- Uso de equipos por factura (device_usages).
-- Relaciones Eloquent implementadas para todos los modelos principales.
-- Migraciones preparadas para soft delete, historial y escalabilidad.
+	- Usuarios, entidades, habitaciones, contratos, proveedores y facturas.
+	- Provincias, localidades y planes.
+- Relaciones Eloquent entre entidades, contratos, proveedores y facturas centralizadas en la gestión de contratos.
+- Validación de campos obligatorios en la carga y edición de facturas.
+- Formulario de facturas adaptado para usuarios generales:
+	- Campos visibles: N° de factura, fecha de emisión, fecha inicio/fin, consumos P1/P2/P3, consumo total, costo energía, costo potencia, impuestos, otros cargos, importe total.
+	- Campos ocultos: Energía inyectada, compensación excedente, huella CO2, archivo adjunto (solo se usarán en otros contextos).
+- Vistas y controladores alineados para evitar confusiones y mejorar la experiencia de usuario.
+- Migraciones y modelos depurados, eliminando duplicidad y tablas innecesarias.
 
 ## Siguiente pasos recomendados
+
+**Etapa de equipamientos (próxima sesión):**
+1. Definir migraciones y modelos para equipos (devices), categorías y tipos.
+2. Crear seeders para poblar catálogo de equipos y categorías.
+3. Implementar CRUD de equipos y su asociación con entidades y habitaciones.
+4. Adaptar vistas para la gestión y visualización de equipamientos.
+5. Validar relaciones y flujos de carga/edición de equipos.
+6. Documentar endpoints y flujos nuevos en README y ETAPAS_DESARROLLO.md.
+
+**Checklist para commit y push:**
+- Validar que todos los cambios estén guardados y probados.
+- Ejecutar en terminal:
+  1. git add .
+  2. git commit -m "Actualización: flujo de facturas, validaciones y campos ocultos. Preparado para etapa de equipamientos."
+  3. git push
 
 1. Crear seeders para poblar provincias, localidades, categorías y tipos de equipos.
 2. Implementar controladores y rutas para flujos de carga de datos (usuarios, entidades, habitaciones, equipos, facturas, etc.).

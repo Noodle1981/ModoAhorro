@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('provinces', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
-            // No necesitamos timestamps para esta tabla de catálogo.
+            $table->timestamps();
         });
     }
 

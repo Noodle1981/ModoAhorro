@@ -10,6 +10,7 @@ class Plan extends Model
         'name',
         'features',
         'price',
+        'max_entities',
     ];
 
     public function entityUsers()
