@@ -1,12 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EquipmentController;
 
 Route::get('/', function () {
     return view('welcome');
 });
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\DashboardController;
 
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
@@ -38,6 +39,12 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
     Route::get('/entities/{entity}/rooms/{room}/edit', [\App\Http\Controllers\RoomController::class, 'edit'])->name('rooms.edit');
     Route::put('/entities/{entity}/rooms/{room}', [\App\Http\Controllers\RoomController::class, 'update'])->name('rooms.update');
     Route::delete('/entities/{entity}/rooms/{room}', [\App\Http\Controllers\RoomController::class, 'destroy'])->name('rooms.destroy');
+        // Rutas anidadas para equipos bajo habitaciones (rooms)
+        Route::get('/entities/{entity}/rooms/{room}/equipment', [\App\Http\Controllers\RoomEquipmentController::class, 'dashboard'])->name('rooms.equipment.dashboard');
+        Route::post('/entities/{entity}/rooms/{room}/equipment', [\App\Http\Controllers\RoomEquipmentController::class, 'store'])->name('rooms.equipment.store');
+        Route::get('/entities/{entity}/rooms/{room}/equipment/{equipment}/edit', [\App\Http\Controllers\RoomEquipmentController::class, 'edit'])->name('rooms.equipment.edit');
+        Route::put('/entities/{entity}/rooms/{room}/equipment/{equipment}', [\App\Http\Controllers\RoomEquipmentController::class, 'update'])->name('rooms.equipment.update');
+        Route::delete('/entities/{entity}/rooms/{room}/equipment/{equipment}', [\App\Http\Controllers\RoomEquipmentController::class, 'destroy'])->name('rooms.equipment.destroy');
     // Ruta para mostrar el contrato del medidor bajo entidad
     Route::get('/entities/{entity}/meter', [\App\Http\Controllers\ContractController::class, 'showForEntity'])->name('entities.meter.index');
         // Rutas CRUD para facturas (invoices) bajo entidad
@@ -46,4 +53,6 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
         Route::post('/entities/{entity}/invoices', [\App\Http\Controllers\InvoiceController::class, 'store'])->name('entities.invoices.store');
         Route::get('/entities/{entity}/invoices/{invoice}/edit', [\App\Http\Controllers\InvoiceController::class, 'edit'])->name('entities.invoices.edit');
         Route::put('/entities/{entity}/invoices/{invoice}', [\App\Http\Controllers\InvoiceController::class, 'update'])->name('entities.invoices.update');
+    
+
 });

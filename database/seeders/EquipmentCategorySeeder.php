@@ -12,8 +12,17 @@ class EquipmentCategorySeeder extends Seeder
      */
     public function run(): void
     {
-    \App\Models\EquipmentCategory::create(['name' => 'Climatización']);
-    \App\Models\EquipmentCategory::create(['name' => 'Electrodoméstico']);
-    \App\Models\EquipmentCategory::create(['name' => 'Iluminación']);
+        $categories = [
+            'Climatización',
+            'Iluminación',
+            'Electrodomésticos',
+            'Entretenimiento',
+            'Cocina',
+            'Oficina',
+            'Otros',
+        ];
+        foreach ($categories as $cat) {
+            \App\Models\EquipmentCategory::firstOrCreate(['name' => $cat]);
+        }
     }
 }

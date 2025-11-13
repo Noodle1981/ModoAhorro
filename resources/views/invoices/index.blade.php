@@ -3,6 +3,7 @@
 @section('content')
 <div class="container">
     <h1>Facturas del Hogar</h1>
+    <a href="{{ route('entities.index') }}" class="btn btn-secondary mb-3"><i class="bi bi-arrow-left"></i> Volver a entidades</a>
     @if(!$contract)
         <div class="alert alert-warning">No hay contrato activo registrado para este hogar. No es posible cargar facturas.</div>
     @else
@@ -16,6 +17,7 @@
                         <th>ID</th>
                         <th>Inicio</th>
                         <th>Fin</th>
+                        <th>Consumo (kWh)</th>
                         <th>Importe</th>
                         <th>Acciones</th>
                     </tr>
@@ -26,6 +28,7 @@
                             <td>{{ $invoice->id }}</td>
                             <td>{{ $invoice->start_date ?? '-' }}</td>
                             <td>{{ $invoice->end_date ?? '-' }}</td>
+                            <td>{{ $invoice->total_energy_consumed_kwh ?? '-' }}</td>
                             <td>${{ number_format($invoice->total_amount ?? 0, 2) }}</td>
                             <td>
                                 <a href="{{ route('entities.invoices.edit', [$entity->id, $invoice->id]) }}" class="btn btn-primary btn-sm">Editar</a>

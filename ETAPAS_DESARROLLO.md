@@ -54,8 +54,16 @@ La base de datos debe ser estrictamente escalable, bien pensada porque contiene 
 - Corrección de errores
 
 ### 5. Despliegue
-- Preparación para producción
-- Documentación final
+
+## Avances recientes (13/11/2025)
+
+- Implementación de gestión de equipos exclusivamente por habitación (room).
+- Eliminación de rutas y vistas generales de equipos para evitar duplicidad y errores.
+- Agregado campo "Cantidad" en el formulario de equipos, permitiendo carga múltiple (se crean registros individuales).
+- Visualización de cantidad de equipos por habitación en la vista principal.
+- Validación de migraciones y seeders para catálogo de equipos y categorías.
+- Adaptación de vistas y controladores para el nuevo flujo UX.
+- Preparado para la etapa de historial, bajas y reemplazos de equipos.
 
 ---
 

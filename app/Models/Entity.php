@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Entity extends Model
 {
+    public function invoices()
+    {
+        return $this->hasManyThrough(Invoice::class, Contract::class, 'entity_id', 'contract_id');
+    }
     public function contracts()
     {
         return $this->hasMany(Contract::class);

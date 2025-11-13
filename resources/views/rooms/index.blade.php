@@ -19,6 +19,7 @@
                             <tr>
                                 <th>Nombre</th>
                                 <th>Descripción</th>
+                                <th>Cant. Equipos</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -27,9 +28,11 @@
                                 <tr>
                                     <td>{{ $room->name }}</td>
                                     <td>{{ $room->description }}</td>
+                                    <td>{{ $room->equipment->count() }}</td>
                                     <td>
                                         <a href="{{ route('rooms.show', [$entity->id, $room->id]) }}" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
                                         <a href="{{ route('rooms.edit', [$entity->id, $room->id]) }}" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
+                                        <a href="{{ route('rooms.equipment.dashboard', [$entity->id, $room->id]) }}" class="btn btn-success btn-sm"><i class="bi bi-plus-circle"></i> Agregar equipos</a>
                                         <form action="{{ route('rooms.destroy', [$entity->id, $room->id]) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')

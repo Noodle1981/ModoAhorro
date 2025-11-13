@@ -20,6 +20,9 @@ class DatabaseSeeder extends Seeder
         LocalitySeeder::class,
         PlanSeeder::class,
         UserSeeder::class,
+        UtilityCompanySeeder::class,
+        EquipmentCategorySeeder::class,
+        EquipmentTypeSeeder::class,
         // Agrega aquí otros seeders que necesites
     ]);
     }

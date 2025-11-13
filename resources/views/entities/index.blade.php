@@ -15,7 +15,7 @@
                 <p class="text-muted">No hay entidades registradas aún.</p>
             @else
                 <div class="table-responsive">
-                    <table class="table table-bordered align-middle">
+                        <table class="table table-bordered align-middle">
                         <thead>
                             <tr>
                                 <th>Nombre</th>
@@ -37,6 +37,7 @@
                                     <td>
                                         <a href="{{ route('entities.show', $entity->id) }}" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
                                         <a href="{{ route('entities.edit', $entity->id) }}" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
+                                        <a href="{{ route('rooms.index', $entity->id) }}" class="btn btn-secondary btn-sm"><i class="bi bi-door-open"></i> Gestionar habitaciones</a>
                                         <form action="{{ route('entities.destroy', $entity->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')

@@ -2,50 +2,43 @@
 
 # Documentación ModoAhorro
 
+
 ## Estructura actual implementada
 
 - Proyecto Laravel con Blade y base de datos SQLite.
 - Modelos y migraciones para:
 	- Usuarios, entidades, habitaciones, contratos, proveedores y facturas.
 	- Provincias, localidades y planes.
-- Relaciones Eloquent entre entidades, contratos, proveedores y facturas centralizadas en la gestión de contratos.
-- Validación de campos obligatorios en la carga y edición de facturas.
-- Formulario de facturas adaptado para usuarios generales:
-	- Campos visibles: N° de factura, fecha de emisión, fecha inicio/fin, consumos P1/P2/P3, consumo total, costo energía, costo potencia, impuestos, otros cargos, importe total.
-	- Campos ocultos: Energía inyectada, compensación excedente, huella CO2, archivo adjunto (solo se usarán en otros contextos).
-- Vistas y controladores alineados para evitar confusiones y mejorar la experiencia de usuario.
-- Migraciones y modelos depurados, eliminando duplicidad y tablas innecesarias.
+	- Equipos, categorías y tipos de equipos, historial y uso por periodo.
+- Relaciones Eloquent robustas y centralizadas.
+- Validación de campos obligatorios y filtrado dinámico en formularios.
+- Formulario de facturas adaptado para usuarios generales.
+- Gestión de equipos exclusivamente por habitación (cada equipo se asocia a una room).
+- Nueva lógica de carga múltiple: campo "Cantidad" en el formulario de equipos, que permite crear varios equipos individuales en un solo paso.
+- Visualización de cantidad de equipos por habitación en la vista principal.
+- Eliminación de rutas y vistas generales de equipos para evitar errores y duplicidad.
+- Migraciones y modelos depurados, listos para escalar.
 
 ## Siguiente pasos recomendados
 
-**Etapa de equipamientos (próxima sesión):**
-1. Definir migraciones y modelos para equipos (devices), categorías y tipos.
-2. Crear seeders para poblar catálogo de equipos y categorías.
-3. Implementar CRUD de equipos y su asociación con entidades y habitaciones.
-4. Adaptar vistas para la gestión y visualización de equipamientos.
-5. Validar relaciones y flujos de carga/edición de equipos.
-6. Documentar endpoints y flujos nuevos en README y ETAPAS_DESARROLLO.md.
+**Etapa de equipamientos (actual):**
+1. CRUD de equipos por habitación, con campo cantidad y validaciones.
+2. Visualización y edición de equipos por ambiente.
+3. Documentar endpoints y flujos nuevos en README y ETAPAS_DESARROLLO.md.
+4. Validar migraciones y seeders para catálogo de equipos y categorías.
+5. Preparar lógica para historial, bajas y reemplazos.
 
 **Checklist para commit y push:**
 - Validar que todos los cambios estén guardados y probados.
 - Ejecutar en terminal:
-  1. git add .
-  2. git commit -m "Actualización: flujo de facturas, validaciones y campos ocultos. Preparado para etapa de equipamientos."
-  3. git push
-
-1. Crear seeders para poblar provincias, localidades, categorías y tipos de equipos.
-2. Implementar controladores y rutas para flujos de carga de datos (usuarios, entidades, habitaciones, equipos, facturas, etc.).
-3. Crear carpeta `app/Services` y servicios para cálculos energéticos, recomendaciones y análisis de ROI.
-4. Preparar vistas Blade para cada flujo principal.
-5. Implementar roles y permisos para usuario admin y panel de monitoreo.
-6. Documentar endpoints y flujos en README y ETAPAS_DESARROLLO.md.
-7. Testear migraciones y relaciones con datos reales.
-8. Preparar el sistema para futuras extensiones (paneles solares, medidores inteligentes, integración IoT).
+	1. git add .
+	2. git commit -m "Actualización: equipos por habitación, carga múltiple y UX."
+	3. git push
 
 ## Notas
-- La estructura está lista para escalar y agregar nuevas funcionalidades sin romper el sistema.
-- Se recomienda avanzar por etapas, probando cada flujo antes de agregar nuevas lógicas complejas.
-- El sistema está preparado para análisis de consumo, recomendaciones, historial y gestión eficiente de equipos.
+- El sistema ahora permite una gestión energética mucho más precisa y flexible.
+- La lógica de equipos por habitación y carga múltiple facilita el inventario y los cálculos.
+- El flujo UX está alineado con la gestión real de ambientes y equipos.
 
 ---
 
