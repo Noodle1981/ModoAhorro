@@ -28,4 +28,14 @@ class Invoice extends Model
     {
         return $this->belongsTo(Contract::class);
     }
+
+    public function usageAdjustment()
+    {
+        return $this->hasOne(UsageAdjustment::class);
+    }
+
+    public function equipmentUsages()
+    {
+        return $this->hasMany(\App\Models\EquipmentUsage::class, 'invoice_id');
+    }
 }

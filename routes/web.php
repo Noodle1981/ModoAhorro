@@ -9,6 +9,17 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Rutas para el flujo de ajuste de uso
+Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->group(function () {
+    Route::get('/usage-adjustments', [\App\Http\Controllers\UsageAdjustmentController::class, 'index'])->name('usage_adjustments.index');
+    Route::get('/usage-adjustments/{invoice}/edit', [\App\Http\Controllers\UsageAdjustmentController::class, 'edit'])->name('usage_adjustments.edit');
+    Route::post('/usage-adjustments/{invoice}', [\App\Http\Controllers\UsageAdjustmentController::class, 'update'])->name('usage_adjustments.update');
+    Route::get('/usage-adjustments/{invoice}', [\App\Http\Controllers\UsageAdjustmentController::class, 'show'])->name('usage_adjustments.show');
+
+    // Ruta para el panel de consumo
+    Route::get('/consumption/panel', [\App\Http\Controllers\ConsumptionPanelController::class, 'index'])->name('consumption.panel');
+});
+
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
 

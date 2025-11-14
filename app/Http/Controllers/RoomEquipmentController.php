@@ -65,7 +65,19 @@ class RoomEquipmentController extends Controller
     public function destroy($entityId, $roomId, $equipmentId)
     {
         $equipment = Equipment::findOrFail($equipmentId);
-        $equipment->delete();
-        return redirect()->route('rooms.equipment.dashboard', [$entityId, $roomId])->with('success', 'Equipo eliminado correctamente.');
+        // Baja lógica: marcar como inactivo
+        $equipment->is_active = false;
+        $equipment->save();
+
+        // Registrar en historial
+        \App\Models\EquipmentHistory::create([
+            'equipment_id' => $equipment->id,
+            'action' => 'baja',
+            'reason' => request('reason', 'Baja lógica desde el sistema'),
+            'action_date' => now(),
+            'user_id' => auth()->id(),
+        ]);
+
+        return redirect()->route('rooms.equipment.dashboard', [$entityId, $roomId])->with('success', 'Equipo dado de baja correctamente.');
     }
 }

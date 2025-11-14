@@ -3,12 +3,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+
 class EquipmentHistory extends Model
 {
     protected $table = 'equipment_history';
     protected $fillable = [
-        'old_equipment_id', 'new_equipment_id', 'replacement_date', 'invoice_id', 'action'
+        'equipment_id', 'action', 'reason', 'action_date', 'user_id', 'old_equipment_id', 'new_equipment_id', 'replacement_date', 'invoice_id'
     ];
+
+    public function equipment()
+    {
+        return $this->belongsTo(Equipment::class, 'equipment_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     public function oldEquipment()
     {
