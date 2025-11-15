@@ -15,14 +15,17 @@ class ConsumptionAnalysisService
      */
     public function calculateEquipmentConsumption(EquipmentUsage $usage, Invoice $invoice): float
     {
-        // Potencia nominal en kW
         $powerKw = ($usage->equipment->nominal_power_w ?? 0) / 1000;
-        // Horas de uso por día
-        $hoursPerDay = $usage->avg_daily_use_hours ?? 0;
-        // Días de uso en el periodo
-        $daysInPeriod = $usage->use_days_in_period ?? 0;
-        // Consumo total
-        return round($powerKw * $hoursPerDay * $daysInPeriod, 2);
+        // Si la frecuencia es diaria o semanal, usar la lógica tradicional
+        if (in_array($usage->usage_frequency, ['diario', 'semanal']) || empty($usage->usage_frequency)) {
+            $hoursPerDay = $usage->avg_daily_use_hours ?? 0;
+            $daysInPeriod = $usage->use_days_in_period ?? 0;
+            return round($powerKw * $hoursPerDay * $daysInPeriod, 2);
+        }
+        // Si la frecuencia es quincenal, mensual o puntual, usar cantidad de usos y duración promedio
+        $usageCount = $usage->usage_count ?? 0;
+        $avgUseDuration = $usage->avg_use_duration ?? 0; // en horas
+        return round($powerKw * $avgUseDuration * $usageCount, 2);
     }
 
     /**

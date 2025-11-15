@@ -64,13 +64,20 @@ class UsageAdjustmentController extends Controller
                 $usage->equipment_id = $equipmentId;
             }
             $usage->is_standby = isset($data['is_standby']) ? 1 : 0;
+            $usage->usage_frequency = $data['usage_frequency'] ?? 'diario';
+            $usage->usage_count = $data['usage_count'] ?? null;
+            $usage->avg_use_duration = $data['avg_use_duration'] ?? null;
             $usage->avg_daily_use_hours = $data['avg_daily_use_hours'] ?? null;
             // Guardar días de la semana seleccionados
             $daysOfWeek = isset($data['use_days_of_week']) ? implode(',', $data['use_days_of_week']) : '';
             $usage->use_days_of_week = $daysOfWeek;
-            // Calcular cantidad de días en el periodo
-            $weeks = max(1, ceil((strtotime($invoice->end_date) - strtotime($invoice->start_date)) / (60*60*24*7)));
-            $usage->use_days_in_period = count($data['use_days_of_week'] ?? []) * $weeks;
+            // Calcular cantidad de días en el periodo solo si es diario/semanal
+            if (in_array($usage->usage_frequency, ['diario', 'semanal'])) {
+                $weeks = max(1, ceil((strtotime($invoice->end_date) - strtotime($invoice->start_date)) / (60*60*24*7)));
+                $usage->use_days_in_period = count($data['use_days_of_week'] ?? []) * $weeks;
+            } else {
+                $usage->use_days_in_period = null;
+            }
             $usage->save();
         }
 

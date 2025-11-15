@@ -1,12 +1,29 @@
 # Etapas de Desarrollo
-
 Este archivo servirá para documentar y coordinar las distintas etapas del desarrollo del proyecto ModoAhorro.
 
-## ¿Cómo usar este archivo?
+
+
+
+- Utilizar una API gratuita de clima (ejemplo: OpenWeatherMap, WeatherAPI, Meteostat) para obtener temperaturas históricas del periodo y localidad del usuario.
+- Para cada día del periodo de facturación, consultar la temperatura máxima.
+- Definir un umbral (ejemplo: 24°C) para considerar días de uso probable del equipo.
+- Ajustar automáticamente la cantidad de días de uso del equipo según los días que superen el umbral.
+- Mostrar al usuario la estimación y permitir que la acepte o la ajuste manualmente.
 
 - Este es un proyecto que se llama MODO AHORRO, es una Saas, que permite al usuario entrar a la plataforma, elegir la entidad, y hacer una gestoría energética, la plataforma tendria las funcionalidades, que permitira al usuario registrar las caracteristicas de la vivienda, datos de las facturas del servicio electrico, el iventarios de elementos, un motor de calculos consumo, potencia, un centro de recomendaciones que tendra varias implementaciones de mejoras, recomendaciones, ec.t
--
+- OpenWeatherMap (https://openweathermap.org/api)
+- WeatherAPI (https://www.weatherapi.com/)
+- Meteostat (https://meteostat.net/en/api)
 
+-
+- Reduce la carga de memoria del usuario.
+- Mejora la precisión del análisis energético.
+- Permite recomendaciones más inteligentes y personalizadas.
+
+
+- Investigar documentación y límites de cada API.
+- Prototipar integración y lógica de ajuste automático.
+- Validar resultados y experiencia de usuario.
 ## Ejemplo de estructura
 
 ### 1. Planificación
@@ -28,29 +45,17 @@ La base de datos debe ser estrictamente escalable, bien pensada porque contiene 
 
 ### 3. Desarrollo de funcionalidades
 - Modelos y migraciones
-    Usuario
     Entidades
+
     Medidores
+
     Facturas
-    Equipos
-    Otros elementos extras
 
 
 
-
-- Controladores
- los controladores deben estar separados
- Controladores para manejar Autenticación
- Controladores para manejar vistas, relaciones, ect.
- Conttroladores para manejar motor de calculos
  Controladores para manejar otros elementos extras
 
-- Vistas Blade lo basico
-- Pruebas
 
-### 4. Pruebas y ajustes
-- Test unitarios
-- Test funcionales
 - Corrección de errores
 
 ### 5. Despliegue
@@ -70,3 +75,4 @@ La base de datos debe ser estrictamente escalable, bien pensada porque contiene 
 Escribe debajo de esta línea para comenzar:
 
 ---
+implementacion de nabvar descriptiva 

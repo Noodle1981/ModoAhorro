@@ -16,7 +16,7 @@
             @foreach($invoices as $invoice)
                 <tr>
                     <td>{{ $invoice->id }}</td>
-                    <td>{{ $invoice->start_date }} - {{ $invoice->end_date }}</td>
+                    <td>{{ \Carbon\Carbon::parse($invoice->start_date)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($invoice->end_date)->format('d/m/Y') }}</td>
                     <td>
                         @if($invoice->usageAdjustment && $invoice->usageAdjustment->adjusted)
                             <span class="badge bg-success">Ajustado</span>
@@ -32,5 +32,10 @@
             @endforeach
         </tbody>
     </table>
+    <div class="mt-3">
+        <a href="{{ route('entities.index') }}" class="btn btn-secondary">
+            <i class="bi bi-house-door"></i> Ir al panel de entidades
+        </a>
+    </div>
 </div>
 @endsection

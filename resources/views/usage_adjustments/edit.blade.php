@@ -11,7 +11,7 @@
                     <th>Equipo</th>
                     <th>Habitación</th>
                     <th>Potencia (W)</th>
-                    <!-- <th>¿Standby?</th> -->
+                    <th>Frecuencia de uso</th>
                     <th>Horas uso diario (promedio)</th>
                     <th>Días de uso en el periodo</th>
                 </tr>
@@ -23,21 +23,37 @@
                         <td>{{ $equipment->name }}</td>
                         <td>{{ $equipment->room->name ?? '-' }}</td>
                         <td>{{ $equipment->nominal_power_w ?? '-' }}</td>
-                            <td>
-                                <a href="{{ route('usage_adjustments.edit', [$invoice->id, $equipment->id]) }}" class="btn btn-sm btn-warning">Editar</a>
-                            </td>
-                        <!-- <td>
-                            <input type="checkbox" name="usages[{{ $equipment->id }}][is_standby]" value="1" {{ ($usage && $usage->is_standby) ? 'checked' : '' }}>
-                        </td> -->
                         <td>
-                            <input type="range" min="0" max="24" step="0.1" name="usages[{{ $equipment->id }}][avg_daily_use_hours]" value="{{ $usage->avg_daily_use_hours ?? 0 }}" class="form-range" oninput="updateHours{{ $equipment->id }}(this.value)">
-                            <input type="number" min="0" max="24" step="0.1" id="hours_{{ $equipment->id }}" name="usages[{{ $equipment->id }}][avg_daily_use_hours]" value="{{ $usage->avg_daily_use_hours ?? 0 }}" class="form-control d-inline-block w-auto ms-2" style="width:80px;" oninput="updateHours{{ $equipment->id }}(this.value)">
-                            <span id="minutes_{{ $equipment->id }}" class="ms-2 text-info">{{ isset($usage->avg_daily_use_hours) ? round($usage->avg_daily_use_hours * 60) : 0 }} min</span>
-                            <small class="text-muted d-block">Selecciona las horas promedio de uso diario (0 si no se usó en el periodo). El valor se muestra también en minutos.</small>
+                            <select name="usages[{{ $equipment->id }}][usage_frequency]" class="form-select" onchange="toggleUsageFields{{ $equipment->id }}(this.value)">
+                                @php
+                                    $freqs = ['diario' => 'Diario', 'semanal' => 'Semanal', 'quincenal' => 'Quincenal', 'mensual' => 'Mensual', 'puntual' => 'Puntual'];
+                                    $selectedFreq = $usage->usage_frequency ?? 'diario';
+                                @endphp
+                                @foreach($freqs as $key => $label)
+                                    <option value="{{ $key }}" {{ $selectedFreq == $key ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </td>
+                        <td>
+                            <div id="dailyFields_{{ $equipment->id }}" style="display: {{ ($selectedFreq == 'diario' || $selectedFreq == 'semanal') ? 'block' : 'none' }};">
+                                <input type="range" min="0" max="24" step="0.1" name="usages[{{ $equipment->id }}][avg_daily_use_hours]" value="{{ $usage->avg_daily_use_hours ?? 0 }}" class="form-range" oninput="updateHours{{ $equipment->id }}(this.value)">
+                                <input type="number" min="0" max="24" step="0.1" id="hours_{{ $equipment->id }}" name="usages[{{ $equipment->id }}][avg_daily_use_hours]" value="{{ $usage->avg_daily_use_hours ?? 0 }}" class="form-control d-inline-block w-auto ms-2" style="width:80px;" oninput="updateHours{{ $equipment->id }}(this.value)">
+                                <span id="minutes_{{ $equipment->id }}" class="ms-2 text-info">{{ isset($usage->avg_daily_use_hours) ? round($usage->avg_daily_use_hours * 60) : 0 }} min</span>
+                                <small class="text-muted d-block">Selecciona las horas promedio de uso diario/semanal. El valor se muestra también en minutos.</small>
+                            </div>
+                            <div id="occasionalFields_{{ $equipment->id }}" style="display: {{ ($selectedFreq != 'diario' && $selectedFreq != 'semanal') ? 'block' : 'none' }};">
+                                <input type="number" min="0" step="1" name="usages[{{ $equipment->id }}][usage_count]" value="{{ $usage->usage_count ?? '' }}" class="form-control d-inline-block w-auto" style="width:80px;" placeholder="Cantidad de usos">
+                                <input type="number" min="0" step="0.1" name="usages[{{ $equipment->id }}][avg_use_duration]" value="{{ $usage->avg_use_duration ?? '' }}" class="form-control d-inline-block w-auto ms-2" style="width:80px;" placeholder="Duración promedio (h)">
+                                <small class="text-muted d-block">Indica cuántas veces lo usaste y la duración promedio por uso (en horas).</small>
+                            </div>
                             <script>
                                 function updateHours{{ $equipment->id }}(val) {
                                     document.getElementById('hours_{{ $equipment->id }}').value = val;
                                     document.getElementById('minutes_{{ $equipment->id }}').innerText = Math.round(val * 60) + ' min';
+                                }
+                                function toggleUsageFields{{ $equipment->id }}(freq) {
+                                    document.getElementById('dailyFields_{{ $equipment->id }}').style.display = (freq === 'diario' || freq === 'semanal') ? 'block' : 'none';
+                                    document.getElementById('occasionalFields_{{ $equipment->id }}').style.display = (freq === 'diario' || freq === 'semanal') ? 'none' : 'block';
                                 }
                             </script>
                         </td>
