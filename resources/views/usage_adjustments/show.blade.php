@@ -15,10 +15,9 @@
                         <th>Equipo</th>
                         <th>Habitación</th>
                         <th>Potencia (W)</th>
-                        <th>Horas/día</th>
-                        <th>Días de uso</th>
-                        <th>Días de la semana</th>
-                        <th>Minutos/día</th>
+                        <th>Frecuencia</th>
+                        <th>Detalle de uso</th>
+                        <th>Fórmula aplicada</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -27,17 +26,23 @@
                             <td>{{ $usage->equipment->name }}</td>
                             <td>{{ $usage->equipment->room->name ?? '-' }}</td>
                             <td>{{ $usage->equipment->nominal_power_w ?? '-' }}</td>
-                            <td>{{ $usage->avg_daily_use_hours }}</td>
-                            <td>{{ $usage->use_days_in_period }}</td>
-                            <td>{{ $usage->use_days_of_week ?? '-' }}</td>
+                            <td>{{ ucfirst($usage->usage_frequency ?? 'diario') }}</td>
                             <td>
-                                @php
-                                    $minutos = round($usage->avg_daily_use_hours * 60);
-                                @endphp
-                                @if($minutos >= 60)
-                                    {{ number_format($minutos / 60, 2) }} h
+                                @if(in_array($usage->usage_frequency, ['diario', 'semanal']) || empty($usage->usage_frequency))
+                                    <strong>Horas/día:</strong> {{ $usage->avg_daily_use_hours }}<br>
+                                    <strong>Días de uso:</strong> {{ $usage->use_days_in_period }}<br>
+                                    <strong>Días de la semana:</strong> {{ $usage->use_days_of_week ?? '-' }}<br>
+                                    <strong>Minutos/día:</strong> {{ isset($usage->avg_daily_use_hours) ? round($usage->avg_daily_use_hours * 60) : 0 }} min
                                 @else
-                                    {{ $minutos }} min
+                                    <strong>Cantidad de usos:</strong> {{ $usage->usage_count ?? '-' }}<br>
+                                    <strong>Duración promedio por uso:</strong> {{ $usage->avg_use_duration ?? '-' }} h
+                                @endif
+                            </td>
+                            <td>
+                                @if(in_array($usage->usage_frequency, ['diario', 'semanal']) || empty($usage->usage_frequency))
+                                    <span class="badge bg-primary">Consumo = Potencia × Horas/día × Días</span>
+                                @else
+                                    <span class="badge bg-info">Consumo = Potencia × Duración promedio × Cantidad de usos</span>
                                 @endif
                             </td>
                         </tr>

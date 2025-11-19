@@ -15,20 +15,25 @@ return new class extends Migration
             $table->id();
             $table->foreignId('contract_id')->constrained('contracts')->onDelete('cascade');
             $table->string('invoice_number')->nullable();
+            $table->date('issue_date');
             $table->date('invoice_date')->nullable();
             $table->date('start_date');
             $table->date('end_date');
+            $table->decimal('consumption_kwh', 10, 3);
+            $table->decimal('energy_cost', 10, 2);
+            $table->decimal('taxes_cost', 10, 2);
             // Consumos
             $table->decimal('energy_consumed_p1_kwh', 10, 3)->nullable();
             $table->decimal('energy_consumed_p2_kwh', 10, 3)->nullable();
             $table->decimal('energy_consumed_p3_kwh', 10, 3)->nullable();
-            $table->decimal('total_energy_consumed_kwh', 10, 3);
+            $table->decimal('total_energy_consumed_kwh', 10, 3)->nullable();
             // Costos
             $table->decimal('cost_for_energy', 10, 2)->nullable();
             $table->decimal('cost_for_power', 10, 2)->nullable();
             $table->decimal('taxes', 10, 2)->nullable();
             $table->decimal('other_charges', 10, 2)->nullable();
             $table->decimal('total_amount', 10, 2);
+            $table->string('status')->default('paid');
             // Autoconsumo (Solar)
             $table->decimal('total_energy_injected_kwh', 10, 3)->nullable();
             $table->decimal('surplus_compensation_amount', 10, 2)->nullable();

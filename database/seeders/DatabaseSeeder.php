@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
         UtilityCompanySeeder::class,
         EquipmentCategorySeeder::class,
         EquipmentTypeSeeder::class,
-        // Agrega aquí otros seeders que necesites
+        DatosHogarSeeder::class,
     ]);
     }
 }

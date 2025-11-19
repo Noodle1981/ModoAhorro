@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('entity_id')->constrained('entities')->onDelete('cascade');
             $table->string('name'); // Ejemplo: Cocina, Baño, Dormitorio
+            $table->integer('square_meters')->default(0);
             $table->text('description')->nullable();
             $table->timestamps();
         });

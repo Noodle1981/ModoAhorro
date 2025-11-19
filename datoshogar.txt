@@ -1,0 +1,94 @@
+Nombre del hogar Casa 27
+Tipo Hogar
+Calle Carlos Gardel Casa 27 B° Enoe Bravo
+Código Postal 
+Localidad Capital
+Descripcion Casa de prueba
+Medros cuadrados 450
+Cantida de personas 4
+
+
+N° de SUMINISTRO 07182202700
+Empresa Distribuidora Naturgy
+N° de Serie del Medidor 9618495
+Identificador de Contrato: 36697
+Nombre de Tarifa T1-R1
+
+
+
+
+factura 1
+ID 1
+Numero de Factura 137756868
+Fecha de Emision 28/03/2025
+Periodo de Consumo
+15/01/2025 a 20/30/2025
+Consumo Facturado
+624.00 kWh
+Total Energía 67876.86
+impuestos 28078.31
+Total 95955.17
+
+factura 2
+
+ID 2
+Numero de Factura 138579184
+Fecha de Emision 25/06/2025
+Periodo de Consumo
+21/03/2025 a 15/05/2025
+Consumo Facturado
+123.00 kWh
+Total Energía 13784.62
+impuestos 4743.40
+Total 18528.02
+
+factura 3
+
+ID 3
+Numero de Factura 139151993
+Fecha de Emision 27/08/2025
+Periodo de Consumo
+14/05/2025 a 15/07/2025
+Consumo Facturado
+83.00 kWh
+Total Energía 8503.49
+impuestos 2452.22
+Total 10955.71
+
+factura 4
+
+ID 4
+Numero de Factura 139459979
+Fecha de Emision 26/09/2025
+Periodo de Consumo
+16/07/2025 a 07/09/2025
+Consumo Facturado
+78.00 kWh
+Total Energía 8293.53
+impuestos 8293.53
+Total 10778.25
+
+entities Hogar
+
+Nombre Casa 27
+Tipo Hogar
+Calle Carlos Gardel Casa 27 B° Enoe Bravo
+Código Postal 
+Localidad Capital
+Descripcion Casa de prueba 
+Medros cuadrados 450
+Cantidad de personas 4
+
+rooms
+Cocina / Comedor
+Living
+Habitación Mamá
+Habitación Papa
+Habitación Hermanos
+Baño
+Fondo
+Garage
+Hall
+Frente / Vereda
+Lavadero
+

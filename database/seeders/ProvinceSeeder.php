@@ -12,6 +12,6 @@ class ProvinceSeeder extends Seeder
      */
     public function run(): void
     {
-    \App\Models\Province::updateOrCreate(['name' => 'San Juan']);
+    \App\Models\Province::updateOrCreate(['id' => 1], ['name' => 'San Juan']);
     }
 }

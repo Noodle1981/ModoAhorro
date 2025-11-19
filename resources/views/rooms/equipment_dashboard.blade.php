@@ -46,6 +46,9 @@
     <div class="card">
         <div class="card-header">Agregar nuevo equipo</div>
         <div class="card-body">
+            <div class="alert alert-info mb-3">
+                <i class="bi bi-info-circle-fill"></i> <strong>Nota importante:</strong> Los valores de potencia sugeridos son estimaciones promedio. Para obtener un cálculo preciso, por favor verifique el consumo real en el manual de su equipo o en la etiqueta del fabricante.
+            </div>
             @include('equipment.partials.form', ['room' => $room])
         </div>
     </div>
