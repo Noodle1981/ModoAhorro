@@ -5,6 +5,22 @@
     <h1>Agregar Equipo</h1>
     <form method="POST" action="{{ route('equipment.store') }}">
         @csrf
+        @if(isset($roomId))
+            <div class="alert alert-info">
+                Agregando a sala: <strong>{{ $rooms->find($roomId)->name }}</strong>
+            </div>
+            <input type="hidden" name="room_id" value="{{ $roomId }}">
+        @else
+            <div class="mb-3">
+                <label for="room_id" class="form-label">Sala</label>
+                <select class="form-control" id="room_id" name="room_id" required>
+                    <option value="">Seleccione una sala...</option>
+                    @foreach($rooms as $room)
+                        <option value="{{ $room->id }}">{{ $room->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+        @endif
         <div class="mb-3">
             <label for="name" class="form-label">Nombre del Equipo</label>
             <input type="text" class="form-control" id="name" name="name" required>

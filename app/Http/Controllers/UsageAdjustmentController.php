@@ -26,18 +26,20 @@ class UsageAdjustmentController extends Controller
         $contract = $invoice->contract;
         $entity = $contract ? $contract->entity : null;
 
-        // Obtener equipos activos en las rooms de la entidad
-        $equipments = collect();
-        if ($entity) {
-            $equipments = $entity->rooms()->with(['equipment' => function($q) {
-                $q->where('is_active', true);
-            }])->get()->pluck('equipment')->flatten();
-        }
-
         // Obtener los usos ya registrados para este periodo
         $usages = $invoice->equipmentUsages()->get()->keyBy('equipment_id');
+        $usedEquipmentIds = $usages->keys()->toArray();
 
-        return view('usage_adjustments.edit', compact('invoice', 'usageAdjustment', 'equipments', 'usages'));
+        // Obtener habitaciones con sus equipos activos O que tengan uso en esta factura
+        $rooms = collect();
+        if ($entity) {
+            $rooms = $entity->rooms()->with(['equipment' => function($q) use ($usedEquipmentIds) {
+                $q->where('is_active', true)
+                  ->orWhereIn('id', $usedEquipmentIds);
+            }])->get();
+        }
+
+        return view('usage_adjustments.edit', compact('invoice', 'usageAdjustment', 'rooms', 'usages'));
     }
 
     // Guarda el ajuste realizado
@@ -83,12 +85,30 @@ class UsageAdjustmentController extends Controller
 
         return redirect()->route('usage_adjustments.index')->with('success', 'Ajuste guardado correctamente.');
     }
+
     // Muestra el detalle del ajuste de uso para una factura
-    public function show($invoiceId)
+    public function show($invoiceId, \App\Services\ConsumptionAnalysisService $consumptionService)
     {
         $invoice = Invoice::findOrFail($invoiceId);
+        
         // Obtener todos los usos de equipos para la factura
         $equipmentUsages = $invoice->equipmentUsages()->with(['equipment.room'])->get();
-        return view('usage_adjustments.show', compact('invoice', 'equipmentUsages'));
+
+        // Calcular consumo por equipo
+        $consumptionDetails = [];
+        $totalCalculatedConsumption = 0;
+
+        foreach ($equipmentUsages as $usage) {
+            $kwh = $consumptionService->calculateEquipmentConsumption($usage, $invoice);
+            $consumptionDetails[$usage->equipment_id] = $kwh;
+            $totalCalculatedConsumption += $kwh;
+        }
+
+        // Agrupar por habitación
+        $groupedUsages = $equipmentUsages->groupBy(function($usage) {
+            return $usage->equipment->room->name ?? 'Sin habitación';
+        });
+
+        return view('usage_adjustments.show', compact('invoice', 'groupedUsages', 'consumptionDetails', 'totalCalculatedConsumption'));
     }
 }

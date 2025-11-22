@@ -44,6 +44,10 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
     Route::put('/entities/{entity}', [\App\Http\Controllers\EntityController::class, 'update'])->name('entities.update');
     Route::delete('/entities/{entity}', [\App\Http\Controllers\EntityController::class, 'destroy'])->name('entities.destroy');
 
+    // Rutas para equipos (Equipment)
+    Route::get('/equipment/portable', [\App\Http\Controllers\EquipmentController::class, 'createPortable'])->name('equipment.create_portable');
+    Route::resource('equipment', \App\Http\Controllers\EquipmentController::class);
+
     // Rutas CRUD para habitaciones (rooms) anidadas bajo entidad
     Route::get('/entities/{entity}/rooms', [\App\Http\Controllers\RoomController::class, 'index'])->name('rooms.index');
     Route::get('/entities/{entity}/rooms/create', [\App\Http\Controllers\RoomController::class, 'create'])->name('rooms.create');

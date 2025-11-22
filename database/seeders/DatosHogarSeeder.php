@@ -26,29 +26,30 @@ class DatosHogarSeeder extends Seeder
         }
 
         // 2. Find or Create Locality (Capital)
-        $locality = Locality::firstOrCreate(['name' => 'Capital'], ['province_id' => 1]); // Assuming province 1 exists
+        $locality = Locality::firstOrCreate(['name' => 'Capital'], ['province_id' => 1]);
 
         // 3. Create Entity (Hogar)
         $entity = Entity::firstOrCreate(
             ['name' => 'Casa 27'],
             [
                 'address_street' => 'Calle Carlos Gardel Casa 27 B° Enoe Bravo',
-                'address_postal_code' => '5300', // Defaulting
+                'address_postal_code' => '5300',
                 'locality_id' => $locality->id,
                 'description' => 'Casa de prueba',
                 'square_meters' => 450,
                 'people_count' => 4,
+                'type' => 'hogar',
             ]
         );
 
-        // Associate Entity with User if not already associated
+        // Associate Entity with User
         if (!$user->entities()->where('entity_id', $entity->id)->exists()) {
             $user->entities()->attach($entity->id, ['plan_id' => 1, 'subscribed_at' => now()]);
         }
 
         // 4. Create Provider, Utility Company & Contract
         $provider = \App\Models\Proveedor::firstOrCreate(['name' => 'Naturgy']);
-        $company = UtilityCompany::firstOrCreate(['name' => 'Naturgy']); // Assuming Naturgy for now based on text
+        $company = UtilityCompany::firstOrCreate(['name' => 'Naturgy']);
 
         $contract = Contract::firstOrCreate(
             ['contract_number' => '36697'],
@@ -56,7 +57,7 @@ class DatosHogarSeeder extends Seeder
                 'entity_id' => $entity->id,
                 'proveedor_id' => $provider->id,
                 'utility_company_id' => $company->id,
-                'client_number' => '07182202700', // N° de SUMINISTRO
+                'client_number' => '07182202700',
                 'supply_number' => '07182202700',
                 'meter_number' => '9618495',
                 'tariff_type' => 'T1-R1',
@@ -71,10 +72,10 @@ class DatosHogarSeeder extends Seeder
                 'invoice_number' => '137756868',
                 'issue_date' => '2025-03-28',
                 'start_date' => '2025-01-15',
-                'end_date' => '2025-03-20', // Fixed from 20/30/2025
-                'consumption_kwh' => 624.00,
-                'energy_cost' => 67876.86,
-                'taxes_cost' => 28078.31,
+                'end_date' => '2025-03-20',
+                'total_energy_consumed_kwh' => 624.00,
+                'cost_for_energy' => 67876.86,
+                'taxes' => 28078.31,
                 'total_amount' => 95955.17,
             ],
             [
@@ -82,9 +83,9 @@ class DatosHogarSeeder extends Seeder
                 'issue_date' => '2025-06-25',
                 'start_date' => '2025-03-21',
                 'end_date' => '2025-05-15',
-                'consumption_kwh' => 123.00,
-                'energy_cost' => 13784.62,
-                'taxes_cost' => 4743.40,
+                'total_energy_consumed_kwh' => 123.00,
+                'cost_for_energy' => 13784.62,
+                'taxes' => 4743.40,
                 'total_amount' => 18528.02,
             ],
             [
@@ -92,9 +93,9 @@ class DatosHogarSeeder extends Seeder
                 'issue_date' => '2025-08-27',
                 'start_date' => '2025-05-14',
                 'end_date' => '2025-07-15',
-                'consumption_kwh' => 83.00,
-                'energy_cost' => 8503.49,
-                'taxes_cost' => 2452.22,
+                'total_energy_consumed_kwh' => 83.00,
+                'cost_for_energy' => 8503.49,
+                'taxes' => 2452.22,
                 'total_amount' => 10955.71,
             ],
             [
@@ -102,24 +103,25 @@ class DatosHogarSeeder extends Seeder
                 'issue_date' => '2025-09-26',
                 'start_date' => '2025-07-16',
                 'end_date' => '2025-09-07',
-                'consumption_kwh' => 78.00,
-                'energy_cost' => 8293.53,
-                'taxes_cost' => 8293.53,
+                'total_energy_consumed_kwh' => 78.00,
+                'cost_for_energy' => 8293.53,
+                'taxes' => 8293.53,
                 'total_amount' => 10778.25,
             ],
         ];
 
+        $createdInvoices = [];
         foreach ($invoicesData as $data) {
-            Invoice::firstOrCreate(
+            $createdInvoices[] = Invoice::firstOrCreate(
                 ['invoice_number' => $data['invoice_number']],
                 [
                     'contract_id' => $contract->id,
                     'issue_date' => $data['issue_date'],
                     'start_date' => $data['start_date'],
                     'end_date' => $data['end_date'],
-                    'consumption_kwh' => $data['consumption_kwh'],
-                    'energy_cost' => $data['energy_cost'],
-                    'taxes_cost' => $data['taxes_cost'],
+                    'consumption_kwh' => $data['total_energy_consumed_kwh'],
+                    'energy_cost' => $data['cost_for_energy'],
+                    'taxes_cost' => $data['taxes'],
                     'total_amount' => $data['total_amount'],
                     'status' => 'paid',
                 ]
@@ -127,7 +129,7 @@ class DatosHogarSeeder extends Seeder
         }
 
         // 6. Create Rooms
-        $rooms = [
+        $roomsList = [
             'Cocina / Comedor',
             'Living',
             'Habitación Mamá',
@@ -139,13 +141,74 @@ class DatosHogarSeeder extends Seeder
             'Hall',
             'Frente / Vereda',
             'Lavadero',
+            'Portátiles',
         ];
 
-        foreach ($rooms as $roomName) {
-            Room::firstOrCreate(
+        $rooms = [];
+        foreach ($roomsList as $roomName) {
+            $rooms[$roomName] = Room::firstOrCreate(
                 ['name' => $roomName, 'entity_id' => $entity->id],
-                ['square_meters' => 0] // Default
+                ['square_meters' => 0]
             );
+        }
+
+        // 7. Create Equipment
+        $equipmentList = [
+            ['name' => 'Aire Grande', 'category' => 'Climatización', 'room' => 'Cocina / Comedor', 'power' => 2500],
+            ['name' => 'Ventilador de Techo', 'category' => 'Climatización', 'room' => 'Cocina / Comedor', 'power' => 60],
+            ['name' => 'Microondas', 'category' => 'Cocina', 'room' => 'Cocina / Comedor', 'power' => 1000],
+            ['name' => 'Focos Ventilador', 'category' => 'Iluminación', 'room' => 'Cocina / Comedor', 'power' => 5],
+            ['name' => 'Focos Ventilador', 'category' => 'Iluminación', 'room' => 'Cocina / Comedor', 'power' => 5],
+            ['name' => 'Focos Ventilador', 'category' => 'Iluminación', 'room' => 'Cocina / Comedor', 'power' => 5],
+            ['name' => 'Tubo Led Cocina', 'category' => 'Iluminación', 'room' => 'Cocina / Comedor', 'power' => 5],
+            ['name' => 'Ventilador de Techo', 'category' => 'Climatización', 'room' => 'Living', 'power' => 60],
+            ['name' => 'TV Grande', 'category' => 'Entretenimiento', 'room' => 'Living', 'power' => 120],
+            ['name' => 'Foco Living', 'category' => 'Iluminación', 'room' => 'Living', 'power' => 5],
+            ['name' => 'Router Wifi', 'category' => 'Oficina', 'room' => 'Living', 'power' => 20],
+            ['name' => 'Ventilador de Techo', 'category' => 'Climatización', 'room' => 'Habitación Mamá', 'power' => 60],
+            ['name' => 'Foco Ventilador', 'category' => 'Iluminación', 'room' => 'Habitación Mamá', 'power' => 5],
+            ['name' => 'Foco Mesita de Luz', 'category' => 'Iluminación', 'room' => 'Habitación Mamá', 'power' => 5],
+            ['name' => 'Ventilador de Techo', 'category' => 'Climatización', 'room' => 'Habitación Papa', 'power' => 60],
+            ['name' => 'Foco Ventilador', 'category' => 'Iluminación', 'room' => 'Habitación Papa', 'power' => 40],
+            ['name' => 'Foco Mesita de Luz', 'category' => 'Iluminación', 'room' => 'Habitación Papa', 'power' => 40],
+            ['name' => 'TV Chico', 'category' => 'Entretenimiento', 'room' => 'Habitación Papa', 'power' => 85],
+            ['name' => 'PC Gamer', 'category' => 'Oficina', 'room' => 'Habitación Hermanos', 'power' => 600],
+            ['name' => 'Monitor PC', 'category' => 'Oficina', 'room' => 'Habitación Hermanos', 'power' => 50],
+            ['name' => 'Monitor PC', 'category' => 'Oficina', 'room' => 'Habitación Hermanos', 'power' => 50],
+            ['name' => 'Ventilador de Techo', 'category' => 'Climatización', 'room' => 'Habitación Hermanos', 'power' => 60],
+            ['name' => 'Foco Ventilador de Techo', 'category' => 'Iluminación', 'room' => 'Habitación Hermanos', 'power' => 5],
+            ['name' => 'Mesita de Luz', 'category' => 'Iluminación', 'room' => 'Habitación Hermanos', 'power' => 5],
+            ['name' => 'Aire Portatil', 'category' => 'Climatización', 'room' => 'Habitación Hermanos', 'power' => 1400],
+            ['name' => 'Foco Baño', 'category' => 'Iluminación', 'room' => 'Baño', 'power' => 12], // Asumed 12W based on others
+            ['name' => 'Secador de Pelo', 'category' => 'Otros', 'room' => 'Baño', 'power' => 1000],
+            ['name' => 'Maquina de Afeitar', 'category' => 'Otros', 'room' => 'Baño', 'power' => 12],
+            ['name' => 'Foco Led Grande', 'category' => 'Iluminación', 'room' => 'Fondo', 'power' => 12],
+            ['name' => 'Focos Garage', 'category' => 'Iluminación', 'room' => 'Garage', 'power' => 5],
+            ['name' => 'Focos Garage', 'category' => 'Iluminación', 'room' => 'Garage', 'power' => 5],
+            ['name' => 'Heladera', 'category' => 'Electrodomésticos', 'room' => 'Garage', 'power' => 150],
+            ['name' => 'Lavarropa', 'category' => 'Electrodomésticos', 'room' => 'Garage', 'power' => 2500],
+            ['name' => 'Foco', 'category' => 'Iluminación', 'room' => 'Hall', 'power' => 5],
+            ['name' => 'Foco', 'category' => 'Iluminación', 'room' => 'Frente / Vereda', 'power' => 5],
+            ['name' => 'Cargadores de Celular', 'category' => 'Portátiles', 'room' => 'Portátiles', 'power' => 5],
+            ['name' => 'Cargadores de Celular', 'category' => 'Portátiles', 'room' => 'Portátiles', 'power' => 5],
+            ['name' => 'Cargadores de Celular', 'category' => 'Portátiles', 'room' => 'Portátiles', 'power' => 5],
+            ['name' => 'Notebook', 'category' => 'Portátiles', 'room' => 'Portátiles', 'power' => 65],
+        ];
+
+        $createdEquipment = [];
+        foreach ($equipmentList as $item) {
+            $category = \App\Models\EquipmentCategory::firstOrCreate(['name' => $item['category']]);
+            $room = $rooms[$item['room']] ?? null;
+
+            if ($room) {
+                $createdEquipment[] = \App\Models\Equipment::create([
+                    'name' => $item['name'],
+                    'room_id' => $room->id,
+                    'category_id' => $category->id,
+                    'nominal_power_w' => $item['power'],
+                    'is_active' => true,
+                ]);
+            }
         }
     }
 }

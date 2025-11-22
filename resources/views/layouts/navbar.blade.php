@@ -13,6 +13,9 @@
                         <span class="nav-link">Hola, {{ auth()->user()->name }}</span>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ route('equipment.index') }}">Equipos</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link text-danger" href="/logout">
                             <i class="fas fa-sign-out-alt"></i> Cerrar sesión
                         </a>

@@ -19,6 +19,7 @@ class EquipmentCategorySeeder extends Seeder
             'Entretenimiento',
             'Cocina',
             'Oficina',
+            'Portátiles',
             'Otros',
         ];
         foreach ($categories as $cat) {

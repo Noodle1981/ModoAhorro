@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use App\Models\Equipment;
 use App\Models\EquipmentCategory;
 use App\Models\EquipmentType;
+use App\Models\Room;
 
 class EquipmentController extends Controller
 {
@@ -14,7 +15,7 @@ class EquipmentController extends Controller
         return view('equipment.index', compact('equipments'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         // Obtener entidad activa del usuario (ajustar según tu lógica de sesión)
         $entity = auth()->user()->entities()->first();
@@ -23,7 +24,25 @@ class EquipmentController extends Controller
         }
         $categories = EquipmentCategory::all();
         $types = EquipmentType::all();
-        return view('equipment.create', compact('categories', 'types'));
+        $rooms = $entity->rooms;
+        $roomId = $request->query('room_id');
+
+        return view('equipment.create', compact('categories', 'types', 'rooms', 'roomId'));
+    }
+
+    public function createPortable()
+    {
+        $entity = auth()->user()->entities()->first();
+        if (!$entity) {
+             return redirect()->route('equipment.index')->with('error', 'No tienes una entidad asignada.');
+        }
+        
+        $room = $entity->rooms()->firstOrCreate(
+            ['name' => 'Portátiles'],
+            ['description' => 'Sala para equipos portátiles y recargables']
+        );
+
+        return redirect()->route('equipment.create', ['room_id' => $room->id]);
     }
 
     public function store(Request $request)
@@ -37,7 +56,7 @@ class EquipmentController extends Controller
             'avg_daily_use_hours' => 'nullable|numeric|min:0',
             'use_days_per_week' => 'nullable|integer|min:0|max:7',
             'is_active' => 'nullable|boolean',
-            'room_id' => 'nullable|exists:rooms,id',
+            'room_id' => 'required|exists:rooms,id',
         ]);
         Equipment::create($validated);
         return redirect()->route('equipment.index')->with('success', 'Equipo agregado correctamente.');

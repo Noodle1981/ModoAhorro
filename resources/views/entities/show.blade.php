@@ -20,6 +20,9 @@
                 <a href="{{ route('rooms.index', $entity->id) }}" class="btn btn-primary">
                     <i class="bi bi-door-open"></i> Gestionar habitaciones
                 </a>
+                <a href="{{ route('equipment.index') }}" class="btn btn-secondary">
+                    <i class="bi bi-laptop"></i> Todos los equipos
+                </a>
                 <a href="#" class="btn btn-info" onclick="window.location.href='/entities/{{ $entity->id }}/invoices'; return false;">
                     <i class="bi bi-receipt"></i> Gestionar facturas
                 </a>

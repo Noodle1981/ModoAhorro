@@ -24,6 +24,7 @@ class EquipmentTypeSeeder extends Seeder
             ['name' => 'Aire Acondicionado (2200 frigorías)', 'category' => 'Climatización', 'default_power_watts' => 1013, 'default_avg_daily_use_hours' => 6],
             ['name' => 'Aire Acondicionado (3500 frigorías)', 'category' => 'Climatización', 'default_power_watts' => 1613, 'default_avg_daily_use_hours' => 6],
             ['name' => 'Aire Acondicionado (4500 frigorías)', 'category' => 'Climatización', 'default_power_watts' => 2153, 'default_avg_daily_use_hours' => 6],
+            ['name' => 'Aire Acondicionado Portátil', 'category' => 'Climatización', 'default_power_watts' => 1400, 'default_avg_daily_use_hours' => 6],
             ['name' => 'Aire Acondicionado Inverter (2200 frigorías)', 'category' => 'Climatización', 'default_power_watts' => 658, 'default_avg_daily_use_hours' => 6],
             ['name' => 'Ventilador de techo', 'category' => 'Climatización', 'default_power_watts' => 75, 'default_avg_daily_use_hours' => 6],
             ['name' => 'Ventilador de pie', 'category' => 'Climatización', 'default_power_watts' => 60, 'default_avg_daily_use_hours' => 6],
@@ -96,9 +97,10 @@ class EquipmentTypeSeeder extends Seeder
             ['name' => 'Bomba de Agua (3/4 HP)', 'category' => 'Otros', 'default_power_watts' => 550, 'default_avg_daily_use_hours' => 1],
             ['name' => 'Secador de Pelo', 'category' => 'Otros', 'default_power_watts' => 1800, 'default_avg_daily_use_hours' => 0.2],
             ['name' => 'Planchita de Pelo', 'category' => 'Otros', 'default_power_watts' => 40, 'default_avg_daily_use_hours' => 0.2],
+            ['name' => 'Afeitadora Eléctrica', 'category' => 'Otros', 'default_power_watts' => 15, 'default_avg_daily_use_hours' => 0.2],
         ];
         foreach ($types as $type) {
-            \App\Models\EquipmentType::updateOrCreate(
+            \App\Models\EquipmentType::firstOrCreate(
                 ['name' => $type['name']],
                 [
                     'category_id' => $catIds[$type['category']],

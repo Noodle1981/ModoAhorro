@@ -51,6 +51,12 @@ class EntityController extends Controller
             'people_count',
         ]));
 
+        // Crear automáticamente la sala de Portátiles
+        $entity->rooms()->create([
+            'name' => 'Portátiles',
+            'description' => 'Sala para equipos portátiles y recargables',
+        ]);
+
         // Asociar entidad al usuario con el plan gratuito
         $user = auth()->user();
         $freePlan = \App\Models\Plan::where('name', 'Gratuito')->first();

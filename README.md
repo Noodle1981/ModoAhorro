@@ -1,82 +1,110 @@
+# ModoAhorro - Sistema de Gestión Energética
 
+Aplicación Laravel para análisis y optimización del consumo energético en hogares, comercios y oficinas.
 
-# Documentación ModoAhorro
+## 🎯 Características Principales
 
+### Gestión de Entidades
+- Soporte para múltiples tipos: Hogar, Comercio, Oficina
+- Gestión de habitaciones por entidad
+- Sala "Portátiles" creada automáticamente para equipos recargables
 
-## Estructura actual implementada
+### Equipamiento
+- **39 equipos** de ejemplo en base de datos
+- **8 categorías**: Climatización, Iluminación, Electrodomésticos, Entretenimiento, Cocina, Oficina, **Portátiles**, Otros
+- Gestión por habitación con potencia nominal (W)
+- Equipos portátiles (notebooks, tablets, cargadores) en categoría dedicada
 
-- Proyecto Laravel con Blade y base de datos SQLite.
-- Modelos y migraciones para:
-	- Usuarios, entidades, habitaciones, contratos, proveedores y facturas.
-	- Provincias, localidades y planes.
-	- Equipos, categorías y tipos de equipos, historial y uso por periodo.
-- Relaciones Eloquent robustas y centralizadas.
-- Validación de campos obligatorios y filtrado dinámico en formularios.
-- Formulario de facturas adaptado para usuarios generales.
-- Gestión de equipos exclusivamente por habitación (cada equipo se asocia a una room).
-- Nueva lógica de carga múltiple: campo "Cantidad" en el formulario de equipos, que permite crear varios equipos individuales en un solo paso.
-- Visualización de cantidad de equipos por habitación en la vista principal.
-- Eliminación de rutas y vistas generales de equipos para evitar errores y duplicidad.
-- Migraciones y modelos depurados, listos para escalar.
+### Análisis de Consumo
+- **Panel de consumo** con comparación visual: Facturado vs Calculado
+- Desglose por categoría con porcentajes
+- Agrupación por habitación en vistas de ajuste
+- Cálculo automático de kWh basado en potencia y uso
 
-## Siguiente pasos recomendados
+### Ajustes de Uso
+- Configuración de horas/día y días de uso por equipo
+- Soporte para uso diario, semanal y ocasional
+- Histórico de equipos inactivos preservado en facturas pasadas
+- Visualización de consumo calculado por equipo
 
-**Etapa de equipamientos (actual):**
-1. CRUD de equipos por habitación, con campo cantidad y validaciones.
-2. Visualización y edición de equipos por ambiente.
-3. Documentar endpoints y flujos nuevos en README y ETAPAS_DESARROLLO.md.
-4. Validar migraciones y seeders para catálogo de equipos y categorías.
-5. Preparar lógica para historial, bajas y reemplazos.
+## 🚀 Instalación
 
-**Checklist para commit y push:**
-- Validar que todos los cambios estén guardados y probados.
-- Ejecutar en terminal:
-	1. git add .
-	2. git commit -m "Actualización: equipos por habitación, carga múltiple y UX."
-	3. git push
+```bash
+# Clonar repositorio
+git clone <repository-url>
+cd ModoAhorroFINAL26
 
-## Notas
-- El sistema ahora permite una gestión energética mucho más precisa y flexible.
-- La lógica de equipos por habitación y carga múltiple facilita el inventario y los cálculos.
-- El flujo UX está alineado con la gestión real de ambientes y equipos.
+# Instalar dependencias
+composer install
+npm install
 
----
+# Configurar entorno
+cp .env.example .env
+php artisan key:generate
 
-Para dudas, ideas o nuevas funcionalidades, escribir en `ETAPAS_DESARROLLO.md` y seguir el flujo de trabajo.
+# Migrar y poblar base de datos
+php artisan migrate:fresh --seed
 
-## Learning Laravel
+# Iniciar servidor
+php artisan serve
+npm run dev
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## 📊 Estructura de Base de Datos
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Modelos Principales
+- **Entity**: Hogares, comercios u oficinas
+- **Room**: Habitaciones/ambientes de cada entidad
+- **Equipment**: Equipos eléctricos con potencia nominal
+- **Invoice**: Facturas de energía con consumo real
+- **EquipmentUsage**: Registro de uso de equipos por período
+- **Contract**: Contratos con proveedores de energía
 
-## Laravel Sponsors
+### Seeders Incluidos
+- `DatosHogarSeeder`: Casa de prueba completa con 39 equipos
+- `EquipmentCategorySeeder`: 8 categorías (incluye Portátiles)
+- `ProvinceSeeder` / `LocalitySeeder`: Datos geográficos
+- `PlanSeeder`: Planes de suscripción
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🔧 Tecnologías
 
-### Premium Partners
+- **Backend**: Laravel 11.x
+- **Frontend**: Blade Templates + Bootstrap 5
+- **Base de datos**: SQLite (desarrollo)
+- **Build**: Vite
+- **Análisis**: ConsumptionAnalysisService para cálculos de consumo
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## 📱 Rutas Principales
 
-## Contributing
+- `/dashboard` - Panel principal
+- `/entities` - Gestión de entidades
+- `/consumption/panel` - Panel de análisis de consumo
+- `/usage-adjustments/{invoice}/edit` - Ajuste de uso por factura
+- `/equipment` - Gestión de equipos por habitación
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 🎨 Características UX
 
-## Code of Conduct
+- Agrupación visual por habitación
+- Comparación facturado vs calculado con código de colores
+- Desglose por categoría con gráficos de barras
+- Preservación de histórico de equipos inactivos
+- Período de factura con cantidad de días
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 📝 Próximos Pasos Recomendados
 
-## Security Vulnerabilities
+1. **Optimización de cálculos**: Cachear resultados de consumo
+2. **Reportes**: Exportación a PDF/Excel
+3. **Gráficos**: Integrar Chart.js para visualizaciones
+4. **Notificaciones**: Alertas de consumo anormal
+5. **Multi-tenant**: Soporte para múltiples usuarios
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 🐛 Debugging
 
-## License
+Los archivos de prueba temporales se limpian automáticamente. Si encuentras alguno:
+```bash
+Remove-Item debug_*.php, test_*.php -ErrorAction SilentlyContinue
+```
+
+## 📄 Licencia
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

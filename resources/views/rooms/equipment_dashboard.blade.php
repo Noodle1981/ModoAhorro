@@ -4,6 +4,7 @@
 <div class="container">
     <h1>Habitación: {{ $room->name }}</h1>
     <a href="{{ route('rooms.index', $room->entity_id) }}" class="btn btn-secondary mb-3">Volver a habitaciones</a>
+    <a href="{{ route('equipment.create_portable') }}" class="btn btn-info mb-3 ms-2">Cargar Equipo Portátil</a>
     <div class="card mb-4">
         <div class="card-header">Equipos en esta habitación</div>
         <div class="card-body">

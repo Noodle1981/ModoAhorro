@@ -4,6 +4,7 @@
 <div class="container">
     <h1>Equipos del Hogar</h1>
     <a href="{{ route('equipment.create') }}" class="btn btn-success mb-3">Agregar Equipo</a>
+    <a href="{{ route('equipment.create_portable') }}" class="btn btn-info mb-3 ms-2">Cargar Equipo Portátil</a>
     <table class="table table-bordered">
         <thead>
             <tr>
