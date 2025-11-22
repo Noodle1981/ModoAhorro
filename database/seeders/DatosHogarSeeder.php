@@ -119,9 +119,9 @@ class DatosHogarSeeder extends Seeder
                     'issue_date' => $data['issue_date'],
                     'start_date' => $data['start_date'],
                     'end_date' => $data['end_date'],
-                    'consumption_kwh' => $data['total_energy_consumed_kwh'],
-                    'energy_cost' => $data['cost_for_energy'],
-                    'taxes_cost' => $data['taxes'],
+                    'total_energy_consumed_kwh' => $data['total_energy_consumed_kwh'],
+                    'cost_for_energy' => $data['cost_for_energy'],
+                    'taxes' => $data['taxes'],
                     'total_amount' => $data['total_amount'],
                     'status' => 'paid',
                 ]
