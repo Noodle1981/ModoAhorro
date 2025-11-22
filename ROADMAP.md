@@ -1,0 +1,313 @@
+# ModoAhorro - Roadmap del Proyecto
+
+## 🎯 Visión General
+
+Sistema SaaS de gestión energética inteligente que evoluciona desde ajuste manual hasta gemelo digital con IoT.
+
+---
+
+## 📊 Estado Actual (Completado ~75%)
+
+### ✅ Módulos Implementados
+
+**1. Gestión de Entidades**
+- Planes (Gratuito, Premium, Enterprise)
+- Entities (Hogar, Comercio, Oficina)
+- Rooms (habitaciones personalizables)
+- Usuarios multi-entidad
+
+**2. Gestión de Equipos**
+- CRUD de equipos por habitación
+- 8 categorías (incluye Portátiles)
+- Potencia nominal (W)
+- Estado activo/inactivo
+
+**3. Gestión de Facturas**
+- Contratos con proveedores
+- Facturas con período de consumo
+- Consumo facturado vs calculado
+
+**4. Ajuste de Uso**
+- Frecuencia: diario, semanal, ocasional
+- Horas/día, días/semana
+- Agrupación por habitación
+- Preservación de histórico
+
+**5. Panel de Consumo**
+- Comparación facturado vs calculado
+- Desglose por categoría
+- Lista detallada de equipos
+
+---
+
+## 🚀 Roadmap por Sprints
+
+### **SPRINT 1: Validación y Trazabilidad** (1 semana)
+*Objetivo: Evitar desviaciones absurdas y rastrear equipos en el tiempo*
+
+#### Tareas
+- [ ] Crear `ValidationService` para comparar consumos
+- [ ] Agregar campos `installed_at` y `removed_at` a equipos
+- [ ] Implementar alertas de desviación en panel
+- [ ] Filtrar equipos por período de factura
+- [ ] Agregar campo `usage_locked` a facturas
+
+#### Entregables
+- Sistema de alertas (verde/amarillo/rojo)
+- Equipos solo aparecen si existían en el período
+- Opción de bloquear/desbloquear períodos
+
+---
+
+### **SPRINT 2: Asistencia Climática** (2 semanas)
+*Objetivo: Sugerencias automáticas para climatización*
+
+#### Tareas
+- [ ] Crear `ClimateDataService` (integración Open-Meteo)
+- [ ] Crear tabla `climate_data` (cache)
+- [ ] Crear `UsageSuggestionService` (cálculo de sugerencias)
+- [ ] Agregar campos climáticos a `equipment_usages`
+- [ ] UI: mostrar sugerencias en vista de ajuste
+- [ ] UI: indicadores en panel de consumo
+
+#### Entregables
+- Sugerencias automáticas para equipos de climatización
+- Indicador "🌡️ Ajustado con datos climáticos"
+- Precisión estimada por equipo
+
+---
+
+### **SPRINT 3: Catálogo de Reemplazos** (2 semanas)
+*Objetivo: Recomendar equipos eficientes*
+
+#### Tareas
+- [ ] Crear tabla `efficient_equipment_catalog`
+- [ ] Crear `ReplacementRecommendationService`
+- [ ] Seeder con equipos eficientes (A+++, A++)
+- [ ] Cálculo de ROI (ahorro vs costo)
+- [ ] Vista de recomendaciones
+- [ ] Comparativa lado a lado
+
+#### Entregables
+- Catálogo de equipos eficientes
+- Recomendaciones automáticas de reemplazo
+- Cálculo de ROI y tiempo de recuperación
+
+---
+
+### **SPRINT 4: Módulo de Vacaciones** (1 semana)
+*Objetivo: Ajustar consumo por ausencias*
+
+#### Tareas
+- [ ] Crear tabla `absence_periods`
+- [ ] Crear `VacationService`
+- [ ] CRUD de períodos de ausencia
+- [ ] Ajuste automático de consumo
+- [ ] Integración con cálculo de uso
+
+#### Entregables
+- Gestión de vacaciones/viajes
+- Reducción automática de consumo
+- Indicador en panel
+
+---
+
+### **SPRINT 5: Análisis de Standby** (1 semana)
+*Objetivo: Identificar consumo fantasma*
+
+#### Tareas
+- [ ] Crear `StandbyAnalysisService`
+- [ ] Identificar equipos con standby
+- [ ] Calcular consumo en standby
+- [ ] Recomendaciones de ahorro
+- [ ] Vista de análisis
+
+#### Entregables
+- Reporte de consumo standby
+- Ahorro potencial
+- Recomendaciones (regletas, etc.)
+
+---
+
+### **SPRINT 6: Uso Horario Inteligente** (2 semanas)
+*Objetivo: Optimizar uso según tarifa*
+
+#### Tareas
+- [ ] Crear tabla `time_of_use_rates` (tarifas por horario)
+- [ ] Crear `TimeOfUseService`
+- [ ] Análisis de uso actual vs óptimo
+- [ ] Recomendaciones de cambio de horario
+- [ ] Cálculo de ahorro potencial
+
+#### Entregables
+- Análisis de uso horario
+- Recomendaciones (ej: lavarropa de noche)
+- Ahorro estimado
+
+---
+
+### **SPRINT 7: Calefón Solar** (1 semana)
+*Objetivo: Evaluar viabilidad de calefón solar*
+
+#### Tareas
+- [ ] Crear `SolarWaterHeaterService`
+- [ ] Calcular consumo actual de agua caliente
+- [ ] Estimar ahorro con calefón solar
+- [ ] ROI y tiempo de recuperación
+- [ ] Recomendaciones de modelos
+
+#### Entregables
+- Análisis de viabilidad
+- ROI de calefón solar
+- Catálogo de proveedores
+
+---
+
+### **SPRINT 8: Paneles Solares** (2 semanas)
+*Objetivo: Evaluar viabilidad de energía solar*
+
+#### Tareas
+- [ ] Crear `SolarPanelService`
+- [ ] Calcular área disponible (m² de techo)
+- [ ] Estimar potencia instalable
+- [ ] Calcular generación estimada
+- [ ] ROI y tiempo de recuperación
+- [ ] Integración con API de radiación solar
+
+#### Entregables
+- Análisis de viabilidad solar
+- Potencia recomendada
+- ROI y ahorro anual
+- Proveedores sugeridos
+
+---
+
+### **SPRINT 9: Dashboard Ejecutivo** (1 semana)
+*Objetivo: Métricas para CEOs/inversores*
+
+#### Tareas
+- [ ] Crear `ExecutiveDashboardService`
+- [ ] Métricas agregadas (usuarios, ahorro total)
+- [ ] Proyecciones con IoT
+- [ ] Gráficos de impacto
+- [ ] Exportación a PDF
+
+#### Entregables
+- Dashboard ejecutivo
+- Reporte de impacto
+- Proyecciones de crecimiento
+
+---
+
+### **SPRINT 10: Preparación IoT** (2 semanas)
+*Objetivo: API para medidores inteligentes*
+
+#### Tareas
+- [ ] Crear tabla `equipment_readings`
+- [ ] Crear `IoTDataService`
+- [ ] API REST para recibir lecturas
+- [ ] Integración con cálculo existente
+- [ ] Documentación de API
+
+#### Entregables
+- API REST documentada
+- Sistema de autenticación de dispositivos
+- Dashboard de dispositivos conectados
+
+---
+
+## 🏗️ Arquitectura de Services
+
+```
+app/Services/
+├── Core/
+│   ├── ConsumptionAnalysisService.php ✅ (EXISTE)
+│   └── ValidationService.php (Sprint 1)
+│
+├── Climate/
+│   ├── ClimateDataService.php (Sprint 2)
+│   └── UsageSuggestionService.php (Sprint 2)
+│
+├── Recommendations/
+│   ├── ReplacementRecommendationService.php (Sprint 3)
+│   ├── StandbyAnalysisService.php (Sprint 5)
+│   └── TimeOfUseService.php (Sprint 6)
+│
+├── Lifestyle/
+│   └── VacationService.php (Sprint 4)
+│
+├── Solar/
+│   ├── SolarWaterHeaterService.php (Sprint 7)
+│   └── SolarPanelService.php (Sprint 8)
+│
+├── Analytics/
+│   └── ExecutiveDashboardService.php (Sprint 9)
+│
+└── IoT/
+    └── IoTDataService.php (Sprint 10)
+```
+
+---
+
+## 📏 Principios de Desarrollo
+
+### 1. **Un Service por Módulo**
+Cada funcionalidad tiene su propio Service. No mezclar lógicas.
+
+### 2. **Testing por Service**
+Cada Service debe tener tests unitarios básicos.
+
+### 3. **Migraciones Incrementales**
+Nunca modificar migraciones antiguas. Crear nuevas.
+
+### 4. **Documentación Continua**
+Actualizar README.md con cada sprint completado.
+
+### 5. **Git Commits Semánticos**
+```
+feat: nueva funcionalidad
+fix: corrección de bug
+refactor: mejora de código
+docs: documentación
+test: tests
+```
+
+---
+
+## 🎯 Hitos Clave
+
+- **Mes 1**: Sprints 1-2 → MVP mejorado con validación y clima
+- **Mes 2**: Sprints 3-4 → Recomendaciones básicas
+- **Mes 3**: Sprints 5-6 → Análisis avanzados
+- **Mes 4**: Sprints 7-8 → Energías renovables
+- **Mes 5**: Sprints 9-10 → Dashboard ejecutivo + IoT ready
+
+---
+
+## 📊 Métricas de Éxito
+
+- **Precisión**: >85% entre calculado y facturado
+- **Adopción**: >70% de usuarios ajustan sus consumos
+- **Ahorro**: Promedio de 15% identificado por usuario
+- **Satisfacción**: NPS >50
+
+---
+
+## 🚨 Riesgos y Mitigaciones
+
+| Riesgo | Probabilidad | Impacto | Mitigación |
+|--------|--------------|---------|------------|
+| Desviación de alcance | Alta | Alto | Roadmap estricto, un sprint a la vez |
+| APIs externas caídas | Media | Medio | Fallbacks, cache de datos |
+| Complejidad técnica | Media | Alto | Arquitectura modular, testing |
+| Falta de datos reales | Alta | Medio | Seeders realistas, beta testers |
+
+---
+
+## 💡 Próximos Pasos Inmediatos
+
+1. Revisar y aprobar este roadmap
+2. Crear `task.md` para Sprint 1
+3. Implementar `ValidationService`
+4. Agregar campos de fecha a equipos
+5. Testing manual del flujo completo
