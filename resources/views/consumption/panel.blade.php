@@ -105,7 +105,7 @@
         <div class="col-md-12">
             <h5 class="mt-4 mb-3"><i class="bi bi-lightbulb"></i> Detalle por Equipo</h5>
             <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle">
+                <table class="table table-bordered">
                     <thead class="table-primary">
                         <tr>
                             <th>Equipo</th>
@@ -113,6 +113,7 @@
                             <th>Habitación</th>
                             <th>Potencia (W)</th>
                             <th>Consumo (kWh)</th>
+                            <th>Ajustado con API de Clima</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -123,6 +124,13 @@
                                 <td>{{ $usage->equipment->room->name ?? '-' }}</td>
                                 <td>{{ $usage->equipment->nominal_power_w ?? '-' }}</td>
                                 <td class="fw-bold text-primary">{{ number_format($consumos[$usage->equipment_id] ?? 0, 2) }}</td>
+                            <td>
+                                @if(($usage->equipment->category->name ?? '') === 'Climatización')
+                                    <span class="badge bg-info">Ajustado con API de Clima</span>
+                                @else
+                                    <span class="badge bg-secondary">-</span>
+                                @endif
+                            </td>
                             </tr>
                         @endforeach
                     </tbody>

@@ -16,6 +16,8 @@ class DatosHogarSeeder extends Seeder
 {
     public function run(): void
     {
+        // Limpiar equipos antes de crear nuevos
+        \App\Models\Equipment::truncate();
         // 1. Find or Create User
         $user = User::first();
         if (!$user) {
@@ -25,8 +27,16 @@ class DatosHogarSeeder extends Seeder
             ]);
         }
 
-        // 2. Find or Create Locality (Capital)
-        $locality = Locality::firstOrCreate(['name' => 'Capital'], ['province_id' => 1]);
+        // 2. Find or Create Locality (Capital de San Juan)
+        $sanJuanProvince = \App\Models\Province::where('name', 'San Juan')->first();
+        $locality = Locality::firstOrCreate(
+            ['name' => 'Capital', 'province_id' => $sanJuanProvince->id],
+            [
+                'postal_code' => '5400',
+                'latitude' => -31.5375,
+                'longitude' => -68.5364
+            ]
+        );
 
         // 3. Create Entity (Hogar)
         $entity = Entity::firstOrCreate(
@@ -154,7 +164,7 @@ class DatosHogarSeeder extends Seeder
 
         // 7. Create Equipment
         $equipmentList = [
-            ['name' => 'Aire Grande', 'category' => 'Climatización', 'room' => 'Cocina / Comedor', 'power' => 2500],
+            ['name' => 'Aire Grande', 'category' => 'Climatización', 'room' => 'Cocina / Comedor', 'power' => 2400],
             ['name' => 'Ventilador de Techo', 'category' => 'Climatización', 'room' => 'Cocina / Comedor', 'power' => 60],
             ['name' => 'Microondas', 'category' => 'Cocina', 'room' => 'Cocina / Comedor', 'power' => 1000],
             ['name' => 'Focos Ventilador', 'category' => 'Iluminación', 'room' => 'Cocina / Comedor', 'power' => 5],

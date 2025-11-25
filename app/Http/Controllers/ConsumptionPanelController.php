@@ -10,14 +10,20 @@ class ConsumptionPanelController extends Controller
     public function index()
     {
         // Usamos la factura id 1 como ejemplo
-        $invoice = Invoice::with(['contract', 'equipmentUsages.equipment'])->find(1);
-        $service = new ConsumptionAnalysisService();
-        $consumos = $service->calculateInvoiceConsumption($invoice);
-        
+        $invoice = Invoice::with(['contract.entity.locality', 'equipmentUsages.equipment.category', 'equipmentUsages.equipment.type'])->find(1);
+        $climateService = new \App\Services\Climate\ClimateDataService();
+        $usageSuggestionService = new \App\Services\Climate\UsageSuggestionService($climateService);
+        $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService);
+
+        $consumos = [];
+        foreach ($invoice->equipmentUsages as $usage) {
+            $consumos[$usage->equipment_id] = $usage->consumption_kwh ?? 0;
+        }
+
         $totalPotencia = $invoice->equipmentUsages->sum(function($usage) {
             return $usage->equipment->nominal_power_w ?? 0;
         });
-        
+
         $totalEnergia = array_sum($consumos);
 
         // Agrupar consumo por categoría
@@ -29,7 +35,7 @@ class ConsumptionPanelController extends Controller
             }
             $consumoPorCategoria[$catName] += $consumos[$usage->equipment_id] ?? 0;
         }
-        
+
         // Ordenar categorías por consumo descendente
         arsort($consumoPorCategoria);
 

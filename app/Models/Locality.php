@@ -10,6 +10,8 @@ class Locality extends Model
         'province_id',
         'name',
         'postal_code',
+        'latitude',
+        'longitude',
     ];
 
     public function province()

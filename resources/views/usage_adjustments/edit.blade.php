@@ -65,19 +65,42 @@
                                     </script>
                                 </td>
                                 <td>
-                                    <div class="d-flex flex-wrap gap-1">
+                                    <div class="mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="all_days_{{ $equipment->id }}" onchange="toggleAllDays{{ $equipment->id }}(this.checked)">
+                                            <label class="form-check-label fw-bold" for="all_days_{{ $equipment->id }}">
+                                                ✓ Todos los días
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-1 day-checkboxes-{{ $equipment->id }}">
                                         @php
                                             $days = ['L' => 'Lunes', 'M' => 'Martes', 'X' => 'Miércoles', 'J' => 'Jueves', 'V' => 'Viernes', 'S' => 'Sábado', 'D' => 'Domingo'];
                                             $selected = isset($usage->use_days_of_week) ? explode(',', $usage->use_days_of_week) : [];
                                         @endphp
                                         @foreach($days as $key => $label)
                                             <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="checkbox" name="usages[{{ $equipment->id }}][use_days_of_week][]" value="{{ $key }}" id="day_{{ $equipment->id }}_{{ $key }}" {{ in_array($key, $selected) ? 'checked' : '' }}>
+                                                <input class="form-check-input day-checkbox-{{ $equipment->id }}" type="checkbox" name="usages[{{ $equipment->id }}][use_days_of_week][]" value="{{ $key }}" id="day_{{ $equipment->id }}_{{ $key }}" {{ in_array($key, $selected) ? 'checked' : '' }} onchange="checkAllDaysStatus{{ $equipment->id }}()">
                                                 <label class="form-check-label" for="day_{{ $equipment->id }}_{{ $key }}">{{ $key }}</label>
                                             </div>
                                         @endforeach
                                     </div>
                                     <small class="text-muted">Selecciona los días de uso semanal. Ejemplo: L M X J V</small>
+                                    <script>
+                                        function toggleAllDays{{ $equipment->id }}(checked) {
+                                            const checkboxes = document.querySelectorAll('.day-checkbox-{{ $equipment->id }}');
+                                            checkboxes.forEach(cb => cb.checked = checked);
+                                        }
+                                        
+                                        function checkAllDaysStatus{{ $equipment->id }}() {
+                                            const checkboxes = document.querySelectorAll('.day-checkbox-{{ $equipment->id }}');
+                                            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                                            document.getElementById('all_days_{{ $equipment->id }}').checked = allChecked;
+                                        }
+                                        
+                                        // Check initial state
+                                        checkAllDaysStatus{{ $equipment->id }}();
+                                    </script>
                                 </td>
                             </tr>
                         @endforeach

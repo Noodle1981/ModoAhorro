@@ -45,3 +45,5 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
 ## Futuro
 - Puedes agregar más planes y cambiar los límites en cualquier momento.
 - El sistema se adapta automáticamente según la configuración de la base de datos.
+
+

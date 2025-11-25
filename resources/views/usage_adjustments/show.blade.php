@@ -36,7 +36,6 @@
                         <th>Potencia (W)</th>
                         <th>Frecuencia</th>
                         <th>Detalle de uso</th>
-                        <th>Consumo Calculado</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -54,9 +53,6 @@
                                     {{ $usage->usage_count }} usos × {{ $usage->avg_use_duration }} h
                                 @endif
                                 </small>
-                            </td>
-                            <td class="text-end fw-bold text-success">
-                                {{ number_format($consumptionDetails[$usage->equipment_id] ?? 0, 2) }} kWh
                             </td>
                         </tr>
                     @endforeach

@@ -43,7 +43,7 @@ class UsageAdjustmentController extends Controller
     }
 
     // Guarda el ajuste realizado
-    public function update(Request $request, $invoiceId)
+    public function update(Request $request, $invoiceId, \App\Services\ConsumptionAnalysisService $consumptionService)
     {
         $invoice = Invoice::findOrFail($invoiceId);
         $usageAdjustment = $invoice->usageAdjustment;
@@ -80,6 +80,22 @@ class UsageAdjustmentController extends Controller
             } else {
                 $usage->use_days_in_period = null;
             }
+
+            // --- Ajuste climático ---
+            // Aquí deberías llamar a tu servicio de clima y obtener el resultado ajustado
+            // Ejemplo:
+            if (isset($data['climate_adjustment'])) {
+                $usage->consumption_kwh = $data['climate_adjustment']['adjusted_consumption'];
+                // Guardar el porcentaje de ajuste climático
+                $usage->climate_adjustment_percent = $data['climate_adjustment']['usage_adjustment_percent'] ?? null;
+            } elseif (isset($data['consumption_kwh'])) {
+                $usage->consumption_kwh = $data['consumption_kwh'];
+                $usage->climate_adjustment_percent = null;
+            }
+
+            $usage->save();
+            // Recalcular consumo automáticamente después de guardar
+            $usage->consumption_kwh = $consumptionService->calculateEquipmentConsumption($usage, $invoice);
             $usage->save();
         }
 

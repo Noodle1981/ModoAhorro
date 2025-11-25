@@ -6,7 +6,7 @@ Sistema SaaS de gestión energética inteligente que evoluciona desde ajuste man
 
 ---
 
-## 📊 Estado Actual (Completado ~75%)
+## 📊 Estado Actual (Completado ~70%)
 
 ### ✅ Módulos Implementados
 
@@ -42,8 +42,71 @@ Sistema SaaS de gestión energética inteligente que evoluciona desde ajuste man
 
 ## 🚀 Roadmap por Sprints
 
+### **SPRINT 0: Factor de Carga y Eficiencia** ⚡ CRÍTICO
+*Objetivo: Cálculos realistas basados en física de equipos*
+
+**Estado:** 🔴 Sin implementar (bloquea precisión del MVP)
+
+#### Problema Actual
+El sistema calcula consumo como: `Potencia × Horas × Días`
+
+Esto asume que:
+- Los equipos funcionan al 100% de su potencia nominal (irreal)
+- No hay pérdidas energéticas (imposible)
+
+**Resultado:** Consumo calculado **476% mayor** que el facturado en casos reales.
+
+#### Solución Técnica
+Implementar fórmula física correcta:
+
+```
+Energía Secundaria (facturada) = (P × h × d × FC) / η
+```
+
+Donde:
+- **P** = Potencia nominal (kW)
+- **h** = Horas de uso
+- **d** = Días en período
+- **FC** = Factor de Carga (duty cycle)
+- **η** = Eficiencia del equipo
+
+#### Tipos de Proceso y Valores
+
+| Tipo de Proceso | Factor de Carga | Eficiencia | Ejemplos |
+|-----------------|----------------|-----------|----------|
+| Motor | 0.7 | 0.9 | Aires, ventiladores, bombas |
+| Resistencia | 1.0 | 0.6 | Calefactores, hornos, estufas |
+| Electrónico | 0.7 | 0.8 | PC, TV, notebooks, decos |
+| Motor & Resistencia | 0.8 | 0.82 | Lavarropas con calentamiento |
+| Magnetrón | 0.7 | 0.6 | Microondas |
+| Electroluminiscencia | 1.0 | 0.9 | LEDs |
+
+#### Tareas
+- [ ] **Migración:** Agregar `process_type`, `load_factor`, `efficiency` a `equipment_types`
+- [ ] **Seeder:** Asignar tipo de proceso a todos los equipos (~70 tipos)
+- [ ] **Servicio:** Modificar `ConsumptionAnalysisService::calculateEquipmentConsumption()`
+- [ ] **Testing:** Verificar que consumo calculado ≈ facturado (85-115%)
+- [ ] **Documentación:** Agregar explicación en panel de consumo
+
+#### Entregables
+- ✅ Cálculos basados en física real
+- ✅ Precisión >85% entre calculado y facturado
+- ✅ Transparencia (mostrar FC y η en tooltips)
+- ✅ Base sólida para todos los módulos de análisis
+
+#### Impacto
+- **Antes:** Aire 2500W × 8h × 70d = 1400 kWh ❌
+- **Después:** (2.5kW × 8h × 70d × 0.7) / 0.9 = **1089 kWh** ✅ (~22% menos, más realista)
+
+**Tiempo estimado:** 2-3 horas  
+**Prioridad:** 🔴 CRÍTICA - Debe completarse antes de Sprint 1
+
+---
+
 ### **SPRINT 1: Validación y Trazabilidad** (1 semana)
 *Objetivo: Evitar desviaciones absurdas y rastrear equipos en el tiempo*
+
+**Dependencia:** ✅ Sprint 0 completado
 
 #### Tareas
 - [ ] Crear `ValidationService` para comparar consumos
@@ -221,7 +284,7 @@ Sistema SaaS de gestión energética inteligente que evoluciona desde ajuste man
 ```
 app/Services/
 ├── Core/
-│   ├── ConsumptionAnalysisService.php ✅ (EXISTE)
+│   ├── ConsumptionAnalysisService.php ✅ (EXISTE - Requiere Sprint 0)
 │   └── ValidationService.php (Sprint 1)
 │
 ├── Climate/
@@ -306,8 +369,8 @@ test: tests
 
 ## 💡 Próximos Pasos Inmediatos
 
-1. Revisar y aprobar este roadmap
-2. Crear `task.md` para Sprint 1
-3. Implementar `ValidationService`
-4. Agregar campos de fecha a equipos
+1. ✅ **Sprint 0: Factor de Carga** (2-3 horas) - BLOQUEANTE
+2. Revisar resultados del Sprint 0 (consumo calculado debe ≈ facturado)
+3. Crear `task.md` para Sprint 1
+4. Implementar `ValidationService`
 5. Testing manual del flujo completo

@@ -12,6 +12,8 @@ return new class extends Migration {
             $table->boolean('is_standby')->default(false);
             $table->decimal('avg_daily_use_hours', 4, 2)->nullable();
             $table->integer('use_days_in_period')->nullable();
+            $table->decimal('consumption_kwh', 10, 2)->nullable();
+            $table->decimal('climate_adjustment_percent', 5, 2)->nullable();
             $table->timestamps();
         });
     }
