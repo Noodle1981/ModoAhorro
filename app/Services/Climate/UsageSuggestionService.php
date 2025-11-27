@@ -66,9 +66,10 @@ class UsageSuggestionService
 
             // El cálculo debe usar la potencia nominal en watts y convertir a kW
             $powerKw = ($equipment->nominal_power_w ?? 0) / 1000;
-            $loadFactor = $equipment->factor_carga ?? 1;
-            $efficiency = $equipment->eficiencia ?? 1;
-            $originalConsumption = $powerKw * ($suggestion['suggested_hours_per_day'] ?? 0) * $effectiveDays * $loadFactor / ($efficiency > 0 ? $efficiency : 1);
+            $loadFactor = $equipment->type->load_factor ?? 1.0;
+            
+            // ✅ CORREGIDO: Sin división por efficiency (igual que ConsumptionAnalysisService)
+            $originalConsumption = $powerKw * ($suggestion['suggested_hours_per_day'] ?? 0) * $effectiveDays * $loadFactor;
             $adjustedConsumption = $originalConsumption * ($usageAdjustmentPercent / 100);
 
             $result = array_merge([

@@ -21,9 +21,11 @@ class ConsumptionPanelController extends Controller
         // Procesar métricas para cada factura
         $invoicesData = [];
         foreach ($invoices as $invoice) {
+            // ✅ CALCULAR EN TIEMPO REAL con el nuevo algoritmo
             $consumos = [];
             foreach ($invoice->equipmentUsages as $usage) {
-                $consumos[$usage->equipment_id] = $usage->consumption_kwh ?? 0;
+                // Usar el servicio para calcular con la nueva fórmula (sin efficiency + ajuste climático)
+                $consumos[$usage->equipment_id] = $service->calculateEquipmentConsumption($usage, $invoice);
             }
 
             $totalEnergia = array_sum($consumos);
@@ -75,9 +77,11 @@ class ConsumptionPanelController extends Controller
         $usageSuggestionService = new \App\Services\Climate\UsageSuggestionService($climateService);
         $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService);
 
+        // ✅ CALCULAR EN TIEMPO REAL con el nuevo algoritmo
         $consumos = [];
         foreach ($invoice->equipmentUsages as $usage) {
-            $consumos[$usage->equipment_id] = $usage->consumption_kwh ?? 0;
+            // Usar el servicio para calcular con la nueva fórmula (sin efficiency + ajuste climático)
+            $consumos[$usage->equipment_id] = $service->calculateEquipmentConsumption($usage, $invoice);
         }
 
         $totalPotencia = $invoice->equipmentUsages->sum(function($usage) {

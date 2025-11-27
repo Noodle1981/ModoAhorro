@@ -14,6 +14,78 @@ use Carbon\Carbon;
 
 class DatosHogarSeeder extends Seeder
 {
+    /**
+     * Encuentra el tipo de equipo más apropiado basándose en el nombre del equipo.
+     * 
+     * @param string $equipmentName Nombre del equipo
+     * @param string $categoryName Nombre de la categoría
+     * @return int|null ID del tipo de equipo o null si no se encuentra
+     */
+    private function findEquipmentType(string $equipmentName, string $categoryName): ?int
+    {
+        // Mapeo de palabras clave → nombre de tipo de equipo
+        $typeMapping = [
+            // Climatización
+            'Aire Grande' => 'Aire Acondicionado (3500 frigorías)',
+            'Aire Portatil' => 'Aire Acondicionado Portátil',
+            'Ventilador de Techo' => 'Ventilador de techo',
+            'Ventilador de Pie' => 'Ventilador de pie',
+            
+            // Electrodomésticos
+            'Heladera' => 'Heladera con Freezer',
+            'Lavarropa' => 'Lavarropas Automático (Agua fría)',
+            
+            // Cocina
+            'Microondas' => 'Microondas',
+            
+            // Entretenimiento
+            'TV Grande' => 'Televisor LED 50" 4K',
+            'TV Chico' => 'Televisor LED 32"',
+            
+            // Oficina/Computación
+            'PC Gamer' => 'PC de Escritorio (CPU + Monitor)',
+            'Monitor PC' => 'Monitor LED 24"',
+            'Monitor' => 'Monitor LED 24"',
+            'Notebook' => 'Notebook / Laptop',
+            'Router' => 'Modem / Router WiFi',
+            
+            // Iluminación - Focos LED
+            'Foco Ventilador' => 'Lámpara LED 5W (Eq. 40W)',
+            'Foco Mesita' => 'Lámpara LED 5W (Eq. 40W)',
+            'Foco Living' => 'Lámpara LED 5W (Eq. 40W)',
+            'Focos Garage' => 'Lámpara LED 5W (Eq. 40W)',
+            'Focos Ventilador' => 'Lámpara LED 5W (Eq. 40W)',
+            'Mesita de Luz' => 'Lámpara LED 5W (Eq. 40W)',
+            'Foco Baño' => 'Lámpara LED 12W (Eq. 75W)',
+            'Foco Led Grande' => 'Lámpara LED 12W (Eq. 75W)',
+            'Foco' => 'Lámpara LED 5W (Eq. 40W)', // Genérico
+            'Tubo Led' => 'Tubo Fluorescente 36W',
+            
+            // Portátiles
+            'Cargador' => 'Cargador de Celular',
+            
+            // Otros
+            'Secador' => 'Secador de Pelo',
+            'Maquina de Afeitar' => 'Afeitadora Eléctrica',
+        ];
+        
+        // Buscar coincidencia exacta primero
+        if (isset($typeMapping[$equipmentName])) {
+            $type = \App\Models\EquipmentType::where('name', $typeMapping[$equipmentName])->first();
+            if ($type) return $type->id;
+        }
+        
+        // Buscar por palabras clave
+        foreach ($typeMapping as $keyword => $typeName) {
+            if (stripos($equipmentName, $keyword) !== false) {
+                $type = \App\Models\EquipmentType::where('name', $typeName)->first();
+                if ($type) return $type->id;
+            }
+        }
+        
+        return null; // Si no encuentra, deja NULL
+    }
+
     public function run(): void
     {
         // Limpiar equipos antes de crear nuevos
@@ -215,6 +287,7 @@ class DatosHogarSeeder extends Seeder
                     'name' => $item['name'],
                     'room_id' => $room->id,
                     'category_id' => $category->id,
+                    'type_id' => $this->findEquipmentType($item['name'], $item['category']), // ✅ NUEVO: Asigna type_id automáticamente
                     'nominal_power_w' => $item['power'],
                     'is_active' => true,
                 ]);

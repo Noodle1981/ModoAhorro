@@ -64,10 +64,11 @@ class EquipmentController extends Controller
 
     public function edit($id)
     {
-        $equipment = Equipment::findOrFail($id);
+        $equipment = Equipment::with('room')->findOrFail($id);
+        $room = $equipment->room;
         $categories = EquipmentCategory::all();
         $types = EquipmentType::all();
-        return view('equipment.edit', compact('equipment', 'categories', 'types'));
+        return view('equipment.edit', compact('equipment', 'categories', 'types', 'room'));
     }
 
     public function update(Request $request, $id)

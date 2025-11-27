@@ -19,13 +19,17 @@ class ConsumptionAnalysisService
     }
     /**
      * Calcula el consumo total de un equipo en un periodo
-     * Implementa la fórmula: Energía Secundaria (kWh) = (P × h × d × FC) / η
+     * 
+     * IMPORTANTE: Esta fórmula calcula el consumo FACTURADO (lo que cobra el medidor).
+     * El medidor mide la potencia de ENTRADA (Input Power), no la potencia útil.
+     * Por lo tanto, NO dividimos por efficiency.
+     * 
+     * Fórmula: Energía (kWh) = P × h × d × FC
      * Donde:
-     * - P = Potencia nominal (kW)
-     * - h = Horas de uso
-     * - d = Días en período
-     * - FC = Factor de Carga (duty cycle)
-     * - η = Eficiencia del equipo
+     * - P = Potencia nominal de etiqueta (kW) - Input Power
+     * - h = Horas de uso promedio diario
+     * - d = Días en el período
+     * - FC = Factor de Uso Real (load_factor) - Incluye duty cycle y carga parcial
      * 
      * @param EquipmentUsage $usage
      * @param Invoice $invoice
@@ -33,29 +37,123 @@ class ConsumptionAnalysisService
      */
     public function calculateEquipmentConsumption(EquipmentUsage $usage, Invoice $invoice): float
     {
+        // 1. Potencia Nominal (Convertida a kW)
+        // Asumimos que nominal_power_w es la potencia de ETIQUETA (Input Power)
         $powerKw = ($usage->equipment->nominal_power_w ?? 0) / 1000;
         
-        // Obtener factor de carga y eficiencia del tipo de equipo
+        // 2. Factor de Uso Real
+        // Combina Load Factor (Potencia real vs Nominal) + Duty Cycle (Tiempo encendido vs apagado)
+        // Si no está definido, usamos 1.0 (peor escenario)
         $equipmentType = $usage->equipment->type;
-        $loadFactor = $equipmentType->load_factor ?? 1.0;
-        $efficiency = $equipmentType->efficiency ?? 1.0;
+        $realUsageFactor = $equipmentType->load_factor ?? 1.0;
         
-        // Si la frecuencia es diaria o semanal, usar la lógica tradicional
+        // CRITICAL FIX: Eliminamos $efficiency de la ecuación de costo/facturación.
+        // El medidor cobra la energía entrante, la ineficiencia ya está incluida en el consumo.
+        
+        // 3. Cálculo para Frecuencia Diaria/Semanal
         if (in_array($usage->usage_frequency, ['diario', 'semanal']) || empty($usage->usage_frequency)) {
             $hoursPerDay = $usage->avg_daily_use_hours ?? 0;
             $daysInPeriod = $usage->use_days_in_period ?? 0;
             
-            // Fórmula con factor de carga y eficiencia
-            // Energía Secundaria = (P × h × d × FC) / η
-            return round(($powerKw * $hoursPerDay * $daysInPeriod * $loadFactor) / $efficiency, 2);
+            // 🌡️ AJUSTE CLIMÁTICO: Para equipos de climatización, ajustar días según clima
+            $effectiveDays = $this->getEffectiveDaysWithClimate($usage, $invoice, $daysInPeriod);
+            
+            // Fórmula: Potencia (kW) * Horas * Días Efectivos * Factor de Uso Real
+            $consumption = $powerKw * $hoursPerDay * $effectiveDays * $realUsageFactor;
+            
+            return round($consumption, 2);
         }
         
-        // Si la frecuencia es quincenal, mensual o puntual, usar cantidad de usos y duración promedio
+        // 4. Cálculo para uso Puntual (quincenal, mensual, puntual)
         $usageCount = $usage->usage_count ?? 0;
         $avgUseDuration = $usage->avg_use_duration ?? 0; // en horas
         
-        // Aplicar factor de carga y eficiencia también aquí
-        return round(($powerKw * $avgUseDuration * $usageCount * $loadFactor) / $efficiency, 2);
+        $consumption = $powerKw * $avgUseDuration * $usageCount * $realUsageFactor;
+        
+        return round($consumption, 2);
+    }
+    
+    /**
+     * Obtiene los días efectivos de uso considerando datos climáticos
+     * Para aires acondicionados: solo cuenta días con temp ≥28°C
+     * Para calefacción: solo cuenta días con temp <15°C
+     * Para otros equipos: retorna los días del período sin ajuste
+     * 
+     * @param EquipmentUsage $usage
+     * @param Invoice $invoice
+     * @param int $totalDays Días totales del período
+     * @return int Días efectivos de uso
+     */
+    private function getEffectiveDaysWithClimate(EquipmentUsage $usage, Invoice $invoice, int $totalDays): int
+    {
+        $category = $usage->equipment->category->name ?? '';
+        
+        // Solo aplicar ajuste climático a equipos de climatización
+        if ($category !== 'Climatización') {
+            return $totalDays;
+        }
+        
+        try {
+            // Obtener coordenadas de la localidad
+            $locality = $invoice->contract->entity->locality;
+            if (!$locality || !$locality->latitude || !$locality->longitude) {
+                \Log::info("🌡️ Sin coordenadas para {$usage->equipment->name}");
+                return $totalDays; // Sin datos de localidad, usar días totales
+            }
+            
+            // Cargar datos climáticos si no existen
+            $this->climateDataService->loadDataForInvoice($invoice);
+            
+            // Obtener estadísticas climáticas
+            $stats = $this->climateDataService->getClimateStats(
+                $locality->latitude,
+                $locality->longitude,
+                \Carbon\Carbon::parse($invoice->start_date),
+                \Carbon\Carbon::parse($invoice->end_date)
+            );
+            
+            // Determinar si es aire acondicionado o calefacción
+            $equipmentName = strtolower($usage->equipment->name);
+            $typeName = strtolower($usage->equipment->type->name ?? '');
+            
+            // Aire acondicionado o ventilador
+            if (str_contains($equipmentName, 'aire') || str_contains($typeName, 'aire acondicionado')) {
+                // Solo usar días calurosos (temp ≥28°C)
+                $effectiveDays = $stats['hot_days_count'] ?? 0;
+                
+                \Log::info("🌡️ AIRE: {$usage->equipment->name} - Días: {$totalDays} → {$effectiveDays} (hot days)");
+                
+                // Si no hay días calurosos, retornar 0 (no debería haberse usado)
+                return max(0, $effectiveDays);
+            }
+            
+            // Calefacción
+            $heatingKeywords = ['caloventor', 'estufa', 'radiador', 'panel calefactor', 'calefactor'];
+            foreach ($heatingKeywords as $keyword) {
+                if (str_contains($equipmentName, $keyword) || str_contains($typeName, $keyword)) {
+                    // Solo usar días fríos (temp <15°C)
+                    $effectiveDays = $stats['cold_days_count'] ?? 0;
+                    \Log::info("🌡️ CALEFACCIÓN: {$usage->equipment->name} - Días: {$totalDays} → {$effectiveDays} (cold days)");
+                    return max(0, $effectiveDays);
+                }
+            }
+            
+            // Ventiladores: usar días calurosos también
+            if (str_contains($equipmentName, 'ventilador') || str_contains($typeName, 'ventilador')) {
+                $effectiveDays = $stats['hot_days_count'] ?? 0;
+                \Log::info("🌡️ VENTILADOR: {$usage->equipment->name} - Días: {$totalDays} → {$effectiveDays} (hot days)");
+                return max(0, $effectiveDays);
+            }
+            
+        } catch (\Exception $e) {
+            // Si hay error al obtener datos climáticos, usar días totales
+            \Log::warning('Error al obtener datos climáticos para ajuste: ' . $e->getMessage());
+            return $totalDays;
+        }
+        
+        // Para otros equipos de climatización sin clasificar, usar días totales
+        \Log::info("🌡️ SIN CLASIFICAR: {$usage->equipment->name} - Días: {$totalDays} (sin ajuste)");
+        return $totalDays;
     }
 
     /**

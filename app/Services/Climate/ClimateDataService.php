@@ -154,8 +154,19 @@ class ClimateDataService
     /**
      * Carga datos automáticamente para una factura
      */
+    private static $cache = [];
+    private static $loadedInvoices = [];
+
+    /**
+     * Carga datos automáticamente para una factura
+     */
     public function loadDataForInvoice(Invoice $invoice): array
     {
+        // Evitar múltiples llamadas para la misma factura en la misma solicitud
+        if (isset(self::$loadedInvoices[$invoice->id])) {
+            return ['success' => true, 'message' => 'Datos ya verificados en esta solicitud', 'cached' => true];
+        }
+
         // Navegar desde Invoice -> Contract -> Entity -> Locality
         $locality = $invoice->contract->entity->locality ?? null;
         
@@ -169,6 +180,19 @@ class ClimateDataService
         $startDate = Carbon::parse($invoice->start_date);
         $endDate = Carbon::parse($invoice->end_date);
 
+        // VERIFICAR SI YA EXISTEN DATOS EN BD ANTES DE LLAMAR A LA API
+        $exists = ClimateData::where('latitude', $locality->latitude)
+            ->where('longitude', $locality->longitude)
+            ->where('date', $startDate->format('Y-m-d'))
+            ->exists();
+
+        // Si ya tenemos datos para el día de inicio, asumimos que tenemos el periodo (o la mayoría)
+        // Esto evita llamar a la API en cada carga de página
+        if ($exists) {
+            self::$loadedInvoices[$invoice->id] = true;
+            return ['success' => true, 'message' => 'Datos encontrados en base de datos', 'cached' => true];
+        }
+
         $result = $this->fetchHistoricalData($locality, $startDate, $endDate);
         
         if (!$result['success']) {
@@ -176,6 +200,7 @@ class ClimateDataService
         }
 
         $inserted = $this->saveWeatherData($locality, $result['data']);
+        self::$loadedInvoices[$invoice->id] = true;
 
         return [
             'success' => true,
@@ -192,19 +217,28 @@ class ClimateDataService
      */
     public function getClimateStats(float $latitude, float $longitude, Carbon $startDate, Carbon $endDate, float $hotThreshold = 28.0, float $coldThreshold = 15.0): array
     {
+        $cacheKey = "{$latitude}_{$longitude}_{$startDate->format('Ymd')}_{$endDate->format('Ymd')}_{$hotThreshold}_{$coldThreshold}";
+
+        if (isset(self::$cache[$cacheKey])) {
+            return self::$cache[$cacheKey];
+        }
+
         $data = ClimateData::where('latitude', $latitude)
             ->where('longitude', $longitude)
             ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get();
         
         if ($data->isEmpty()) {
-            return [
+            $result = [
                 'avg_temp_max' => null,
                 'avg_temp_min' => null,
+                'avg_temp_avg' => null,
                 'hot_days_count' => 0,
                 'cold_days_count' => 0,
                 'total_days' => 0,
             ];
+            self::$cache[$cacheKey] = $result;
+            return $result;
         }
         
         $totalTempMax = 0;
@@ -230,7 +264,7 @@ class ClimateDataService
         
         $count = $data->count();
 
-        return [
+        $result = [
             'avg_temp_max' => round($totalTempMax / $count, 1),
             'avg_temp_min' => round($totalTempMin / $count, 1),
             'avg_temp_avg' => round($totalTempAvg / $count, 1),
@@ -238,5 +272,8 @@ class ClimateDataService
             'cold_days_count' => $coldDays,
             'total_days' => $count,
         ];
+
+        self::$cache[$cacheKey] = $result;
+        return $result;
     }
 }
