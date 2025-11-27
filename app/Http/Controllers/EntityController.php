@@ -12,7 +12,21 @@ class EntityController extends Controller
     public function index()
     {
     $user = auth()->user();
-    $entities = $user->entities()->with('locality')->get();
+    // Load entities with related locality, rooms and equipment
+    $entities = $user->entities()
+        ->with(['locality', 'rooms.equipment'])
+        ->get()
+        ->map(function ($entity) {
+            // Calculate installed power (sum of equipment power in all rooms)
+            $installedPower = $entity->rooms
+                ->flatMap(fn($room) => $room->equipment)
+                ->sum('power');
+            $entity->installed_power = $installedPower;
+            // Power per square meter and available percentage
+            $entity->power_per_m2 = $entity->square_meters ? ($installedPower / $entity->square_meters) : 0;
+            $entity->available_percentage = $entity->square_meters ? max(0, 100 - $entity->power_per_m2) : 0;
+            return $entity;
+        });
     return view('entities.index', compact('entities'));
     }
 
@@ -128,5 +142,49 @@ class EntityController extends Controller
         $entity->delete();
         return redirect()->route('entities.index')
             ->with('success', 'Entidad eliminada correctamente.');
+    }
+
+    /**
+     * Show budget request placeholder for an entity.
+     */
+    public function budget(string $id)
+    {
+        $entity = \App\Models\Entity::with(['locality', 'contracts.invoices.equipmentUsages'])->findOrFail($id);
+        
+        // Get the latest invoice for consumption data
+        $latestInvoice = $entity->contracts()
+            ->with('invoices.equipmentUsages')
+            ->get()
+            ->flatMap(fn($contract) => $contract->invoices)
+            ->sortByDesc('end_date')
+            ->first();
+        
+        // Calculate monthly consumption if invoice exists
+        $monthlyConsumption = null;
+        $invoiceData = null;
+        
+        if ($latestInvoice) {
+            // Calculate total consumption from equipment usages
+            $totalConsumption = $latestInvoice->equipmentUsages->sum('consumption_kwh');
+            
+            // Calculate period in days
+            $startDate = \Carbon\Carbon::parse($latestInvoice->start_date);
+            $endDate = \Carbon\Carbon::parse($latestInvoice->end_date);
+            $periodDays = $startDate->diffInDays($endDate);
+            
+            // Convert to monthly average (30 days)
+            $monthlyConsumption = $periodDays > 0 ? ($totalConsumption / $periodDays) * 30 : $totalConsumption;
+            
+            $invoiceData = [
+                'number' => $latestInvoice->invoice_number,
+                'start_date' => $latestInvoice->start_date,
+                'end_date' => $latestInvoice->end_date,
+                'total_amount' => $latestInvoice->total_amount,
+                'period_days' => $periodDays,
+                'total_consumption' => $totalConsumption,
+            ];
+        }
+        
+        return view('entities.budget', compact('entity', 'monthlyConsumption', 'invoiceData'));
     }
 }

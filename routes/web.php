@@ -18,6 +18,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
 
     // Ruta para el panel de consumo
     Route::get('/consumption/panel', [\App\Http\Controllers\ConsumptionPanelController::class, 'index'])->name('consumption.panel');
+    Route::get('/consumption/panel/{invoice}', [\App\Http\Controllers\ConsumptionPanelController::class, 'show'])->name('consumption.panel.show');
 });
 
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -43,6 +44,8 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
     Route::get('/entities/{entity}/edit', [\App\Http\Controllers\EntityController::class, 'edit'])->name('entities.edit');
     Route::put('/entities/{entity}', [\App\Http\Controllers\EntityController::class, 'update'])->name('entities.update');
     Route::delete('/entities/{entity}', [\App\Http\Controllers\EntityController::class, 'destroy'])->name('entities.destroy');
+    Route::get('/entities/{entity}/budget', [\App\Http\Controllers\EntityController::class, 'budget'])->name('entities.budget');
+
 
     // Rutas para equipos (Equipment)
     Route::get('/equipment/portable', [\App\Http\Controllers\EquipmentController::class, 'createPortable'])->name('equipment.create_portable');
