@@ -586,3 +586,79 @@ private function getCategoryWeight($cat) {
         default => 1.0
     };
 }
+
+# EFFICIENCY_WIZARD.md
+# Especificación: Motor de Auditoría Interactiva
+
+## 1. Objetivo
+Crear un flujo interactivo donde el sistema detecta equipos de alto consumo ("Candidatos") y guía al usuario a través de preguntas específicas para determinar su ineficiencia real y calcular el ROI de un reemplazo.
+
+---
+
+## 2. Base de Datos: Benchmarks y Preguntas
+
+Necesitamos relacionar los tipos de equipos con sus versiones eficientes y las preguntas para diagnosticar el equipo actual.
+
+**Tabla:** `efficiency_benchmarks`
+- `equipment_type_id`: (FK) El equipo del usuario (ej. Aire Acondicionado).
+- `efficient_alternative_name`: "Aire Inverter A++".
+- `market_price`: Precio promedio del nuevo ($600,000).
+- `max_savings_factor`: Ahorro potencial máximo (0.40).
+
+**Configuración de Preguntas (JSON o Tabla):**
+Para cada categoría, definir factores de penalización:
+
+* **Climatización (Aires):**
+    * `is_inverter` (Bool): Si es TRUE, el ahorro potencial baja al 5% (No cambiar). Si es FALSE, ahorro 35%.
+    * `age_range`:
+        * "< 5": Factor 1.0 (Sin penalización extra).
+        * "5-10": Factor 1.1 (10% más ineficiente).
+        * "> 10": Factor 1.25 (25% más ineficiente).
+
+* **Refrigeración (Heladeras):**
+    * `frost_type`:
+        * "No-Frost": Factor 1.0.
+        * "Cíclica/Con Hielo": Factor 1.15.
+    * `seal_condition` (Gomas):
+        * "Bien": Factor 1.0.
+        * "Mal/Rotas": Factor 1.20 (Pierde mucho frío).
+
+---
+
+## 3. Lógica del Servicio: `AuditWizardService`
+
+### Método: `scanForCandidates(User $user)`
+1.  Obtener todos los `EquipmentUsage` del usuario.
+2.  Filtrar solo las "Ballenas" (Consumo > $X o Categoría Clima/Refrigeración).
+3.  Comparar contra `efficiency_benchmarks`.
+4.  Retornar lista de equipos "Auditables".
+
+### Método: `calculateROI(EquipmentUsage $usage, array $answers)`
+1.  **Consumo Base:** Tomar el `kwh_reconciled` (ya ajustado por factura).
+2.  **Factor de Estado Actual:** Calcular según respuestas.
+    * *Ejemplo:* Aire Viejo (>10 años) y No Inverter.
+    * Consumo Real Estimado = Consumo Base * 1.0 (Ya lo tenemos calibrado).
+3.  **Consumo Objetivo (Nuevo):**
+    * Si el actual NO es Inverter, el nuevo SÍ lo es.
+    * Ahorro = Consumo Base * `max_savings_factor` (ej. 0.35).
+4.  **Cálculo Financiero:**
+    * `ahorro_mensual` = Ahorro kWh * Precio kWh.
+    * `roi_meses` = Precio Mercado Nuevo / Ahorro Mensual.
+
+---
+
+## 4. Flujo de Usuario (Frontend)
+
+1.  **Dashboard:** Muestra banner "3 Oportunidades de Ahorro Detectadas".
+2.  **Wizard Paso 1 (Selección):** Muestra los equipos detectados (ej. Aire Cocina, Heladera).
+3.  **Wizard Paso 2 (Diagnóstico):**
+    * Al hacer clic en "Aire Cocina", pregunta:
+        * "¿Es tecnología Inverter?" [Sí/No/No sé]
+        * "¿Qué antigüedad tiene?" [<5 / 5-10 / >10]
+4.  **Wizard Paso 3 (Resultado):**
+    * Muestra tarjeta comparativa:
+        * **Tu Aire Actual:** Costo $25.000/mes.
+        * **Aire Nuevo (Recomendado):** Costo estimado $16.000/mes.
+        * **Ahorro:** $9.000/mes.
+        * **Recupero:** 24 meses.
+    * Call to Action: "Ver Modelos en Oferta".

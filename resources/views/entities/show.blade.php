@@ -12,6 +12,26 @@
                 <li class="list-group-item"><strong>Localidad:</strong> {{ $entity->locality->name ?? '-' }}</li>
                 <li class="list-group-item"><strong>Metros cuadrados:</strong> {{ $entity->square_meters }}</li>
                 <li class="list-group-item"><strong>Cantidad de personas:</strong> {{ $entity->people_count }}</li>
+                
+                @if(isset($climateProfile) && !empty($climateProfile))
+                    <li class="list-group-item bg-light">
+                        <strong><i class="bi bi-sun"></i> Perfil Solar (Promedio):</strong>
+                        <div class="row mt-2">
+                            <div class="col-4 text-center border-end">
+                                <h5 class="mb-0 text-warning">{{ $climateProfile['avg_radiation'] }}</h5>
+                                <small class="text-muted">MJ/m²</small>
+                            </div>
+                            <div class="col-4 text-center border-end">
+                                <h5 class="mb-0 text-warning">{{ $climateProfile['avg_sunshine_duration'] }}</h5>
+                                <small class="text-muted">Horas Sol</small>
+                            </div>
+                            <div class="col-4 text-center">
+                                <h5 class="mb-0 text-secondary">{{ $climateProfile['avg_cloud_cover'] }}%</h5>
+                                <small class="text-muted">Nubosidad</small>
+                            </div>
+                        </div>
+                    </li>
+                @endif
             </ul>
             <div class="mt-3 d-flex gap-2">
                 <a href="{{ route('entities.edit', $entity->id) }}" class="btn btn-warning">

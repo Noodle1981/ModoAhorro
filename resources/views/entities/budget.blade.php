@@ -30,7 +30,7 @@
                                     <h6 class="text-muted">Consumo Mensual Promedio</h6>
                                     @if($monthlyConsumption)
                                         <h3 class="mb-0">{{ number_format($monthlyConsumption, 0) }} kWh</h3>
-                                        <small class="text-muted">Basado en factura #{{ $invoiceData['number'] ?? 'N/A' }}</small>
+                                        <small class="text-muted">Promedio basado en {{ $invoiceCount }} factura(s)</small>
                                     @else
                                         <h3 class="mb-0 text-muted">-- kWh</h3>
                                         <small class="text-muted">Sin datos de facturación</small>
@@ -40,22 +40,40 @@
                         </div>
                     </div>
 
-                    @if($invoiceData)
-                    <div class="alert alert-light border">
-                        <h6><i class="bi bi-receipt"></i> Última Factura</h6>
-                        <div class="row small">
-                            <div class="col-md-3">
-                                <strong>Nº:</strong> #{{ $invoiceData['number'] }}
-                            </div>
-                            <div class="col-md-4">
-                                <strong>Periodo:</strong> {{ \Carbon\Carbon::parse($invoiceData['start_date'])->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($invoiceData['end_date'])->format('d/m/Y') }}
-                            </div>
-                            <div class="col-md-2">
-                                <strong>{{ $invoiceData['period_days'] }}</strong> días
-                            </div>
-                            <div class="col-md-3">
-                                <strong>Total:</strong> ${{ number_format($invoiceData['total_amount'], 2) }}
-                            </div>
+                    @if($invoices->isNotEmpty())
+                    <div class="card mb-4 border-0 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="bi bi-receipt"></i> Historial de Facturas</h6>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Nº Factura</th>
+                                        <th>Periodo</th>
+                                        <th class="text-center">Días</th>
+                                        <th class="text-end">Consumo</th>
+                                        <th class="text-end">Importe</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($invoices as $invoice)
+                                        @php
+                                            $consumption = $invoice->total_energy_consumed_kwh ?? $invoice->equipmentUsages->sum('consumption_kwh');
+                                            $startDate = \Carbon\Carbon::parse($invoice->start_date);
+                                            $endDate = \Carbon\Carbon::parse($invoice->end_date);
+                                            $days = $startDate->diffInDays($endDate);
+                                        @endphp
+                                        <tr>
+                                            <td>#{{ $invoice->invoice_number }}</td>
+                                            <td>{{ $startDate->format('d/m/Y') }} - {{ $endDate->format('d/m/Y') }}</td>
+                                            <td class="text-center">{{ $days }}</td>
+                                            <td class="text-end">{{ number_format($consumption, 0) }} kWh</td>
+                                            <td class="text-end">${{ number_format($invoice->total_amount, 2) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                     @endif
@@ -121,9 +139,36 @@
                             </div>
                         </div>
                         <small class="text-muted d-block mt-2">
-                            * Cálculo estimado basado en tarifa promedio de $150/kWh
+                            * Cálculo estimado basado en tarifa promedio de ${{ number_format($averageTariff, 2) }}/kWh
                         </small>
                     </div>
+
+                    @if(isset($climateProfile) && !empty($climateProfile))
+                    <div class="card mb-4 border-warning shadow-sm">
+                        <div class="card-header bg-warning text-dark bg-opacity-10">
+                            <h6 class="mb-0"><i class="bi bi-sun"></i> Perfil Solar de tu Zona</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-4 border-end">
+                                    <h4 class="mb-0 text-warning">{{ $climateProfile['avg_radiation'] }}</h4>
+                                    <small class="text-muted">Radiación (MJ/m²)</small>
+                                </div>
+                                <div class="col-4 border-end">
+                                    <h4 class="mb-0 text-warning">{{ $climateProfile['avg_sunshine_duration'] }}</h4>
+                                    <small class="text-muted">Horas de Sol</small>
+                                </div>
+                                <div class="col-4">
+                                    <h4 class="mb-0 text-secondary">{{ $climateProfile['avg_cloud_cover'] }}%</h4>
+                                    <small class="text-muted">Nubosidad</small>
+                                </div>
+                            </div>
+                            <div class="mt-3 small text-muted text-center">
+                                <i class="bi bi-info-circle"></i> Datos históricos reales de {{ $entity->locality->name ?? 'tu zona' }}
+                            </div>
+                        </div>
+                    </div>
+                    @endif
 
                     <div class="mt-4 p-3 bg-light rounded">
                         <h6><i class="bi bi-lightbulb"></i> Sobre esta estimación</h6>
@@ -194,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const PANEL_EFFICIENCY = 0.17; // 170W per m²
     const PEAK_SUN_HOURS = 4.5; // hours per day in San Juan
     const DAYS_PER_MONTH = 30;
-    const TARIFF_PER_KWH = 150; // pesos per kWh
+    const TARIFF_PER_KWH = {{ $averageTariff }}; // pesos per kWh
     
     function calculate() {
         const percentage = parseInt(slider.value);

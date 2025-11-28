@@ -48,6 +48,15 @@ class ConsumptionPanelController extends Controller
             // Verificar si está ajustado
             $isAdjusted = $invoice->usageAdjustment && $invoice->usageAdjustment->adjusted;
 
+            // Calcular métricas adicionales
+            $startDate = \Carbon\Carbon::parse($invoice->start_date);
+            $endDate = \Carbon\Carbon::parse($invoice->end_date);
+            $days = $startDate->diffInDays($endDate);
+            $days = $days > 0 ? $days : 1; // Evitar división por cero
+
+            $dailyAvg = $totalEnergia / $days;
+            $costPerKwh = $totalEnergia > 0 ? ($invoice->total_amount / $totalEnergia) : 0;
+
             $invoicesData[] = [
                 'invoice' => $invoice,
                 'totalEnergia' => $totalEnergia,
@@ -55,11 +64,27 @@ class ConsumptionPanelController extends Controller
                 'color' => $color,
                 'mensaje' => $mensaje,
                 'isAdjusted' => $isAdjusted,
+                'dailyAvg' => $dailyAvg,
+                'costPerKwh' => $costPerKwh,
+                'days' => $days,
             ];
         }
 
+        // Preparar datos para el gráfico (Orden cronológico)
+        $chartData = collect($invoicesData)->sortBy(function ($data) {
+            return $data['invoice']->start_date;
+        })->values()->map(function ($data) {
+            return [
+                'label' => \Carbon\Carbon::parse($data['invoice']->start_date)->format('M Y'),
+                'consumption' => round($data['totalEnergia'], 2),
+                'cost' => $data['invoice']->total_amount,
+                'avg' => round($data['dailyAvg'], 2)
+            ];
+        });
+
         return view('consumption.panel', [
             'invoicesData' => $invoicesData,
+            'chartData' => $chartData,
         ]);
     }
 

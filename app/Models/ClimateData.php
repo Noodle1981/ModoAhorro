@@ -18,5 +18,8 @@ class ClimateData extends Model
         'precipitation_mm',
         'wind_speed_kmh',
         'humidity_percent',
+        'cloudcover_mean',
+        'sunshine_duration',
+        'shortwave_radiation_sum',
     ];
 }

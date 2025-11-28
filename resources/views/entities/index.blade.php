@@ -9,55 +9,8 @@
         </a>
     </div>
 
-    <!-- Grupo de tarjetas resumen -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card border-info shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-receipt"></i> Facturas y Ajustes</h5>
-                    <p class="card-text">Revisa el estado de tus facturas y realiza el <b>ajuste de uso</b> para obtener cálculos precisos.</p>
-                    @if(Route::has('usage_adjustments.index') && Auth::check())
-                        <a href="{{ route('usage_adjustments.index') }}" class="btn btn-info">Ir a ajustes de uso</a>
-                    @else
-                        <a href="#" class="btn btn-info disabled">Ajustes no disponibles</a>
-                    @endif
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card border-success shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-bar-chart-line"></i> Consumo energético</h5>
-                    <p class="card-text">Visualiza el consumo estimado y real de tus entidades, compara periodos y optimiza tu gestión.</p>
-                    <a href="{{ route('consumption.panel') }}" class="btn btn-success">Panel de consumo</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card border-warning shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-sun"></i> Paneles Solares</h5>
-                    <p class="card-text">Calcula el potencial de energía solar para tu propiedad y solicita un presupuesto personalizado.</p>
-                    @if($entities->isNotEmpty())
-                        @php
-                            $entity = $entities->first();
-                        @endphp
-                        <div class="mb-2">
-                            <small class="text-muted">Superficie: {{ $entity->square_meters }} m²</small><br>
-                            <small class="text-muted">Potencia instalada: {{ number_format($entity->installed_power ?? 0, 0) }} W</small><br>
-                            <small class="text-muted">W/m²: {{ number_format($entity->power_per_m2 ?? 0, 2) }}</small>
-                        </div>
-                        <a href="{{ route('entities.budget', $entity->id) }}" class="btn btn-warning">
-                            <i class="bi bi-calculator"></i> Pedir presupuesto
-                        </a>
-                    @else
-                        <button class="btn btn-warning disabled">Crear entidad primero</button>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="card shadow">
+    <!-- Tabla de Entidades -->
+    <div class="card shadow mb-4">
         <div class="card-body">
             @if($entities->isEmpty())
                 <p class="text-muted">No hay entidades registradas aún.</p>
@@ -101,5 +54,143 @@
             @endif
         </div>
     </div>
+
+    <!-- Centro de Consumo -->
+    <div class="card mb-4 shadow">
+        <div class="card-header bg-white">
+            <h4 class="mb-0"><i class="bi bi-lightning-charge"></i> Centro de Consumo</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card border-info shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-receipt"></i> Facturas y Ajustes</h5>
+                            <p class="card-text">Revisa el estado de tus facturas y realiza el <b>ajuste de uso</b> para obtener cálculos precisos.</p>
+                            @if(Route::has('usage_adjustments.index') && Auth::check())
+                                <a href="{{ route('usage_adjustments.index') }}" class="btn btn-info">Ir a ajustes de uso</a>
+                            @else
+                                <a href="#" class="btn btn-info disabled">Ajustes no disponibles</a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-success shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-bar-chart-line"></i> Consumo energético</h5>
+                            <p class="card-text">Visualiza el consumo estimado y real de tus entidades, compara periodos y optimiza tu gestión.</p>
+                            <a href="{{ route('consumption.panel') }}" class="btn btn-success">Panel de consumo</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Centro de Recomendaciones -->
+    <div class="card mb-4 shadow">
+        <div class="card-header bg-white">
+            <h4 class="mb-0"><i class="bi bi-lightbulb"></i> Centro de Recomendaciones</h4>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card border-warning shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-sun"></i> Paneles Solares</h5>
+                            <p class="card-text">Calcula el potencial de energía solar para tu propiedad y solicita un presupuesto personalizado.</p>
+                            @if($entities->isNotEmpty())
+                                @php
+                                    $entity = $entities->first();
+                                @endphp
+                                <div class="mb-2">
+                                    <small class="text-muted">Superficie: {{ $entity->square_meters }} m²</small><br>
+                                    <small class="text-muted">Potencia instalada: {{ number_format($entity->installed_power ?? 0, 0) }} W</small><br>
+                                    <small class="text-muted">W/m²: {{ number_format($entity->power_per_m2 ?? 0, 2) }}</small>
+                                </div>
+                                <a href="{{ route('entities.budget', $entity->id) }}" class="btn btn-warning">
+                                    <i class="bi bi-calculator"></i> Pedir presupuesto
+                                </a>
+                            @else
+                                <button class="btn btn-warning disabled">Crear entidad primero</button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                <!-- Calefones Solares -->
+                <div class="col-md-4">
+                    <div class="card border-danger shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-droplet-half"></i> Calefones Solares</h5>
+                            <p class="card-text">Ahorra gas o electricidad calentando agua con energía solar.</p>
+                            <a href="#" class="btn btn-danger">Pedir presupuesto</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Recomendaciones de Reemplazos -->
+                <div class="col-md-4">
+                    <div class="card border-primary shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-arrow-repeat"></i> Reemplazos</h5>
+                            <p class="card-text">Descubre qué equipos conviene renovar por eficiencia energética.</p>
+                            <a href="#" class="btn btn-primary">Ver recomendaciones</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Consumo Fantasma -->
+                <div class="col-md-4">
+                    <div class="card border-secondary shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-power"></i> Consumo Fantasma</h5>
+                            <p class="card-text">Detecta y reduce el consumo de equipos en modo espera (Stand By).</p>
+                            <a href="#" class="btn btn-secondary">Analizar Stand By</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mantenimiento -->
+                <div class="col-md-4">
+                    <div class="card border-info shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-tools"></i> Mantenimiento</h5>
+                            <p class="card-text">Gestiona el mantenimiento de tus aires, lavarropas y heladeras.</p>
+                            <a href="#" class="btn btn-info">Ver mantenimientos</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Vacaciones -->
+                <div class="col-md-4">
+                    <div class="card border-success shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-airplane"></i> Vacaciones</h5>
+                            <p class="card-text">Recomendaciones para ahorrar energía cuando no estás en casa.</p>
+                            <a href="#" class="btn btn-success">Modo Vacaciones</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Usos Horarios -->
+                <div class="col-md-4">
+                    <div class="card border-dark shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-clock"></i> Usos Horarios</h5>
+                            <p class="card-text">Aprovecha las tarifas reducidas usando tus equipos en horarios óptimos.</p>
+                            <a href="#" class="btn btn-dark">Ver horarios</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Medidor Inteligente -->
+                <div class="col-md-4">
+                    <div class="card border-primary shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-speedometer2"></i> Medidor Inteligente</h5>
+                            <p class="card-text">Conoce los beneficios de la medición inteligente y solicítalo.</p>
+                            <a href="#" class="btn btn-primary">Solicitar presupuesto</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 @endsection

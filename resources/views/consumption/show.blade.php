@@ -165,13 +165,17 @@
                                     $note = $calibratedUsage->calibration_note ?? '';
                                 @endphp
 
-                                @if($status === 'PROTECTED_BASE')
+                                @if($status === 'BASE_CRITICAL')
                                     <span class="badge bg-success" title="{{ $note }}">
-                                        <i class="bi bi-shield-lock-fill"></i> Base (Intocable)
+                                        <i class="bi bi-shield-lock-fill"></i> Base Crítica
+                                    </span>
+                                @elseif($status === 'BASE_HEAVY')
+                                    <span class="badge bg-success bg-opacity-75" title="{{ $note }}">
+                                        <i class="bi bi-droplet-fill"></i> Base Pesada
                                     </span>
                                 @elseif($status === 'PROTECTED_ANT')
-                                    <span class="badge bg-success bg-opacity-75" title="{{ $note }}">
-                                        <i class="bi bi-shield-lock"></i> Hormiga (Protegido)
+                                    <span class="badge bg-success bg-opacity-50 text-dark" title="{{ $note }}">
+                                        <i class="bi bi-shield-lock"></i> Hormiga
                                     </span>
                                 @elseif($status === 'WEIGHTED_ADJUSTMENT')
                                     @if(($usage->equipment->category->name ?? '') === 'Climatización')
@@ -183,12 +187,16 @@
                                             <i class="bi bi-sliders"></i> Ballena (Ajustado)
                                         </span>
                                     @endif
-                                @elseif($status === 'CRITICAL_BASE_CUT')
+                                @elseif($status === 'CRITICAL_CUT')
                                     <span class="badge bg-danger" title="{{ $note }}">
-                                        <i class="bi bi-exclamation-octagon"></i> Recorte Crítico Base
+                                        <i class="bi bi-exclamation-octagon"></i> Recorte Crítico
                                     </span>
-                                @elseif($status === 'PARTIAL_ANT_CUT')
+                                @elseif($status === 'HEAVY_CUT')
                                     <span class="badge bg-danger bg-opacity-75" title="{{ $note }}">
+                                        <i class="bi bi-scissors"></i> Recorte Pesado
+                                    </span>
+                                @elseif($status === 'ANT_CUT')
+                                    <span class="badge bg-danger bg-opacity-50" title="{{ $note }}">
                                         <i class="bi bi-scissors"></i> Recorte Hormiga
                                     </span>
                                 @elseif($status === 'ZERO_ALLOCATION')
@@ -210,47 +218,46 @@
 
 <div class="card mt-4 mb-4 shadow-sm">
     <div class="card-header bg-light">
-        <h6 class="mb-0"><i class="bi bi-info-circle"></i> Guía de Ajustes (Motor de Supervivencia)</h6>
+        <h6 class="mb-0"><i class="bi bi-info-circle"></i> Guía de Ajustes (Motor Integral)</h6>
     </div>
     <div class="card-body">
         <div class="row">
-            <div class="col-md-4">
-                <h6 class="text-success"><i class="bi bi-shield-check"></i> Prioridad 1: Base y Hormigas</h6>
+            <div class="col-md-3">
+                <h6 class="text-success"><i class="bi bi-shield-lock-fill"></i> Nivel 1: Base Crítica</h6>
+                <small class="text-muted d-block mb-2">Intocables. Se llenan primero.</small>
                 <ul class="list-unstyled small text-muted">
-                    <li class="mb-1">
-                        <span class="badge bg-success"><i class="bi bi-shield-lock-fill"></i> Base</span>
-                        Heladeras, Routers. Se llenan primero.
-                    </li>
-                    <li>
-                        <span class="badge bg-success bg-opacity-75"><i class="bi bi-shield-lock"></i> Hormiga</span>
-                        Luces, Cargadores. Se llenan después de la Base.
-                    </li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Heladeras</li>
+                    <li><i class="bi bi-check-circle-fill text-success"></i> Routers / Alarmas</li>
                 </ul>
             </div>
-            <div class="col-md-4">
-                <h6 class="text-warning"><i class="bi bi-sliders"></i> Prioridad 2: Ballenas</h6>
+            <div class="col-md-3">
+                <h6 class="text-success text-opacity-75"><i class="bi bi-droplet-fill"></i> Nivel 2: Base Pesada</h6>
+                <small class="text-muted d-block mb-2">Confort básico. Se llenan segundo.</small>
                 <ul class="list-unstyled small text-muted">
-                    <li class="mb-1">
-                        <span class="badge bg-warning text-dark"><i class="bi bi-sliders"></i> Ballena</span>
-                        Aires, PCs, Estufas. Absorben el sobrante de energía.
-                    </li>
-                    <li>
-                        <small><em>Se distribuye por peso: Clima (x3) > Cocina (x1.5) > Resto (x1).</em></small>
-                    </li>
+                    <li><i class="bi bi-check-circle text-success"></i> Termotanques</li>
+                    <li><i class="bi bi-check-circle text-success"></i> Bombas de Agua</li>
                 </ul>
             </div>
-            <div class="col-md-4">
-                <h6 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Escenarios Críticos</h6>
+            <div class="col-md-3">
+                <h6 class="text-success text-opacity-50"><i class="bi bi-shield-check"></i> Nivel 3: Hormigas</h6>
+                <small class="text-muted d-block mb-2">Infraestructura. Se llenan tercero.</small>
                 <ul class="list-unstyled small text-muted">
-                    <li class="mb-1">
-                        <span class="badge bg-danger"><i class="bi bi-scissors"></i> Recorte</span>
-                        Si la factura no cubre ni la Base, se recorta todo.
-                    </li>
-                    <li>
-                        <span class="badge bg-secondary"><i class="bi bi-slash-circle"></i> Apagado</span>
-                        Si no hay energía, las Ballenas se apagan (0 kWh).
-                    </li>
+                    <li><i class="bi bi-lightbulb text-success"></i> Iluminación</li>
+                    <li><i class="bi bi-battery-charging text-success"></i> Cargadores</li>
                 </ul>
+            </div>
+            <div class="col-md-3">
+                <h6 class="text-warning"><i class="bi bi-sliders"></i> Nivel 4: Ballenas</h6>
+                <small class="text-muted d-block mb-2">Ocio y Clima. Absorben variabilidad.</small>
+                <ul class="list-unstyled small text-muted">
+                    <li><i class="bi bi-snow text-warning"></i> Aires / Estufas</li>
+                    <li><i class="bi bi-pc-display text-warning"></i> PC Gamer / TV</li>
+                </ul>
+            </div>
+        </div>
+        <div class="row mt-3 pt-3 border-top">
+            <div class="col-12">
+                <small class="text-muted"><i class="bi bi-info-circle"></i> <strong>Nota:</strong> Los termotanques incluyen ajuste climático automático (x1.25 en invierno, x0.85 en verano).</small>
             </div>
         </div>
     </div>

@@ -63,6 +63,13 @@ class ConsumptionAnalysisService
             
             // Fórmula: Potencia (kW) * Horas * Días Efectivos * Factor de Uso Real
             $consumption = $powerKw * $hoursPerDay * $effectiveDays * $realUsageFactor;
+
+            // 🌡️ AJUSTE CLIMÁTICO ESPECÍFICO: Termotanques
+            // Consumen MÁS en invierno (agua fría, mayor pérdida) y MENOS en verano.
+            if ($this->isWaterHeater($usage)) {
+                $factor = $this->getWaterHeaterClimateFactor($usage, $invoice);
+                $consumption *= $factor;
+            }
             
             return round($consumption, 2);
         }
@@ -157,6 +164,56 @@ class ConsumptionAnalysisService
         // Para otros equipos de climatización sin clasificar, usar días totales
         \Log::info("🌡️ SIN CLASIFICAR: {$usage->equipment->name} - Días: {$totalDays} (sin ajuste)");
         return $totalDays;
+    }
+
+    private function isWaterHeater(EquipmentUsage $usage): bool
+    {
+        $name = strtolower($usage->equipment->name);
+        $type = strtolower($usage->equipment->type->name ?? '');
+        $keywords = ['termotanque', 'calefón', 'calefon', 'bomba de agua'];
+        
+        foreach ($keywords as $keyword) {
+            if (str_contains($name, $keyword) || str_contains($type, $keyword)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function getWaterHeaterClimateFactor(EquipmentUsage $usage, Invoice $invoice): float
+    {
+        try {
+            $locality = $invoice->contract->entity->locality;
+            if (!$locality || !$locality->latitude || !$locality->longitude) {
+                return 1.0;
+            }
+
+            $this->climateDataService->loadDataForInvoice($invoice);
+            
+            $stats = $this->climateDataService->getClimateStats(
+                $locality->latitude,
+                $locality->longitude,
+                \Carbon\Carbon::parse($invoice->start_date),
+                \Carbon\Carbon::parse($invoice->end_date)
+            );
+
+            $avgTemp = $stats['avg_temp_avg'] ?? 20;
+
+            if ($avgTemp < 15) {
+                \Log::info("🌡️ TERMOTANQUE (Invierno): {$usage->equipment->name} - Factor x1.25 (Temp: {$avgTemp}°C)");
+                return 1.25;
+            }
+
+            if ($avgTemp > 25) {
+                \Log::info("🌡️ TERMOTANQUE (Verano): {$usage->equipment->name} - Factor x0.85 (Temp: {$avgTemp}°C)");
+                return 0.85;
+            }
+
+        } catch (\Exception $e) {
+            \Log::warning('Error calculando factor termotanque: ' . $e->getMessage());
+        }
+
+        return 1.0;
     }
 
     /**

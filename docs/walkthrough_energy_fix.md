@@ -9,7 +9,9 @@ Reduce the massive overestimation of energy consumption (previously ~755 kWh vs 
 Verified `App\Services\ConsumptionAnalysisService.php`:
 - Confirmed removal of division by efficiency (since meters measure Input Power).
 - Confirmed usage of `load_factor` as a direct multiplier for "Real Usage".
-- Confirmed integration with Climate API for "Effective Days".
+- **Added Water Heater Climate Logic:**
+    - Winter (<15°C): Factor x1.25 (Cold water inlet, higher heat loss).
+    - Summer (>25°C): Factor x0.85 (Warmer water inlet).
 
 ### 2. Database Update (Load Factors)
 Updated `database/seeders/FixLoadFactorsSeeder.php` to include correct equipment names found in the database:
@@ -22,19 +24,23 @@ Ran the seeder to update `equipment_types` table:
 php artisan db:seed --class=FixLoadFactorsSeeder
 ```
 
-### 3. Survival Engine Calibration (Phase 3: Waterfall Logic)
-Implemented `App\Services\ConsumptionCalibrator.php` with the **"Survival Engine"** logic. This algorithm fills "buckets" of consumption in strict priority order:
+### 3. Comprehensive Calibration Engine (Phase 3: 4-Level Waterfall)
+Implemented `App\Services\ConsumptionCalibrator.php` with the **"Comprehensive Engine"** logic. This algorithm fills "buckets" of consumption in strict priority order:
 
-1.  **Priority 1: Base Load (Intocable)**
+1.  **Level 1: Base Critical (Intocable)**
     *   **Equipments:** Fridge, Router, Alarm.
-    *   **Action:** Filled first. If bill < Base Load, a critical cut is applied.
+    *   **Action:** Filled first. Critical cut only if bill < Base Critical.
 
-2.  **Priority 2: Ants (Protegido)**
-    *   **Equipments:** Lights, Chargers, Small loads (<100W).
-    *   **Action:** Filled second. If bill < (Base + Ants), Ants are cut partially.
+2.  **Level 2: Base Heavy (Confort Básico)**
+    *   **Equipments:** Water Heater (Termotanque), Water Pump.
+    *   **Action:** Filled second. Sacrificed before the Fridge.
 
-3.  **Priority 3: Whales (Ajustable)**
-    *   **Equipments:** AC, PC Gamer, Heating.
+3.  **Level 3: Ants (Infraestructura)**
+    *   **Equipments:** Lights, Chargers (Strictly limited to these).
+    *   **Action:** Filled third. Protected if energy remains.
+
+4.  **Level 4: Whales (Ajustable)**
+    *   **Equipments:** AC, PC Gamer, TV, Heating.
     *   **Action:** Filled last with whatever energy remains.
     *   **Distribution:** Weighted by category (Climate x3, Kitchen x1.5, Others x1).
 

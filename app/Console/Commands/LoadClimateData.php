@@ -49,6 +49,13 @@ class LoadClimateData extends Command
                     $this->info("  • Temp. promedio: " . round($stats['avg_temp_avg'], 1) . "°C");
                     $this->info("  • Temp. máxima: " . round($stats['avg_temp_max'], 1) . "°C");
                     $this->info("  • Temp. mínima: " . round($stats['avg_temp_min'], 1) . "°C");
+                    
+                    if (isset($stats['avg_sunshine_duration'])) {
+                        $this->info("  • Horas de sol promedio: " . round($stats['avg_sunshine_duration'] / 3600, 1) . " h");
+                    }
+                    if (isset($stats['avg_radiation'])) {
+                        $this->info("  • Radiación solar promedio: " . round($stats['avg_radiation'], 2) . " MJ/m²");
+                    }
                 }
                 
             } catch (\Exception $e) {

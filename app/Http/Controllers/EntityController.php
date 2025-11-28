@@ -86,10 +86,16 @@ class EntityController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $id, \App\Services\Climate\ClimateDataService $climateService)
     {
-    $entity = \App\Models\Entity::with('locality')->findOrFail($id);
-    return view('entities.show', compact('entity'));
+        $entity = \App\Models\Entity::with('locality')->findOrFail($id);
+        
+        $climateProfile = null;
+        if ($entity->locality) {
+            $climateProfile = $climateService->getLocalityClimateProfile($entity->locality);
+        }
+        
+        return view('entities.show', compact('entity', 'climateProfile'));
     }
 
     /**
@@ -147,44 +153,75 @@ class EntityController extends Controller
     /**
      * Show budget request placeholder for an entity.
      */
-    public function budget(string $id)
+    public function budget(string $id, \App\Services\Climate\ClimateDataService $climateService)
     {
         $entity = \App\Models\Entity::with(['locality', 'contracts.invoices.equipmentUsages'])->findOrFail($id);
         
-        // Get the latest invoice for consumption data
-        $latestInvoice = $entity->contracts()
+        $climateProfile = null;
+        if ($entity->locality) {
+            $climateProfile = $climateService->getLocalityClimateProfile($entity->locality);
+        }
+        
+        // Get all invoices
+        $invoices = $entity->contracts()
             ->with('invoices.equipmentUsages')
             ->get()
             ->flatMap(fn($contract) => $contract->invoices)
-            ->sortByDesc('end_date')
-            ->first();
+            ->sortByDesc('end_date');
+            
+        $latestInvoice = $invoices->first();
         
-        // Calculate monthly consumption if invoice exists
+        // Calculate averages
         $monthlyConsumption = null;
+        $averageTariff = 150; // Default fallback
+        $invoiceCount = $invoices->count();
         $invoiceData = null;
         
-        if ($latestInvoice) {
-            // Calculate total consumption from equipment usages
-            $totalConsumption = $latestInvoice->equipmentUsages->sum('consumption_kwh');
+        if ($invoiceCount > 0) {
+            $totalConsumption = 0;
+            $totalDays = 0;
+            $totalCost = 0;
             
-            // Calculate period in days
-            $startDate = \Carbon\Carbon::parse($latestInvoice->start_date);
-            $endDate = \Carbon\Carbon::parse($latestInvoice->end_date);
-            $periodDays = $startDate->diffInDays($endDate);
+            foreach ($invoices as $invoice) {
+                $consumption = $invoice->total_energy_consumed_kwh ?? $invoice->equipmentUsages->sum('consumption_kwh');
+                $cost = $invoice->total_amount;
+                
+                $startDate = \Carbon\Carbon::parse($invoice->start_date);
+                $endDate = \Carbon\Carbon::parse($invoice->end_date);
+                $days = $startDate->diffInDays($endDate);
+                
+                if ($days > 0 && $consumption > 0) {
+                    $totalConsumption += $consumption;
+                    $totalDays += $days;
+                    $totalCost += $cost;
+                }
+            }
             
-            // Convert to monthly average (30 days)
-            $monthlyConsumption = $periodDays > 0 ? ($totalConsumption / $periodDays) * 30 : $totalConsumption;
+            if ($totalDays > 0) {
+                $monthlyConsumption = ($totalConsumption / $totalDays) * 30;
+            }
             
-            $invoiceData = [
-                'number' => $latestInvoice->invoice_number,
-                'start_date' => $latestInvoice->start_date,
-                'end_date' => $latestInvoice->end_date,
-                'total_amount' => $latestInvoice->total_amount,
-                'period_days' => $periodDays,
-                'total_consumption' => $totalConsumption,
-            ];
+            if ($totalConsumption > 0) {
+                $averageTariff = $totalCost / $totalConsumption;
+            }
+            
+            if ($latestInvoice) {
+                 $latestConsumption = $latestInvoice->total_energy_consumed_kwh ?? $latestInvoice->equipmentUsages->sum('consumption_kwh');
+                 $startDate = \Carbon\Carbon::parse($latestInvoice->start_date);
+                 $endDate = \Carbon\Carbon::parse($latestInvoice->end_date);
+                 $periodDays = $startDate->diffInDays($endDate);
+
+                $invoiceData = [
+                    'number' => $latestInvoice->invoice_number,
+                    'start_date' => $latestInvoice->start_date,
+                    'end_date' => $latestInvoice->end_date,
+                    'total_amount' => $latestInvoice->total_amount,
+                    'period_days' => $periodDays,
+                    'total_consumption' => $latestConsumption,
+                ];
+            }
         }
         
-        return view('entities.budget', compact('entity', 'monthlyConsumption', 'invoiceData'));
+        return view('entities.budget', compact('entity', 'monthlyConsumption', 'invoiceData', 'invoiceCount', 'averageTariff', 'invoices', 'climateProfile'));
     }
 }

@@ -55,7 +55,7 @@ class ClimateDataService
             'longitude' => $locality->longitude,
             'start_date' => $startDate->format('Y-m-d'),
             'end_date' => $endDate->format('Y-m-d'),
-            'daily' => 'temperature_2m_max,temperature_2m_min,temperature_2m_mean,precipitation_sum,wind_speed_10m_max,relative_humidity_2m_mean',
+            'daily' => 'temperature_2m_max,temperature_2m_min,temperature_2m_mean,precipitation_sum,wind_speed_10m_max,relative_humidity_2m_mean,cloudcover_mean,sunshine_duration,shortwave_radiation_sum',
             'timezone' => 'auto',
         ]);
 
@@ -104,6 +104,9 @@ class ClimateDataService
                 'precipitation_mm' => round($dailyData['precipitation_sum'][$i] ?? 0, 1),
                 'wind_speed_kmh' => round($dailyData['wind_speed_10m_max'][$i] ?? 0, 1),
                 'humidity_percent' => isset($dailyData['relative_humidity_2m_mean'][$i]) ? round($dailyData['relative_humidity_2m_mean'][$i]) : null,
+                'cloudcover_mean' => isset($dailyData['cloudcover_mean'][$i]) ? round($dailyData['cloudcover_mean'][$i]) : null,
+                'sunshine_duration' => isset($dailyData['sunshine_duration'][$i]) ? round($dailyData['sunshine_duration'][$i], 2) : null,
+                'shortwave_radiation_sum' => isset($dailyData['shortwave_radiation_sum'][$i]) ? round($dailyData['shortwave_radiation_sum'][$i], 2) : null,
             ];
         }
 
@@ -142,6 +145,9 @@ class ClimateDataService
                     'precipitation_mm' => $dayData['precipitation_mm'],
                     'wind_speed_kmh' => $dayData['wind_speed_kmh'],
                     'humidity_percent' => $dayData['humidity_percent'],
+                    'cloudcover_mean' => $dayData['cloudcover_mean'],
+                    'sunshine_duration' => $dayData['sunshine_duration'],
+                    'shortwave_radiation_sum' => $dayData['shortwave_radiation_sum'],
                 ]
             );
             
@@ -271,6 +277,46 @@ class ClimateDataService
             'hot_days_count' => $hotDays,
             'cold_days_count' => $coldDays,
             'total_days' => $count,
+            'avg_sunshine_duration' => $data->avg('sunshine_duration'),
+            'avg_radiation' => $data->avg('shortwave_radiation_sum'),
+        ];
+
+        self::$cache[$cacheKey] = $result;
+        return $result;
+    }
+
+    /**
+     * Obtiene el perfil climático histórico de una localidad
+     * 
+     * @param Locality $locality
+     * @return array
+     */
+    public function getLocalityClimateProfile(Locality $locality): array
+    {
+        $cacheKey = "climate_profile_{$locality->latitude}_{$locality->longitude}";
+
+        if (isset(self::$cache[$cacheKey])) {
+            return self::$cache[$cacheKey];
+        }
+
+        $data = ClimateData::where('latitude', $locality->latitude)
+            ->where('longitude', $locality->longitude)
+            ->get();
+
+        if ($data->isEmpty()) {
+            return [];
+        }
+
+        $result = [
+            'avg_temp' => round($data->avg('temp_avg'), 1),
+            'avg_max_temp' => round($data->avg('temp_max'), 1),
+            'avg_min_temp' => round($data->avg('temp_min'), 1),
+            'avg_cloud_cover' => round($data->avg('cloudcover_mean'), 0),
+            'avg_sunshine_duration' => round($data->avg('sunshine_duration') / 3600, 1), // horas
+            'avg_radiation' => round($data->avg('shortwave_radiation_sum'), 2), // MJ/m²
+            'total_days_analyzed' => $data->count(),
+            'data_start_date' => $data->min('date'),
+            'data_end_date' => $data->max('date'),
         ];
 
         self::$cache[$cacheKey] = $result;

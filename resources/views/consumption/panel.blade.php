@@ -13,6 +13,16 @@
             <p class="mt-2">No hay facturas registradas en el sistema.</p>
         </div>
     @else
+        <!-- Gráfico de Tendencia -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Evolución de Consumo Histórico</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="consumptionChart" height="80"></canvas>
+            </div>
+        </div>
+
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             @foreach($invoicesData as $data)
                 @php
@@ -68,11 +78,33 @@
                                 </div>
                             </div>
 
+                            <!-- Métricas Adicionales -->
+                            <div class="row mb-3 g-2 text-center">
+                                <div class="col-6">
+                                    <div class="p-2 border rounded bg-light">
+                                        <small class="text-muted d-block" style="font-size: 0.75rem;">Promedio Diario</small>
+                                        <span class="fw-bold text-dark">
+                                            <i class="bi bi-speedometer2"></i> {{ number_format($data['dailyAvg'], 1) }}
+                                        </span>
+                                        <small class="text-muted" style="font-size: 0.7rem;">kWh/día</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-2 border rounded bg-light">
+                                        <small class="text-muted d-block" style="font-size: 0.75rem;">Eficiencia</small>
+                                        <span class="fw-bold text-dark">
+                                            <i class="bi bi-currency-dollar"></i> {{ number_format($data['costPerKwh'], 0) }}
+                                        </span>
+                                        <small class="text-muted" style="font-size: 0.7rem;">/kWh</small>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Monto total -->
-                            <div class="mb-3 p-2 bg-light rounded">
-                                <div class="d-flex justify-content-between">
+                            <div class="mb-3 p-2 bg-light rounded border">
+                                <div class="d-flex justify-content-between align-items-center">
                                     <span class="text-muted">Monto Total:</span>
-                                    <strong>${{ number_format($invoice->total_amount ?? 0, 2) }}</strong>
+                                    <strong class="fs-5 text-success">${{ number_format($invoice->total_amount ?? 0, 0) }}</strong>
                                 </div>
                             </div>
                         </div>
@@ -100,6 +132,7 @@
                 </div>
             @endforeach
         </div>
+
     @endif
 </div>
 
@@ -109,4 +142,97 @@
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
 }
 </style>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('consumptionChart');
+    if (ctx) {
+        const chartData = @json($chartData ?? []);
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.map(d => d.label),
+                datasets: [
+                    {
+                        label: 'Consumo (kWh)',
+                        data: chartData.map(d => d.consumption),
+                        borderColor: '#0d6efd', // Primary Blue
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Costo ($)',
+                        data: chartData.map(d => d.cost),
+                        borderColor: '#198754', // Success Green
+                        backgroundColor: 'rgba(25, 135, 84, 0.0)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    if (context.datasetIndex === 1) {
+                                        label += '$' + new Intl.NumberFormat('es-AR').format(context.parsed.y);
+                                    } else {
+                                        label += context.parsed.y + ' kWh';
+                                    }
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Energía (kWh)'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Costo ($)'
+                        }
+                    },
+                }
+            }
+        });
+    }
+});
+</script>
 @endsection

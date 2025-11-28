@@ -17,98 +17,129 @@ class ConsumptionCalibrator
      */
     public function calibrate(Collection $usages, float $invoiceTotalKwh): Collection
     {
-        // 1. CLASIFICACIÓN EN 3 NIVELES
-        $baseLoad = $usages->filter(function ($u) {
+        // --- A. CLASIFICACIÓN ---
+        
+        // 1. Base Crítica (Intocables)
+        $baseCritical = $usages->filter(function ($u) {
             $type = $u->equipment->type->name ?? '';
             $fixedTypes = ['Heladera', 'Freezer', 'Router Wifi', 'Modem', 'Alarma', 'Cámaras', 'Camaras'];
             foreach ($fixedTypes as $fixed) {
-                if (stripos($type, $fixed) !== false) {
-                    return true;
-                }
+                if (stripos($type, $fixed) !== false) return true;
             }
             return false;
         });
 
-        $ants = $usages->filter(function ($u) use ($baseLoad) {
-            if ($baseLoad->contains('id', $u->id)) return false;
+        // 2. Base Pesada (Higiene/Confort Básico)
+        $baseHeavy = $usages->filter(function ($u) use ($baseCritical) {
+            if ($baseCritical->contains('id', $u->id)) return false;
+            $type = $u->equipment->type->name ?? '';
+            $heavyTypes = ['Termotanque Eléctrico', 'Calefón Eléctrico', 'Bomba de Agua'];
+            foreach ($heavyTypes as $heavy) {
+                if (stripos($type, $heavy) !== false) return true;
+            }
+            return false;
+        });
+
+        // 3. Hormigas (Luces y Portátiles)
+        $ants = $usages->filter(function ($u) use ($baseCritical, $baseHeavy) {
+            if ($baseCritical->contains('id', $u->id) || $baseHeavy->contains('id', $u->id)) return false;
             $cat = $u->equipment->category->name ?? '';
-            
-            // Regla 1: Iluminación y Portátiles SIEMPRE son Hormigas (Indispensables/Bajo consumo)
-            if ($cat === 'Iluminación' || $cat === 'Portátiles') {
-                return true;
-            }
-
-            // Regla 2: ELIMINAMOS la regla de "< 100W" genérica.
-            // Un Monitor de 50W NO es una hormiga, es parte de la PC.
-            // Una TV de 85W NO es una hormiga, es entretenimiento.
-            
-            return false;
+            // Solo Iluminación y Portátiles
+            return ($cat === 'Iluminación' || $cat === 'Portátiles');
         });
 
-        $whales = $usages->reject(function ($u) use ($baseLoad, $ants) {
-            return $baseLoad->contains('id', $u->id) || $ants->contains('id', $u->id);
-        });
+        // 4. Ballenas (Todo lo demás: PC, Aire, TV, Estufa)
+        $whales = $usages->reject(fn($u) => 
+            $baseCritical->contains('id', $u->id) || 
+            $baseHeavy->contains('id', $u->id) || 
+            $ants->contains('id', $u->id)
+        );
 
-        // 2. CALCULAR NECESIDADES TEÓRICAS
-        $kwhBase = $baseLoad->sum('kwh_estimated');
-        $kwhAnts = $ants->sum('kwh_estimated');
-        $kwhWhales = $whales->sum('kwh_estimated');
+        // --- B. CÁLCULO DE CONSUMOS TEÓRICOS ---
+        $reqCritical = $baseCritical->sum('kwh_estimated');
+        $reqHeavy    = $baseHeavy->sum('kwh_estimated');
+        $reqAnts     = $ants->sum('kwh_estimated');
+        $reqWhales   = $whales->sum('kwh_estimated');
 
-        // 3. PROCESO DE LLENADO DE CUBETAS (WATERFALL)
-        $remainingInvoice = $invoiceTotalKwh;
+        $remaining = $invoiceTotalKwh;
 
-        // --- PASO A: Satisfacer Carga Base (Heladera/Router) ---
-        if ($remainingInvoice >= $kwhBase) {
-            // Hay suficiente para la heladera
-            $baseLoad->each(fn($u) => $this->setReconciled($u, $u->kwh_estimated, 'PROTECTED_BASE'));
-            $remainingInvoice -= $kwhBase;
+        // --- C. DISTRIBUCIÓN EN CASCADA (WATERFALL) ---
+
+        // Paso 1: Base Crítica (Heladera)
+        if ($remaining >= $reqCritical) {
+            $this->fullAlloc($baseCritical, 'BASE_CRITICAL');
+            $remaining -= $reqCritical;
         } else {
-            // ALERTA ROJA: La factura (ej. 50) es menor que la heladera (ej. 80).
-            // Recortamos la heladera porque no queda otra (Medidor roto o casa vacía).
-            $factor = ($kwhBase > 0) ? $remainingInvoice / $kwhBase : 0;
-            $baseLoad->each(fn($u) => $this->setReconciled($u, $u->kwh_estimated * $factor, 'CRITICAL_BASE_CUT'));
-            
-            // Las hormigas y ballenas mueren
-            $ants->merge($whales)->each(fn($u) => $this->setReconciled($u, 0, 'ZERO_ALLOCATION'));
-            
-            return $usages; // FIN PREMATURO
+            // Catástrofe: Factura < Heladera. Recorte total.
+            $this->partialAlloc($baseCritical, $remaining, $reqCritical, 'CRITICAL_CUT');
+            $this->zeroAlloc($baseHeavy->merge($ants)->merge($whales));
+            return $usages;
         }
 
-        // --- PASO B: Satisfacer Hormigas (Luces) ---
-        if ($remainingInvoice >= $kwhAnts) {
-            // Hay suficiente para las luces
-            $ants->each(fn($u) => $this->setReconciled($u, $u->kwh_estimated, 'PROTECTED_ANT'));
-            $remainingInvoice -= $kwhAnts;
+        // Paso 2: Base Pesada (Termotanque)
+        if ($remaining >= $reqHeavy) {
+            $this->fullAlloc($baseHeavy, 'BASE_HEAVY');
+            $remaining -= $reqHeavy;
         } else {
-            // Alcanzó para heladera, pero no para todas las luces.
-            // Recortamos luces, matamos ballenas.
-            $factor = ($kwhAnts > 0) ? $remainingInvoice / $kwhAnts : 0;
-            $ants->each(fn($u) => $this->setReconciled($u, $u->kwh_estimated * $factor, 'PARTIAL_ANT_CUT'));
-            $whales->each(fn($u) => $this->setReconciled($u, 0, 'ZERO_ALLOCATION'));
-            
-            return $usages; // FIN PREMATURO
+            // Alcanzó para Heladera, pero no para Termotanque completo.
+            $this->partialAlloc($baseHeavy, $remaining, $reqHeavy, 'HEAVY_CUT');
+            $this->zeroAlloc($ants->merge($whales));
+            return $usages;
         }
 
-        // --- PASO C: Distribuir Sobrante a Ballenas (Ponderado) ---
-        // Si llegamos aquí, Heladeras y Luces están al 100%. Repartimos lo que sobra.
-        
-        if ($kwhWhales <= 0) return $usages;
+        // Paso 3: Hormigas (Luces)
+        if ($remaining >= $reqAnts) {
+            $this->fullAlloc($ants, 'PROTECTED_ANT');
+            $remaining -= $reqAnts;
+        } else {
+            // Recorte de luces
+            $this->partialAlloc($ants, $remaining, $reqAnts, 'ANT_CUT');
+            $this->zeroAlloc($whales);
+            return $usages;
+        }
 
-        // Calculamos score ponderado para dar prioridad al Aire sobre la PC
-        $totalWeightedScore = $whales->sum(function ($u) {
-            return $u->kwh_estimated * $this->getCategoryWeight($u->equipment->category->name ?? '');
-        });
+        // Paso 4: Ballenas (PC, Aire) - Distribución Ponderada
+        if ($reqWhales > 0) {
+            // Aquí aplicamos los PESOS (Aire x3, PC x0.6)
+            $totalScore = $whales->sum(function ($u) {
+                return $u->kwh_estimated * $this->getCategoryWeight($u->equipment->category->name ?? '');
+            });
 
-        $whales->each(function ($u) use ($remainingInvoice, $totalWeightedScore) {
-            $weight = $this->getCategoryWeight($u->equipment->category->name ?? '');
-            $score = $u->kwh_estimated * $weight;
-            $share = ($totalWeightedScore > 0) ? ($score / $totalWeightedScore) : 0;
-            
-            $this->setReconciled($u, $remainingInvoice * $share, "WEIGHTED_ADJUSTMENT");
-            $u->calibration_status = 'WEIGHTED_ADJUSTMENT'; // Set status explicitly for UI
-        });
+            $whales->each(function ($u) use ($remaining, $totalScore) {
+                $weight = $this->getCategoryWeight($u->equipment->category->name ?? '');
+                $score = $u->kwh_estimated * $weight;
+                $share = ($totalScore > 0) ? ($score / $totalScore) : 0;
+                
+                $this->setReconciled($u, $remaining * $share, "WEIGHTED_ADJUSTMENT");
+                $u->calibration_status = 'WEIGHTED_ADJUSTMENT';
+            });
+        } else {
+             // Si no hay ballenas, el remanente se pierde (o se podría repartir hacia arriba, pero por ahora lo dejamos)
+             // En un sistema perfecto, esto no debería pasar si la factura es mayor que la suma de los anteriores.
+        }
 
         return $usages;
+    }
+
+    // --- Helpers ---
+
+    private function fullAlloc($collection, $note) {
+        $collection->each(function($u) use ($note) {
+            $this->setReconciled($u, $u->kwh_estimated, $note);
+        });
+    }
+
+    private function partialAlloc($collection, $available, $required, $note) {
+        $factor = ($required > 0) ? $available / $required : 0;
+        $collection->each(function($u) use ($factor, $note) {
+            $this->setReconciled($u, $u->kwh_estimated * $factor, $note);
+        });
+    }
+
+    private function zeroAlloc($collection) {
+        $collection->each(function($u) {
+            $this->setReconciled($u, 0, 'ZERO_ALLOCATION');
+        });
     }
 
     // Helper para asignar y guardar estado
