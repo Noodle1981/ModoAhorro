@@ -80,68 +80,7 @@
 
                     <hr>
 
-                    <div class="mb-4">
-                        <label for="roofPercentage" class="form-label">
-                            <strong>¿Qué porcentaje de tu techo está disponible para paneles solares?</strong>
-                        </label>
-                        <div class="d-flex align-items-center gap-3">
-                            <input type="range" class="form-range flex-grow-1" id="roofPercentage" 
-                                   min="0" max="100" value="50" step="5">
-                            <span class="badge bg-warning text-dark fs-5" id="percentageDisplay">50%</span>
-                        </div>
-                        <small class="text-muted">Mueve el control para ajustar el área disponible</small>
-                    </div>
 
-                    <div class="alert alert-info">
-                        <h6><i class="bi bi-info-circle"></i> Estimación de Instalación Solar</h6>
-                        <div class="row mt-3">
-                            <div class="col-md-6 mb-3">
-                                <div class="d-flex justify-content-between">
-                                    <span>Área disponible:</span>
-                                    <strong id="availableArea">225 m²</strong>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="d-flex justify-content-between">
-                                    <span>Capacidad estimada:</span>
-                                    <strong id="systemCapacity">38.3 kWp</strong>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="d-flex justify-content-between">
-                                    <span>Generación mensual:</span>
-                                    <strong class="text-success" id="monthlyGeneration">5,130 kWh</strong>
-                                </div>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <div class="d-flex justify-content-between">
-                                    <span>Generación anual:</span>
-                                    <strong class="text-success" id="annualGeneration">61,560 kWh</strong>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="alert alert-success">
-                        <h6><i class="bi bi-cash-coin"></i> Ahorro Estimado</h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="d-flex justify-content-between">
-                                    <span>Ahorro mensual:</span>
-                                    <strong id="monthlySavings">$--</strong>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="d-flex justify-content-between">
-                                    <span>Ahorro anual:</span>
-                                    <strong id="annualSavings">$--</strong>
-                                </div>
-                            </div>
-                        </div>
-                        <small class="text-muted d-block mt-2">
-                            * Cálculo estimado basado en tarifa promedio de ${{ number_format($averageTariff, 2) }}/kWh
-                        </small>
-                    </div>
 
                     @if(isset($climateProfile) && !empty($climateProfile))
                     <div class="card mb-4 border-warning shadow-sm">
@@ -167,6 +106,93 @@
                                 <i class="bi bi-info-circle"></i> Datos históricos reales de {{ $entity->locality->name ?? 'tu zona' }}
                             </div>
                         </div>
+                    </div>
+                    @endif
+
+                    @if(isset($solarData))
+                    <div class="card mb-4 border-success shadow-sm">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="mb-0"><i class="bi bi-battery-charging"></i> Cobertura Solar Estimada</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert {{ $solarData['scenario'] === 'FULL_COVERAGE' ? 'alert-success' : 'alert-warning' }} mb-3">
+                                <i class="bi {{ $solarData['scenario'] === 'FULL_COVERAGE' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill' }}"></i>
+                                <strong>{{ $solarData['scenario'] === 'FULL_COVERAGE' ? 'Cobertura Total Posible' : 'Cobertura Parcial (Limitada por Espacio)' }}</strong>
+                            </div>
+
+                            <div class="row text-center mb-4">
+                                <div class="col-md-4">
+                                    <h3 class="text-success">{{ $solarData['system_size_kwp'] }} kWp</h3>
+                                    <small class="text-muted">Potencia a Instalar</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <h3 class="text-primary">{{ $solarData['panels_count'] }}</h3>
+                                    <small class="text-muted">Paneles (550W)</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <h3 class="text-info">{{ number_format($solarData['area_used'], 1) }} m²</h3>
+                                    <small class="text-muted">Espacio Requerido</small>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4 small text-muted text-center">
+                                <div class="col-6 border-end">
+                                    <span>Área Declarada: <strong>{{ $entity->square_meters }} m²</strong></span>
+                                </div>
+                                <div class="col-6">
+                                    <span>Área Necesaria (100%): <strong>{{ number_format($solarData['target_area'], 1) }} m²</strong></span>
+                                </div>
+                            </div>
+
+                            <h6 class="border-bottom pb-2 mb-3">Impacto en tu Consumo</h6>
+                            
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Cobertura Verano (Pico)</span>
+                                    <span class="fw-bold">{{ $solarData['coverage_summer'] }}% {{ $solarData['coverage_summer'] < 100 ? '(Reduces tu factura)' : '(Cubres el pico)' }}</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: {{ $solarData['coverage_summer'] }}%"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Cobertura Invierno (Promedio)</span>
+                                    <span class="fw-bold">{{ $solarData['coverage_winter'] }}% {{ $solarData['coverage_winter'] >= 100 ? '(Te sobra energía)' : '' }}</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ $solarData['coverage_winter'] }}%"></div>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <span class="badge bg-light text-dark border">
+                                    <i class="bi bi-lightning-fill text-warning"></i> Generación Mensual Est.: {{ $solarData['monthly_generation_kwh'] }} kWh
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success">
+                        <h6><i class="bi bi-cash-coin"></i> Ahorro Estimado</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between">
+                                    <span>Ahorro mensual (Promedio):</span>
+                                    <strong>${{ number_format($estimatedMonthlySavings, 0, ',', '.') }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between">
+                                    <span>Ahorro anual:</span>
+                                    <strong>${{ number_format($estimatedAnnualSavings, 0, ',', '.') }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            * Cálculo basado en simulación histórica con tarifa de ${{ number_format($averageTariff, 2) }}/kWh
+                        </small>
                     </div>
                     @endif
 
@@ -219,57 +245,5 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const totalArea = {{ $entity->square_meters }};
-    const slider = document.getElementById('roofPercentage');
-    const percentageDisplay = document.getElementById('percentageDisplay');
-    const availableAreaEl = document.getElementById('availableArea');
-    const systemCapacityEl = document.getElementById('systemCapacity');
-    const monthlyGenerationEl = document.getElementById('monthlyGeneration');
-    const annualGenerationEl = document.getElementById('annualGeneration');
-    const monthlySavingsEl = document.getElementById('monthlySavings');
-    const annualSavingsEl = document.getElementById('annualSavings');
-    
-    // Modal elements
-    const modalArea = document.getElementById('modalArea');
-    const modalCapacity = document.getElementById('modalCapacity');
-    
-    // Constants for calculations
-    const PANEL_EFFICIENCY = 0.17; // 170W per m²
-    const PEAK_SUN_HOURS = 4.5; // hours per day in San Juan
-    const DAYS_PER_MONTH = 30;
-    const TARIFF_PER_KWH = {{ $averageTariff }}; // pesos per kWh
-    
-    function calculate() {
-        const percentage = parseInt(slider.value);
-        const availableArea = (totalArea * percentage) / 100;
-        const systemCapacity = availableArea * PANEL_EFFICIENCY; // kWp
-        const dailyGeneration = systemCapacity * PEAK_SUN_HOURS; // kWh/day
-        const monthlyGeneration = dailyGeneration * DAYS_PER_MONTH; // kWh/month
-        const annualGeneration = monthlyGeneration * 12; // kWh/year
-        
-        const monthlySavings = monthlyGeneration * TARIFF_PER_KWH;
-        const annualSavings = annualGeneration * TARIFF_PER_KWH;
-        
-        // Update display
-        percentageDisplay.textContent = percentage + '%';
-        availableAreaEl.textContent = availableArea.toFixed(1) + ' m²';
-        systemCapacityEl.textContent = systemCapacity.toFixed(1) + ' kWp';
-        monthlyGenerationEl.textContent = monthlyGeneration.toLocaleString('es-AR', {maximumFractionDigits: 0}) + ' kWh';
-        annualGenerationEl.textContent = annualGeneration.toLocaleString('es-AR', {maximumFractionDigits: 0}) + ' kWh';
-        monthlySavingsEl.textContent = '$' + monthlySavings.toLocaleString('es-AR', {maximumFractionDigits: 0});
-        annualSavingsEl.textContent = '$' + annualSavings.toLocaleString('es-AR', {maximumFractionDigits: 0});
-        
-        // Update modal
-        modalArea.textContent = availableArea.toFixed(1);
-        modalCapacity.textContent = systemCapacity.toFixed(1);
-    }
-    
-    slider.addEventListener('input', calculate);
-    
-    // Initial calculation
-    calculate();
-});
-</script>
+
 @endsection

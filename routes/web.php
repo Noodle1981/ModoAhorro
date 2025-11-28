@@ -45,6 +45,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
     Route::put('/entities/{entity}', [\App\Http\Controllers\EntityController::class, 'update'])->name('entities.update');
     Route::delete('/entities/{entity}', [\App\Http\Controllers\EntityController::class, 'destroy'])->name('entities.destroy');
     Route::get('/entities/{entity}/budget', [\App\Http\Controllers\EntityController::class, 'budget'])->name('entities.budget');
+    Route::get('/entities/{entity}/solar-water-heater', [App\Http\Controllers\EntityController::class, 'solarWaterHeater'])->name('entities.solar_water_heater');
 
 
     // Rutas para equipos (Equipment)

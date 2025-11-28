@@ -153,7 +153,7 @@ class EntityController extends Controller
     /**
      * Show budget request placeholder for an entity.
      */
-    public function budget(string $id, \App\Services\Climate\ClimateDataService $climateService)
+    public function budget(string $id, \App\Services\Climate\ClimateDataService $climateService, \App\Services\Solar\SolarPowerService $solarService)
     {
         $entity = \App\Models\Entity::with(['locality', 'contracts.invoices.equipmentUsages'])->findOrFail($id);
         
@@ -173,6 +173,7 @@ class EntityController extends Controller
         
         // Calculate averages
         $monthlyConsumption = null;
+        $maxMonthlyConsumption = 0; // New variable for solar calculation
         $averageTariff = 150; // Default fallback
         $invoiceCount = $invoices->count();
         $invoiceData = null;
@@ -194,6 +195,12 @@ class EntityController extends Controller
                     $totalConsumption += $consumption;
                     $totalDays += $days;
                     $totalCost += $cost;
+                    
+                    // Normalize to 30 days for max comparison
+                    $monthlyNormalized = ($consumption / $days) * 30;
+                    if ($monthlyNormalized > $maxMonthlyConsumption) {
+                        $maxMonthlyConsumption = $monthlyNormalized;
+                    }
                 }
             }
             
@@ -222,6 +229,105 @@ class EntityController extends Controller
             }
         }
         
-        return view('entities.budget', compact('entity', 'monthlyConsumption', 'invoiceData', 'invoiceCount', 'averageTariff', 'invoices', 'climateProfile'));
+        // Solar Coverage Calculation
+        $solarData = null;
+        $estimatedMonthlySavings = 0;
+        $estimatedAnnualSavings = 0;
+        
+        if ($monthlyConsumption) {
+            // Use entity square meters as available area (assuming roof is a percentage or user will adjust later)
+            // For now, let's assume 50% of square meters is available roof space if not specified
+            $availableArea = $entity->square_meters * 0.5; 
+            
+            $solarData = $solarService->calculateSolarCoverage(
+                $availableArea, 
+                $maxMonthlyConsumption, 
+                $monthlyConsumption
+            );
+
+            // Robust Savings Calculation (Simulation)
+            // We simulate the solar generation against each historical invoice to get a realistic savings estimate
+            // considering the "Net Billing" limit (cannot save more than consumption in a period unless sold back, 
+            // but usually sold at lower rate. Here we assume simple savings: min(Generation, Consumption))
+            
+            $totalSimulatedSavings = 0;
+            $totalDaysAnalyzed = 0;
+            $dailyGeneration = $solarData['monthly_generation_kwh'] / 30; // Average daily generation
+            
+            foreach ($invoices as $invoice) {
+                $consumption = $invoice->total_energy_consumed_kwh ?? $invoice->equipmentUsages->sum('consumption_kwh');
+                $startDate = \Carbon\Carbon::parse($invoice->start_date);
+                $endDate = \Carbon\Carbon::parse($invoice->end_date);
+                $days = $startDate->diffInDays($endDate);
+                
+                if ($days > 0) {
+                    $dailyConsumption = $consumption / $days;
+                    
+                    // Daily saving is limited by daily consumption (assuming no net metering profit for excess)
+                    // This fixes the "Winter" error where savings > bill
+                    $dailySavingKwh = min($dailyGeneration, $dailyConsumption);
+                    
+                    $periodSavingKwh = $dailySavingKwh * $days;
+                    $periodSavingMoney = $periodSavingKwh * $averageTariff;
+                    
+                    $totalSimulatedSavings += $periodSavingMoney;
+                    $totalDaysAnalyzed += $days;
+                }
+            }
+            
+            if ($totalDaysAnalyzed > 0) {
+                $annualizedSavings = ($totalSimulatedSavings / $totalDaysAnalyzed) * 365;
+                $estimatedAnnualSavings = $annualizedSavings;
+                $estimatedMonthlySavings = $annualizedSavings / 12;
+            } else {
+                // Fallback if no days analyzed (shouldn't happen if monthlyConsumption exists)
+                $estimatedMonthlySavings = $solarData['monthly_generation_kwh'] * $averageTariff;
+                $estimatedAnnualSavings = $estimatedMonthlySavings * 12;
+            }
+        }
+        
+        return view('entities.budget', compact('entity', 'monthlyConsumption', 'invoiceData', 'invoiceCount', 'averageTariff', 'invoices', 'climateProfile', 'solarData', 'estimatedMonthlySavings', 'estimatedAnnualSavings'));
+    }
+
+    public function solarWaterHeater(string $id, \App\Services\Climate\ClimateDataService $climateService, \App\Services\Solar\SolarWaterService $waterService)
+    {
+        $entity = \App\Models\Entity::with(['locality', 'contracts.invoices'])->findOrFail($id);
+        
+        $climateProfile = null;
+        if ($entity->locality) {
+            $climateProfile = $climateService->getLocalityClimateProfile($entity->locality);
+        }
+        
+        // Calculate Average Tariff (copied from budget method logic)
+        // We need this to estimate electric savings
+        $invoices = $entity->contracts()
+            ->with('invoices')
+            ->get()
+            ->flatMap(fn($contract) => $contract->invoices);
+            
+        $averageTariff = 150; // Default fallback
+        
+        if ($invoices->count() > 0) {
+            $totalConsumption = 0;
+            $totalCost = 0;
+            
+            foreach ($invoices as $invoice) {
+                $consumption = $invoice->total_energy_consumed_kwh ?? 0;
+                $cost = $invoice->total_amount;
+                
+                if ($consumption > 0) {
+                    $totalConsumption += $consumption;
+                    $totalCost += $cost;
+                }
+            }
+            
+            if ($totalConsumption > 0) {
+                $averageTariff = $totalCost / $totalConsumption;
+            }
+        }
+        
+        $waterHeaterData = $waterService->calculateWaterHeater($entity->people_count, $climateProfile, $averageTariff);
+        
+        return view('entities.solar_water_heater', compact('entity', 'climateProfile', 'waterHeaterData', 'averageTariff'));
     }
 }

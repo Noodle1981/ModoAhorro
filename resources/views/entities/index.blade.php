@@ -124,7 +124,11 @@
                         <div class="card-body">
                             <h5 class="card-title"><i class="bi bi-droplet-half"></i> Calefones Solares</h5>
                             <p class="card-text">Ahorra gas o electricidad calentando agua con energía solar.</p>
-                            <a href="#" class="btn btn-danger">Pedir presupuesto</a>
+                            @if($entities->isNotEmpty())
+                                <a href="{{ route('entities.solar_water_heater', $entities->first()->id) }}" class="btn btn-danger">Pedir presupuesto</a>
+                            @else
+                                <button class="btn btn-danger disabled">Crear entidad primero</button>
+                            @endif
                         </div>
                     </div>
                 </div>
