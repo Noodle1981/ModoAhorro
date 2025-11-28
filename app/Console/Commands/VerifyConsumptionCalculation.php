@@ -30,7 +30,8 @@ class VerifyConsumptionCalculation extends Command
         
         $climateService = new ClimateDataService();
         $usageSuggestionService = new UsageSuggestionService($climateService);
-        $service = new ConsumptionAnalysisService($usageSuggestionService, $climateService);
+        $calibrator = new \App\Services\ConsumptionCalibrator();
+        $service = new ConsumptionAnalysisService($usageSuggestionService, $climateService, $calibrator);
         
         $total = 0;
         $details = [];

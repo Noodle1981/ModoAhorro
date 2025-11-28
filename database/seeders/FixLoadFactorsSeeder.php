@@ -76,10 +76,8 @@ class FixLoadFactorsSeeder extends Seeder
             
             // --- GRUPO ELECTRÓNICO (Carga Variable) ---
             // PCs: Fuentes de 600W rara vez pasan de 350W reales
-            'PC de Escritorio (Gamer)' => 0.60,
-            'PC de Escritorio (Oficina)' => 0.40,
-            'Notebook' => 0.40,
-            'Notebook Gamer' => 0.50,
+            'PC de Escritorio (CPU + Monitor)' => 0.50, // Promedio entre oficina y gamer
+            'Notebook / Laptop' => 0.40,
             
             // TVs y entretenimiento
             'Televisor LED 32"' => 0.90,
@@ -89,8 +87,7 @@ class FixLoadFactorsSeeder extends Seeder
             'Equipo de Audio' => 0.80,
             
             // Networking (siempre encendidos)
-            'Router WiFi' => 1.00,
-            'Modem' => 1.00,
+            'Modem / Router WiFi' => 1.00,
             
             // --- GRUPO MAGNETRÓN ---
             // Microondas: Si se usa, es al 100%

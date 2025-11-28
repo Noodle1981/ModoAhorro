@@ -9,13 +9,16 @@ class ConsumptionAnalysisService
 {
     protected $usageSuggestionService;
     protected $climateDataService;
+    protected $consumptionCalibrator;
 
     public function __construct(
         \App\Services\Climate\UsageSuggestionService $usageSuggestionService,
-        \App\Services\Climate\ClimateDataService $climateDataService
+        \App\Services\Climate\ClimateDataService $climateDataService,
+        \App\Services\ConsumptionCalibrator $consumptionCalibrator
     ) {
         $this->usageSuggestionService = $usageSuggestionService;
         $this->climateDataService = $climateDataService;
+        $this->consumptionCalibrator = $consumptionCalibrator;
     }
     /**
      * Calcula el consumo total de un equipo en un periodo
@@ -161,6 +164,11 @@ class ConsumptionAnalysisService
      * @param Invoice $invoice
      * @return array [equipo_id => consumo_kwh]
      */
+    /**
+     * Calcula el consumo total de todos los equipos de una factura
+     * @param Invoice $invoice
+     * @return array [equipo_id => consumo_kwh]
+     */
     public function calculateInvoiceConsumption(Invoice $invoice): array
     {
         $result = [];
@@ -168,6 +176,30 @@ class ConsumptionAnalysisService
             $result[$usage->equipment_id] = $this->calculateEquipmentConsumption($usage, $invoice);
         }
         return $result;
+    }
+
+    /**
+     * Calcula y CALIBRA el consumo para coincidir con la factura.
+     * Retorna una colección de objetos EquipmentUsage con la propiedad 'kwh_reconciled' inyectada.
+     * 
+     * @param Invoice $invoice
+     * @return \Illuminate\Support\Collection
+     */
+    public function calibrateInvoiceConsumption(Invoice $invoice): \Illuminate\Support\Collection
+    {
+        // 1. Obtener Usages
+        $usages = $invoice->equipmentUsages()->with(['equipment.category', 'equipment.type'])->get();
+        
+        // 2. Calcular Consumo Teórico (Fase 2)
+        $usages->each(function($usage) use ($invoice) {
+            $usage->kwh_estimated = $this->calculateEquipmentConsumption($usage, $invoice);
+        });
+        
+        // 3. Calibrar (Fase 3)
+        // Pasamos el total de la factura para que el calibrador ajuste
+        $calibratedUsages = $this->consumptionCalibrator->calibrate($usages, $invoice->total_energy_consumed_kwh);
+        
+        return $calibratedUsages;
     }
 
     /**

@@ -16,19 +16,15 @@ class ConsumptionPanelController extends Controller
 
         $climateService = new \App\Services\Climate\ClimateDataService();
         $usageSuggestionService = new \App\Services\Climate\UsageSuggestionService($climateService);
-        $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService);
+        $consumptionCalibrator = new \App\Services\ConsumptionCalibrator();
+        $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService, $consumptionCalibrator);
 
         // Procesar métricas para cada factura
         $invoicesData = [];
         foreach ($invoices as $invoice) {
-            // ✅ CALCULAR EN TIEMPO REAL con el nuevo algoritmo
-            $consumos = [];
-            foreach ($invoice->equipmentUsages as $usage) {
-                // Usar el servicio para calcular con la nueva fórmula (sin efficiency + ajuste climático)
-                $consumos[$usage->equipment_id] = $service->calculateEquipmentConsumption($usage, $invoice);
-            }
-
-            $totalEnergia = array_sum($consumos);
+            // ✅ CALCULAR EN TIEMPO REAL con el nuevo algoritmo (CALIBRADO)
+            $calibratedUsages = $service->calibrateInvoiceConsumption($invoice);
+            $totalEnergia = $calibratedUsages->sum('kwh_reconciled');
             $consumoFacturado = $invoice->total_energy_consumed_kwh ?? 0;
             $porcentaje = $consumoFacturado > 0 ? ($totalEnergia / $consumoFacturado) * 100 : 0;
 
@@ -75,20 +71,20 @@ class ConsumptionPanelController extends Controller
         
         $climateService = new \App\Services\Climate\ClimateDataService();
         $usageSuggestionService = new \App\Services\Climate\UsageSuggestionService($climateService);
-        $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService);
+        $consumptionCalibrator = new \App\Services\ConsumptionCalibrator();
+        $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService, $consumptionCalibrator);
 
-        // ✅ CALCULAR EN TIEMPO REAL con el nuevo algoritmo
-        $consumos = [];
-        foreach ($invoice->equipmentUsages as $usage) {
-            // Usar el servicio para calcular con la nueva fórmula (sin efficiency + ajuste climático)
-            $consumos[$usage->equipment_id] = $service->calculateEquipmentConsumption($usage, $invoice);
-        }
+        // ✅ CALCULAR EN TIEMPO REAL con el nuevo algoritmo (CALIBRADO)
+        $calibratedUsages = $service->calibrateInvoiceConsumption($invoice);
+        
+        // Mapear para la vista: [equipment_id => kwh_reconciled]
+        $consumos = $calibratedUsages->pluck('kwh_reconciled', 'equipment_id')->toArray();
 
         $totalPotencia = $invoice->equipmentUsages->sum(function($usage) {
             return $usage->equipment->nominal_power_w ?? 0;
         });
 
-        $totalEnergia = array_sum($consumos);
+        $totalEnergia = $calibratedUsages->sum('kwh_reconciled');
 
         // Agrupar consumo por categoría
         $consumoPorCategoria = [];
@@ -103,12 +99,33 @@ class ConsumptionPanelController extends Controller
         // Ordenar categorías por consumo descendente
         arsort($consumoPorCategoria);
 
+        // Obtener datos climáticos
+        $locality = $invoice->contract->entity->locality ?? null;
+        $climateStats = null;
+        
+        if ($locality && $locality->latitude && $locality->longitude) {
+            $startDate = \Carbon\Carbon::parse($invoice->start_date);
+            $endDate = \Carbon\Carbon::parse($invoice->end_date);
+            
+            // Asegurar que los datos estén cargados
+            $climateService->loadDataForInvoice($invoice);
+            
+            $climateStats = $climateService->getClimateStats(
+                $locality->latitude,
+                $locality->longitude,
+                $startDate,
+                $endDate
+            );
+        }
+
         return view('consumption.show', [
             'invoice' => $invoice,
             'totalPotencia' => $totalPotencia,
             'totalEnergia' => $totalEnergia,
             'consumos' => $consumos,
             'consumoPorCategoria' => $consumoPorCategoria,
+            'calibratedUsages' => $calibratedUsages, // Pasar la colección completa para acceder a status
+            'climateStats' => $climateStats,
         ]);
     }
 }

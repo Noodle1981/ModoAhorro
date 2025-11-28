@@ -61,35 +61,11 @@
 
                             <!-- Consumos -->
                             <div class="row mb-3">
-                                <div class="col-6 text-center">
-                                    <small class="text-muted d-block">Facturado</small>
-                                    <h4 class="text-primary mb-0">{{ number_format($invoice->total_energy_consumed_kwh ?? 0, 0) }}</h4>
+                                <div class="col-12 text-center">
+                                    <small class="text-muted d-block">Consumo Facturado</small>
+                                    <h3 class="text-primary mb-0 fw-bold">{{ number_format($invoice->total_energy_consumed_kwh ?? 0, 0) }}</h3>
                                     <small class="text-muted">kWh</small>
                                 </div>
-                                <div class="col-6 text-center">
-                                    <small class="text-muted d-block">Calculado</small>
-                                    <h4 class="text-success mb-0">{{ number_format($totalEnergia, 0) }}</h4>
-                                    <small class="text-muted">kWh</small>
-                                </div>
-                            </div>
-
-                            <!-- Indicador de precisión -->
-                            <div class="mb-3">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <small class="text-muted">Precisión</small>
-                                    <small class="fw-bold text-{{ $color }}">{{ number_format($porcentaje, 1) }}%</small>
-                                </div>
-                                <div class="progress" style="height: 8px;">
-                                    <div class="progress-bar bg-{{ $color }}" role="progressbar" 
-                                         style="width: {{ min($porcentaje, 100) }}%;" 
-                                         aria-valuenow="{{ $porcentaje }}" 
-                                         aria-valuemin="0" 
-                                         aria-valuemax="100">
-                                    </div>
-                                </div>
-                                <small class="text-{{ $color }} d-block mt-1">
-                                    <i class="bi bi-info-circle"></i> {{ $mensaje }}
-                                </small>
                             </div>
 
                             <!-- Monto total -->
