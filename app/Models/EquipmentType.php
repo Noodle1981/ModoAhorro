@@ -22,4 +22,9 @@ class EquipmentType extends Model
     {
         return $this->hasMany(Device::class);
     }
+
+    public function maintenanceTasks()
+    {
+        return $this->hasMany(MaintenanceTask::class);
+    }
 }

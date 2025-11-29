@@ -17695,3 +17695,13 @@ Did you mean one of these?
 #62 D:\\ModoAhorroFINAL26\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(23): require_once('D:\\\\ModoAhorroFI...')
 #63 {main}
 "} 
+[2025-11-28 23:41:24] local.INFO: 🌡️ AIRE: Aire Grande - Días: 70 → 36 (hot days)  
+[2025-11-28 23:41:24] local.INFO: 🌡️ VENTILADOR: Ventilador de Techo - Días: 70 → 36 (hot days)  
+[2025-11-28 23:41:24] local.INFO: 🌡️ VENTILADOR: Ventilador de Techo - Días: 70 → 36 (hot days)  
+[2025-11-28 23:41:24] local.INFO: 🌡️ VENTILADOR: Ventilador de Techo - Días: 70 → 36 (hot days)  
+[2025-11-28 23:41:24] local.INFO: 🌡️ VENTILADOR: Ventilador de Techo - Días: 70 → 36 (hot days)  
+[2025-11-28 23:41:24] local.INFO: 🌡️ AIRE: Aire Portatil - Días: 70 → 36 (hot days)  
+[2025-11-29 00:03:37] local.INFO: 🌡️ AIRE: Test AC Unit - Días: 30 → 36 (hot days)  
+[2025-11-29 00:03:38] local.INFO: 🌡️ AIRE: Test AC Unit - Días: 30 → 36 (hot days)  
+[2025-11-29 00:05:35] local.INFO: 🌡️ AIRE: Test AC Unit - Días: 30 → 36 (hot days)  
+[2025-11-29 00:05:35] local.INFO: 🌡️ AIRE: Test AC Unit - Días: 30 → 36 (hot days)  

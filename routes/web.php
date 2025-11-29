@@ -75,5 +75,9 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
         Route::get('/entities/{entity}/invoices/{invoice}/edit', [\App\Http\Controllers\InvoiceController::class, 'edit'])->name('entities.invoices.edit');
         Route::put('/entities/{entity}/invoices/{invoice}', [\App\Http\Controllers\InvoiceController::class, 'update'])->name('entities.invoices.update');
     
+    // Rutas para Mantenimiento
+    Route::get('/entities/{entity}/maintenance', [\App\Http\Controllers\MaintenanceController::class, 'index'])->name('maintenance.index');
+    Route::post('/equipment/{equipment}/maintenance-log', [\App\Http\Controllers\MaintenanceController::class, 'storeLog'])->name('maintenance.log.store');
+    
 
 });

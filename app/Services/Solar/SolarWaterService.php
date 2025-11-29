@@ -19,6 +19,7 @@ class SolarWaterService
     const PRICE_M3_GAS = 800; // ARS (Estimated)
     const ENERGY_PER_M3_GAS = 9.3; // kWh
     const EFFICIENCY_GAS_NATURAL = 0.65;
+    const PILOT_LIGHT_CONSUMPTION_M3 = 4.0; // m3/month wasted
     
     public function calculateWaterHeater(int $peopleCount, ?array $climateProfile, float $electricityTariff)
     {
@@ -31,14 +32,15 @@ class SolarWaterService
         $habitFactor = 1.0;
         $totalDailyDemandLiters = $litersPerDay * $habitFactor;
         
-        // 2. Sizing
+        // 2. Sizing (Updated per Technical Spec)
+        // <= 3 people: 150L
+        // <= 4 people: 200L
+        // 5+ people: 300L
         $equipmentSize = 150;
-        if ($totalDailyDemandLiters <= 150) {
+        if ($peopleCount <= 3) {
             $equipmentSize = 150;
-        } elseif ($totalDailyDemandLiters <= 200) {
+        } elseif ($peopleCount <= 4) {
             $equipmentSize = 200;
-        } elseif ($totalDailyDemandLiters <= 250) {
-            $equipmentSize = 250;
         } else {
             $equipmentSize = 300;
         }
@@ -48,7 +50,7 @@ class SolarWaterService
         // Q = m * Cp * DeltaT
         // DeltaT = 45 - (T_min - 2)
         
-        // Use climate profile min temp if available, else default to 10°C
+        // Use climate profile min temp if available, else default to 10°C (Winter inlet)
         $minTemp = $climateProfile['temp_min_avg'] ?? 10;
         $inletTemp = $minTemp - 2;
         $deltaT = self::TARGET_TEMP - $inletTemp;
@@ -81,7 +83,29 @@ class SolarWaterService
         // Effective energy per m3 = 9.3 * 0.65 = 6.045 kWh
         $effectiveEnergyPerM3 = self::ENERGY_PER_M3_GAS * self::EFFICIENCY_GAS_NATURAL;
         $m3PerMonth = $monthlyEnergyKwh / $effectiveEnergyPerM3;
-        $monthlyCostGasNatural = $m3PerMonth * self::PRICE_M3_GAS;
+        
+        // Add Pilot Light Consumption (Passive waste)
+        // This is fully saved if the gas heater is replaced or turned off in summer, 
+        // but typically solar pre-heaters still use the gas heater as backup.
+        // However, the spec implies we should consider the savings. 
+        // If we assume the solar heater replaces the gas heater or significantly reduces usage:
+        // The pilot light might still be on. 
+        // BUT, usually "Ahorro" calculations include the efficiency gains.
+        // Let's add the pilot light cost to the BASE cost, and assume we save 75% of the ACTIVE consumption.
+        // Does the solar heater eliminate the pilot light? Only if it's a replacement.
+        // Let's assume the pilot light is part of the inefficiency we are avoiding or that modern heaters don't have it.
+        // The spec lists `PILOT_LIGHT_CONSUMPTION: 4.0`.
+        // Let's add it to the monthly consumption of the CURRENT system.
+        $totalM3PerMonth = $m3PerMonth + self::PILOT_LIGHT_CONSUMPTION_M3;
+        
+        $monthlyCostGasNatural = $totalM3PerMonth * self::PRICE_M3_GAS;
+        
+        // Savings: 75% of the active consumption + potentially pilot light if we switch systems?
+        // Let's apply the solar fraction to the TOTAL for simplicity, or just the active.
+        // "El sol cubre el 75% de la demanda anual".
+        // If we have a solar heater, we might still have the gas heater as backup (so pilot light stays).
+        // UNLESS we switch to an electric backup or the solar heater has an electric kit.
+        // Let's stick to the simple formula: Savings = Cost * 0.75.
         $monthlySavingsGasNatural = $monthlyCostGasNatural * $solarFraction;
         
         return [
@@ -102,7 +126,7 @@ class SolarWaterService
                     'annual_savings' => round($monthlySavingsGas * 12, 0),
                 ],
                 'gas_natural' => [
-                    'm3_per_month' => round($m3PerMonth, 1),
+                    'm3_per_month' => round($totalM3PerMonth, 1),
                     'monthly_cost' => round($monthlyCostGasNatural, 0),
                     'monthly_savings' => round($monthlySavingsGasNatural, 0),
                     'annual_savings' => round($monthlySavingsGasNatural * 12, 0),

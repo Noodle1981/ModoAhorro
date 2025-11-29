@@ -100,21 +100,9 @@
                         <div class="card-body">
                             <h5 class="card-title"><i class="bi bi-sun"></i> Paneles Solares</h5>
                             <p class="card-text">Calcula el potencial de energía solar para tu propiedad y solicita un presupuesto personalizado.</p>
-                            @if($entities->isNotEmpty())
-                                @php
-                                    $entity = $entities->first();
-                                @endphp
-                                <div class="mb-2">
-                                    <small class="text-muted">Superficie: {{ $entity->square_meters }} m²</small><br>
-                                    <small class="text-muted">Potencia instalada: {{ number_format($entity->installed_power ?? 0, 0) }} W</small><br>
-                                    <small class="text-muted">W/m²: {{ number_format($entity->power_per_m2 ?? 0, 2) }}</small>
-                                </div>
-                                <a href="{{ route('entities.budget', $entity->id) }}" class="btn btn-warning">
-                                    <i class="bi bi-calculator"></i> Pedir presupuesto
-                                </a>
-                            @else
-                                <button class="btn btn-warning disabled">Crear entidad primero</button>
-                            @endif
+                            <a href="{{ route('entities.budget', $entity->id) }}" class="btn btn-warning">
+                                <i class="bi bi-calculator"></i> Pedir presupuesto
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -158,7 +146,11 @@
                         <div class="card-body">
                             <h5 class="card-title"><i class="bi bi-tools"></i> Mantenimiento</h5>
                             <p class="card-text">Gestiona el mantenimiento de tus aires, lavarropas y heladeras.</p>
-                            <a href="#" class="btn btn-info">Ver mantenimientos</a>
+                            @if($entities->isNotEmpty())
+                                <a href="{{ route('maintenance.index', $entities->first()->id) }}" class="btn btn-info">Ver mantenimientos</a>
+                            @else
+                                <button class="btn btn-info disabled">Crear entidad primero</button>
+                            @endif
                         </div>
                     </div>
                 </div>

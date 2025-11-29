@@ -81,3 +81,64 @@ Aquí comparamos la energía solar vs. el combustible actual.
 * **Combustible Actual:** Gas Envasado.
 * **Ahorro Estimado:** **$35,000 / mes**. (Equivale a dejar de comprar 3 garrafas al mes).
 * **Amortización:** 14 meses.
+
+
+
+# Especificación Técnica: Calculadora de Termotanques Solares
+
+## 1. Objetivo
+Estimar el ahorro económico y energético de instalar un Termotanque Solar, comparándolo contra la fuente de energía actual del usuario (Gas Natural, GLP/Garrafa o Electricidad).
+
+---
+
+## 2. Entradas de Datos (Inputs)
+
+### Del Usuario:
+* `occupants_count` (int): Cantidad de personas en el hogar (Default: 4).
+* `current_source` (enum): 'GAS_NATURAL', 'GAS_GLP', 'ELECTRICITY', 'WOOD'.
+
+### Constantes del Sistema (Configuración):
+* `TARGET_TEMP`: 45°C (Temperatura de uso confortable).
+* `INLET_TEMP_SUMMER`: 20°C.
+* `INLET_TEMP_WINTER`: 10°C.
+* `SOLAR_CONTRIBUTION_YEARLY`: 0.75 (El sol cubre el 75% de la demanda anual).
+* `PILOT_LIGHT_CONSUMPTION`: 4.0 (m³ de gas/mes desperdiciados por piloto).
+
+### Precios de Referencia (Benchmarks - Actualizables):
+* `PRICE_GAS_NATURAL`: $/m³ (Tarifa local).
+* `PRICE_GAS_GLP_10KG`: $ (Precio garrafa promedio).
+* `PRICE_ELECTRICITY`: $/kWh (Del módulo de facturas).
+* `COST_SOLAR_KIT_150L`: $ (Precio equipo + instalación).
+* `COST_SOLAR_KIT_200L`: $.
+* `COST_SOLAR_KIT_300L`: $.
+
+---
+
+## 3. Lógica de Dimensionamiento (Sizing)
+
+Determinar el tamaño del equipo según la cantidad de personas.
+
+**Regla:** 50 Litros por persona.
+
+```php
+public function determineSystemSize(int $people): array
+{
+    if ($people <= 3) return ['liters' => 150, 'cost' => COST_SOLAR_KIT_150L];
+    if ($people <= 4) return ['liters' => 200, 'cost' => COST_SOLAR_KIT_200L];
+    return ['liters' => 300, 'cost' => COST_SOLAR_KIT_300L]; // 5+ personas
+}
+4. Motor Termodinámico (Energy Engine)Calcular cuánta energía se necesita para calentar el agua.Fórmula: $Q (kcal) = Litros \times (T_{final} - T_{inicial})$Conversión: $1000 kcal = 1.163 kWh$.PHPpublic function calculateEnergyDemand(int $people)
+{
+    $dailyLiters = $people * 50;
+    
+    // Promedio ponderado anual de Delta T (45°C - 15°C promedio entrada)
+    $deltaT = 30; 
+    
+    $dailyKcal = $dailyLiters * $deltaT;
+    $dailyKwh = $dailyKcal / 860; // 1 kWh = 860 kcal aprox.
+    
+    return [
+        'monthly_kwh_thermal' => $dailyKwh * 30, // Energía térmica necesaria al mes
+        'liters_per_month' => $dailyLiters * 30
+    ];
+}

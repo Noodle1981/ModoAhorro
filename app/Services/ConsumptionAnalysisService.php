@@ -10,15 +10,18 @@ class ConsumptionAnalysisService
     protected $usageSuggestionService;
     protected $climateDataService;
     protected $consumptionCalibrator;
+    protected $maintenanceService;
 
     public function __construct(
         \App\Services\Climate\UsageSuggestionService $usageSuggestionService,
         \App\Services\Climate\ClimateDataService $climateDataService,
-        \App\Services\ConsumptionCalibrator $consumptionCalibrator
+        \App\Services\ConsumptionCalibrator $consumptionCalibrator,
+        \App\Services\MaintenanceService $maintenanceService
     ) {
         $this->usageSuggestionService = $usageSuggestionService;
         $this->climateDataService = $climateDataService;
         $this->consumptionCalibrator = $consumptionCalibrator;
+        $this->maintenanceService = $maintenanceService;
     }
     /**
      * Calcula el consumo total de un equipo en un periodo
@@ -70,6 +73,10 @@ class ConsumptionAnalysisService
                 $factor = $this->getWaterHeaterClimateFactor($usage, $invoice);
                 $consumption *= $factor;
             }
+
+            // 🛠️ AJUSTE POR MANTENIMIENTO: Penalización por tareas vencidas
+            $maintenancePenalty = $this->maintenanceService->getPenaltyFactor($usage->equipment);
+            $consumption *= $maintenancePenalty;
             
             return round($consumption, 2);
         }
@@ -80,6 +87,10 @@ class ConsumptionAnalysisService
         
         $consumption = $powerKw * $avgUseDuration * $usageCount * $realUsageFactor;
         
+        // 🛠️ AJUSTE POR MANTENIMIENTO: Penalización por tareas vencidas
+        $maintenancePenalty = $this->maintenanceService->getPenaltyFactor($usage->equipment);
+        $consumption *= $maintenancePenalty;
+
         return round($consumption, 2);
     }
     
