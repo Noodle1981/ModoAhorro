@@ -77,6 +77,22 @@ class ConsumptionAnalysisService
             // 🛠️ AJUSTE POR MANTENIMIENTO: Penalización por tareas vencidas
             $maintenancePenalty = $this->maintenanceService->getPenaltyFactor($usage->equipment);
             $consumption *= $maintenancePenalty;
+
+            // 🧛 CÁLCULO DE CONSUMO VAMPIRO (STANDBY)
+            if ($usage->equipment->is_standby) {
+                // Horas en espera = 24 - Horas de uso
+                $standbyHoursPerDay = max(0, 24 - $hoursPerDay);
+                
+                // Potencia de standby (desde el tipo de equipo)
+                $standbyPowerKw = ($usage->equipment->type->default_standby_power_w ?? 0) / 1000;
+                
+                // Consumo Standby = Potencia * Horas * Días
+                // Nota: El standby ocurre todos los días que el equipo está enchufado (daysInPeriod),
+                // independientemente de si se usó activamente o no.
+                $standbyConsumption = $standbyPowerKw * $standbyHoursPerDay * $daysInPeriod;
+                
+                $consumption += $standbyConsumption;
+            }
             
             return round($consumption, 2);
         }

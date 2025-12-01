@@ -46,6 +46,12 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
     Route::delete('/entities/{entity}', [\App\Http\Controllers\EntityController::class, 'destroy'])->name('entities.destroy');
     Route::get('/entities/{entity}/budget', [\App\Http\Controllers\EntityController::class, 'budget'])->name('entities.budget');
     Route::get('/entities/{entity}/solar-water-heater', [App\Http\Controllers\EntityController::class, 'solarWaterHeater'])->name('entities.solar_water_heater');
+    Route::get('/entities/{entity}/standby-analysis', [\App\Http\Controllers\EntityController::class, 'standbyAnalysis'])->name('entities.standby_analysis');
+    Route::patch('/entities/{entity}/standby-analysis/{equipment}/toggle', [\App\Http\Controllers\EntityController::class, 'toggleStandby'])->name('entities.standby.toggle');
+    
+    // Rutas para Modo Vacaciones
+    Route::get('/entities/{entity}/vacation', [\App\Http\Controllers\VacationController::class, 'index'])->name('vacation.index');
+    Route::post('/entities/{entity}/vacation', [\App\Http\Controllers\VacationController::class, 'calculate'])->name('vacation.calculate');
 
 
     // Rutas para equipos (Equipment)

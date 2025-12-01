@@ -136,7 +136,11 @@
                         <div class="card-body">
                             <h5 class="card-title"><i class="bi bi-power"></i> Consumo Fantasma</h5>
                             <p class="card-text">Detecta y reduce el consumo de equipos en modo espera (Stand By).</p>
-                            <a href="#" class="btn btn-secondary">Analizar Stand By</a>
+                            @if($entities->isNotEmpty())
+                                <a href="{{ route('entities.standby_analysis', $entities->first()->id) }}" class="btn btn-secondary">Analizar Stand By</a>
+                            @else
+                                <button class="btn btn-secondary disabled">Crear entidad primero</button>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -160,7 +164,11 @@
                         <div class="card-body">
                             <h5 class="card-title"><i class="bi bi-airplane"></i> Vacaciones</h5>
                             <p class="card-text">Recomendaciones para ahorrar energía cuando no estás en casa.</p>
-                            <a href="#" class="btn btn-success">Modo Vacaciones</a>
+                            @if($entities->isNotEmpty())
+                                <a href="{{ route('vacation.index', $entities->first()->id) }}" class="btn btn-success">Modo Vacaciones</a>
+                            @else
+                                <button class="btn btn-success disabled">Crear entidad primero</button>
+                            @endif
                         </div>
                     </div>
                 </div>

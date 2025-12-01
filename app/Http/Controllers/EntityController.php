@@ -330,4 +330,65 @@ class EntityController extends Controller
         
         return view('entities.solar_water_heater', compact('entity', 'climateProfile', 'waterHeaterData', 'averageTariff'));
     }
+
+    /**
+     * Show Standby Analysis for an entity.
+     */
+    public function standbyAnalysis(string $id)
+    {
+        $entity = \App\Models\Entity::with(['rooms.equipment.type'])->findOrFail($id);
+        
+        // Get all equipment that has standby power capability
+        // EXCLUDING Infrastructure (Modems, Routers) as per user feedback
+        $equipmentList = $entity->rooms
+            ->flatMap(fn($room) => $room->equipment)
+            ->filter(fn($eq) => ($eq->type->default_standby_power_w ?? 0) > 0)
+            ->filter(fn($eq) => !str_contains(strtolower($eq->name), 'modem') && !str_contains(strtolower($eq->name), 'router') && !str_contains(strtolower($eq->type->name ?? ''), 'modem') && !str_contains(strtolower($eq->type->name ?? ''), 'router'));
+            
+        // Calculate totals
+        $totalStandbyKwh = 0;
+        $totalPotentialSavingsKwh = 0;
+        $totalRealizedSavingsKwh = 0;
+        
+        foreach ($equipmentList as $eq) {
+            $standbyPowerKw = ($eq->type->default_standby_power_w ?? 0) / 1000;
+            $standbyHours = max(0, 24 - ($eq->avg_daily_use_hours ?? 0));
+            $monthlyKwh = $standbyPowerKw * $standbyHours * 30;
+            
+            if ($eq->is_standby) {
+                $totalStandbyKwh += $monthlyKwh;
+                $totalPotentialSavingsKwh += $monthlyKwh;
+            } else {
+                $totalRealizedSavingsKwh += $monthlyKwh;
+            }
+        }
+        
+        // Estimate cost (using a default or calculated tariff if available, here using 150 as fallback/standard)
+        $averageTariff = 150; 
+        $totalStandbyCost = $totalStandbyKwh * $averageTariff;
+        $totalPotentialSavings = $totalPotentialSavingsKwh * $averageTariff;
+        $totalRealizedSavings = $totalRealizedSavingsKwh * $averageTariff;
+        
+        return view('entities.standby_analysis', compact('entity', 'equipmentList', 'totalStandbyKwh', 'totalStandbyCost', 'totalPotentialSavings', 'totalRealizedSavings'));
+    }
+
+    /**
+     * Toggle standby status for an equipment.
+     */
+    public function toggleStandby(Request $request, string $entityId, string $equipmentId)
+    {
+        $equipment = \App\Models\Equipment::findOrFail($equipmentId);
+        
+        // Verify equipment belongs to entity (security check)
+        // This is a bit loose, ideally check via room->entity_id
+        if ($equipment->room->entity_id != $entityId) {
+            abort(403, 'Unauthorized action.');
+        }
+        
+        $equipment->is_standby = !$equipment->is_standby;
+        $equipment->save();
+        
+        return redirect()->route('entities.standby_analysis', $entityId)
+            ->with('success', 'Estado de Stand By actualizado.');
+    }
 }
