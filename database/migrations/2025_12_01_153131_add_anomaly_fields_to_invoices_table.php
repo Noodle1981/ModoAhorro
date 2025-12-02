@@ -12,9 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('invoices', function (Blueprint $table) {
-            if (Schema::hasColumn('invoices', 'consumption_kwh')) {
-                $table->dropColumn(['consumption_kwh', 'energy_cost', 'taxes_cost']);
-            }
+            $table->boolean('is_representative')->default(true)->after('total_amount');
+            $table->string('anomaly_reason')->nullable()->after('is_representative');
         });
     }
 
@@ -24,9 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('invoices', function (Blueprint $table) {
-            $table->decimal('consumption_kwh', 10, 3);
-            $table->decimal('energy_cost', 10, 2);
-            $table->decimal('taxes_cost', 10, 2);
+            $table->dropColumn(['is_representative', 'anomaly_reason']);
         });
     }
 };

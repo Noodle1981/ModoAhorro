@@ -14,6 +14,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
     Route::get('/usage-adjustments', [\App\Http\Controllers\UsageAdjustmentController::class, 'index'])->name('usage_adjustments.index');
     Route::get('/usage-adjustments/{invoice}/edit', [\App\Http\Controllers\UsageAdjustmentController::class, 'edit'])->name('usage_adjustments.edit');
     Route::post('/usage-adjustments/{invoice}', [\App\Http\Controllers\UsageAdjustmentController::class, 'update'])->name('usage_adjustments.update');
+    Route::post('/usage-adjustments/{invoice}/unlock', [\App\Http\Controllers\UsageAdjustmentController::class, 'unlock'])->name('usage_adjustments.unlock');
     Route::get('/usage-adjustments/{invoice}', [\App\Http\Controllers\UsageAdjustmentController::class, 'show'])->name('usage_adjustments.show');
 
     // Ruta para el panel de consumo
@@ -52,7 +53,10 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
     // Rutas para Modo Vacaciones
     Route::get('/entities/{entity}/vacation', [\App\Http\Controllers\VacationController::class, 'index'])->name('vacation.index');
     Route::post('/entities/{entity}/vacation', [\App\Http\Controllers\VacationController::class, 'calculate'])->name('vacation.calculate');
+    Route::post('/entities/{entity}/vacation/confirm', [\App\Http\Controllers\VacationController::class, 'confirm'])->name('vacation.confirm');
 
+    Route::get('/entities/{entity}/grid-optimization', [App\Http\Controllers\EntityController::class, 'gridOptimization'])->name('grid.optimization');
+    Route::get('/entities/{entity}/smart-meter-demo', [App\Http\Controllers\SmartMeterController::class, 'demo'])->name('smart_meter.demo');
 
     // Rutas para equipos (Equipment)
     Route::get('/equipment/portable', [\App\Http\Controllers\EquipmentController::class, 'createPortable'])->name('equipment.create_portable');

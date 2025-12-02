@@ -19,9 +19,10 @@ return new class extends Migration
             $table->date('invoice_date')->nullable();
             $table->date('start_date');
             $table->date('end_date');
-            $table->decimal('consumption_kwh', 10, 3);
-            $table->decimal('energy_cost', 10, 2);
-            $table->decimal('taxes_cost', 10, 2);
+            // Campos deprecados removidos para evitar conflictos
+            // $table->decimal('consumption_kwh', 10, 3);
+            // $table->decimal('energy_cost', 10, 2);
+            // $table->decimal('taxes_cost', 10, 2);
             // Consumos
             $table->decimal('energy_consumed_p1_kwh', 10, 3)->nullable();
             $table->decimal('energy_consumed_p2_kwh', 10, 3)->nullable();

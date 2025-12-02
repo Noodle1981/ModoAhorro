@@ -20,6 +20,34 @@
                             <h2 class="display-6 fw-bold text-primary">{{ number_format($invoice->total_energy_consumed_kwh, 2) }} kWh</h2>
                         </div>
                     </div>
+
+                    {{-- Alerta de Desviación --}}
+                    @if(isset($validation) && $validation['alert_level'] === 'danger')
+                        <div class="alert alert-danger mt-3">
+                            <h5><i class="bi bi-exclamation-triangle-fill"></i> Desviación Alta Detectada</h5>
+                            <p>El consumo calculado difiere en <strong>{{ $validation['deviation_percent'] }}%</strong> del facturado.</p>
+                            
+                            @if(count($suggestions) > 0)
+                                <p class="mb-2"><strong>Sugerencias para corregir:</strong></p>
+                                <ul class="mb-3">
+                                    @foreach($suggestions as $suggestion)
+                                        <li>{{ $suggestion }}</li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                            
+                            <a href="{{ route('usage_adjustments.edit', $invoice->id) }}" class="btn btn-warning">
+                                <i class="bi bi-sliders"></i> Revisar Ajustes
+                            </a>
+                        </div>
+                    @elseif(isset($validation) && $validation['alert_level'] === 'warning')
+                        <div class="alert alert-warning mt-3">
+                            <strong><i class="bi bi-exclamation-circle"></i> Desviación moderada:</strong> {{ $validation['deviation_percent'] }}%
+                            <a href="{{ route('usage_adjustments.edit', $invoice->id) }}" class="btn-link ms-2">
+                                Revisar Ajustes
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

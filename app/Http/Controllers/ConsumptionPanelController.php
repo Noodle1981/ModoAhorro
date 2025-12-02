@@ -17,7 +17,8 @@ class ConsumptionPanelController extends Controller
         $climateService = new \App\Services\Climate\ClimateDataService();
         $usageSuggestionService = new \App\Services\Climate\UsageSuggestionService($climateService);
         $consumptionCalibrator = new \App\Services\ConsumptionCalibrator();
-        $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService, $consumptionCalibrator);
+        $maintenanceService = new \App\Services\MaintenanceService();
+        $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService, $consumptionCalibrator, $maintenanceService);
 
         // Procesar métricas para cada factura
         $invoicesData = [];
@@ -97,7 +98,9 @@ class ConsumptionPanelController extends Controller
         $climateService = new \App\Services\Climate\ClimateDataService();
         $usageSuggestionService = new \App\Services\Climate\UsageSuggestionService($climateService);
         $consumptionCalibrator = new \App\Services\ConsumptionCalibrator();
-        $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService, $consumptionCalibrator);
+        $maintenanceService = new \App\Services\MaintenanceService();
+        $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService, $consumptionCalibrator, $maintenanceService);
+        $validationService = new \App\Services\Core\ValidationService();
 
         // ✅ CALCULAR EN TIEMPO REAL con el nuevo algoritmo (CALIBRADO)
         $calibratedUsages = $service->calibrateInvoiceConsumption($invoice);
@@ -110,6 +113,10 @@ class ConsumptionPanelController extends Controller
         });
 
         $totalEnergia = $calibratedUsages->sum('kwh_reconciled');
+
+        // Validación de Desviación
+        $validation = $validationService->calculateDeviation($invoice, $totalEnergia);
+        $suggestions = $validationService->getSuggestions($invoice, $totalEnergia);
 
         // Agrupar consumo por categoría
         $consumoPorCategoria = [];
@@ -151,6 +158,8 @@ class ConsumptionPanelController extends Controller
             'consumoPorCategoria' => $consumoPorCategoria,
             'calibratedUsages' => $calibratedUsages, // Pasar la colección completa para acceder a status
             'climateStats' => $climateStats,
+            'validation' => $validation,
+            'suggestions' => $suggestions,
         ]);
     }
 }

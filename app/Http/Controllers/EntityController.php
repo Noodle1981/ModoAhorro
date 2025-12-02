@@ -183,6 +183,10 @@ class EntityController extends Controller
             $totalDays = 0;
             $totalCost = 0;
             
+            // Variables for representative average (Solar/Projections)
+            $totalRepConsumption = 0;
+            $totalRepDays = 0;
+            
             foreach ($invoices as $invoice) {
                 $consumption = $invoice->total_energy_consumed_kwh ?? $invoice->equipmentUsages->sum('consumption_kwh');
                 $cost = $invoice->total_amount;
@@ -196,16 +200,32 @@ class EntityController extends Controller
                     $totalDays += $days;
                     $totalCost += $cost;
                     
-                    // Normalize to 30 days for max comparison
-                    $monthlyNormalized = ($consumption / $days) * 30;
-                    if ($monthlyNormalized > $maxMonthlyConsumption) {
-                        $maxMonthlyConsumption = $monthlyNormalized;
+                    // Only include in representative average if flagged true (default)
+                    if ($invoice->is_representative) {
+                        $totalRepConsumption += $consumption;
+                        $totalRepDays += $days;
+                        
+                        // Normalize to 30 days for max comparison (only representative ones?)
+                        // User didn't specify, but usually max consumption for sizing should probably exclude anomalies if they are low.
+                        // If anomaly is high usage, maybe keep it? But usually vacation is low usage.
+                        // Let's stick to representative for the "Average" which is the key metric for solar savings.
+                        // For Max, we might still want the absolute max to ensure system covers peaks, 
+                        // unless the peak was an anomaly (e.g. broken meter).
+                        // Let's use representative for Max too to be safe/consistent.
+                        $monthlyNormalized = ($consumption / $days) * 30;
+                        if ($monthlyNormalized > $maxMonthlyConsumption) {
+                            $maxMonthlyConsumption = $monthlyNormalized;
+                        }
                     }
                 }
             }
             
-            if ($totalDays > 0) {
-                $monthlyConsumption = ($totalConsumption / $totalDays) * 30;
+            // Calculate average based on representative data
+            if ($totalRepDays > 0) {
+                $monthlyConsumption = ($totalRepConsumption / $totalRepDays) * 30;
+            } elseif ($totalDays > 0) {
+                 // Fallback if all are anomalous (unlikely but possible), use total
+                 $monthlyConsumption = ($totalConsumption / $totalDays) * 30;
             }
             
             if ($totalConsumption > 0) {
@@ -337,7 +357,6 @@ class EntityController extends Controller
     public function standbyAnalysis(string $id)
     {
         $entity = \App\Models\Entity::with(['rooms.equipment.type'])->findOrFail($id);
-        
         // Get all equipment that has standby power capability
         // EXCLUDING Infrastructure (Modems, Routers) as per user feedback
         $equipmentList = $entity->rooms
@@ -390,5 +409,36 @@ class EntityController extends Controller
         
         return redirect()->route('entities.standby_analysis', $entityId)
             ->with('success', 'Estado de Stand By actualizado.');
+    }
+
+    /**
+     * Show Grid Optimization Analysis.
+     */
+    public function gridOptimization(string $id, \App\Services\GridOptimizerService $optimizer)
+    {
+        $entity = \App\Models\Entity::with(['rooms.equipment.type'])->findOrFail($id);
+        
+        $tariffScheme = \App\Models\TariffScheme::with('bands')->first(); // Default to the first one (seeded)
+        
+        if (!$tariffScheme) {
+            // Fallback or error
+            // For now, let's just return empty or redirect
+             return redirect()->back()->with('error', 'No hay esquemas tarifarios disponibles. Ejecute el seeder.');
+        }
+
+        // Get active equipment usages simulation
+        $equipments = $entity->rooms->flatMap(fn($r) => $r->equipment);
+        
+        $usages = $equipments->map(function($eq) {
+            return (object) [
+                'equipment' => $eq,
+                'kwh_reconciled' => ($eq->type->default_power_watts ?? 0) * ($eq->type->default_avg_daily_use_hours ?? 0) * 30 / 1000,
+                'daily_kwh' => ($eq->type->default_power_watts ?? 0) * ($eq->type->default_avg_daily_use_hours ?? 0) / 1000
+            ];
+        });
+
+        $opportunities = $optimizer->calculateShiftSavings($usages, $tariffScheme);
+
+        return view('grid.optimization', compact('entity', 'opportunities', 'tariffScheme'));
     }
 }

@@ -32,7 +32,8 @@ class VerifyCalibration extends Command
         $climateService = new ClimateDataService();
         $usageSuggestionService = new UsageSuggestionService($climateService);
         $calibrator = new ConsumptionCalibrator();
-        $service = new ConsumptionAnalysisService($usageSuggestionService, $climateService, $calibrator);
+        $maintenanceService = new \App\Services\MaintenanceService();
+        $service = new ConsumptionAnalysisService($usageSuggestionService, $climateService, $calibrator, $maintenanceService);
         
         // Execute Calibration
         $calibratedUsages = $service->calibrateInvoiceConsumption($invoice);

@@ -12,6 +12,7 @@ class EquipmentType extends Model
         'default_power_watts',
         'default_avg_daily_use_hours',
         'default_standby_power_w',
+        'is_shiftable',
     ];
 
     public function category()

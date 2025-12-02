@@ -172,13 +172,17 @@
                         </div>
                     </div>
                 </div>
-                <!-- Usos Horarios -->
+                <!-- Optimización Horaria -->
                 <div class="col-md-4">
                     <div class="card border-dark shadow-sm h-100">
                         <div class="card-body">
-                            <h5 class="card-title"><i class="bi bi-clock"></i> Usos Horarios</h5>
+                            <h5 class="card-title"><i class="bi bi-clock"></i> Optimización Horaria</h5>
                             <p class="card-text">Aprovecha las tarifas reducidas usando tus equipos en horarios óptimos.</p>
-                            <a href="#" class="btn btn-dark">Ver horarios</a>
+                            @if($entities->isNotEmpty())
+                                <a href="{{ route('grid.optimization', $entities->first()->id) }}" class="btn btn-dark">Analizar Horarios</a>
+                            @else
+                                <button class="btn btn-dark disabled">Crear entidad primero</button>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -188,7 +192,11 @@
                         <div class="card-body">
                             <h5 class="card-title"><i class="bi bi-speedometer2"></i> Medidor Inteligente</h5>
                             <p class="card-text">Conoce los beneficios de la medición inteligente y solicítalo.</p>
-                            <a href="#" class="btn btn-primary">Solicitar presupuesto</a>
+                            @if($entities->isNotEmpty())
+                                <a href="{{ route('smart_meter.demo', $entities->first()->id) }}" class="btn btn-primary">Ver Demo en Vivo</a>
+                            @else
+                                <button class="btn btn-primary disabled">Crear entidad primero</button>
+                            @endif
                         </div>
                     </div>
                 </div>

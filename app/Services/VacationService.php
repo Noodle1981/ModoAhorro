@@ -4,9 +4,57 @@ namespace App\Services;
 
 use App\Models\Entity;
 use App\Models\Equipment;
+use App\Models\Invoice;
+use Carbon\Carbon;
 
 class VacationService
 {
+    /**
+     * Marks invoices as anomalous if the vacation duration is significant.
+     *
+     * @param Entity $entity
+     * @param int $days
+     * @return int Number of invoices marked
+     */
+    public function markAnomalousInvoices(Entity $entity, int $days): int
+    {
+        // Threshold: If trip is less than 7 days, it doesn't significantly impact the monthly average.
+        if ($days < 7) {
+            return 0;
+        }
+
+        // We assume the vacation starts "today" for the purpose of this simulation/action.
+        $startDate = Carbon::now();
+        $endDate = Carbon::now()->addDays($days);
+
+        // Find invoices that overlap with the vacation period
+        // Access invoices via the entity's contracts.
+        
+        $invoices = Invoice::whereHas('contract', function ($query) use ($entity) {
+                $query->where('entity_id', $entity->id);
+            })
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('start_date', [$startDate, $endDate])
+                      ->orWhereBetween('end_date', [$startDate, $endDate])
+                      ->orWhere(function ($q) use ($startDate, $endDate) {
+                          $q->where('start_date', '<=', $startDate)
+                            ->where('end_date', '>=', $endDate);
+                      });
+            })
+            ->get();
+
+        $count = 0;
+        foreach ($invoices as $invoice) {
+            $invoice->update([
+                'is_representative' => false,
+                'anomaly_reason' => 'VACATION_MODE'
+            ]);
+            $count++;
+        }
+
+        return $count;
+    }
+
     /**
      * Generates a personalized vacation checklist based on trip duration and inventory.
      *

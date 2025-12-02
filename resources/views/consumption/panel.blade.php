@@ -44,12 +44,27 @@
                                 <i class="bi bi-calendar-range"></i> Periodo #{{ $invoice->id }}
                             </h5>
                             @if($isAdjusted)
-                                <span class="badge bg-success">
+                                <span class="badge bg-success me-1">
                                     <i class="bi bi-check-circle"></i> Ajustado
                                 </span>
                             @else
-                                <span class="badge bg-secondary">
+                                <span class="badge bg-secondary me-1">
                                     <i class="bi bi-exclamation-circle"></i> Sin Ajustar
+                                </span>
+                            @endif
+                            
+                            {{-- Badge de Validación --}}
+                            @if($porcentaje > 130 || $porcentaje < 70)
+                                <span class="badge bg-danger" title="Desviación crítica">
+                                    <i class="bi bi-exclamation-triangle"></i> {{ number_format(abs(100 - $porcentaje), 1) }}% Desv.
+                                </span>
+                            @elseif($porcentaje > 110 || $porcentaje < 90)
+                                <span class="badge bg-warning text-dark" title="Desviación moderada">
+                                    <i class="bi bi-exclamation-circle"></i> {{ number_format(abs(100 - $porcentaje), 1) }}% Desv.
+                                </span>
+                            @else
+                                <span class="badge bg-success" title="Precisión excelente">
+                                    <i class="bi bi-check-lg"></i> Exacto
                                 </span>
                             @endif
                         </div>

@@ -7,9 +7,18 @@
             <h2 class="mb-1"><i class="bi bi-airplane"></i> Plan de Ahorro: Vacaciones ({{ $days }} días)</h2>
             <p class="text-muted mb-0">Sigue esta lista para ahorrar y proteger tu hogar.</p>
         </div>
-        <a href="{{ route('vacation.index', $entity->id) }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Volver
-        </a>
+        <div class="d-flex gap-2">
+            <a href="{{ route('vacation.index', $entity->id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <form action="{{ route('vacation.confirm', $entity->id) }}" method="POST" onsubmit="return confirm('¿Confirmar viaje? Esto marcará las facturas de este periodo como \'Modo Vacaciones\'.');">
+                @csrf
+                <input type="hidden" name="days" value="{{ $days }}">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i> Confirmar Viaje
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- Resumen de Ahorro -->

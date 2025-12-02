@@ -20,6 +20,14 @@ class UsageAdjustmentController extends Controller
     public function edit($invoiceId)
     {
         $invoice = Invoice::findOrFail($invoiceId);
+        
+        // Verificar si está bloqueado
+        if ($invoice->usage_locked) {
+            return redirect()->route('usage_adjustments.index')->with('warning', 
+                '⚠️ Este período está cerrado. Debes reabrirlo si deseas hacer cambios.'
+            );
+        }
+
         $usageAdjustment = $invoice->usageAdjustment;
 
         // Obtener la entidad asociada a la factura
@@ -28,14 +36,24 @@ class UsageAdjustmentController extends Controller
 
         // Obtener los usos ya registrados para este periodo
         $usages = $invoice->equipmentUsages()->get()->keyBy('equipment_id');
-        $usedEquipmentIds = $usages->keys()->toArray();
-
+        
         // Obtener habitaciones con sus equipos activos O que tengan uso en esta factura
+        // Y FILTRAR por fechas de instalación/retiro
         $rooms = collect();
         if ($entity) {
-            $rooms = $entity->rooms()->with(['equipment' => function($q) use ($usedEquipmentIds) {
-                $q->where('is_active', true)
-                  ->orWhereIn('id', $usedEquipmentIds);
+            $rooms = $entity->rooms()->with(['equipment' => function($q) use ($invoice) {
+                $q->where(function($query) use ($invoice) {
+                    // Equipo instalado antes o durante el período
+                    $query->where(function($q) use ($invoice) {
+                        $q->whereNull('installed_at')
+                          ->orWhere('installed_at', '<=', $invoice->end_date);
+                    })
+                    // Y no removido antes del inicio del período
+                    ->where(function($q) use ($invoice) {
+                        $q->whereNull('removed_at')
+                          ->orWhere('removed_at', '>=', $invoice->start_date);
+                    });
+                });
             }])->get();
         }
 
@@ -46,6 +64,11 @@ class UsageAdjustmentController extends Controller
     public function update(Request $request, $invoiceId, \App\Services\ConsumptionAnalysisService $consumptionService)
     {
         $invoice = Invoice::findOrFail($invoiceId);
+        
+        if ($invoice->usage_locked) {
+            return redirect()->back()->with('error', 'El periodo está cerrado.');
+        }
+
         $usageAdjustment = $invoice->usageAdjustment;
         if (!$usageAdjustment) {
             $usageAdjustment = new UsageAdjustment();
@@ -81,25 +104,30 @@ class UsageAdjustmentController extends Controller
                 $usage->use_days_in_period = null;
             }
 
-            // --- Ajuste climático ---
-            // Aquí deberías llamar a tu servicio de clima y obtener el resultado ajustado
-            // Ejemplo:
-            if (isset($data['climate_adjustment'])) {
-                $usage->consumption_kwh = $data['climate_adjustment']['adjusted_consumption'];
-                // Guardar el porcentaje de ajuste climático
-                $usage->climate_adjustment_percent = $data['climate_adjustment']['usage_adjustment_percent'] ?? null;
-            } elseif (isset($data['consumption_kwh'])) {
-                $usage->consumption_kwh = $data['consumption_kwh'];
-                $usage->climate_adjustment_percent = null;
-            }
-
             $usage->save();
             // Recalcular consumo automáticamente después de guardar
             $usage->consumption_kwh = $consumptionService->calculateEquipmentConsumption($usage, $invoice);
             $usage->save();
         }
 
+        // Bloquear la factura si se solicita
+        if ($request->has('lock_invoice')) {
+            $invoice->usage_locked = true;
+            $invoice->save();
+            return redirect()->route('usage_adjustments.index')->with('success', 'Ajuste guardado y periodo CERRADO correctamente.');
+        }
+
         return redirect()->route('usage_adjustments.index')->with('success', 'Ajuste guardado correctamente.');
+    }
+
+    // Desbloquear factura
+    public function unlock($invoiceId)
+    {
+        $invoice = Invoice::findOrFail($invoiceId);
+        $invoice->usage_locked = false;
+        $invoice->save();
+
+        return redirect()->back()->with('success', 'Periodo reabierto correctamente. Ahora puedes editar los ajustes.');
     }
 
     // Muestra el detalle del ajuste de uso para una factura

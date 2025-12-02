@@ -114,11 +114,41 @@
             <label for="notes" class="form-label">Notas generales del ajuste</label>
             <textarea name="notes" id="notes" class="form-control">{{ $usageAdjustment->notes ?? '' }}</textarea>
         </div>
-        <button type="submit" class="btn btn-primary">Guardar ajuste</button>
-            @if(isset($equipmentUsage))
-                <a href="{{ route('usage_adjustments.edit', [$invoice->id, $equipment->id]) }}" class="btn btn-secondary ms-2">Editar ajuste</a>
-            @endif
-        <a href="{{ route('usage_adjustments.index') }}" class="btn btn-secondary">Volver</a>
+        
+        <div class="d-flex justify-content-between align-items-center mt-4 p-3 bg-light rounded border">
+            <div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="lock_invoice" name="lock_invoice" value="1" {{ $invoice->usage_locked ? 'checked disabled' : '' }}>
+                    <label class="form-check-label" for="lock_invoice">
+                        <strong>Cerrar Periodo</strong> (Bloquear edición futura)
+                    </label>
+                </div>
+                <small class="text-muted">Al marcar esto, se impedirá modificar los ajustes a menos que se reabra el periodo.</small>
+            </div>
+            
+            <div>
+                <a href="{{ route('usage_adjustments.index') }}" class="btn btn-secondary me-2">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Guardar Ajustes
+                </button>
+            </div>
+        </div>
+    </form>
+
+    @if($invoice->usage_locked)
+        <div class="mt-4 p-3 alert alert-warning d-flex justify-content-between align-items-center">
+            <div>
+                <strong><i class="bi bi-lock-fill"></i> Periodo Cerrado</strong>
+                <p class="mb-0 small">Este periodo está bloqueado para edición. Para realizar cambios, debes reabrirlo.</p>
+            </div>
+            <form action="{{ route('usage_adjustments.unlock', $invoice->id) }}" method="POST">
+                @csrf
+                <button type="submit" class="btn btn-warning text-dark">
+                    <i class="bi bi-unlock-fill"></i> Reabrir Periodo
+                </button>
+            </form>
+        </div>
+    @endif
     </form>
 </div>
 @endsection

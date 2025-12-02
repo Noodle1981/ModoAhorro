@@ -12,9 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('invoices', function (Blueprint $table) {
-            if (Schema::hasColumn('invoices', 'consumption_kwh')) {
-                $table->dropColumn(['consumption_kwh', 'energy_cost', 'taxes_cost']);
-            }
+            $table->boolean('usage_locked')->default(false)->after('status');
         });
     }
 
@@ -24,9 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('invoices', function (Blueprint $table) {
-            $table->decimal('consumption_kwh', 10, 3);
-            $table->decimal('energy_cost', 10, 2);
-            $table->decimal('taxes_cost', 10, 2);
+            $table->dropColumn('usage_locked');
         });
     }
 };

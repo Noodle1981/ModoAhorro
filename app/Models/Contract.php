@@ -9,8 +9,12 @@ class Contract extends Model
     protected $fillable = [
         'entity_id',
         'proveedor_id',
+        'utility_company_id',
         'supply_number',
-        'contract_identifier',
+        'meter_number',
+        'client_number',
+        'tariff_type',
+        'contract_number',
         'rate_name',
         'contracted_power_kw_p1',
         'contracted_power_kw_p2',
