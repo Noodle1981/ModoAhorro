@@ -30,6 +30,8 @@ class EntityController extends Controller
     return view('entities.index', compact('entities'));
     }
 
+
+
     /**
      * Show the form for creating a new resource.
      */
@@ -86,6 +88,9 @@ class EntityController extends Controller
     /**
      * Display the specified resource.
      */
+    /**
+     * Display the specified resource.
+     */
     public function show(string $id, \App\Services\Climate\ClimateDataService $climateService)
     {
         $entity = \App\Models\Entity::with('locality')->findOrFail($id);
@@ -94,8 +99,24 @@ class EntityController extends Controller
         if ($entity->locality) {
             $climateProfile = $climateService->getLocalityClimateProfile($entity->locality);
         }
+
+        // Cargar relaciones necesarias
+        $entity->load(['rooms.equipment', 'contract']);
+
+        // Obtener última factura para cálculos
+        $invoice = \App\Models\Invoice::whereHas('contract', function ($query) use ($entity) {
+            $query->where('entity_id', $entity->id);
+        })->latest('end_date')->first();
+
+        // Calcular oportunidades de reemplazo
+        $replacementsCount = 0;
+        if ($invoice) {
+            $service = new \App\Services\Recommendations\ReplacementService();
+            $opportunities = $service->generateOpportunities($invoice);
+            $replacementsCount = count($opportunities);
+        }
         
-        return view('entities.show', compact('entity', 'climateProfile'));
+        return view('entities.show', compact('entity', 'climateProfile', 'replacementsCount'));
     }
 
     /**

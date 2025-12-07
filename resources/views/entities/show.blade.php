@@ -33,7 +33,7 @@
                     </li>
                 @endif
             </ul>
-            <div class="mt-3 d-flex gap-2">
+            <div class="mt-3 d-flex gap-2 flex-wrap">
                 <a href="{{ route('entities.edit', $entity->id) }}" class="btn btn-warning">
                     <i class="bi bi-pencil-square"></i> Editar
                 </a>
@@ -49,6 +49,23 @@
                 <a href="/entities/{{ $entity->id }}/meter" class="btn btn-success">
                     <i class="bi bi-lightning"></i> Gestionar contrato/medidor
                 </a>
+                
+                {{-- Botón de Reemplazos Inteligentes --}}
+                <a href="{{ route('replacements.index', $entity->id) }}" class="btn btn-outline-success position-relative">
+                    <i class="bi bi-arrow-repeat"></i> Reemplazos
+                    @if(isset($replacementsCount) && $replacementsCount > 0)
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ $replacementsCount }}
+                            <span class="visually-hidden">oportunidades</span>
+                        </span>
+                    @endif
+                </a>
+                
+                {{-- Botón de Salud Térmica --}}
+                <a href="{{ route('thermal.index', $entity->id) }}" class="btn btn-outline-primary">
+                    <i class="bi bi-thermometer-half"></i> Salud Térmica
+                </a>
+
                 <a href="{{ route('entities.index') }}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left"></i> Volver al listado
                 </a>

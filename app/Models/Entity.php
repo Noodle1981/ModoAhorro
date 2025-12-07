@@ -23,6 +23,11 @@ class Entity extends Model
         'description',
         'square_meters',
         'people_count',
+        'thermal_profile',
+    ];
+
+    protected $casts = [
+        'thermal_profile' => 'array',
     ];
 
     public function users()

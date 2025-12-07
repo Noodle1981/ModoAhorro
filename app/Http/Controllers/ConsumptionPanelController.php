@@ -9,7 +9,122 @@ class ConsumptionPanelController extends Controller
 {
     public function index()
     {
-        // Obtener todas las facturas con sus relaciones
+        // Obtener todas las facturas para el gráfico (Historical Evolution)
+        $allInvoices = Invoice::with(['contract.entity.locality', 'equipmentUsages.equipment.category', 'usageAdjustment'])
+            ->orderBy('start_date', 'asc') // Chronological for chart
+            ->get();
+
+        // Obtener facturas paginadas para la tabla (Reverse chronological)
+        $paginatedInvoices = Invoice::with(['contract.entity.locality', 'equipmentUsages.equipment.category', 'usageAdjustment'])
+            ->orderBy('start_date', 'desc')
+            ->paginate(5); // 5 per page as requested
+
+        // Initialize Services
+        $climateService = new \App\Services\Climate\ClimateDataService();
+        $usageSuggestionService = new \App\Services\Climate\UsageSuggestionService($climateService);
+        $consumptionCalibrator = new \App\Services\ConsumptionCalibrator();
+        $maintenanceService = new \App\Services\MaintenanceService();
+        $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService, $consumptionCalibrator, $maintenanceService);
+
+        // --- Process Chart Data (Full History) ---
+        // --- Process Chart Data (Full History) ---
+        $chartData = $allInvoices->map(function ($invoice) use ($service, $climateService) {
+            $calibratedUsages = $service->calibrateInvoiceConsumption($invoice);
+            $totalEnergia = $calibratedUsages->sum('kwh_reconciled');
+            
+            $startDate = \Carbon\Carbon::parse($invoice->start_date);
+            $endDate = \Carbon\Carbon::parse($invoice->end_date);
+            $days = max(1, $startDate->diffInDays($endDate));
+            $dailyAvg = $totalEnergia / $days;
+
+            // Fetch Climate Data for visual correlation
+            $locality = $invoice->contract->entity->locality ?? null;
+            $avgTemp = null;
+            $hotDays = 0;
+            $coldDays = 0;
+            
+            if ($locality && $locality->latitude && $locality->longitude) {
+                 // Ensure data is loaded (this checks cache/DB first)
+                 $climateService->loadDataForInvoice($invoice);
+                 
+                 $stats = $climateService->getClimateStats(
+                     $locality->latitude, 
+                     $locality->longitude, 
+                     $startDate, 
+                     $endDate
+                 );
+                 $avgTemp = $stats['avg_temp_avg'] ?? null;
+                 $hotDays = $stats['hot_days_count'] ?? 0;
+                 $coldDays = $stats['cold_days_count'] ?? 0;
+            }
+
+            // Financial Metrics
+            $dailyCost = $invoice->total_amount / $days;
+            $costPerKwh = $totalEnergia > 0 ? ($invoice->total_amount / $totalEnergia) : 0;
+
+            return [
+                'label' => $startDate->format('M Y'),
+                'consumption' => round($totalEnergia, 2),
+                'cost' => $invoice->total_amount,
+                'avg' => round($dailyAvg, 2),
+                'avg_temp' => $avgTemp, 
+                'daily_cost' => round($dailyCost, 2),
+                'cost_per_kwh' => round($costPerKwh, 2),
+                'hot_days' => $hotDays, // New
+                'cold_days' => $coldDays // New
+            ];
+        });
+
+        // --- Process Table Data (Paginated) ---
+        // We will process the processed metrics on the fly in the view or here.
+        // Let's process here to pass clean objects to view.
+        // Note: Pagination returns a LengthAwarePaginator. We can transform items but must keep it as paginator.
+        
+        $paginatedInvoices->getCollection()->transform(function ($invoice) use ($service) {
+             $calibratedUsages = $service->calibrateInvoiceConsumption($invoice);
+             $totalEnergia = $calibratedUsages->sum('kwh_reconciled');
+             $consumoFacturado = $invoice->total_energy_consumed_kwh ?? 0;
+             $porcentaje = $consumoFacturado > 0 ? ($totalEnergia / $consumoFacturado) * 100 : 0;
+             
+             // Metrics
+             $startDate = \Carbon\Carbon::parse($invoice->start_date);
+             $endDate = \Carbon\Carbon::parse($invoice->end_date);
+             $days = max(1, $startDate->diffInDays($endDate));
+             $dailyAvg = $totalEnergia / $days;
+             $costPerKwh = $totalEnergia > 0 ? ($invoice->total_amount / $totalEnergia) : 0;
+             
+             // Status Logic
+             $isAdjusted = $invoice->usageAdjustment && $invoice->usageAdjustment->adjusted;
+             $status = 'exact'; // default
+             if ($porcentaje > 130 || $porcentaje < 70) $status = 'critical';
+             elseif ($porcentaje > 110 || $porcentaje < 90) $status = 'warning';
+             elseif ($porcentaje >= 90 && $porcentaje <= 110) $status = 'exact';
+             
+             // Attach simplified data to invoice object for easy access in view
+             $invoice->calculated_metrics = (object) [
+                 'total_kwh_calculated' => $totalEnergia,
+                 'total_kwh_billed' => $consumoFacturado,
+                 'deviation_percent' => $porcentaje,
+                 'status' => $status,
+                 'is_adjusted' => $isAdjusted,
+                 'daily_avg' => $dailyAvg,
+                 'cost_per_kwh' => $costPerKwh,
+                 'days' => $days
+             ];
+             
+             return $invoice;
+        });
+
+        return view('consumption.panel', [
+            'invoices' => $paginatedInvoices, // Updated variable name for clarity
+            'chartData' => $chartData,
+        ]);
+    }
+
+    public function cards()
+    {
+        // Full list for cards view (or paginated too? Let's assume full or larger pagination)
+        // User asked to "move" the cards.
         $invoices = Invoice::with(['contract.entity.locality', 'equipmentUsages.equipment.category', 'usageAdjustment'])
             ->orderBy('start_date', 'desc')
             ->get();
@@ -20,16 +135,14 @@ class ConsumptionPanelController extends Controller
         $maintenanceService = new \App\Services\MaintenanceService();
         $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService, $consumptionCalibrator, $maintenanceService);
 
-        // Procesar métricas para cada factura
         $invoicesData = [];
         foreach ($invoices as $invoice) {
-            // ✅ CALCULAR EN TIEMPO REAL con el nuevo algoritmo (CALIBRADO)
             $calibratedUsages = $service->calibrateInvoiceConsumption($invoice);
             $totalEnergia = $calibratedUsages->sum('kwh_reconciled');
             $consumoFacturado = $invoice->total_energy_consumed_kwh ?? 0;
             $porcentaje = $consumoFacturado > 0 ? ($totalEnergia / $consumoFacturado) * 100 : 0;
 
-            // Determinar color y mensaje según precisión
+            // Determinar color y mensaje según precisión (Logic as before)
             $color = 'secondary';
             $mensaje = 'Sin datos';
             if ($porcentaje >= 90 && $porcentaje <= 110) {
@@ -46,15 +159,10 @@ class ConsumptionPanelController extends Controller
                 $mensaje = 'Revisar ajustes';
             }
 
-            // Verificar si está ajustado
             $isAdjusted = $invoice->usageAdjustment && $invoice->usageAdjustment->adjusted;
-
-            // Calcular métricas adicionales
             $startDate = \Carbon\Carbon::parse($invoice->start_date);
             $endDate = \Carbon\Carbon::parse($invoice->end_date);
-            $days = $startDate->diffInDays($endDate);
-            $days = $days > 0 ? $days : 1; // Evitar división por cero
-
+            $days = max(1, $startDate->diffInDays($endDate));
             $dailyAvg = $totalEnergia / $days;
             $costPerKwh = $totalEnergia > 0 ? ($invoice->total_amount / $totalEnergia) : 0;
 
@@ -71,22 +179,7 @@ class ConsumptionPanelController extends Controller
             ];
         }
 
-        // Preparar datos para el gráfico (Orden cronológico)
-        $chartData = collect($invoicesData)->sortBy(function ($data) {
-            return $data['invoice']->start_date;
-        })->values()->map(function ($data) {
-            return [
-                'label' => \Carbon\Carbon::parse($data['invoice']->start_date)->format('M Y'),
-                'consumption' => round($data['totalEnergia'], 2),
-                'cost' => $data['invoice']->total_amount,
-                'avg' => round($data['dailyAvg'], 2)
-            ];
-        });
-
-        return view('consumption.panel', [
-            'invoicesData' => $invoicesData,
-            'chartData' => $chartData,
-        ]);
+        return view('consumption.cards', compact('invoicesData'));
     }
 
     public function show($invoiceId)

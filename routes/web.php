@@ -19,6 +19,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
 
     // Ruta para el panel de consumo
     Route::get('/consumption/panel', [\App\Http\Controllers\ConsumptionPanelController::class, 'index'])->name('consumption.panel');
+    Route::get('/consumption/cards', [\App\Http\Controllers\ConsumptionPanelController::class, 'cards'])->name('consumption.cards');
     Route::get('/consumption/panel/{invoice}', [\App\Http\Controllers\ConsumptionPanelController::class, 'show'])->name('consumption.panel.show');
 });
 
@@ -61,6 +62,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
     // Rutas para equipos (Equipment)
     Route::get('/equipment/portable', [\App\Http\Controllers\EquipmentController::class, 'createPortable'])->name('equipment.create_portable');
     Route::resource('equipment', \App\Http\Controllers\EquipmentController::class);
+    Route::resource('efficiency-benchmarks', \App\Http\Controllers\EfficiencyBenchmarkController::class);
 
     // Rutas CRUD para habitaciones (rooms) anidadas bajo entidad
     Route::get('/entities/{entity}/rooms', [\App\Http\Controllers\RoomController::class, 'index'])->name('rooms.index');
@@ -89,5 +91,14 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
     Route::get('/entities/{entity}/maintenance', [\App\Http\Controllers\MaintenanceController::class, 'index'])->name('maintenance.index');
     Route::post('/equipment/{equipment}/maintenance-log', [\App\Http\Controllers\MaintenanceController::class, 'storeLog'])->name('maintenance.log.store');
     
+    // Rutas para Reemplazos
+    Route::get('/entities/{entity}/replacements', [\App\Http\Controllers\ReplacementController::class, 'index'])->name('replacements.index');
+    Route::get('/replacements/{equipment}/refine', [\App\Http\Controllers\ReplacementController::class, 'refine'])->name('replacements.refine');
+    Route::put('/replacements/{equipment}/refine', [\App\Http\Controllers\ReplacementController::class, 'updateRefinement'])->name('replacements.update_refinement');
 
+    // Rutas para Salud Térmica
+    Route::get('/entities/{entity}/thermal', [\App\Http\Controllers\ThermalComfortController::class, 'index'])->name('thermal.index');
+    Route::get('/entities/{entity}/thermal/wizard', [\App\Http\Controllers\ThermalComfortController::class, 'wizard'])->name('thermal.wizard');
+    Route::post('/entities/{entity}/thermal', [\App\Http\Controllers\ThermalComfortController::class, 'store'])->name('thermal.store');
+    Route::get('/entities/{entity}/thermal/result', [\App\Http\Controllers\ThermalComfortController::class, 'result'])->name('thermal.result');
 });

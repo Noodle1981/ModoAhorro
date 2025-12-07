@@ -126,7 +126,11 @@
                         <div class="card-body">
                             <h5 class="card-title"><i class="bi bi-arrow-repeat"></i> Reemplazos</h5>
                             <p class="card-text">Descubre qué equipos conviene renovar por eficiencia energética.</p>
-                            <a href="#" class="btn btn-primary">Ver recomendaciones</a>
+                            @if($entities->isNotEmpty())
+                                <a href="{{ route('replacements.index', $entities->first()->id) }}" class="btn btn-primary">Ver recomendaciones</a>
+                            @else
+                                <button class="btn btn-primary disabled">Crear entidad primero</button>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -196,6 +200,20 @@
                                 <a href="{{ route('smart_meter.demo', $entities->first()->id) }}" class="btn btn-primary">Ver Demo en Vivo</a>
                             @else
                                 <button class="btn btn-primary disabled">Crear entidad primero</button>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                <!-- Salud Térmica -->
+                <div class="col-md-4">
+                    <div class="card border-danger shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="bi bi-thermometer-half"></i> Salud Térmica</h5>
+                            <p class="card-text">Diagnostica la aislación de tu hogar y recibe recomendaciones para evitar fugas de energía.</p>
+                            @if($entities->isNotEmpty())
+                                <a href="{{ route('thermal.index', $entities->first()->id) }}" class="btn btn-danger">Diagnóstico Térmico</a>
+                            @else
+                                <button class="btn btn-danger disabled">Crear entidad primero</button>
                             @endif
                         </div>
                     </div>

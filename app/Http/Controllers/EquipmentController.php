@@ -58,6 +58,7 @@ class EquipmentController extends Controller
             'is_active' => 'nullable|boolean',
             'room_id' => 'required|exists:rooms,id',
         ]);
+        
         Equipment::create($validated);
         return redirect()->route('equipment.index')->with('success', 'Equipo agregado correctamente.');
     }
@@ -78,8 +79,10 @@ class EquipmentController extends Controller
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:equipment_categories,id',
             'type_id' => 'required|exists:equipment_types,id',
+            'nominal_power_w' => 'required|integer|min:1',
             'is_active' => 'required|boolean',
         ]);
+
         $equipment->update($validated);
         return redirect()->route('equipment.index')->with('success', 'Equipo actualizado correctamente.');
     }

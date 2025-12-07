@@ -16,7 +16,10 @@ Aplicación Laravel para análisis y optimización del consumo energético en ho
 - Equipos portátiles (notebooks, tablets, cargadores) en categoría dedicada
 
 ### Análisis de Consumo
-- **Panel de consumo** con comparación visual: Facturado vs Calculado
+### Análisis de Consumo
+- **Panel de consumo avanzado** con paginación y gráficos interactivos (Chart.js)
+- **Correlación Climática**: Análisis de consumo vs temperatura y días extremos
+- **KPIs Financieros**: Seguimiento de costo diario y evolución del precio del kWh
 - Desglose por categoría con porcentajes
 - Agrupación por habitación en vistas de ajuste
 - Cálculo automático de kWh basado en potencia y uso
@@ -99,9 +102,8 @@ npm run dev
 
 1. **Optimización de cálculos**: Cachear resultados de consumo
 2. **Reportes**: Exportación a PDF/Excel
-3. **Gráficos**: Integrar Chart.js para visualizaciones
-4. **Notificaciones**: Alertas de consumo anormal
-5. **Multi-tenant**: Soporte para múltiples usuarios
+3. **Notificaciones**: Alertas de consumo anormal
+4. **Multi-tenant**: Soporte para múltiples usuarios
 
 ## 🐛 Debugging
 

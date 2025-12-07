@@ -74,11 +74,9 @@ Nuevas capacidades para asegurar la integridad de los datos históricos y la pre
 *   **Trazabilidad de Equipos**: Historial de instalación y retiro (`installed_at`, `removed_at`) para que los ajustes de facturas pasadas reflejen solo los equipos activos en ese momento.
 *   **Bloqueo de Facturas**: Mecanismo de seguridad para "Cerrar Periodos" y evitar modificaciones accidentales en facturas ya auditadas.
 *   **Documentación Relacionada**:
-    *   [Walkthrough Sprint 1](walkthrough.md)
+    *   [Walkthrough Sprint 1](walkthrough.md) (Detalles de implementación)
 
----
-
-## 4. Guía de Instalación y Despliegue
+## 5. Guía de Instalación y Despliegue
 
 ### Requisitos Previos
 *   PHP 8.2+
@@ -99,7 +97,7 @@ Nuevas capacidades para asegurar la integridad de los datos históricos y la pre
 
 ---
 
-## 5. Verificación y Testing
+## 6. Verificación y Testing
 El proyecto cuenta con una suite de comandos de prueba personalizados para verificar la lógica de negocio compleja:
 
 *   `php artisan test:anomaly`: Verifica la lógica de exclusión de facturas en vacaciones.
@@ -109,4 +107,4 @@ El proyecto cuenta con una suite de comandos de prueba personalizados para verif
 
 ---
 
-*Documentación generada automáticamente el 01/12/2025.*
+*Documentación actualizada: 07/12/2025*

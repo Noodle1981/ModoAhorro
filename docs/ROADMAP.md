@@ -1,4 +1,4 @@
-# ULTIMO_ROADMAP.MD
+# Roadmap de Proyecto
 # Roadmap de Implementación: Centro de Reemplazos y Precios Dinámicos
 
 Este documento detalla el plan de ejecución paso a paso para construir el módulo de "Reemplazos Inteligentes" con cálculo de ROI y actualización de precios automática vía Mercado Libre.
