@@ -21,6 +21,8 @@ Este módulo ataca la "Causa Raíz" del consumo ineficiente (la vivienda), compl
   "window_type": "single_glass|dvh",
   "window_frame": "aluminum|wood|pvc",
   "drafts_detected": true|false,
+  "orientation": "norte_sur|este_oeste|diagonal",
+  "south_window": true|false,
   "sun_exposure": "high|medium|low",
   "thermal_score": 45, // Calculado (0-100)
   "energy_label": "E"  // Calculado (A-G)
@@ -30,14 +32,17 @@ Este módulo ataca la "Causa Raíz" del consumo ineficiente (la vivienda), compl
 ### Arquitectura de Servicios
 1.  **`ThermalScoreService`** (`App\Services\Thermal\ThermalScoreService`):
     -   Calcula un puntaje base de 50.
-    -   Penaliza por techos de chapa (-20), losa sin aislar (-10), chifletes (-15), sol directo (-10).
-    -   Premia por aislación (+15), DVH (+20), marcos con RPT (+5).
+    -   **Techumbre:** Penaliza chapa (-20) y losa (-10), premia aislación (+15).
+    -   **Aberturas:** Premia DVH (+20), penaliza chifletes (-15).
+    -   **Bioclimática (Argentina):** 
+        -   Premia eje Norte-Sur (+15) y Ventana al Sur (+10).
+        -   Penaliza eje Este-Oeste (-10) y Exposición Solar Alta (-10).
     -   Determina la etiqueta (A > 90, B > 75, etc.).
 
 2.  **`ThermalAdviceEngine`** (`App\Services\Thermal\ThermalAdviceEngine`):
     -   Genera recomendaciones basadas en condiciones específicas.
-    -   *Ejemplo:* Si `drafts_detected` es true -> Recomienda "Burletes".
-    -   *Ejemplo:* Si `roof_type` es chapa y no hay aislación -> Recomienda "Membrana Líquida".
+    -   *Ejemplo:* Si `orientation` es "Este-Oeste" -> Recomienda "Escudo Solar / Cortinas".
+    -   *Ejemplo:* Si `south_window` es false -> Recomienda ventilación forzada o mejoras pasivas.
 
 ### Rutas y Controladores
 -   **Controller:** `ThermalComfortController`

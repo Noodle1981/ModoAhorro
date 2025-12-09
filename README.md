@@ -31,9 +31,10 @@ Aplicación Laravel para análisis y optimización del consumo energético en ho
 - Visualización de consumo calculado por equipo
 
 ### Módulos de Valor Agregado
+- **Confort Térmico**: Autodiagnóstico bioclimático de la vivienda (Orientación, Aislación, Ventana Sur) con recomendaciones personalizadas.
 - **Mantenimiento**: Gestión de tareas (limpieza filtros, etc.) con penalización de consumo por vencimiento.
-- **Solar Térmico**: Calculadora de ahorro para calefones solares vs Gas/Electricidad.
-- **Clima**: Integración con Open-Meteo para ajustar consumo de climatización.
+- **Solar Térmico**: Calculadora de ahorro para calefones solares vs Gas/Electricidad (Precios actualizados San Juan).
+- **Clima**: Integración con Open-Meteo para visualizar "Días de Calor > 28°C" en facturas.
 
 ## 🚀 Instalación
 

@@ -28,10 +28,11 @@ class ThermalAdviceEngine
             ];
         }
 
-        if (($profile['sun_exposure'] ?? '') === 'high' && ($profile['window_type'] ?? '') === 'single_glass') {
+        // Check East/West orientation OR High Sun Exposure
+        if ((in_array($profile['orientation'] ?? '', ['este_oeste', 'diagonal']) || ($profile['sun_exposure'] ?? '') === 'high') && ($profile['window_type'] ?? '') === 'single_glass') {
             $advice[] = [
                 'title' => 'Escudo Solar en Ventanas',
-                'problem' => 'El sol directo calienta tu casa como un invernadero.',
+                'problem' => 'El exceso de radiación solar directa sobrecalienta tu vivienda.',
                 'solution' => 'Instalar Cortinas Blackout o un Toldo exterior.',
                 'cost_level' => '$$',
                 'impact' => 'Medio',

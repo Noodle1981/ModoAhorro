@@ -1,7 +1,6 @@
-# Roadmap de Proyecto
-# Roadmap de Implementación: Centro de Reemplazos y Precios Dinámicos
+# Roadmap de Proyecto Integral
 
-Este documento detalla el plan de ejecución paso a paso para construir el módulo de "Reemplazos Inteligentes" con cálculo de ROI y actualización de precios automática vía Mercado Libre.
+Este documento detalla el plan de ejecución para el módulo de "Reemplazos Inteligentes" y las futuras expansiones del sistema (Taller, Admin Panel).
 
 ---
 
@@ -85,4 +84,26 @@ Este documento detalla el plan de ejecución paso a paso para construir el módu
 
 ---
 
-*Este roadmap está diseñado para ser ejecutado secuencialmente. La Fase 1 y 2 son el "Core" funcional, la Fase 3 agrega automatización y la Fase 5 cierra el modelo de negocio.*
+## 🏗️ Fase 6: Expansión de Lógica (Workshops & Portables)
+**Objetivo:** Adaptar el sistema para entornos no residenciales y manejo de herramientas.
+
+- [ ] **6.1. Nuevos Tipos de Ambiente**
+    - Implementar `Taller/Depósito`.
+    - Lógica de iluminación de alta potencia y maquinaria.
+- [ ] **6.2. Equipos Portátiles**
+    - Gestión de baterías y herramientas recargables.
+    - Asignación dinámica a "habitaciones" según uso.
+
+---
+
+## 🛡️ Fase 7: Administración (FilamentPHP)
+**Objetivo:** Panel de control robusto para gestión de datos maestros.
+
+- [ ] **7.1. Instalación Filament**
+    - Setup inicial y configuración de usuarios admin.
+- [ ] **7.2. Recursos CRUD**
+    - Gestión de `Equipment`, `Entity`, `User` con interfaz gráfica avanzada.
+
+---
+
+*Este roadmap está diseñado para ser ejecutado secuencialmente. La Fase 1-4 cubre el "Core" de Reemplazos. Las Fases 6-7 expanden el alcance del sistema.*

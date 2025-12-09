@@ -31,8 +31,9 @@
                             <th>Periodo</th>
                             <th>Fechas</th>
                             <th class="text-center">Días</th>
+                            <th class="text-center">Días de Calor > 28°C</th>
                             <th class="text-center">Consumo Fact.</th>
-                            <th class="text-center">Desviación</th>
+
                             <th class="text-end">Monto Total</th>
                             <th class="text-center">Acciones</th>
                         </tr>
@@ -55,25 +56,19 @@
                                 <td class="text-center">
                                     <span class="badge bg-light text-dark border">{{ $invoice->calculated_metrics->days }}</span>
                                 </td>
+                                <td class="text-center">
+                                    @if($invoice->calculated_metrics->hot_days > 0)
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger">
+                                            <i class="bi bi-fire"></i> {{ $invoice->calculated_metrics->hot_days }}
+                                        </span>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
                                 <td class="text-center text-muted">
                                     {{ number_format($invoice->calculated_metrics->total_kwh_billed, 0) }} kWh
                                 </td>
-                                <td class="text-center">
-                                    @php
-                                        $status = $invoice->calculated_metrics->status;
-                                        $badges = [
-                                            'critical' => ['bg-danger', 'bi-exclamation-triangle'],
-                                            'warning' => ['bg-warning text-dark', 'bi-exclamation-circle'],
-                                            'exact' => ['bg-success', 'bi-check-lg']
-                                        ];
-                                        $badge = $badges[$status] ?? $badges['exact'];
-                                        $dev = abs(100 - $invoice->calculated_metrics->deviation_percent);
-                                    @endphp
-                                    <span class="badge {{ $badge[0] }}">
-                                        <i class="bi {{ $badge[1] }}"></i> 
-                                        @if($status === 'exact') Exacto @else {{ number_format($dev, 1) }}% @endif
-                                    </span>
-                                </td>
+
                                 <td class="text-end fw-bold text-success">
                                     ${{ number_format($invoice->total_amount, 0) }}
                                 </td>

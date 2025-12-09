@@ -80,7 +80,7 @@ class ConsumptionPanelController extends Controller
         // Let's process here to pass clean objects to view.
         // Note: Pagination returns a LengthAwarePaginator. We can transform items but must keep it as paginator.
         
-        $paginatedInvoices->getCollection()->transform(function ($invoice) use ($service) {
+        $paginatedInvoices->getCollection()->transform(function ($invoice) use ($service, $climateService) {
              $calibratedUsages = $service->calibrateInvoiceConsumption($invoice);
              $totalEnergia = $calibratedUsages->sum('kwh_reconciled');
              $consumoFacturado = $invoice->total_energy_consumed_kwh ?? 0;
@@ -92,6 +92,23 @@ class ConsumptionPanelController extends Controller
              $days = max(1, $startDate->diffInDays($endDate));
              $dailyAvg = $totalEnergia / $days;
              $costPerKwh = $totalEnergia > 0 ? ($invoice->total_amount / $totalEnergia) : 0;
+
+             // Fetch Climate Data for Table
+             $locality = $invoice->contract->entity->locality ?? null;
+             $hotDays = 0;
+             
+             if ($locality && $locality->latitude && $locality->longitude) {
+                 // Ensure data is loaded (this checks cache/DB first)
+                 $climateService->loadDataForInvoice($invoice);
+                 
+                 $stats = $climateService->getClimateStats(
+                     $locality->latitude, 
+                     $locality->longitude, 
+                     $startDate, 
+                     $endDate
+                 );
+                 $hotDays = $stats['hot_days_count'] ?? 0;
+             }
              
              // Status Logic
              $isAdjusted = $invoice->usageAdjustment && $invoice->usageAdjustment->adjusted;
@@ -109,7 +126,8 @@ class ConsumptionPanelController extends Controller
                  'is_adjusted' => $isAdjusted,
                  'daily_avg' => $dailyAvg,
                  'cost_per_kwh' => $costPerKwh,
-                 'days' => $days
+                 'days' => $days,
+                 'hot_days' => $hotDays
              ];
              
              return $invoice;

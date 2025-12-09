@@ -14,9 +14,9 @@ class SolarWaterService
     const EFFICIENCY_GAS_GLP = 0.65; // Garrafa
     const ENERGY_PER_GARRAFA_10KG = 128; // kWh
     
-    // Prices (Estimated defaults, should ideally come from DB or config)
-    const PRICE_GARRAFA_10KG = 12000; // ARS (Estimated)
-    const PRICE_M3_GAS = 800; // ARS (Estimated)
+    // Prices (Updated: San Juan Dec 2024)
+    const PRICE_GARRAFA_10KG = 10500; // ARS
+    const PRICE_M3_GAS = 2943; // ARS
     const ENERGY_PER_M3_GAS = 9.3; // kWh
     const EFFICIENCY_GAS_NATURAL = 0.65;
     const PILOT_LIGHT_CONSUMPTION_M3 = 4.0; // m3/month wasted

@@ -38,10 +38,34 @@ class ThermalScoreService
             $score -= 15;
         }
 
-        // 3. Environment (30%)
-        if (($profile['sun_exposure'] ?? '') === 'high') {
-            // Penalty mainly if windows are single glass or no shading, simplifying here
-            $score -= 10;
+        // 3. Environment (Orientation & Ventilation - Southern Hemisphere)
+        // Orientation
+        switch ($profile['orientation'] ?? '') {
+            case 'norte_sur':
+                $score += 15; // Ideal: Sun in winter (North), fresh air in summer (South)
+                break;
+            case 'este_oeste':
+                $score -= 10; // Hard to control: Low sun in morning/afternoon causing overheating
+                break;
+            // 'diagonal' or others get 0 change
+        }
+
+        // South Window (Cross Ventilation / Cooling)
+        if (!empty($profile['south_window'])) {
+            $score += 10;
+        }
+
+        // 4. Sun Exposure (Shadows)
+        switch ($profile['sun_exposure'] ?? '') {
+            case 'high':
+                $score -= 10; // High overheating risk in summer
+                break;
+            case 'medium':
+                $score += 5; // Good balance
+                break;
+            case 'low':
+                // Neutral (Good for summer, bad for winter heating)
+                break;
         }
 
         // Clamp score 0-100

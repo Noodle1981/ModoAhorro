@@ -101,7 +101,7 @@ class EntityController extends Controller
         }
 
         // Cargar relaciones necesarias
-        $entity->load(['rooms.equipment', 'contract']);
+        $entity->load(['rooms.equipment', 'contracts']);
 
         // Obtener última factura para cálculos
         $invoice = \App\Models\Invoice::whereHas('contract', function ($query) use ($entity) {

@@ -35,16 +35,19 @@ class ThermalComfortController extends Controller
     {
         $validated = $request->validate([
             'roof_type' => 'required|string',
-            'roof_insulation' => 'nullable|boolean',
+            // 'roof_insulation' handled manually via has()
             'window_type' => 'required|string',
             'window_frame' => 'required|string',
-            'drafts_detected' => 'nullable|boolean',
+            // 'drafts_detected' handled manually via has()
+            'orientation' => 'required|string|in:norte_sur,este_oeste,diagonal',
+            // 'south_window' handled manually via has()
             'sun_exposure' => 'required|string',
         ]);
 
         // Bool conversion for checkboxes
         $validated['roof_insulation'] = $request->has('roof_insulation');
         $validated['drafts_detected'] = $request->has('drafts_detected');
+        $validated['south_window'] = $request->has('south_window');
 
         // Calculate score
         $result = $this->scoreService->calculate($validated);
