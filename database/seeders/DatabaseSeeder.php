@@ -15,15 +15,22 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-    $this->call([
-        ProvinceSeeder::class,
-        LocalitySeeder::class,
-        PlanSeeder::class,
-        UserSeeder::class,
-        UtilityCompanySeeder::class,
-        EquipmentCategorySeeder::class,
-        EquipmentTypeSeeder::class,
-        DatosHogarSeeder::class,
-    ]);
+        $this->call([
+                // 1. Datos base
+            ProvinceSeeder::class,
+            LocalitySeeder::class,
+            PlanSeeder::class,
+            UtilityCompanySeeder::class,
+            EquipmentCategorySeeder::class,
+            EquipmentTypeSeeder::class,
+
+                // 2. Datos de entidades (hogar, oficina, comercio)
+            DatosHogarSeeder::class,
+            DatosOficinaSeeder::class,
+            DatosComercioSeeder::class,
+
+                // 3. Usuario de prueba (AL FINAL para asignar entidades)
+            UserSeeder::class,
+        ]);
     }
 }

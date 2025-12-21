@@ -8,8 +8,11 @@ use App\Models\EquipmentUsage;
 class ConsumptionCalibrator
 {
     /**
-     * Calibra los consumos teóricos utilizando una lógica de "Supervivencia Jerárquica" (Waterfall).
-     * Prioriza llenar las "cubetas" de consumo en orden: Base -> Hormigas -> Ballenas.
+     * Calibra los consumos teóricos utilizando una lógica mejorada.
+     * MEJORA: Protege consumo mínimo para equipos declarados con uso > 0
+     * 
+     * Prioriza llenar las "cubetas" de consumo en orden: Base -> Hormigas -> Ballenas
+     * Pero si no alcanza, distribuye proporcionalmente en lugar de poner a 0.
      *
      * @param Collection $usages Colección de EquipmentUsage con propiedad 'kwh_estimated'
      * @param float $invoiceTotalKwh Total de kWh facturados
@@ -18,140 +21,171 @@ class ConsumptionCalibrator
     public function calibrate(Collection $usages, float $invoiceTotalKwh): Collection
     {
         // --- A. CLASIFICACIÓN ---
-        
-        // 1. Base Crítica (Intocables)
+
+        // 1. Base Crítica (Intocables) - 24hs
         $baseCritical = $usages->filter(function ($u) {
             $type = $u->equipment->type->name ?? '';
             $fixedTypes = ['Heladera', 'Freezer', 'Router Wifi', 'Modem', 'Alarma', 'Cámaras', 'Camaras'];
             foreach ($fixedTypes as $fixed) {
-                if (stripos($type, $fixed) !== false) return true;
+                if (stripos($type, $fixed) !== false)
+                    return true;
             }
             return false;
         });
 
         // 2. Base Pesada (Higiene/Confort Básico)
         $baseHeavy = $usages->filter(function ($u) use ($baseCritical) {
-            if ($baseCritical->contains('id', $u->id)) return false;
+            if ($baseCritical->contains('id', $u->id))
+                return false;
             $type = $u->equipment->type->name ?? '';
             $heavyTypes = ['Termotanque Eléctrico', 'Calefón Eléctrico', 'Bomba de Agua'];
             foreach ($heavyTypes as $heavy) {
-                if (stripos($type, $heavy) !== false) return true;
+                if (stripos($type, $heavy) !== false)
+                    return true;
             }
             return false;
         });
 
         // 3. Hormigas (Luces y Portátiles)
         $ants = $usages->filter(function ($u) use ($baseCritical, $baseHeavy) {
-            if ($baseCritical->contains('id', $u->id) || $baseHeavy->contains('id', $u->id)) return false;
+            if ($baseCritical->contains('id', $u->id) || $baseHeavy->contains('id', $u->id))
+                return false;
             $cat = $u->equipment->category->name ?? '';
-            // Solo Iluminación y Portátiles
             return ($cat === 'Iluminación' || $cat === 'Portátiles');
         });
 
         // 4. Ballenas (Todo lo demás: PC, Aire, TV, Estufa)
-        $whales = $usages->reject(fn($u) => 
-            $baseCritical->contains('id', $u->id) || 
-            $baseHeavy->contains('id', $u->id) || 
+        $whales = $usages->reject(
+            fn($u) =>
+            $baseCritical->contains('id', $u->id) ||
+            $baseHeavy->contains('id', $u->id) ||
             $ants->contains('id', $u->id)
         );
 
         // --- B. CÁLCULO DE CONSUMOS TEÓRICOS ---
         $reqCritical = $baseCritical->sum('kwh_estimated');
-        $reqHeavy    = $baseHeavy->sum('kwh_estimated');
-        $reqAnts     = $ants->sum('kwh_estimated');
-        $reqWhales   = $whales->sum('kwh_estimated');
+        $reqHeavy = $baseHeavy->sum('kwh_estimated');
+        $reqAnts = $ants->sum('kwh_estimated');
+        $reqWhales = $whales->sum('kwh_estimated');
 
         $remaining = $invoiceTotalKwh;
 
-        // --- C. DISTRIBUCIÓN EN CASCADA (WATERFALL) ---
+        // --- C. DISTRIBUCIÓN MEJORADA ---
 
-        // Paso 1: Base Crítica (Heladera)
+        // Paso 1: Base Crítica (Heladera) - PROTEGIDA
         if ($remaining >= $reqCritical) {
             $this->fullAlloc($baseCritical, 'BASE_CRITICAL');
             $remaining -= $reqCritical;
         } else {
-            // Catástrofe: Factura < Heladera. Recorte total.
-            $this->partialAlloc($baseCritical, $remaining, $reqCritical, 'CRITICAL_CUT');
-            $this->zeroAlloc($baseHeavy->merge($ants)->merge($whales));
+            // Caso extremo: Factura < Heladera
+            // Distribuir proporcionalmente lo que hay
+            $this->partialAlloc($baseCritical, $remaining, $reqCritical, 'CRITICAL_PARTIAL');
+            $this->partialAlloc($baseHeavy, 0, 1, 'ZERO_REMAINING');
+            $this->partialAlloc($ants, 0, 1, 'ZERO_REMAINING');
+            $this->partialAlloc($whales, 0, 1, 'ZERO_REMAINING');
             return $usages;
         }
 
-        // Paso 2: Base Pesada (Termotanque)
+        // Paso 2: Base Pesada
         if ($remaining >= $reqHeavy) {
             $this->fullAlloc($baseHeavy, 'BASE_HEAVY');
             $remaining -= $reqHeavy;
         } else {
-            // Alcanzó para Heladera, pero no para Termotanque completo.
-            $this->partialAlloc($baseHeavy, $remaining, $reqHeavy, 'HEAVY_CUT');
-            $this->zeroAlloc($ants->merge($whales));
+            // Partial alloc a BASE_HEAVY con lo que queda
+            $this->partialAlloc($baseHeavy, $remaining, $reqHeavy, 'HEAVY_PARTIAL');
+            $this->partialAlloc($ants, 0, 1, 'ZERO_REMAINING');
+            $this->partialAlloc($whales, 0, 1, 'ZERO_REMAINING');
             return $usages;
         }
 
-        // Paso 3: Hormigas (Luces)
-        if ($remaining >= $reqAnts) {
+        // Paso 3 y 4: HORMIGAS + BALLENAS (Distribución Proporcional)
+        // MEJORA: Si no alcanza para ambas, distribuir proporcionalmente
+
+        $reqVariable = $reqAnts + $reqWhales;
+
+        if ($remaining >= $reqVariable) {
+            // Alcanza para ambas: asignación completa
             $this->fullAlloc($ants, 'PROTECTED_ANT');
-            $remaining -= $reqAnts;
-        } else {
-            // Recorte de luces
-            $this->partialAlloc($ants, $remaining, $reqAnts, 'ANT_CUT');
-            $this->zeroAlloc($whales);
-            return $usages;
-        }
+            // Para WHALES, usar distribución ponderada con el remaining restante
+            $remainingWhales = $remaining - $reqAnts;
+            $this->distributePonderada($whales, $remainingWhales, 'WEIGHTED_ADJUSTMENT');
+        } else if ($reqVariable > 0) {
+            // NO alcanza: DISTRIBUCIÓN PROPORCIONAL entre ANTS y WHALES
 
-        // Paso 4: Ballenas (PC, Aire) - Distribución Ponderada
-        if ($reqWhales > 0) {
-            // Aquí aplicamos los PESOS (Aire x3, PC x0.6)
-            $totalScore = $whales->sum(function ($u) {
-                return $u->kwh_estimated * $this->getCategoryWeight($u->equipment->category->name ?? '');
-            });
+            // Calcular qué % del total variable representa cada grupo
+            $antsProportion = $reqAnts / $reqVariable;
+            $whalesProportion = $reqWhales / $reqVariable;
 
-            $whales->each(function ($u) use ($remaining, $totalScore) {
-                $weight = $this->getCategoryWeight($u->equipment->category->name ?? '');
-                $score = $u->kwh_estimated * $weight;
-                $share = ($totalScore > 0) ? ($score / $totalScore) : 0;
-                
-                $this->setReconciled($u, $remaining * $share, "WEIGHTED_ADJUSTMENT");
-                $u->calibration_status = 'WEIGHTED_ADJUSTMENT';
-            });
+            $remainingAnts = $remaining * $antsProportion;
+            $remainingWhales = $remaining * $whalesProportion;
+
+            // Distribuir proporcionalmente dentro de cada grupo
+            $this->partialAlloc($ants, $remainingAnts, $reqAnts, 'ANT_PROPORTIONAL');
+
+            // Para WHALES, aplicar pesos por categoría
+            $this->distributePonderada($whales, $remainingWhales, 'WHALE_PROPORTIONAL');
         } else {
-             // Si no hay ballenas, el remanente se pierde (o se podría repartir hacia arriba, pero por ahora lo dejamos)
-             // En un sistema perfecto, esto no debería pasar si la factura es mayor que la suma de los anteriores.
+            // No hay ANTS ni WHALES (caso raro)
+            // El remaining sobra, podría distribuirse hacia arriba pero lo dejamos
         }
 
         return $usages;
     }
 
+    /**
+     * Distribución ponderada para WHALES con pesos por categoría
+     */
+    private function distributePonderada($whales, $available, $note)
+    {
+        $totalScore = $whales->sum(function ($u) {
+            return $u->kwh_estimated * $this->getCategoryWeight($u->equipment->category->name ?? '');
+        });
+
+        $whales->each(function ($u) use ($available, $totalScore, $note) {
+            $weight = $this->getCategoryWeight($u->equipment->category->name ?? '');
+            $score = $u->kwh_estimated * $weight;
+            $share = ($totalScore > 0) ? ($score / $totalScore) : 0;
+
+            $this->setReconciled($u, $available * $share, $note);
+        });
+    }
+
     // --- Helpers ---
 
-    private function fullAlloc($collection, $note) {
-        $collection->each(function($u) use ($note) {
+    private function fullAlloc($collection, $note)
+    {
+        $collection->each(function ($u) use ($note) {
             $this->setReconciled($u, $u->kwh_estimated, $note);
         });
     }
 
-    private function partialAlloc($collection, $available, $required, $note) {
+    private function partialAlloc($collection, $available, $required, $note)
+    {
         $factor = ($required > 0) ? $available / $required : 0;
-        $collection->each(function($u) use ($factor, $note) {
+        $collection->each(function ($u) use ($factor, $note) {
             $this->setReconciled($u, $u->kwh_estimated * $factor, $note);
         });
     }
 
-    private function zeroAlloc($collection) {
-        $collection->each(function($u) {
+    private function zeroAlloc($collection)
+    {
+        $collection->each(function ($u) {
             $this->setReconciled($u, 0, 'ZERO_ALLOCATION');
         });
     }
 
     // Helper para asignar y guardar estado
-    private function setReconciled($usage, $val, $note) {
+    private function setReconciled($usage, $val, $note)
+    {
         $usage->kwh_reconciled = $val;
         $usage->calibration_note = $note; // Usamos calibration_note para consistencia con UI existente
         $usage->calibration_status = $note; // Usamos el note como status code
     }
 
     // Pesos de Voracidad
-    private function getCategoryWeight($cat) {
-        return match($cat) {
+    private function getCategoryWeight($cat)
+    {
+        return match ($cat) {
             'Climatización' => 3.0,
             'Cocina' => 1.5,
             'Oficina' => 0.6,

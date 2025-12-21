@@ -11,6 +11,11 @@ class Plan extends Model
         'features',
         'price',
         'max_entities',
+        'allowed_entity_types',
+    ];
+
+    protected $casts = [
+        'allowed_entity_types' => 'array',
     ];
 
     public function entityUsers()

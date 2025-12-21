@@ -53,4 +53,27 @@ class User extends Authenticatable
             ->withPivot('plan_id', 'subscribed_at', 'expires_at')
             ->withTimestamps();
     }
+
+    /**
+     * Get the current active plan for the user
+     */
+    public function currentPlan(): ?\App\Models\Plan
+    {
+        // Obtener la relación entity_user más reciente que no haya expirado
+        $pivot = \DB::table('entity_user')
+            ->where('user_id', $this->id)
+            ->where(function ($query) {
+                $query->where('expires_at', '>', now())
+                    ->orWhereNull('expires_at');
+            })
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if ($pivot && $pivot->plan_id) {
+            return \App\Models\Plan::find($pivot->plan_id);
+        }
+
+        // Fallback: Plan Gratuito por defecto
+        return \App\Models\Plan::where('name', 'Gratuito')->first();
+    }
 }

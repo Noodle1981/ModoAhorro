@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Entity extends Model
 {
+    use HasFactory;
     public function invoices()
     {
         return $this->hasManyThrough(Invoice::class, Contract::class, 'entity_id', 'contract_id');
