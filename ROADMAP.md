@@ -38,7 +38,30 @@ Sistema SaaS de gestión energética inteligente que evoluciona desde ajuste man
 - Desglose por categoría
 - Lista detallada de equipos
 
+**6. Rutas por Tipo de Entidad** ✅ NUEVO
+- Controladores específicos: `HomeEntityController`, `OfficeEntityController`, `TradeEntityController`
+- Rutas separadas: `/entities/home/*`, `/entities/office/*`, `/entities/trade/*`
+- 40 rutas por tipo (CRUD, rooms, invoices, recommendations, thermal, vacation)
+- Vistas específicas para Hogar (index, create, show, edit)
+- Vistas pendientes para Oficina y Comercio
+- Seeders: `DatosHogarSeeder`, `DatosOficinaSeeder`, `DatosComercioSeeder`
+
 ---
+
+### 📋 Pendiente: Rutas por Tipo de Entidad
+
+**Completado:**
+- [x] `HomeEntityController` + 40 rutas + 4 vistas
+- [x] `OfficeEntityController` + 33 rutas (sin vistas)
+- [x] `TradeEntityController` + 33 rutas (sin vistas)
+- [x] Rutas legacy mantenidas para compatibilidad
+
+**Por hacer:**
+- [ ] Crear vistas para `/entities/office/*` (copiar de home)
+- [ ] Crear vistas para `/entities/trade/*` (copiar de home)  
+- [ ] Migración: campos `opens_at`, `closes_at`, `operating_days` para oficina/comercio
+- [ ] Tests de rutas para cada tipo
+- [ ] Remover rutas legacy cuando migración esté completa
 
 ## 🚀 Roadmap por Sprints
 
