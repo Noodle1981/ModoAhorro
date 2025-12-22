@@ -1,152 +1,186 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-4">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <div class="card shadow-lg">
-                <div class="card-header bg-danger text-white">
-                    <h4><i class="bi bi-fire"></i> Calculadora de Calefones Solares</h4>
-                    <p class="mb-0 small">Estima el ahorro en gas/electricidad calentando agua con el sol</p>
+<div class="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {{-- Header --}}
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-4">
+                <div class="bg-gradient-to-br from-orange-500 to-red-500 w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <i class="bi bi-sun text-2xl"></i>
                 </div>
-                <div class="card-body">
-                    <h5>Propiedad: {{ $entity->name }}</h5>
-                    <p class="text-muted">
-                        <i class="bi bi-geo-alt"></i> {{ $entity->address_street }}, {{ $entity->locality->name ?? 'N/A' }}
-                    </p>
-                    
-                    @if(isset($climateProfile) && !empty($climateProfile))
-                    <div class="card mb-4 border-warning shadow-sm">
-                        <div class="card-header bg-warning text-dark bg-opacity-10">
-                            <h6 class="mb-0"><i class="bi bi-sun"></i> Perfil Solar de tu Zona</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="row text-center">
-                                <div class="col-4 border-end">
-                                    <h4 class="mb-0 text-warning">{{ $climateProfile['avg_radiation'] }}</h4>
-                                    <small class="text-muted">Radiación (MJ/m²)</small>
-                                </div>
-                                <div class="col-4 border-end">
-                                    <h4 class="mb-0 text-warning">{{ $climateProfile['avg_sunshine_duration'] }}</h4>
-                                    <small class="text-muted">Horas de Sol</small>
-                                </div>
-                                <div class="col-4">
-                                    <h4 class="mb-0 text-secondary">{{ $climateProfile['avg_cloud_cover'] }}%</h4>
-                                    <small class="text-muted">Nubosidad</small>
-                                </div>
-                            </div>
-                            <div class="mt-3 small text-muted text-center">
-                                <i class="bi bi-info-circle"></i> Datos históricos reales de {{ $entity->locality->name ?? 'tu zona' }}
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="card border-success h-100">
-                                <div class="card-header bg-success text-white">
-                                    <h5 class="mb-0"><i class="bi bi-check-circle"></i> Recomendación</h5>
-                                </div>
-                                <div class="card-body text-center">
-                                    <h2 class="display-4 text-success">{{ $waterHeaterData['recommended_equipment_liters'] }} Litros</h2>
-                                    <p class="lead">Equipo Termotanque Solar</p>
-                                    <hr>
-                                    <div class="d-flex justify-content-around">
-                                        <div>
-                                            <strong>{{ $waterHeaterData['people_count'] }}</strong><br>
-                                            <small class="text-muted">Personas</small>
-                                        </div>
-                                        <div>
-                                            <strong>{{ number_format($waterHeaterData['daily_liters'], 0) }} L</strong><br>
-                                            <small class="text-muted">Demanda Diaria</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card border-primary h-100">
-                                <div class="card-header bg-primary text-white">
-                                    <h5 class="mb-0"><i class="bi bi-piggy-bank"></i> Ahorro Estimado</h5>
-                                </div>
-                                <div class="card-body">
-                                    <ul class="nav nav-tabs" id="fuelTab" role="tablist">
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link active" id="natural-gas-tab" data-bs-toggle="tab" data-bs-target="#natural-gas" type="button" role="tab" aria-selected="true">Gas Natural</button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="gas-tab" data-bs-toggle="tab" data-bs-target="#gas" type="button" role="tab" aria-selected="false">Gas (Garrafa)</button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="electric-tab" data-bs-toggle="tab" data-bs-target="#electric" type="button" role="tab" aria-selected="false">Electricidad</button>
-                                        </li>
-                                    </ul>
-                                    <div class="tab-content pt-3" id="fuelTabContent">
-                                        <div class="tab-pane fade show active" id="natural-gas" role="tabpanel">
-                                            <h3 class="text-primary mb-0">${{ number_format($waterHeaterData['savings']['gas_natural']['monthly_savings'], 0, ',', '.') }}</h3>
-                                            <small class="text-muted">Ahorro Mensual Promedio</small>
-                                            <div class="mt-3">
-                                                <div class="d-flex justify-content-between border-bottom pb-2">
-                                                    <span>Consumo evitado:</span>
-                                                    <strong>{{ $waterHeaterData['savings']['gas_natural']['m3_per_month'] }} m³/mes</strong>
-                                                </div>
-                                                <div class="d-flex justify-content-between pt-2">
-                                                    <span>Ahorro Anual:</span>
-                                                    <strong class="text-success">${{ number_format($waterHeaterData['savings']['gas_natural']['annual_savings'], 0, ',', '.') }}</strong>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="gas" role="tabpanel">
-                                            <h3 class="text-primary mb-0">${{ number_format($waterHeaterData['savings']['gas']['monthly_savings'], 0, ',', '.') }}</h3>
-                                            <small class="text-muted">Ahorro Mensual Promedio</small>
-                                            <div class="mt-3">
-                                                <div class="d-flex justify-content-between border-bottom pb-2">
-                                                    <span>Garrafas evitadas/mes:</span>
-                                                    <strong>{{ $waterHeaterData['savings']['gas']['garrafas_per_month'] }}</strong>
-                                                </div>
-                                                <div class="d-flex justify-content-between pt-2">
-                                                    <span>Ahorro Anual:</span>
-                                                    <strong class="text-success">${{ number_format($waterHeaterData['savings']['gas']['annual_savings'], 0, ',', '.') }}</strong>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="tab-pane fade" id="electric" role="tabpanel">
-                                            <h3 class="text-primary mb-0">${{ number_format($waterHeaterData['savings']['electric']['monthly_savings'], 0, ',', '.') }}</h3>
-                                            <small class="text-muted">Ahorro Mensual Promedio</small>
-                                            <div class="mt-3">
-                                                <div class="d-flex justify-content-between border-bottom pb-2">
-                                                    <span>Energía ahorrada:</span>
-                                                    <strong>{{ number_format($waterHeaterData['monthly_energy_kwh'] * 0.75, 0) }} kWh/mes</strong>
-                                                </div>
-                                                <div class="d-flex justify-content-between pt-2">
-                                                    <span>Ahorro Anual:</span>
-                                                    <strong class="text-success">${{ number_format($waterHeaterData['savings']['electric']['annual_savings'], 0, ',', '.') }}</strong>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="alert alert-warning d-flex align-items-center">
-                        <i class="bi bi-info-circle-fill fs-4 me-3"></i>
-                        <div>
-                            <strong>¿Sabías que?</strong>
-                            El sol puede cubrir el 100% de tu necesidad de agua caliente en verano y hasta el 60% en invierno.
-                        </div>
-                    </div>
-
-                    <div class="mt-4 d-flex gap-2">
-                        <a href="{{ route('entities.index') }}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Volver
-                        </a>
-                    </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Calefón Solar</h1>
+                    <p class="text-gray-500">{{ $entity->name }}</p>
                 </div>
             </div>
+            <x-button variant="secondary" href="{{ route($config['route_prefix'] . '.show', $entity->id) }}">
+                <i class="bi bi-arrow-left mr-2"></i> Volver
+            </x-button>
         </div>
+
+        {{-- Location Info --}}
+        <div class="flex items-center gap-2 text-gray-600 mb-6">
+            <i class="bi bi-geo-alt"></i>
+            <span>{{ $entity->address_street }}, {{ $entity->locality->name ?? 'N/A' }}</span>
+        </div>
+
+        {{-- Solar Profile --}}
+        @if(isset($climateProfile) && !empty($climateProfile))
+            <x-card class="mb-6 border-l-4 border-l-amber-400">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-sun text-amber-600"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Perfil Solar de tu Zona</h3>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4 text-center">
+                    <div class="p-4 bg-amber-50 rounded-xl">
+                        <p class="text-2xl font-bold text-amber-600">{{ $climateProfile['avg_radiation'] }}</p>
+                        <p class="text-xs text-gray-500">Radiación (MJ/m²)</p>
+                    </div>
+                    <div class="p-4 bg-amber-50 rounded-xl">
+                        <p class="text-2xl font-bold text-amber-600">{{ $climateProfile['avg_sunshine_duration'] }}</p>
+                        <p class="text-xs text-gray-500">Horas de Sol</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-xl">
+                        <p class="text-2xl font-bold text-gray-600">{{ $climateProfile['avg_cloud_cover'] }}%</p>
+                        <p class="text-xs text-gray-500">Nubosidad</p>
+                    </div>
+                </div>
+                
+                <p class="text-xs text-gray-500 text-center mt-4">
+                    <i class="bi bi-info-circle mr-1"></i>
+                    Datos históricos reales de {{ $entity->locality->name ?? 'tu zona' }}
+                </p>
+            </x-card>
+        @endif
+
+        {{-- Main Content --}}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            
+            {{-- Recommendation --}}
+            <x-card class="border-2 border-emerald-200">
+                <div class="text-center py-6">
+                    <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="bi bi-check-circle text-3xl text-emerald-600"></i>
+                    </div>
+                    <p class="text-sm text-gray-500 uppercase tracking-wide mb-2">Recomendación</p>
+                    <p class="text-5xl font-bold text-emerald-600 mb-2">{{ $waterHeaterData['recommended_equipment_liters'] }}</p>
+                    <p class="text-xl text-gray-700">Litros</p>
+                    <p class="text-gray-500">Termotanque Solar</p>
+                </div>
+                
+                <div class="flex justify-around py-4 border-t border-gray-100">
+                    <div class="text-center">
+                        <p class="text-2xl font-bold text-gray-900">{{ $waterHeaterData['people_count'] }}</p>
+                        <p class="text-xs text-gray-500">Personas</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-2xl font-bold text-gray-900">{{ number_format($waterHeaterData['daily_liters'], 0) }} L</p>
+                        <p class="text-xs text-gray-500">Demanda Diaria</p>
+                    </div>
+                </div>
+            </x-card>
+
+            {{-- Savings --}}
+            <x-card>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-piggy-bank text-blue-600"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Ahorro Estimado</h3>
+                </div>
+                
+                {{-- Fuel Tabs --}}
+                <div x-data="{ activeTab: 'natural' }" class="space-y-4">
+                    <div class="flex gap-2 border-b border-gray-200">
+                        <button @click="activeTab = 'natural'" 
+                            :class="activeTab === 'natural' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'"
+                            class="px-4 py-2 text-sm font-medium transition-colors">
+                            Gas Natural
+                        </button>
+                        <button @click="activeTab = 'garrafa'" 
+                            :class="activeTab === 'garrafa' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'"
+                            class="px-4 py-2 text-sm font-medium transition-colors">
+                            Garrafa
+                        </button>
+                        <button @click="activeTab = 'electric'" 
+                            :class="activeTab === 'electric' ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500'"
+                            class="px-4 py-2 text-sm font-medium transition-colors">
+                            Electricidad
+                        </button>
+                    </div>
+                    
+                    {{-- Gas Natural --}}
+                    <div x-show="activeTab === 'natural'" class="space-y-4">
+                        <div class="text-center py-4 bg-blue-50 rounded-xl">
+                            <p class="text-3xl font-bold text-blue-600">${{ number_format($waterHeaterData['savings']['gas_natural']['monthly_savings'], 0, ',', '.') }}</p>
+                            <p class="text-sm text-gray-500">Ahorro Mensual</p>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between py-2 border-b border-gray-100">
+                                <span class="text-gray-600">Consumo evitado</span>
+                                <span class="font-semibold">{{ $waterHeaterData['savings']['gas_natural']['m3_per_month'] }} m³/mes</span>
+                            </div>
+                            <div class="flex justify-between py-2">
+                                <span class="text-gray-600">Ahorro Anual</span>
+                                <span class="font-bold text-emerald-600">${{ number_format($waterHeaterData['savings']['gas_natural']['annual_savings'], 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {{-- Garrafa --}}
+                    <div x-show="activeTab === 'garrafa'" x-cloak class="space-y-4">
+                        <div class="text-center py-4 bg-blue-50 rounded-xl">
+                            <p class="text-3xl font-bold text-blue-600">${{ number_format($waterHeaterData['savings']['gas']['monthly_savings'], 0, ',', '.') }}</p>
+                            <p class="text-sm text-gray-500">Ahorro Mensual</p>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between py-2 border-b border-gray-100">
+                                <span class="text-gray-600">Garrafas evitadas</span>
+                                <span class="font-semibold">{{ $waterHeaterData['savings']['gas']['garrafas_per_month'] }}/mes</span>
+                            </div>
+                            <div class="flex justify-between py-2">
+                                <span class="text-gray-600">Ahorro Anual</span>
+                                <span class="font-bold text-emerald-600">${{ number_format($waterHeaterData['savings']['gas']['annual_savings'], 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {{-- Electric --}}
+                    <div x-show="activeTab === 'electric'" x-cloak class="space-y-4">
+                        <div class="text-center py-4 bg-blue-50 rounded-xl">
+                            <p class="text-3xl font-bold text-blue-600">${{ number_format($waterHeaterData['savings']['electric']['monthly_savings'], 0, ',', '.') }}</p>
+                            <p class="text-sm text-gray-500">Ahorro Mensual</p>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between py-2 border-b border-gray-100">
+                                <span class="text-gray-600">Energía ahorrada</span>
+                                <span class="font-semibold">{{ number_format($waterHeaterData['monthly_energy_kwh'] * 0.75, 0) }} kWh/mes</span>
+                            </div>
+                            <div class="flex justify-between py-2">
+                                <span class="text-gray-600">Ahorro Anual</span>
+                                <span class="font-bold text-emerald-600">${{ number_format($waterHeaterData['savings']['electric']['annual_savings'], 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </x-card>
+        </div>
+
+        {{-- Info Alert --}}
+        <x-alert type="warning" class="mb-6">
+            <div class="flex items-start gap-3">
+                <i class="bi bi-lightbulb text-xl"></i>
+                <div>
+                    <strong>¿Sabías que?</strong>
+                    <p class="text-sm mt-1">El sol puede cubrir el 100% de tu necesidad de agua caliente en verano y hasta el 60% en invierno.</p>
+                </div>
+            </div>
+        </x-alert>
     </div>
 </div>
 @endsection

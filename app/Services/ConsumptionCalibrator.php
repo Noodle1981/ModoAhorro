@@ -11,7 +11,7 @@ class ConsumptionCalibrator
      * Calibra los consumos teóricos utilizando una lógica mejorada.
      * MEJORA: Protege consumo mínimo para equipos declarados con uso > 0
      * 
-     * Prioriza llenar las "cubetas" de consumo en orden: Base -> Hormigas -> Ballenas
+     * Prioriza llenar las "cubetas" de consumo en orden: Base -> Hormigas -> Elefantes
      * Pero si no alcanza, distribuye proporcionalmente en lugar de poner a 0.
      *
      * @param Collection $usages Colección de EquipmentUsage con propiedad 'kwh_estimated'
@@ -54,8 +54,8 @@ class ConsumptionCalibrator
             return ($cat === 'Iluminación' || $cat === 'Portátiles');
         });
 
-        // 4. Ballenas (Todo lo demás: PC, Aire, TV, Estufa)
-        $whales = $usages->reject(
+        // 4. Elefantes (Todo lo demás: PC, Aire, TV, Estufa)
+        $elephants = $usages->reject(
             fn($u) =>
             $baseCritical->contains('id', $u->id) ||
             $baseHeavy->contains('id', $u->id) ||
@@ -66,7 +66,7 @@ class ConsumptionCalibrator
         $reqCritical = $baseCritical->sum('kwh_estimated');
         $reqHeavy = $baseHeavy->sum('kwh_estimated');
         $reqAnts = $ants->sum('kwh_estimated');
-        $reqWhales = $whales->sum('kwh_estimated');
+        $reqElephants = $elephants->sum('kwh_estimated');
 
         $remaining = $invoiceTotalKwh;
 
@@ -98,32 +98,32 @@ class ConsumptionCalibrator
             return $usages;
         }
 
-        // Paso 3 y 4: HORMIGAS + BALLENAS (Distribución Proporcional)
+        // Paso 3 y 4: HORMIGAS + ELEFANTES (Distribución Proporcional)
         // MEJORA: Si no alcanza para ambas, distribuir proporcionalmente
 
-        $reqVariable = $reqAnts + $reqWhales;
+        $reqVariable = $reqAnts + $reqElephants;
 
         if ($remaining >= $reqVariable) {
             // Alcanza para ambas: asignación completa
             $this->fullAlloc($ants, 'PROTECTED_ANT');
-            // Para WHALES, usar distribución ponderada con el remaining restante
-            $remainingWhales = $remaining - $reqAnts;
-            $this->distributePonderada($whales, $remainingWhales, 'WEIGHTED_ADJUSTMENT');
+            // Para ELEFANTES, usar distribución ponderada con el remaining restante
+            $remainingElephants = $remaining - $reqAnts;
+            $this->distributePonderada($elephants, $remainingElephants, 'WEIGHTED_ADJUSTMENT');
         } else if ($reqVariable > 0) {
-            // NO alcanza: DISTRIBUCIÓN PROPORCIONAL entre ANTS y WHALES
+            // NO alcanza: DISTRIBUCIÓN PROPORCIONAL entre ANTS y ELEFANTES
 
             // Calcular qué % del total variable representa cada grupo
             $antsProportion = $reqAnts / $reqVariable;
-            $whalesProportion = $reqWhales / $reqVariable;
+            $elephantsProportion = $reqElephants / $reqVariable;
 
             $remainingAnts = $remaining * $antsProportion;
-            $remainingWhales = $remaining * $whalesProportion;
+            $remainingElephants = $remaining * $elephantsProportion;
 
             // Distribuir proporcionalmente dentro de cada grupo
             $this->partialAlloc($ants, $remainingAnts, $reqAnts, 'ANT_PROPORTIONAL');
 
-            // Para WHALES, aplicar pesos por categoría
-            $this->distributePonderada($whales, $remainingWhales, 'WHALE_PROPORTIONAL');
+            // Para ELEFANTES, aplicar pesos por categoría
+            $this->distributePonderada($elephants, $remainingElephants, 'ELEPHANT_PROPORTIONAL');
         } else {
             // No hay ANTS ni WHALES (caso raro)
             // El remaining sobra, podría distribuirse hacia arriba pero lo dejamos
@@ -133,15 +133,15 @@ class ConsumptionCalibrator
     }
 
     /**
-     * Distribución ponderada para WHALES con pesos por categoría
+     * Distribución ponderada para ELEFANTES con pesos por categoría
      */
-    private function distributePonderada($whales, $available, $note)
+    private function distributePonderada($elephants, $available, $note)
     {
-        $totalScore = $whales->sum(function ($u) {
+        $totalScore = $elephants->sum(function ($u) {
             return $u->kwh_estimated * $this->getCategoryWeight($u->equipment->category->name ?? '');
         });
 
-        $whales->each(function ($u) use ($available, $totalScore, $note) {
+        $elephants->each(function ($u) use ($available, $totalScore, $note) {
             $weight = $this->getCategoryWeight($u->equipment->category->name ?? '');
             $score = $u->kwh_estimated * $weight;
             $share = ($totalScore > 0) ? ($score / $totalScore) : 0;

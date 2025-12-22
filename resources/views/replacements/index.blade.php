@@ -1,150 +1,172 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-0 text-gray-800">
-                <i class="fas fa-sync-alt text-success mr-2"></i>Catálogo de Reemplazos
-            </h1>
-            <p class="mb-0 text-muted">Oportunidades de ahorro detectadas para {{ $entity->name }}</p>
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {{-- Header --}}
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div class="flex items-center gap-4">
+                <div class="bg-gradient-to-br from-emerald-500 to-teal-600 w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <i class="bi bi-arrow-repeat text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Catálogo de Reemplazos</h1>
+                    <p class="text-gray-500">Oportunidades de ahorro para {{ $entity->name }}</p>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-4 md:mt-0">
+                <x-button variant="secondary" href="{{ route('efficiency-benchmarks.index') }}">
+                    <i class="bi bi-gear mr-2"></i> Benchmarks
+                </x-button>
+                <x-button variant="secondary" href="{{ route($config['route_prefix'] . '.show', $entity->id) }}">
+                    <i class="bi bi-arrow-left mr-2"></i> Volver
+                </x-button>
+            </div>
         </div>
-        <div>
-            <a href="{{ route('efficiency-benchmarks.index') }}" class="btn btn-outline-primary mr-2">
-                <i class="fas fa-cog mr-1"></i> Configurar Benchmarks
-            </a>
-            <a href="{{ route('entities.show', $entity) }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left mr-1"></i> Volver al Dashboard
-            </a>
-        </div>
-    </div>
 
-    @if(count($opportunities) > 0)
-        <div class="row">
-            @foreach($opportunities as $op)
-                <div class="col-md-6 col-xl-4 mb-4">
-                    <div class="card border-left-{{ $op['verdict']['color'] }} shadow h-100 py-2">
-                        <div class="card-body">
-                            <div class="row no-gutters align-items-center">
-                                <div class="col mr-2">
-                                    <div class="text-xs font-weight-bold text-{{ $op['verdict']['color'] }} text-uppercase mb-1">
+        @if(count($opportunities) > 0)
+            {{-- Opportunities Grid --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                @foreach($opportunities as $op)
+                    @php
+                        $colorMap = [
+                            'success' => 'emerald',
+                            'warning' => 'amber',
+                            'danger' => 'red',
+                            'info' => 'blue',
+                        ];
+                        $color = $colorMap[$op['verdict']['color']] ?? 'gray';
+                    @endphp
+                    <div class="bg-white rounded-2xl shadow-sm border-l-4 border-l-{{ $color }}-500 overflow-hidden hover:shadow-lg transition-shadow">
+                        <div class="p-6">
+                            {{-- Header --}}
+                            <div class="flex items-start justify-between mb-4">
+                                <div>
+                                    <span class="text-xs font-bold uppercase tracking-wide text-{{ $color }}-600">
                                         {{ $op['verdict']['label'] }}
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                        {{ $op['equipment_name'] }}
-                                    </div>
-                                    <div class="mt-2 small text-muted">
+                                    </span>
+                                    <h3 class="text-lg font-bold text-gray-900 mt-1">{{ $op['equipment_name'] }}</h3>
+                                    <p class="text-sm text-gray-500">
                                         Consumo actual: <strong>{{ $op['current_consumption_kwh'] }} kWh</strong>
-                                    </div>
+                                    </p>
                                 </div>
-                                <div class="col-auto">
-                                    <i class="fas fa-plug fa-2x text-gray-300"></i>
+                                <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
+                                    <i class="bi bi-plug text-2xl text-gray-400"></i>
                                 </div>
                             </div>
-                            
-                            <hr class="my-3">
-                            
-                            <div class="row text-center mb-3">
-                                <div class="col-6 border-right">
-                                    <div class="small text-gray-500">Ahorro Mensual</div>
-                                    <div class="h6 font-weight-bold text-success">
+
+                            {{-- Stats --}}
+                            <div class="grid grid-cols-2 gap-4 py-4 border-y border-gray-100">
+                                <div class="text-center">
+                                    <p class="text-xs text-gray-500 uppercase tracking-wide">Ahorro Mensual</p>
+                                    <p class="text-xl font-bold text-emerald-600">
                                         ${{ number_format($op['monthly_savings_amount'], 0, ',', '.') }}
-                                    </div>
+                                    </p>
                                 </div>
-                                <div class="col-6">
-                                    <div class="small text-gray-500">Recupero</div>
-                                    <div class="h6 font-weight-bold">
-                                        {{ $op['payback_months'] }} meses
-                                    </div>
+                                <div class="text-center">
+                                    <p class="text-xs text-gray-500 uppercase tracking-wide">Recupero</p>
+                                    <p class="text-xl font-bold text-gray-900">{{ $op['payback_months'] }} meses</p>
                                 </div>
                             </div>
 
-                            <div class="alert alert-light border small mb-3">
-                                <i class="fas fa-lightbulb text-warning mr-1"></i>
-                                Sugerencia: <strong>{{ $op['replacement_suggestion'] }}</strong>
+                            {{-- Suggestion --}}
+                            <div class="mt-4 p-3 bg-amber-50 rounded-xl">
+                                <p class="text-sm text-gray-700">
+                                    <i class="bi bi-lightbulb text-amber-500 mr-1"></i>
+                                    <strong>{{ $op['replacement_suggestion'] }}</strong>
+                                </p>
                             </div>
 
-                            <div class="d-flex gap-2">
-                                <a href="{{ route('replacements.refine', $op['equipment_id']) }}" class="btn btn-outline-secondary btn-block mt-0">
-                                    <i class="fas fa-edit mr-1"></i> Editar Datos
-                                </a>
-                                <a href="{{ $op['affiliate_link'] ?? '#' }}" target="_blank" class="btn btn-{{ $op['verdict']['color'] }} btn-block mt-0">
-                                    <i class="fas fa-shopping-cart mr-1"></i> Ver en Mercado Libre
-                                </a>
+                            {{-- Actions --}}
+                            <div class="flex gap-2 mt-4">
+                                <x-button variant="secondary" size="sm" href="{{ route('replacements.refine', $op['equipment_id']) }}" class="flex-1">
+                                    <i class="bi bi-pencil mr-1"></i> Editar
+                                </x-button>
+                                <x-button variant="primary" size="sm" href="{{ $op['affiliate_link'] ?? '#' }}" target="_blank" class="flex-1">
+                                    <i class="bi bi-cart mr-1"></i> Comprar
+                                </x-button>
                             </div>
                         </div>
                     </div>
+                @endforeach
+            </div>
+        @else
+            {{-- Empty State --}}
+            <x-card class="text-center py-16 mb-8">
+                <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="bi bi-check-circle text-4xl text-emerald-600"></i>
                 </div>
-            @endforeach
-        </div>
-    @else
-        <div class="alert alert-info shadow-sm mb-4">
-            <h4 class="alert-heading"><i class="fas fa-check-circle mr-2"></i>¡Todo parece optimizado!</h4>
-            <p class="mb-0">No detectamos oportunidades obvias de reemplazo con la información actual.</p>
-        </div>
-    @endif
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">¡Todo Optimizado!</h3>
+                <p class="text-gray-500 max-w-md mx-auto">
+                    No detectamos oportunidades obvias de reemplazo con la información actual.
+                </p>
+            </x-card>
+        @endif
 
-    @if(isset($analyzableEquipments) && count($analyzableEquipments) > 0)
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Mis Equipos Analizados</h6>
-            </div>
-            <div class="card-body">
-                <p class="mb-3">Si crees que alguno de estos equipos es ineficiente, agrega más detalles (Año, Etiqueta) para recalcular.</p>
-                <div class="table-responsive">
-                    <table class="table table-bordered" width="100%" cellspacing="0">
-                        <thead>
-                            <tr>
-                                <th>Equipo</th>
-                                <th>Categoría</th>
-                                <th>Detalles Actuales</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($analyzableEquipments as $eq)
-                                <tr>
-                                    <form action="{{ route('replacements.update_refinement', $eq->id) }}" method="POST">
-                                        @csrf
-                                        @method('PUT')
-                                        <td class="align-middle">
-                                            <strong>{{ $eq->name }}</strong>
-                                        </td>
-                                        <td class="align-middle">{{ $eq->category->name ?? '-' }}</td>
-                                        <td>
-                                            <div class="form-row align-items-center">
-                                                <div class="col-auto">
-                                                    <input type="number" name="acquisition_year" class="form-control form-control-sm" placeholder="Año (Ej: 2015)" value="{{ $eq->acquisition_year }}" style="width: 100px;">
-                                                </div>
-                                                <div class="col-auto">
-                                                    <select name="energy_label" class="form-control form-control-sm">
-                                                        <option value="">Etiqueta...</option>
-                                                        @foreach(['A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E'] as $label)
-                                                            <option value="{{ $label }}" {{ $eq->energy_label == $label ? 'selected' : '' }}>{{ $label }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                <div class="col-auto">
-                                                    <div class="custom-control custom-checkbox">
-                                                        <input type="checkbox" class="custom-control-input" id="inverter_{{ $eq->id }}" name="is_inverter" value="1" {{ $eq->is_inverter ? 'checked' : '' }}>
-                                                        <label class="custom-control-label small" for="inverter_{{ $eq->id }}">Inverter</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="align-middle">
-                                            <button type="submit" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-save"></i> Guardar
-                                            </button>
-                                        </td>
-                                    </form>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+        {{-- Analyzable Equipment Table --}}
+        @if(isset($analyzableEquipments) && count($analyzableEquipments) > 0)
+            <x-card :padding="false">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+                        <i class="bi bi-cpu text-blue-500"></i>
+                        Mis Equipos Analizados
+                    </h3>
+                    <p class="text-sm text-gray-500 mt-1">Agrega más detalles (Año, Etiqueta) para obtener mejores recomendaciones</p>
                 </div>
-            </div>
-        </div>
-    @endif
+                
+                <x-table>
+                    <x-slot:head>
+                        <tr>
+                            <th class="px-6 py-4">Equipo</th>
+                            <th class="px-6 py-4">Categoría</th>
+                            <th class="px-6 py-4">Detalles</th>
+                            <th class="px-6 py-4">Acción</th>
+                        </tr>
+                    </x-slot:head>
+                    
+                    @foreach($analyzableEquipments as $eq)
+                        <tr>
+                            <form action="{{ route('replacements.update_refinement', $eq->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <td class="px-6 py-4 font-medium text-gray-900">{{ $eq->name }}</td>
+                                <td class="px-6 py-4">
+                                    <x-badge variant="secondary">{{ $eq->category->name ?? '-' }}</x-badge>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <input type="number" name="acquisition_year" 
+                                            class="w-24 rounded-lg border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500"
+                                            placeholder="Año" value="{{ $eq->acquisition_year }}">
+                                        
+                                        <select name="energy_label" 
+                                            class="rounded-lg border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
+                                            <option value="">Etiqueta...</option>
+                                            @foreach(['A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E'] as $label)
+                                                <option value="{{ $label }}" {{ $eq->energy_label == $label ? 'selected' : '' }}>{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                        
+                                        <label class="flex items-center gap-1 cursor-pointer">
+                                            <input type="checkbox" name="is_inverter" value="1" 
+                                                {{ $eq->is_inverter ? 'checked' : '' }}
+                                                class="rounded border-gray-300 text-blue-500 focus:ring-blue-500">
+                                            <span class="text-sm text-gray-600">Inverter</span>
+                                        </label>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <x-button variant="primary" size="sm" type="submit">
+                                        <i class="bi bi-check-lg mr-1"></i> Guardar
+                                    </x-button>
+                                </td>
+                            </form>
+                        </tr>
+                    @endforeach
+                </x-table>
+            </x-card>
+        @endif
+    </div>
 </div>
 @endsection

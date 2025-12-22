@@ -1,72 +1,189 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <h1>Cargar Nueva Factura</h1>
-    <form method="POST" action="{{ route('entities.invoices.store', $entity->id) }}">
-        @csrf
-        <div class="mb-3">
-            <label for="invoice_number" class="form-label">N° de Factura</label>
-            <input type="text" class="form-control" id="invoice_number" name="invoice_number">
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {{-- Header --}}
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-4">
+                <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <i class="bi bi-plus-lg text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Nueva Factura</h1>
+                    <p class="text-gray-500 text-sm">{{ $entity->name }}</p>
+                </div>
+            </div>
+            <x-button variant="secondary" href="{{ route($config['route_prefix'] . '.invoices', $entity->id) }}">
+                <i class="bi bi-arrow-left mr-2"></i> Volver
+            </x-button>
         </div>
-        <div class="mb-3">
-            <label for="invoice_date" class="form-label">Fecha de Emisión</label>
-            <input type="date" class="form-control" id="invoice_date" name="invoice_date">
-        </div>
-        <div class="mb-3">
-            <label for="start_date" class="form-label">Fecha Inicio</label>
-            <input type="date" class="form-control" id="start_date" name="start_date" required>
-        </div>
-        <div class="mb-3">
-            <label for="end_date" class="form-label">Fecha Fin</label>
-            <input type="date" class="form-control" id="end_date" name="end_date" required>
-        </div>
-        <div class="mb-3">
-            <label for="energy_consumed_p1_kwh" class="form-label">Consumo P1 (kWh)</label>
-            <input type="number" step="0.001" class="form-control" id="energy_consumed_p1_kwh" name="energy_consumed_p1_kwh">
-        </div>
-        <div class="mb-3">
-            <label for="energy_consumed_p2_kwh" class="form-label">Consumo P2 (kWh)</label>
-            <input type="number" step="0.001" class="form-control" id="energy_consumed_p2_kwh" name="energy_consumed_p2_kwh">
-        </div>
-        <div class="mb-3">
-            <label for="energy_consumed_p3_kwh" class="form-label">Consumo P3 (kWh)</label>
-            <input type="number" step="0.001" class="form-control" id="energy_consumed_p3_kwh" name="energy_consumed_p3_kwh">
-        </div>
-        <div class="mb-3">
-            <label for="total_energy_consumed_kwh" class="form-label">Consumo Total (kWh)</label>
-            <input type="number" step="0.001" class="form-control" id="total_energy_consumed_kwh" name="total_energy_consumed_kwh" required>
-        </div>
-        <div class="mb-3">
-            <label for="cost_for_energy" class="form-label">Costo Energía</label>
-            <input type="number" step="0.01" class="form-control" id="cost_for_energy" name="cost_for_energy">
-        </div>
-        <div class="mb-3">
-            <label for="cost_for_power" class="form-label">Costo Potencia</label>
-            <input type="number" step="0.01" class="form-control" id="cost_for_power" name="cost_for_power">
-        </div>
-        <div class="mb-3">
-            <label for="taxes" class="form-label">Impuestos</label>
-            <input type="number" step="0.01" class="form-control" id="taxes" name="taxes">
-        </div>
-        <div class="mb-3">
-            <label for="other_charges" class="form-label">Otros Cargos</label>
-            <input type="number" step="0.01" class="form-control" id="other_charges" name="other_charges">
-        </div>
-        <div class="mb-3">
-            <label for="total_amount" class="form-label">Importe Total</label>
-            <input type="number" step="0.01" class="form-control" id="total_amount" name="total_amount" required>
-        </div>
-        {{-- Campo oculto para Energía Inyectada (kWh), solo se usará en otro contexto --}}
-        {{-- Campo oculto para Compensación Excedente, solo se analizará en otro contexto --}}
-        {{-- Campo oculto para Archivo, no se mostrará en el formulario --}}
-        <div class="mb-3">
-            <label for="source" class="form-label">Fuente</label>
-            <input type="text" class="form-control" id="source" name="source" value="manual">
-        </div>
-        {{-- Campo oculto para Huella CO2 (kg), solo se analizará en otro contexto --}}
-        <button type="submit" class="btn btn-success">Guardar</button>
-        <a href="{{ route('entities.invoices.index', $entity->id) }}" class="btn btn-secondary">Cancelar</a>
-    </form>
+
+        {{-- Form --}}
+        <x-card>
+            <form method="POST" action="{{ route($config['route_prefix'] . '.invoices.store', $entity->id) }}">
+                @csrf
+
+                {{-- Basic Info Section --}}
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                        <i class="bi bi-file-earmark-text text-emerald-500"></i>
+                        Datos de la Factura
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <x-input 
+                            name="invoice_number" 
+                            label="N° de Factura" 
+                            placeholder="Ej: 0001-00012345"
+                            :value="old('invoice_number')"
+                        />
+                        <x-input 
+                            name="invoice_date" 
+                            label="Fecha de Emisión" 
+                            type="date"
+                            :value="old('invoice_date')"
+                        />
+                    </div>
+                </div>
+
+                {{-- Period Section --}}
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                        <i class="bi bi-calendar3 text-blue-500"></i>
+                        Período de Facturación
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <x-input 
+                            name="start_date" 
+                            label="Fecha Inicio" 
+                            type="date"
+                            :value="old('start_date')"
+                            required
+                        />
+                        <x-input 
+                            name="end_date" 
+                            label="Fecha Fin" 
+                            type="date"
+                            :value="old('end_date')"
+                            required
+                        />
+                    </div>
+                </div>
+
+                {{-- Consumption Section --}}
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                        <i class="bi bi-lightning-charge text-amber-500"></i>
+                        Consumo de Energía
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                        <x-input 
+                            name="energy_consumed_p1_kwh" 
+                            label="Consumo P1 (kWh)" 
+                            type="number"
+                            placeholder="0"
+                            :value="old('energy_consumed_p1_kwh')"
+                            helper="Pico"
+                        />
+                        <x-input 
+                            name="energy_consumed_p2_kwh" 
+                            label="Consumo P2 (kWh)" 
+                            type="number"
+                            placeholder="0"
+                            :value="old('energy_consumed_p2_kwh')"
+                            helper="Valle"
+                        />
+                        <x-input 
+                            name="energy_consumed_p3_kwh" 
+                            label="Consumo P3 (kWh)" 
+                            type="number"
+                            placeholder="0"
+                            :value="old('energy_consumed_p3_kwh')"
+                            helper="Resto"
+                        />
+                    </div>
+                    
+                    <div class="bg-emerald-50 rounded-xl p-4">
+                        <x-input 
+                            name="total_energy_consumed_kwh" 
+                            label="Consumo Total (kWh)" 
+                            type="number"
+                            placeholder="0"
+                            :value="old('total_energy_consumed_kwh')"
+                            required
+                            class="bg-white"
+                        />
+                    </div>
+                </div>
+
+                {{-- Costs Section --}}
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                        <i class="bi bi-currency-dollar text-green-500"></i>
+                        Costos
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                        <x-input 
+                            name="cost_for_energy" 
+                            label="Costo Energía" 
+                            type="number"
+                            placeholder="0.00"
+                            :value="old('cost_for_energy')"
+                        />
+                        <x-input 
+                            name="cost_for_power" 
+                            label="Costo Potencia" 
+                            type="number"
+                            placeholder="0.00"
+                            :value="old('cost_for_power')"
+                        />
+                        <x-input 
+                            name="taxes" 
+                            label="Impuestos" 
+                            type="number"
+                            placeholder="0.00"
+                            :value="old('taxes')"
+                        />
+                        <x-input 
+                            name="other_charges" 
+                            label="Otros Cargos" 
+                            type="number"
+                            placeholder="0.00"
+                            :value="old('other_charges')"
+                        />
+                    </div>
+                    
+                    <div class="bg-blue-50 rounded-xl p-4">
+                        <x-input 
+                            name="total_amount" 
+                            label="Importe Total" 
+                            type="number"
+                            placeholder="0.00"
+                            :value="old('total_amount')"
+                            required
+                            class="bg-white"
+                        />
+                    </div>
+                </div>
+
+                <input type="hidden" name="source" value="manual">
+
+                {{-- Actions --}}
+                <div class="flex justify-end gap-3 pt-6 border-t border-gray-200">
+                    <x-button variant="secondary" href="{{ route($config['route_prefix'] . '.invoices', $entity->id) }}">
+                        Cancelar
+                    </x-button>
+                    <x-button variant="primary" type="submit">
+                        <i class="bi bi-check-lg mr-2"></i> Guardar Factura
+                    </x-button>
+                </div>
+            </form>
+        </x-card>
+    </div>
 </div>
 @endsection

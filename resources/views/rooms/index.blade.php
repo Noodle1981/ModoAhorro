@@ -1,56 +1,92 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2><i class="bi bi-door-open"></i> Habitaciones de la entidad</h2>
-        <a href="{{ route('rooms.create', $entity->id) }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Nueva habitación
-        </a>
-    </div>
-    <div class="card shadow">
-        <div class="card-body">
-            @if($rooms->isEmpty())
-                <p class="text-muted">No hay habitaciones registradas aún.</p>
-            @else
-                <div class="table-responsive">
-                    <table class="table table-bordered align-middle">
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Descripción</th>
-                                <th>Cant. Equipos</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($rooms as $room)
-                                <tr>
-                                    <td>{{ $room->name }}</td>
-                                    <td>{{ $room->description }}</td>
-                                    <td>{{ $room->equipment->count() }}</td>
-                                    <td>
-                                        <a href="{{ route('rooms.show', [$entity->id, $room->id]) }}" class="btn btn-info btn-sm"><i class="bi bi-eye"></i></a>
-                                        <a href="{{ route('rooms.edit', [$entity->id, $room->id]) }}" class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
-                                        <a href="{{ route('rooms.equipment.dashboard', [$entity->id, $room->id]) }}" class="btn btn-success btn-sm"><i class="bi bi-plus-circle"></i> Agregar equipos</a>
-                                        <form action="{{ route('rooms.destroy', [$entity->id, $room->id]) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar esta habitación?')"><i class="bi bi-trash"></i></button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {{-- Header --}}
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div class="flex items-center gap-4">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <i class="bi bi-door-open text-xl"></i>
                 </div>
-            @endif
-            <div class="mt-4">
-                <a href="{{ route('entities.show', $entity->id) }}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Volver a la entidad
-                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ $config['rooms_label'] ?? 'Habitaciones' }}</h1>
+                    <p class="text-gray-500 text-sm flex items-center gap-2">
+                        <i class="{{ $config['icon_secondary'] ?? 'bi-house' }}"></i>
+                        {{ $entity->name }}
+                    </p>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-4 md:mt-0">
+                <x-button variant="primary" href="{{ route($config['route_prefix'] . '.rooms.create', $entity->id) }}">
+                    <i class="bi bi-plus-circle mr-2"></i> Nueva {{ str_replace('s', '', $config['rooms_label'] ?? 'Habitación') }}
+                </x-button>
+                <x-button variant="secondary" href="{{ route($config['route_prefix'] . '.show', $entity->id) }}">
+                    <i class="bi bi-arrow-left mr-2"></i> Volver
+                </x-button>
             </div>
         </div>
+
+        {{-- Rooms Grid --}}
+        @if($rooms->isEmpty())
+            <x-card class="text-center py-16">
+                <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="{{ $config['rooms_icon'] ?? 'bi-door-open' }} text-4xl text-blue-600"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Sin {{ strtolower($config['rooms_label'] ?? 'Habitaciones') }}</h3>
+                <p class="text-gray-500 mb-6 max-w-md mx-auto">
+                    Agrega {{ strtolower($config['rooms_label'] ?? 'habitaciones') }} para organizar tus equipos y calcular el consumo de cada área.
+                </p>
+                <x-button variant="primary" href="{{ route($config['route_prefix'] . '.rooms.create', $entity->id) }}">
+                    <i class="bi bi-plus-circle mr-2"></i> Crear primera {{ str_replace('s', '', strtolower($config['rooms_label'] ?? 'habitación')) }}
+                </x-button>
+            </x-card>
+        @else
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                @foreach($rooms as $room)
+                    <x-card hover class="group relative">
+                        {{-- Room Icon --}}
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <i class="{{ $config['rooms_icon'] ?? 'bi-door-open' }} text-xl text-blue-600"></i>
+                            </div>
+                            <x-badge variant="{{ $room->equipment->count() > 0 ? 'success' : 'default' }}">
+                                {{ $room->equipment->count() }} equipos
+                            </x-badge>
+                        </div>
+                        
+                        {{-- Room Info --}}
+                        <h3 class="font-semibold text-gray-900 text-lg mb-1">{{ $room->name }}</h3>
+                        <p class="text-gray-500 text-sm mb-4 line-clamp-2">
+                            {{ $room->description ?: 'Sin descripción' }}
+                        </p>
+                        
+                        {{-- Actions --}}
+                        <div class="flex items-center gap-2 pt-4 border-t border-gray-100">
+                            <x-button variant="ghost" size="xs" href="{{ route($config['route_prefix'] . '.rooms.show', [$entity->id, $room->id]) }}" title="Ver">
+                                <i class="bi bi-eye"></i>
+                            </x-button>
+                            <x-button variant="ghost" size="xs" href="{{ route($config['route_prefix'] . '.rooms.edit', [$entity->id, $room->id]) }}" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </x-button>
+                            <x-button variant="primary" size="xs" href="{{ route($config['route_prefix'] . '.rooms.equipment', [$entity->id, $room->id]) }}" class="flex-1">
+                                <i class="bi bi-plug mr-1"></i> Equipos
+                            </x-button>
+                            <form action="{{ route($config['route_prefix'] . '.rooms.destroy', [$entity->id, $room->id]) }}" method="POST" class="inline">
+                                @csrf
+                                @method('DELETE')
+                                <x-button variant="ghost" size="xs" type="submit" 
+                                    onclick="return confirm('¿Seguro que deseas eliminar esta habitación?')"
+                                    class="text-red-500 hover:text-red-700 hover:bg-red-50">
+                                    <i class="bi bi-trash"></i>
+                                </x-button>
+                            </form>
+                        </div>
+                    </x-card>
+                @endforeach
+            </div>
+        @endif
     </div>
 </div>
 @endsection

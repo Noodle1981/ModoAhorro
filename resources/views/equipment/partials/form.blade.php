@@ -1,46 +1,88 @@
-<form method="POST" action="{{ route('rooms.equipment.store', [$room->entity_id, $room->id]) }}">
+<form method="POST" action="{{ route($config['route_prefix'] . '.rooms.equipment.store', [$room->entity_id, $room->id]) }}">
     @csrf
-    <div class="mb-3">
-        <label for="name" class="form-label">Nombre del Equipo</label>
-        <input type="text" class="form-control" id="name" name="name" required>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {{-- Name --}}
+        <x-input 
+            name="name" 
+            label="Nombre del Equipo" 
+            placeholder="Ej: Aire Acondicionado Split"
+            :value="old('name')"
+            required 
+        />
+        
+        {{-- Category --}}
+        <div class="space-y-1.5">
+            <label for="category_id" class="block text-sm font-medium text-gray-700">
+                Categoría <span class="text-red-500">*</span>
+            </label>
+            <select name="category_id" id="category_id" required
+                onchange="filtrarEquiposPorCategoria()"
+                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                <option value="">Seleccione una categoría...</option>
+                @foreach($categories as $category)
+                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                @endforeach
+            </select>
+        </div>
     </div>
-    <div class="mb-3">
-        <label for="category_id" class="form-label">Categoría</label>
-        <select class="form-control" id="category_id" name="category_id" required onchange="filtrarEquiposPorCategoria()">
-            <option value="">Seleccione una categoría...</option>
-            @foreach($categories as $category)
-                <option value="{{ $category->id }}">{{ $category->name }}</option>
-            @endforeach
-        </select>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {{-- Type --}}
+        <div class="space-y-1.5">
+            <label for="type_id" class="block text-sm font-medium text-gray-700">
+                Tipo de Equipo <span class="text-red-500">*</span>
+            </label>
+            <select name="type_id" id="type_id" required
+                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                <option value="">Seleccione un equipo...</option>
+                @foreach($types as $type)
+                    <option value="{{ $type->id }}" data-category="{{ $type->category_id }}">{{ $type->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        
+        {{-- Power --}}
+        <x-input 
+            name="nominal_power_w" 
+            label="Potencia Nominal (W)" 
+            type="number"
+            placeholder="Ej: 1500"
+            :value="old('nominal_power_w')"
+            required 
+            helper="Verificá el consumo en la etiqueta del equipo"
+        />
     </div>
-    <div class="mb-3">
-        <label for="type_id" class="form-label">Equipo</label>
-        <select class="form-control" id="type_id" name="type_id" required>
-            <option value="">Seleccione un equipo...</option>
-            @foreach($types as $type)
-                <option value="{{ $type->id }}" data-category="{{ $type->category_id }}">{{ $type->name }}</option>
-            @endforeach
-        </select>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {{-- Quantity --}}
+        <x-input 
+            name="cantidad" 
+            label="Cantidad" 
+            type="number"
+            placeholder="1"
+            :value="old('cantidad', 1)"
+            required 
+        />
     </div>
-    <script>
-    function filtrarEquiposPorCategoria() {
-        var categoriaId = document.getElementById('category_id').value;
-        var equipoSelect = document.getElementById('type_id');
-        for (var i = 0; i < equipoSelect.options.length; i++) {
-            var option = equipoSelect.options[i];
-            if (!option.value) continue;
-            option.style.display = !categoriaId || option.getAttribute('data-category') === categoriaId ? '' : 'none';
-        }
-        equipoSelect.value = '';
-    }
-    </script>
-    <div class="mb-3">
-        <label for="nominal_power_w" class="form-label">Potencia Nominal (W)</label>
-        <input type="number" class="form-control" id="nominal_power_w" name="nominal_power_w" required min="1" step="1" oninput="if(this.value<1)this.value=1;">
+    
+    {{-- Submit --}}
+    <div class="flex justify-end pt-4 border-t border-gray-200">
+        <x-button variant="primary" type="submit">
+            <i class="bi bi-check-lg mr-2"></i> Guardar Equipo
+        </x-button>
     </div>
-    <div class="mb-3">
-        <label for="cantidad" class="form-label">Cantidad</label>
-        <input type="number" class="form-control" id="cantidad" name="cantidad" value="1" min="1" step="1" required>
-    </div>
-    <button type="submit" class="btn btn-success">Guardar</button>
 </form>
+
+<script>
+function filtrarEquiposPorCategoria() {
+    var categoriaId = document.getElementById('category_id').value;
+    var equipoSelect = document.getElementById('type_id');
+    for (var i = 0; i < equipoSelect.options.length; i++) {
+        var option = equipoSelect.options[i];
+        if (!option.value) continue;
+        option.style.display = !categoriaId || option.getAttribute('data-category') === categoriaId ? '' : 'none';
+    }
+    equipoSelect.value = '';
+}
+</script>

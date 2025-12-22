@@ -1,292 +1,297 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-bar-chart-line"></i> Panel de Consumo Energético - Detalle</h2>
-        <a href="{{ route('consumption.panel') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Volver al Dashboard
-        </a>
-    </div>
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card shadow border-primary">
-                <div class="card-body">
-                    <h4 class="card-title mb-3"><i class="bi bi-speedometer2"></i> Análisis de Consumo</h4>
-                    
-                    <div class="row align-items-center mb-4">
-                        <div class="col-12 text-center">
-                            <h6 class="text-muted text-uppercase">Consumo Facturado</h6>
-                            <h2 class="display-6 fw-bold text-primary">{{ number_format($invoice->total_energy_consumed_kwh, 2) }} kWh</h2>
-                        </div>
-                    </div>
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {{-- Header --}}
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div class="flex items-center gap-4">
+                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <i class="bi bi-bar-chart-line text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Detalle del Período #{{ $invoice->id }}</h1>
+                    <p class="text-gray-500 text-sm">
+                        {{ \Carbon\Carbon::parse($invoice->start_date)->format('d/m/Y') }} - 
+                        {{ \Carbon\Carbon::parse($invoice->end_date)->format('d/m/Y') }}
+                    </p>
+                </div>
+            </div>
+            <x-button variant="secondary" href="{{ route('consumption.panel') }}">
+                <i class="bi bi-arrow-left mr-2"></i> Volver al Panel
+            </x-button>
+        </div>
 
-                    {{-- Alerta de Desviación --}}
-                    @if(isset($validation) && $validation['alert_level'] === 'danger')
-                        <div class="alert alert-danger mt-3">
-                            <h5><i class="bi bi-exclamation-triangle-fill"></i> Desviación Alta Detectada</h5>
-                            <p>El consumo calculado difiere en <strong>{{ $validation['deviation_percent'] }}%</strong> del facturado.</p>
-                            
+        {{-- Main Consumption Card --}}
+        <x-card class="mb-6 border-l-4 border-l-blue-500">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="bi bi-speedometer2 text-blue-600"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Análisis de Consumo</h3>
+            </div>
+            
+            {{-- Billed Consumption --}}
+            <div class="text-center py-6 mb-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
+                <p class="text-sm text-gray-500 uppercase tracking-wide mb-1">Consumo Facturado</p>
+                <p class="text-4xl font-bold text-blue-600">{{ number_format($invoice->total_energy_consumed_kwh, 0) }}</p>
+                <p class="text-gray-500">kWh</p>
+            </div>
+            
+            {{-- Deviation Alert --}}
+            @if(isset($validation) && $validation['alert_level'] === 'danger')
+                <x-alert type="danger" class="mb-4">
+                    <div class="flex items-start gap-3">
+                        <i class="bi bi-exclamation-triangle-fill text-xl"></i>
+                        <div>
+                            <h4 class="font-semibold">Desviación Alta Detectada</h4>
+                            <p class="text-sm mt-1">El consumo calculado difiere en <strong>{{ $validation['deviation_percent'] }}%</strong> del facturado.</p>
                             @if(count($suggestions) > 0)
-                                <p class="mb-2"><strong>Sugerencias para corregir:</strong></p>
-                                <ul class="mb-3">
+                                <ul class="mt-2 text-sm list-disc list-inside">
                                     @foreach($suggestions as $suggestion)
                                         <li>{{ $suggestion }}</li>
                                     @endforeach
                                 </ul>
                             @endif
-                            
-                            <a href="{{ route('usage_adjustments.edit', $invoice->id) }}" class="btn btn-warning">
-                                <i class="bi bi-sliders"></i> Revisar Ajustes
-                            </a>
+                            <x-button variant="warning" size="sm" href="{{ route('usage_adjustments.edit', $invoice->id) }}" class="mt-3">
+                                <i class="bi bi-sliders mr-1"></i> Revisar Ajustes
+                            </x-button>
                         </div>
-                    @elseif(isset($validation) && $validation['alert_level'] === 'warning')
-                        <div class="alert alert-warning mt-3">
-                            <strong><i class="bi bi-exclamation-circle"></i> Desviación moderada:</strong> {{ $validation['deviation_percent'] }}%
-                            <a href="{{ route('usage_adjustments.edit', $invoice->id) }}" class="btn-link ms-2">
-                                Revisar Ajustes
-                            </a>
+                    </div>
+                </x-alert>
+            @elseif(isset($validation) && $validation['alert_level'] === 'warning')
+                <x-alert type="warning" class="mb-4">
+                    <strong>Desviación moderada:</strong> {{ $validation['deviation_percent'] }}%
+                    <a href="{{ route('usage_adjustments.edit', $invoice->id) }}" class="underline ml-2">Revisar Ajustes</a>
+                </x-alert>
+            @endif
+        </x-card>
+
+        {{-- Two Column Layout --}}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            
+            {{-- Category Breakdown --}}
+            <x-card>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-pie-chart text-purple-600"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Consumo por Categoría</h3>
+                </div>
+                
+                <div class="space-y-3">
+                    @foreach($consumoPorCategoria as $categoria => $consumo)
+                        @php $pctCat = $totalEnergia > 0 ? ($consumo / $totalEnergia) * 100 : 0; @endphp
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-medium text-gray-900">{{ $categoria }}</span>
+                                    <span class="text-sm text-gray-500">{{ number_format($pctCat, 1) }}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full" style="width: {{ $pctCat }}%"></div>
+                                </div>
+                            </div>
+                            <div class="ml-4 text-right">
+                                <span class="font-bold text-gray-900">{{ number_format($consumo, 0) }}</span>
+                                <span class="text-xs text-gray-500">kWh</span>
+                            </div>
                         </div>
-                    @endif
+                    @endforeach
+                </div>
+            </x-card>
+
+            {{-- Period Details --}}
+            <x-card>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-calendar-week text-emerald-600"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Detalles del Período</h3>
+                </div>
+                
+                {{-- Billing Info --}}
+                <div class="mb-6">
+                    <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Facturación</h4>
+                    @php
+                        $startDate = \Carbon\Carbon::parse($invoice->start_date);
+                        $endDate = \Carbon\Carbon::parse($invoice->end_date);
+                        $days = $startDate->diffInDays($endDate);
+                    @endphp
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Nº Factura</span>
+                            <span class="font-mono font-medium">#{{ $invoice->id }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Período</span>
+                            <span>{{ $startDate->format('d/m/Y') }} - {{ $endDate->format('d/m/Y') }} <x-badge variant="secondary" size="xs">{{ $days }} días</x-badge></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Monto Total</span>
+                            <span class="font-semibold text-emerald-600">${{ number_format($invoice->total_amount, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Potencia Instalada</span>
+                            <span>{{ number_format($totalPotencia, 0) }} W</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Climate Stats --}}
+                @if(isset($climateStats))
+                    <div class="pt-4 border-t border-gray-200">
+                        <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Clima (Histórico)</h4>
+                        <div class="grid grid-cols-3 gap-3 mb-3">
+                            <div class="p-3 bg-gray-50 rounded-xl text-center">
+                                <p class="text-xs text-gray-500">Promedio</p>
+                                <p class="font-bold text-gray-900">{{ $climateStats['avg_temp_avg'] ?? '-' }}°C</p>
+                            </div>
+                            <div class="p-3 bg-red-50 rounded-xl text-center">
+                                <p class="text-xs text-gray-500">Máxima</p>
+                                <p class="font-bold text-red-600">{{ $climateStats['avg_temp_max'] ?? '-' }}°C</p>
+                            </div>
+                            <div class="p-3 bg-blue-50 rounded-xl text-center">
+                                <p class="text-xs text-gray-500">Mínima</p>
+                                <p class="font-bold text-blue-600">{{ $climateStats['avg_temp_min'] ?? '-' }}°C</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 text-sm">
+                            <span class="text-red-600">
+                                <i class="bi bi-thermometer-sun"></i> Días Calor (>28°C): <strong>{{ $climateStats['hot_days_count'] ?? 0 }}</strong>
+                            </span>
+                            <span class="text-blue-600">
+                                <i class="bi bi-thermometer-snow"></i> Días Frío (<15°C): <strong>{{ $climateStats['cold_days_count'] ?? 0 }}</strong>
+                            </span>
+                        </div>
+                    </div>
+                @endif
+            </x-card>
+        </div>
+
+        {{-- Equipment Table --}}
+        <x-card :padding="false" class="mb-6">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-lightbulb text-amber-600"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Detalle por Equipo</h3>
                 </div>
             </div>
-        </div>
-    </div>
+            
+            <x-table hover>
+                <x-slot:head>
+                    <tr>
+                        <th class="px-6 py-4">Equipo</th>
+                        <th class="px-6 py-4">Categoría</th>
+                        <th class="px-6 py-4">Habitación</th>
+                        <th class="px-6 py-4 text-right">Potencia</th>
+                        <th class="px-6 py-4 text-right">Consumo</th>
+                        <th class="px-6 py-4">Estado</th>
+                    </tr>
+                </x-slot:head>
+                
+                @foreach($invoice->equipmentUsages as $usage)
+                    @php
+                        $calibratedUsage = $calibratedUsages->firstWhere('equipment_id', $usage->equipment_id);
+                        $status = $calibratedUsage->calibration_status ?? null;
+                        $note = $calibratedUsage->calibration_note ?? '';
+                    @endphp
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium text-gray-900">{{ $usage->equipment->name }}</td>
+                        <td class="px-6 py-4">
+                            <x-badge variant="secondary">{{ $usage->equipment->category->name ?? 'General' }}</x-badge>
+                        </td>
+                        <td class="px-6 py-4 text-gray-600">{{ $usage->equipment->room->name ?? '-' }}</td>
+                        <td class="px-6 py-4 text-right font-mono">{{ $usage->equipment->nominal_power_w ?? '-' }} W</td>
+                        <td class="px-6 py-4 text-right font-bold text-blue-600">{{ number_format($consumos[$usage->equipment_id] ?? 0, 1) }} kWh</td>
+                        <td class="px-6 py-4">
+                            @if($status === 'BASE_CRITICAL')
+                                <x-badge variant="success" title="{{ $note }}"><i class="bi bi-shield-lock-fill mr-1"></i> Base Crítica</x-badge>
+                            @elseif($status === 'BASE_HEAVY')
+                                <x-badge variant="success" title="{{ $note }}"><i class="bi bi-droplet-fill mr-1"></i> Base Pesada</x-badge>
+                            @elseif($status === 'PROTECTED_ANT')
+                                <x-badge variant="info" title="{{ $note }}"><i class="bi bi-shield-lock mr-1"></i> Hormiga</x-badge>
+                            @elseif($status === 'WEIGHTED_ADJUSTMENT')
+                                <x-badge variant="warning" title="{{ $note }}"><i class="bi bi-sliders mr-1"></i> Ballena</x-badge>
+                            @elseif($status === 'CRITICAL_CUT')
+                                <x-badge variant="danger" title="{{ $note }}"><i class="bi bi-exclamation-octagon mr-1"></i> Recorte Crítico</x-badge>
+                            @elseif($status === 'HEAVY_CUT')
+                                <x-badge variant="danger" title="{{ $note }}"><i class="bi bi-scissors mr-1"></i> Recorte Pesado</x-badge>
+                            @elseif($status === 'ANT_CUT')
+                                <x-badge variant="danger" title="{{ $note }}"><i class="bi bi-scissors mr-1"></i> Recorte Hormiga</x-badge>
+                            @elseif($status === 'ZERO_ALLOCATION')
+                                <x-badge variant="secondary" title="{{ $note }}"><i class="bi bi-slash-circle mr-1"></i> Apagado</x-badge>
+                            @else
+                                <x-badge variant="secondary">-</x-badge>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </x-table>
+        </x-card>
 
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card shadow h-100">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Consumo por Categoría</h5>
+        {{-- Adjustment Guide --}}
+        <x-card>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <i class="bi bi-info-circle text-gray-600"></i>
                 </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        @foreach($consumoPorCategoria as $categoria => $consumo)
-                            @php 
-                                $pctCat = $totalEnergia > 0 ? ($consumo / $totalEnergia) * 100 : 0;
-                            @endphp
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>{{ $categoria }}</strong>
-                                    <div class="progress mt-1" style="height: 5px; width: 100px;">
-                                        <div class="progress-bar" role="progressbar" style="width: {{ $pctCat }}%"></div>
-                                    </div>
-                                </div>
-                                <div class="text-end">
-                                    <span class="fw-bold">{{ number_format($consumo, 2) }} kWh</span>
-                                    <br>
-                                    <small class="text-muted">{{ number_format($pctCat, 1) }}%</small>
-                                </div>
-                            </li>
-                        @endforeach
+                <h3 class="font-semibold text-gray-900">Guía de Ajustes (Motor Integral)</h3>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="p-4 bg-emerald-50 rounded-xl">
+                    <h4 class="font-semibold text-emerald-700 flex items-center gap-2 mb-2">
+                        <i class="bi bi-shield-lock-fill"></i> Base Crítica
+                    </h4>
+                    <p class="text-xs text-gray-600 mb-2">Intocables. Se llenan primero.</p>
+                    <ul class="text-xs text-gray-500 space-y-1">
+                        <li><i class="bi bi-check-circle-fill text-emerald-500 mr-1"></i> Heladeras</li>
+                        <li><i class="bi bi-check-circle-fill text-emerald-500 mr-1"></i> Routers / Alarmas</li>
+                    </ul>
+                </div>
+                <div class="p-4 bg-green-50 rounded-xl">
+                    <h4 class="font-semibold text-green-700 flex items-center gap-2 mb-2">
+                        <i class="bi bi-droplet-fill"></i> Base Pesada
+                    </h4>
+                    <p class="text-xs text-gray-600 mb-2">Confort básico. Se llenan segundo.</p>
+                    <ul class="text-xs text-gray-500 space-y-1">
+                        <li><i class="bi bi-check-circle text-green-500 mr-1"></i> Termotanques</li>
+                        <li><i class="bi bi-check-circle text-green-500 mr-1"></i> Bombas de Agua</li>
+                    </ul>
+                </div>
+                <div class="p-4 bg-blue-50 rounded-xl">
+                    <h4 class="font-semibold text-blue-700 flex items-center gap-2 mb-2">
+                        <i class="bi bi-shield-check"></i> Hormigas
+                    </h4>
+                    <p class="text-xs text-gray-600 mb-2">Infraestructura. Se llenan tercero.</p>
+                    <ul class="text-xs text-gray-500 space-y-1">
+                        <li><i class="bi bi-lightbulb text-blue-500 mr-1"></i> Iluminación</li>
+                        <li><i class="bi bi-battery-charging text-blue-500 mr-1"></i> Cargadores</li>
+                    </ul>
+                </div>
+                <div class="p-4 bg-amber-50 rounded-xl">
+                    <h4 class="font-semibold text-amber-700 flex items-center gap-2 mb-2">
+                        <i class="bi bi-sliders"></i> Ballenas
+                    </h4>
+                    <p class="text-xs text-gray-600 mb-2">Ocio y Clima. Absorben variabilidad.</p>
+                    <ul class="text-xs text-gray-500 space-y-1">
+                        <li><i class="bi bi-snow text-amber-500 mr-1"></i> Aires / Estufas</li>
+                        <li><i class="bi bi-pc-display text-amber-500 mr-1"></i> PC Gamer / TV</li>
                     </ul>
                 </div>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card shadow h-100">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0"><i class="bi bi-calendar-week"></i> Detalles del Periodo</h5>
-                </div>
-                <div class="card-body">
-                    <h6 class="text-muted border-bottom pb-2 mb-3">Facturación</h6>
-                    <div class="mb-3">
-                        <p class="mb-1"><strong>Nº Factura:</strong> #{{ $invoice->id }}</p>
-                        <p class="mb-1">
-                            <strong>Periodo:</strong> 
-                            @php
-                                $startDate = \Carbon\Carbon::parse($invoice->start_date);
-                                $endDate = \Carbon\Carbon::parse($invoice->end_date);
-                                $days = $startDate->diffInDays($endDate);
-                            @endphp
-                            {{ $startDate->format('d/m/Y') }} - {{ $endDate->format('d/m/Y') }}
-                            <span class="badge bg-light text-dark ms-1">{{ $days }} días</span>
-                        </p>
-                        <p class="mb-1"><strong>Monto Total:</strong> ${{ number_format($invoice->total_amount, 2) }}</p>
-                        <p class="mb-0"><strong>Potencia Instalada:</strong> {{ number_format($totalPotencia, 0) }} W</p>
-                    </div>
-
-                    @if(isset($climateStats))
-                        <h6 class="text-muted border-bottom pb-2 mb-3 mt-4">Clima (Histórico)</h6>
-                        <div class="row text-center g-2">
-                            <div class="col-4">
-                                <div class="p-2 bg-light rounded">
-                                    <small class="d-block text-muted">Promedio</small>
-                                    <span class="fw-bold">{{ $climateStats['avg_temp_avg'] ?? '-' }}°C</span>
-                                </div>
-                            </div>
-                            <div class="col-4">
-                                <div class="p-2 bg-danger bg-opacity-10 rounded">
-                                    <small class="d-block text-muted">Máxima</small>
-                                    <span class="fw-bold text-danger">{{ $climateStats['avg_temp_max'] ?? '-' }}°C</span>
-                                </div>
-                            </div>
-                            <div class="col-4">
-                                <div class="p-2 bg-primary bg-opacity-10 rounded">
-                                    <small class="d-block text-muted">Mínima</small>
-                                    <span class="fw-bold text-primary">{{ $climateStats['avg_temp_min'] ?? '-' }}°C</span>
-                                </div>
-                            </div>
-                            <div class="col-6 mt-2">
-                                <small class="text-danger"><i class="bi bi-thermometer-sun"></i> Días Calor (>28°C): <strong>{{ $climateStats['hot_days_count'] ?? 0 }}</strong></small>
-                            </div>
-                            <div class="col-6 mt-2">
-                                <small class="text-primary"><i class="bi bi-thermometer-snow"></i> Días Frío (<15°C): <strong>{{ $climateStats['cold_days_count'] ?? 0 }}</strong></small>
-                            </div>
-                        </div>
-                    @endif
-
-                    <div class="mt-4 pt-3 border-top">
-                        <h6 class="text-muted mb-3"><i class="bi bi-info-circle"></i> Guía de Ajustes</h6>
-                        <ul class="list-unstyled small text-muted">
-                            <li class="mb-2">
-                                <span class="badge bg-success"><i class="bi bi-shield-lock"></i> Hormiga</span>
-                                <strong>Protegido:</strong> Equipos de bajo consumo o uso fijo (Heladeras, Luces). Su cálculo se considera exacto y no se altera.
-                            </li>
-                            <li class="mb-2">
-                                <span class="badge bg-warning text-dark"><i class="bi bi-sliders"></i> Ballena</span>
-                                <strong>Ajustado:</strong> Equipos de alta potencia variable. Absorben la diferencia para coincidir con la factura real.
-                            </li>
-                            <li class="mb-2">
-                                <span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Ajuste Global</span>
-                                <strong>Crítico:</strong> La factura es tan baja que no cubre ni siquiera los consumos "Hormiga". Se redujo todo proporcionalmente.
-                            </li>
-                            <li>
-                                <span class="badge bg-info text-dark"><i class="bi bi-thermometer-sun"></i> Clima</span>
-                                <strong>Ajuste Climático:</strong> El uso se recalculó basándose en los días reales de frío/calor registrados en la zona durante este periodo.
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-200">
+                <p class="text-sm text-gray-500">
+                    <i class="bi bi-info-circle mr-1"></i>
+                    <strong>Nota:</strong> Los termotanques incluyen ajuste climático automático (x1.25 en invierno, x0.85 en verano).
+                </p>
             </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-12">
-            <h5 class="mt-4 mb-3"><i class="bi bi-lightbulb"></i> Detalle por Equipo</h5>
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead class="table-primary">
-                        <tr>
-                            <th>Equipo</th>
-                            <th>Categoría</th>
-                            <th>Habitación</th>
-                            <th>Potencia (W)</th>
-                            <th>Consumo (kWh)</th>
-                            <th>Ajustado con API de Clima</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($invoice->equipmentUsages as $usage)
-                            <tr>
-                                <td class="fw-bold">{{ $usage->equipment->name }}</td>
-                                <td><span class="badge bg-secondary">{{ $usage->equipment->category->name ?? 'General' }}</span></td>
-                                <td>{{ $usage->equipment->room->name ?? '-' }}</td>
-                                <td>{{ $usage->equipment->nominal_power_w ?? '-' }}</td>
-                                <td class="fw-bold text-primary">{{ number_format($consumos[$usage->equipment_id] ?? 0, 2) }}</td>
-                            <td>
-                                @php
-                                    // Buscar el objeto calibratedUsage correspondiente
-                                    $calibratedUsage = $calibratedUsages->firstWhere('equipment_id', $usage->equipment_id);
-                                    $status = $calibratedUsage->calibration_status ?? null;
-                                    $note = $calibratedUsage->calibration_note ?? '';
-                                @endphp
-
-                                @if($status === 'BASE_CRITICAL')
-                                    <span class="badge bg-success" title="{{ $note }}">
-                                        <i class="bi bi-shield-lock-fill"></i> Base Crítica
-                                    </span>
-                                @elseif($status === 'BASE_HEAVY')
-                                    <span class="badge bg-success bg-opacity-75" title="{{ $note }}">
-                                        <i class="bi bi-droplet-fill"></i> Base Pesada
-                                    </span>
-                                @elseif($status === 'PROTECTED_ANT')
-                                    <span class="badge bg-success bg-opacity-50 text-dark" title="{{ $note }}">
-                                        <i class="bi bi-shield-lock"></i> Hormiga
-                                    </span>
-                                @elseif($status === 'WEIGHTED_ADJUSTMENT')
-                                    @if(($usage->equipment->category->name ?? '') === 'Climatización')
-                                        <span class="badge bg-warning text-dark" title="{{ $note }}">
-                                            <i class="bi bi-sliders"></i> Ballena (Clima Ajustado)
-                                        </span>
-                                    @else
-                                        <span class="badge bg-warning text-dark" title="{{ $note }}">
-                                            <i class="bi bi-sliders"></i> Ballena (Ajustado)
-                                        </span>
-                                    @endif
-                                @elseif($status === 'CRITICAL_CUT')
-                                    <span class="badge bg-danger" title="{{ $note }}">
-                                        <i class="bi bi-exclamation-octagon"></i> Recorte Crítico
-                                    </span>
-                                @elseif($status === 'HEAVY_CUT')
-                                    <span class="badge bg-danger bg-opacity-75" title="{{ $note }}">
-                                        <i class="bi bi-scissors"></i> Recorte Pesado
-                                    </span>
-                                @elseif($status === 'ANT_CUT')
-                                    <span class="badge bg-danger bg-opacity-50" title="{{ $note }}">
-                                        <i class="bi bi-scissors"></i> Recorte Hormiga
-                                    </span>
-                                @elseif($status === 'ZERO_ALLOCATION')
-                                    <span class="badge bg-secondary" title="{{ $note }}">
-                                        <i class="bi bi-slash-circle"></i> Apagado Forzoso
-                                    </span>
-                                @else
-                                    <span class="badge bg-secondary">-</span>
-                                @endif
-                            </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        </x-card>
     </div>
 </div>
-
-<div class="card mt-4 mb-4 shadow-sm">
-    <div class="card-header bg-light">
-        <h6 class="mb-0"><i class="bi bi-info-circle"></i> Guía de Ajustes (Motor Integral)</h6>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-3">
-                <h6 class="text-success"><i class="bi bi-shield-lock-fill"></i> Nivel 1: Base Crítica</h6>
-                <small class="text-muted d-block mb-2">Intocables. Se llenan primero.</small>
-                <ul class="list-unstyled small text-muted">
-                    <li><i class="bi bi-check-circle-fill text-success"></i> Heladeras</li>
-                    <li><i class="bi bi-check-circle-fill text-success"></i> Routers / Alarmas</li>
-                </ul>
-            </div>
-            <div class="col-md-3">
-                <h6 class="text-success text-opacity-75"><i class="bi bi-droplet-fill"></i> Nivel 2: Base Pesada</h6>
-                <small class="text-muted d-block mb-2">Confort básico. Se llenan segundo.</small>
-                <ul class="list-unstyled small text-muted">
-                    <li><i class="bi bi-check-circle text-success"></i> Termotanques</li>
-                    <li><i class="bi bi-check-circle text-success"></i> Bombas de Agua</li>
-                </ul>
-            </div>
-            <div class="col-md-3">
-                <h6 class="text-success text-opacity-50"><i class="bi bi-shield-check"></i> Nivel 3: Hormigas</h6>
-                <small class="text-muted d-block mb-2">Infraestructura. Se llenan tercero.</small>
-                <ul class="list-unstyled small text-muted">
-                    <li><i class="bi bi-lightbulb text-success"></i> Iluminación</li>
-                    <li><i class="bi bi-battery-charging text-success"></i> Cargadores</li>
-                </ul>
-            </div>
-            <div class="col-md-3">
-                <h6 class="text-warning"><i class="bi bi-sliders"></i> Nivel 4: Ballenas</h6>
-                <small class="text-muted d-block mb-2">Ocio y Clima. Absorben variabilidad.</small>
-                <ul class="list-unstyled small text-muted">
-                    <li><i class="bi bi-snow text-warning"></i> Aires / Estufas</li>
-                    <li><i class="bi bi-pc-display text-warning"></i> PC Gamer / TV</li>
-                </ul>
-            </div>
-        </div>
-        <div class="row mt-3 pt-3 border-top">
-            <div class="col-12">
-                <small class="text-muted"><i class="bi bi-info-circle"></i> <strong>Nota:</strong> Los termotanques incluyen ajuste climático automático (x1.25 en invierno, x0.85 en verano).</small>
-            </div>
-        </div>
-    </div>
-</div>
+@endsection

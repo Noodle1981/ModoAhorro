@@ -30,43 +30,43 @@ El sistema está construido sobre un stack robusto y moderno:
 El núcleo del sistema. Permite modelar hogares ("Entidades") con sus habitaciones y equipamiento detallado.
 *   **Funcionalidad**: Registro de facturas, carga de equipos, cálculo de consumo estimado vs. real.
 *   **Documentación Relacionada**: 
-    *   [Planes y Entidades](planes_y_entidades.md)
-    *   [Lógica de Cálculo de Energía](ENERGY_CALC_FIX.md)
+    *   [Planes y Entidades](archive/planes_y_entidades.md)
+    *   [Lógica de Cálculo de Energía](logic/ENERGY_CALC_FIX.md)
 
 ### 3.2. Energía Solar (Fotovoltaica y Térmica)
 Herramientas para evaluar el retorno de inversión en energías renovables.
 *   **Calculadora Solar**: Estima generación, ahorro y amortización de paneles solares basándose en el techo disponible y consumo histórico.
 *   **Termotanque Solar**: Simula el ahorro de gas/electricidad al instalar calentadores solares de agua.
 *   **Documentación Relacionada**:
-    *   [Lógica de Cobertura Solar](SOLAR_COVERAGE_LOGIC.MD)
-    *   [Lógica de Agua Solar](SOLAR_WATER_LOGIC.md)
+    *   [Lógica de Cobertura Solar](logic/SOLAR_COVERAGE_LOGIC.MD)
+    *   [Lógica de Agua Solar](logic/SOLAR_WATER_LOGIC.md)
 
 ### 3.3. Módulo de Vacaciones (Detección de Anomalías)
 Gestiona el comportamiento energético durante ausencias prolongadas.
 *   **Funcionalidad**: Checklist personalizado (desconectar router, vaciar heladera), y **Lógica de Anomalía de Datos** que marca automáticamente las facturas de periodos vacacionales como "No Representativas" para no ensuciar las proyecciones anuales.
 *   **Documentación Relacionada**:
-    *   [Módulo de Vacaciones](VACATION_MODULE.md)
-    *   [Lógica de Anomalía de Datos](DATA_ANOMALY_LOGIC.md)
+    *   [Módulo de Vacaciones](modules/VACATION_MODULE.md)
+    *   [Lógica de Anomalía de Datos](logic/DATA_ANOMALY_LOGIC.md)
 
 ### 3.4. Optimización de Red (Grid Optimization)
 Módulo financiero para usuarios con tarifas horarias (Time-of-Use).
 *   **Funcionalidad**: Detecta equipos "desplazables" (Lavarropas, Bombas) y calcula el ahorro exacto de mover su uso de horas Pico a horas Valle o "Resto" (Plan B).
 *   **Características**: Simulador de Tarifas, Línea de tiempo visual 24h.
 *   **Documentación Relacionada**:
-    *   [Módulo de Optimización de Red](GRID_OPTIMIZATION_MODULE.md)
+    *   [Módulo de Optimización de Red](modules/GRID_OPTIMIZATION_MODULE.md)
 
 ### 3.5. Medidor Inteligente (Simulador IoT)
 Una demostración de capacidades de tiempo real para vender hardware.
 *   **Funcionalidad**: Simulador estocástico en JS que muestra voltaje, potencia instantánea y costo por hora en tiempo real, con simulación de "Corte Remoto" y alertas de baja tensión.
 *   **Documentación Relacionada**:
-    *   [Demo Medidor Inteligente](SMART_METER_DEMO.md)
+    *   [Demo Medidor Inteligente](modules/SMART_METER_DEMO.md)
 
 ### 3.6. Mantenimiento y Consumo Fantasma
 *   **Mantenimiento**: Seguimiento de salud de equipos (limpieza de filtros AA) para evitar degradación de eficiencia.
 *   **Standby (Vampiro)**: Análisis del costo oculto de equipos en espera y herramientas para mitigarla.
 *   **Documentación Relacionada**:
-    *   [Módulo de Mantenimiento](MAINTENANCE_MODULE.md)
-    *   [Implementación Standby](STANDBY_IMPLEMENTATION.md)
+    *   [Módulo de Mantenimiento](modules/MAINTENANCE_MODULE.md)
+    *   [Implementación Standby](modules/STANDBY_IMPLEMENTATION.md)
 
 ### 3.7. Validación y Trazabilidad (Sprint 1)
 Nuevas capacidades para asegurar la integridad de los datos históricos y la precisión de los cálculos.
@@ -74,7 +74,7 @@ Nuevas capacidades para asegurar la integridad de los datos históricos y la pre
 *   **Trazabilidad de Equipos**: Historial de instalación y retiro (`installed_at`, `removed_at`) para que los ajustes de facturas pasadas reflejen solo los equipos activos en ese momento.
 *   **Bloqueo de Facturas**: Mecanismo de seguridad para "Cerrar Periodos" y evitar modificaciones accidentales en facturas ya auditadas.
 *   **Documentación Relacionada**:
-    *   [Walkthrough Sprint 1](walkthrough.md) (Detalles de implementación)
+    *   [Walkthrough Sprint 1](archive/walkthrough_energy_fix.md) (Detalles de implementación)
 
 ## 5. Guía de Instalación y Despliegue
 
