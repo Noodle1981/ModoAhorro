@@ -11,15 +11,23 @@
             {{-- Desktop Menu --}}
             <div class="hidden md:flex items-center gap-6">
                 @auth
-                    <a href="{{ route('dashboard') }}" class="text-gray-600 hover:text-emerald-600 font-medium transition-colors">
-                        <i class="bi bi-speedometer2 mr-1"></i> Dashboard
-                    </a>
-                    <a href="{{ route('equipment.index') }}" class="text-gray-600 hover:text-emerald-600 font-medium transition-colors">
-                        <i class="bi bi-plug mr-1"></i> Equipos
-                    </a>
-                    <a href="{{ route('consumption.panel') }}" class="text-gray-600 hover:text-emerald-600 font-medium transition-colors">
-                        <i class="bi bi-bar-chart mr-1"></i> Consumo
-                    </a>
+                    @if(auth()->user()->is_super_admin)
+                        {{-- Super Admin Menu --}}
+                        <a href="{{ route('admin.dashboard') }}" class="text-gray-600 hover:text-indigo-600 font-medium transition-colors">
+                            <i class="bi bi-shield-check mr-1"></i> Admin Dashboard
+                        </a>
+                    @else
+                        {{-- Regular User Menu --}}
+                        <a href="{{ route('dashboard') }}" class="text-gray-600 hover:text-emerald-600 font-medium transition-colors">
+                            <i class="bi bi-speedometer2 mr-1"></i> Dashboard
+                        </a>
+                        <a href="{{ route('equipment.index') }}" class="text-gray-600 hover:text-emerald-600 font-medium transition-colors">
+                            <i class="bi bi-plug mr-1"></i> Equipos
+                        </a>
+                        <a href="{{ route('consumption.panel') }}" class="text-gray-600 hover:text-emerald-600 font-medium transition-colors">
+                            <i class="bi bi-bar-chart mr-1"></i> Consumo
+                        </a>
+                    @endif
                     
                     {{-- User Dropdown --}}
                     <div x-data="{ open: false }" class="relative">
@@ -78,15 +86,23 @@
          style="display: none;">
         <div class="px-4 py-3 space-y-2">
             @auth
-                <a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
-                    <i class="bi bi-speedometer2 mr-2"></i> Dashboard
-                </a>
-                <a href="{{ route('equipment.index') }}" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
-                    <i class="bi bi-plug mr-2"></i> Equipos
-                </a>
-                <a href="{{ route('consumption.panel') }}" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
-                    <i class="bi bi-bar-chart mr-2"></i> Consumo
-                </a>
+                @if(auth()->user()->is_super_admin)
+                    {{-- Super Admin Mobile Menu --}}
+                    <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
+                        <i class="bi bi-shield-check mr-2"></i> Admin Dashboard
+                    </a>
+                @else
+                    {{-- Regular User Mobile Menu --}}
+                    <a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
+                        <i class="bi bi-speedometer2 mr-2"></i> Dashboard
+                    </a>
+                    <a href="{{ route('equipment.index') }}" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
+                        <i class="bi bi-plug mr-2"></i> Equipos
+                    </a>
+                    <a href="{{ route('consumption.panel') }}" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
+                        <i class="bi bi-bar-chart mr-2"></i> Consumo
+                    </a>
+                @endif
                 <hr class="my-2 border-gray-100">
                 <div class="px-3 py-2 text-gray-500 text-sm">{{ auth()->user()->name }}</div>
                 <a href="/logout" class="block px-3 py-2 rounded-lg text-red-600 hover:bg-red-50">

@@ -306,3 +306,10 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
     Route::post('/entities/{entity}/thermal', [\App\Http\Controllers\ThermalComfortController::class, 'store'])->name('thermal.store');
     Route::get('/entities/{entity}/thermal/result', [\App\Http\Controllers\ThermalComfortController::class, 'result'])->name('thermal.result');
 });
+
+// =====================================================
+// SUPER ADMIN ROUTES
+// =====================================================
+Route::middleware(['auth', 'super_admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\SuperAdminController::class, 'dashboard'])->name('dashboard');
+});

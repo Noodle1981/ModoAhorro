@@ -12,6 +12,19 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        // Super Admin User
+        \App\Models\User::updateOrCreate(
+            ['email' => 'admin@modoahorro.com'],
+            [
+                'name' => 'Super Admin',
+                'password' => bcrypt('password'),
+                'is_super_admin' => true,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $this->command->info('✅ Super Admin creado: admin@modoahorro.com (password)');
+
         // Usuario existente de prueba básico
         \App\Models\User::updateOrCreate(
             ['email' => 'demo@modoahorro.com'],
