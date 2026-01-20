@@ -12,8 +12,9 @@ class ContractController extends Controller
     public function showForEntity($entityId)
     {
         $entity = Entity::findOrFail($entityId);
+        $config = config("entity_types.{$entity->type}", []);
         $contract = Contract::where('entity_id', $entityId)->first();
-        return view('contracts.show', compact('entity', 'contract'));
+        return view('contracts.show', compact('entity', 'contract', 'config'));
     }
 
     public function index()

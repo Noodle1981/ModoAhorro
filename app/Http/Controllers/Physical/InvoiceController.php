@@ -11,29 +11,32 @@ class InvoiceController extends Controller
     public function index($entityId)
     {
         $entity = Entity::findOrFail($entityId);
+        $config = config("entity_types.{$entity->type}", []);
         $contract = $entity->contracts()->where('is_active', true)->first();
         $invoices = $contract ? $contract->invoices : collect();
-        return view('invoices.index', compact('entity', 'contract', 'invoices'));
+        return view('invoices.index', compact('entity', 'contract', 'invoices', 'config'));
     }
 
     public function create($entityId)
     {
         $entity = Entity::findOrFail($entityId);
+        $config = config("entity_types.{$entity->type}", []);
         $contract = $entity->contracts()->where('is_active', true)->first();
         if (!$contract) {
-            return redirect()->route('entities.invoices.index', $entityId)
-                ->with('warning', 'No hay contrato activo registrado para este hogar.');
+            return redirect()->route($config['route_prefix'] . '.invoices', $entityId)
+                ->with('warning', 'No hay contrato activo registrado para esta entidad.');
         }
-        return view('invoices.create', compact('entity', 'contract'));
+        return view('invoices.create', compact('entity', 'contract', 'config'));
     }
 
     public function store(Request $request, $entityId)
     {
         $entity = Entity::findOrFail($entityId);
+        $config = config("entity_types.{$entity->type}", []);
         $contract = $entity->contracts()->where('is_active', true)->first();
         if (!$contract) {
-            return redirect()->route('entities.invoices.index', $entityId)
-                ->with('warning', 'No hay contrato activo registrado para este hogar.');
+            return redirect()->route($config['route_prefix'] . '.invoices', $entityId)
+                ->with('warning', 'No hay contrato activo registrado para esta entidad.');
         }
         $validated = $request->validate([
             'start_date' => 'required|date',
@@ -44,25 +47,39 @@ class InvoiceController extends Controller
         $invoice = new Invoice($request->all());
         $invoice->contract_id = $contract->id;
         $invoice->save();
-        return redirect()->route('entities.invoices.index', $entityId)
+        return redirect()->route($config['route_prefix'] . '.invoices', $entityId)
             ->with('success', 'Factura cargada correctamente.');
     }
 
     public function edit($entityId, $invoiceId)
     {
         $entity = Entity::findOrFail($entityId);
+        $config = config("entity_types.{$entity->type}", []);
         $contract = $entity->contracts()->where('is_active', true)->first();
         $invoice = Invoice::where('contract_id', optional($contract)->id)->findOrFail($invoiceId);
-        return view('invoices.edit', compact('entity', 'invoice', 'contract'));
+        return view('invoices.edit', compact('entity', 'invoice', 'contract', 'config'));
     }
 
     public function update(Request $request, $entityId, $invoiceId)
     {
         $entity = Entity::findOrFail($entityId);
+        $config = config("entity_types.{$entity->type}", []);
         $contract = $entity->contracts()->where('is_active', true)->first();
         $invoice = Invoice::where('contract_id', optional($contract)->id)->findOrFail($invoiceId);
         $invoice->update($request->all());
-        return redirect()->route('entities.invoices.index', $entityId)
+        return redirect()->route($config['route_prefix'] . '.invoices', $entityId)
             ->with('success', 'Factura actualizada correctamente.');
+    }
+
+    public function destroy($entityId, $invoiceId)
+    {
+        $entity = Entity::findOrFail($entityId);
+        $config = config("entity_types.{$entity->type}", []);
+        $contract = $entity->contracts()->where('is_active', true)->first();
+        $invoice = Invoice::where('contract_id', optional($contract)->id)->findOrFail($invoiceId);
+        $invoice->delete();
+        
+        return redirect()->route($config['route_prefix'] . '.invoices', $entityId)
+            ->with('success', 'Factura eliminada correctamente.');
     }
 }

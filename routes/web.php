@@ -101,6 +101,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
         Route::post('/{entity}/invoices', [\App\Http\Controllers\Physical\InvoiceController::class, 'store'])->name('invoices.store');
         Route::get('/{entity}/invoices/{invoice}/edit', [\App\Http\Controllers\Physical\InvoiceController::class, 'edit'])->name('invoices.edit');
         Route::put('/{entity}/invoices/{invoice}', [\App\Http\Controllers\Physical\InvoiceController::class, 'update'])->name('invoices.update');
+        Route::delete('/{entity}/invoices/{invoice}', [\App\Http\Controllers\Physical\InvoiceController::class, 'destroy'])->name('invoices.destroy');
 
         // Habitaciones
         Route::get('/{entity}/rooms', [\App\Http\Controllers\Physical\RoomController::class, 'index'])->name('rooms');
@@ -166,6 +167,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
         Route::post('/{entity}/invoices', [\App\Http\Controllers\Physical\InvoiceController::class, 'store'])->name('invoices.store');
         Route::get('/{entity}/invoices/{invoice}/edit', [\App\Http\Controllers\Physical\InvoiceController::class, 'edit'])->name('invoices.edit');
         Route::put('/{entity}/invoices/{invoice}', [\App\Http\Controllers\Physical\InvoiceController::class, 'update'])->name('invoices.update');
+        Route::delete('/{entity}/invoices/{invoice}', [\App\Http\Controllers\Physical\InvoiceController::class, 'destroy'])->name('invoices.destroy');
 
         // Habitaciones
         Route::get('/{entity}/rooms', [\App\Http\Controllers\Physical\RoomController::class, 'index'])->name('rooms');
@@ -231,6 +233,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
         Route::post('/{entity}/invoices', [\App\Http\Controllers\Physical\InvoiceController::class, 'store'])->name('invoices.store');
         Route::get('/{entity}/invoices/{invoice}/edit', [\App\Http\Controllers\Physical\InvoiceController::class, 'edit'])->name('invoices.edit');
         Route::put('/{entity}/invoices/{invoice}', [\App\Http\Controllers\Physical\InvoiceController::class, 'update'])->name('invoices.update');
+        Route::delete('/{entity}/invoices/{invoice}', [\App\Http\Controllers\Physical\InvoiceController::class, 'destroy'])->name('invoices.destroy');
 
         // Habitaciones
         Route::get('/{entity}/rooms', [\App\Http\Controllers\Physical\RoomController::class, 'index'])->name('rooms');
