@@ -2,6 +2,16 @@
 
 Aplicación Laravel para análisis y optimización del consumo energético en hogares, comercios y oficinas.
 
+---
+
+## 📚 Documentación Completa
+
+> **🚀 [Ver ROADMAP MAESTRO](docs/ROADMAP_MAESTRO.md)** - Visión completa del proyecto, fases de desarrollo y hitos  
+> **📖 [Índice de Documentación](docs/README.md)** - Navegación completa de toda la documentación técnica  
+> **🔬 [Auditoría Técnica](docs/AUDITORIA.MD)** - Análisis profundo del motor de cálculo
+
+---
+
 ## 🎯 Características Principales
 
 ### Gestión de Entidades
@@ -176,13 +186,38 @@ resources/views/
 - Preservación de histórico de equipos inactivos
 - **Responsive design** para móviles y desktop
 
-## 📝 Próximos Pasos Recomendados
+## 📝 Roadmap y Próximos Pasos
 
-1. **Dashboard Ejecutivo**: Métricas agregadas para CEOs
-2. **Preparación IoT**: API para medidores inteligentes
-3. **Reportes**: Exportación a PDF/Excel
-4. **Notificaciones**: Alertas de consumo anormal
-5. **Multi-tenant**: Soporte para múltiples usuarios
+El proyecto sigue un roadmap estructurado en 5 fases:
+
+### **FASE 0: Estabilización del Motor** (Actual - 2-3 semanas)
+- Refactorización de clasificación de equipos
+- Validación pre-calibración
+- Mejoras en manejo climático
+- Audit trail y logging
+
+### **FASE 1: Optimización y UX** (4 semanas)
+- Preview en tiempo real de ajustes
+- Performance y caché
+- Reportes y exportación
+- Sistema de notificaciones
+
+### **FASE 2: Inteligencia y Automatización** (6 semanas)
+- Machine Learning para patrones
+- Benchmarking inteligente
+- Asistente virtual con IA
+
+### **FASE 3: IoT y Tiempo Real** (8 semanas)
+- Integración con medidores inteligentes
+- Dashboard en vivo
+- Control remoto de equipos
+
+### **FASE 4: Monetización** (6 semanas)
+- Sistema de suscripciones
+- Marketplace de productos
+- Servicios profesionales
+
+**📖 Ver detalles completos en [ROADMAP_MAESTRO.md](docs/ROADMAP_MAESTRO.md)**
 
 ## 🐛 Debugging
 
