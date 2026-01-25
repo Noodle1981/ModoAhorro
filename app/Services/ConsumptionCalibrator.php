@@ -8,11 +8,13 @@ use App\Models\EquipmentUsage;
 class ConsumptionCalibrator
 {
     /**
-     * Calibra los consumos teóricos utilizando una lógica mejorada.
-     * MEJORA: Protege consumo mínimo para equipos declarados con uso > 0
+     * Calibra los consumos teóricos utilizando la lógica de MOTOR INTEGRAL.
      * 
-     * Prioriza llenar las "cubetas" de consumo en orden: Base -> Hormigas -> Elefantes
-     * Pero si no alcanza, distribuye proporcionalmente en lugar de poner a 0.
+     * Guía:
+     * 1. Base Crítica (Heladeras, Routers, Alarmas): Intocables. Se llenan primero.
+     * 2. Base Pesada (Termotanques, Bombas): Confort básico. Se llenan segundo.
+     * 3. Hormigas (Iluminación, Cargadores): Infraestructura. Se llenan tercero.
+     * 4. Ballenas (Aires, Estufas, PC Gamer, TV): Ocio y Clima. Absorben variabilidad.
      *
      * @param Collection $usages Colección de EquipmentUsage con propiedad 'kwh_estimated'
      * @param float $invoiceTotalKwh Total de kWh facturados
@@ -20,137 +22,101 @@ class ConsumptionCalibrator
      */
     public function calibrate(Collection $usages, float $invoiceTotalKwh): Collection
     {
-        // --- A. CLASIFICACIÓN ---
+        // --- A. CLASIFICACIÓN (Sincronizada con getEquipmentTier del controlador) ---
+        $groups = [
+            'base_critica' => collect(),
+            'base_pesada'  => collect(),
+            'hormigas'     => collect(),
+            'ballenas'     => collect(),
+            'otros'        => collect(),
+        ];
 
-        // 1. Base Crítica (Intocables) - 24hs
-        $baseCritical = $usages->filter(function ($u) {
-            $type = $u->equipment->type->name ?? '';
-            $fixedTypes = ['Heladera', 'Freezer', 'Router Wifi', 'Modem', 'Alarma', 'Cámaras', 'Camaras'];
-            foreach ($fixedTypes as $fixed) {
-                if (stripos($type, $fixed) !== false)
-                    return true;
-            }
-            return false;
-        });
-
-        // 2. Base Pesada (Higiene/Confort Básico)
-        $baseHeavy = $usages->filter(function ($u) use ($baseCritical) {
-            if ($baseCritical->contains('id', $u->id))
-                return false;
-            $type = $u->equipment->type->name ?? '';
-            $heavyTypes = ['Termotanque Eléctrico', 'Calefón Eléctrico', 'Bomba de Agua'];
-            foreach ($heavyTypes as $heavy) {
-                if (stripos($type, $heavy) !== false)
-                    return true;
-            }
-            return false;
-        });
-
-        // 3. Hormigas (Luces y Portátiles)
-        $ants = $usages->filter(function ($u) use ($baseCritical, $baseHeavy) {
-            if ($baseCritical->contains('id', $u->id) || $baseHeavy->contains('id', $u->id))
-                return false;
-            $cat = $u->equipment->category->name ?? '';
-            return ($cat === 'Iluminación' || $cat === 'Portátiles');
-        });
-
-        // 4. Elefantes (Todo lo demás: PC, Aire, TV, Estufa)
-        $elephants = $usages->reject(
-            fn($u) =>
-            $baseCritical->contains('id', $u->id) ||
-            $baseHeavy->contains('id', $u->id) ||
-            $ants->contains('id', $u->id)
-        );
-
-        // --- B. CÁLCULO DE CONSUMOS TEÓRICOS ---
-        $reqCritical = $baseCritical->sum('kwh_estimated');
-        $reqHeavy = $baseHeavy->sum('kwh_estimated');
-        $reqAnts = $ants->sum('kwh_estimated');
-        $reqElephants = $elephants->sum('kwh_estimated');
+        foreach ($usages as $u) {
+            $tier = $this->getEquipmentTier($u->equipment);
+            $groups[$tier]->push($u);
+        }
 
         $remaining = $invoiceTotalKwh;
 
-        // --- C. DISTRIBUCIÓN MEJORADA ---
+        // --- B. DISTRIBUCIÓN POR JERARQUÍA ---
 
-        // Paso 1: Base Crítica (Heladera) - PROTEGIDA
+        // 1. Base Crítica: SE ASIGNA EL 100% SIEMPRE (Protegido)
+        $reqCritical = $groups['base_critica']->sum('kwh_estimated');
         if ($remaining >= $reqCritical) {
-            $this->fullAlloc($baseCritical, 'BASE_CRITICAL');
+            $this->fullAlloc($groups['base_critica'], 'TIER_CRITICAL_FIXED');
             $remaining -= $reqCritical;
         } else {
-            // Caso extremo: Factura < Heladera
-            // Distribuir proporcionalmente lo que hay
-            $this->partialAlloc($baseCritical, $remaining, $reqCritical, 'CRITICAL_PARTIAL');
-            $this->partialAlloc($baseHeavy, 0, 1, 'ZERO_REMAINING');
-            $this->partialAlloc($ants, 0, 1, 'ZERO_REMAINING');
-            $this->partialAlloc($whales, 0, 1, 'ZERO_REMAINING');
-            return $usages;
+            $this->partialAlloc($groups['base_critica'], $remaining, $reqCritical, 'TIER_CRITICAL_INSUFFICIENT');
+            $remaining = 0;
         }
 
-        // Paso 2: Base Pesada
+        // 2. Hormigas: SE ASIGNA EL 100% (Protegido - Son consumos fijos de infraestructura)
+        $reqAnts = $groups['hormigas']->sum('kwh_estimated');
+        if ($remaining >= $reqAnts) {
+            $this->fullAlloc($groups['hormigas'], 'TIER_ANTS_FIXED');
+            $remaining -= $reqAnts;
+        } else {
+            $this->partialAlloc($groups['hormigas'], $remaining, $reqAnts, 'TIER_ANTS_INSUFFICIENT');
+            $remaining = 0;
+        }
+
+        // 3. Base Pesada: SE ASIGNA LO ESTIMADO SIEMPRE QUE HAYA MARGEN
+        $reqHeavy = $groups['base_pesada']->sum('kwh_estimated');
         if ($remaining >= $reqHeavy) {
-            $this->fullAlloc($baseHeavy, 'BASE_HEAVY');
+            $this->fullAlloc($groups['base_pesada'], 'TIER_HEAVY_BASE');
             $remaining -= $reqHeavy;
         } else {
-            // Partial alloc a BASE_HEAVY con lo que queda
-            $this->partialAlloc($baseHeavy, $remaining, $reqHeavy, 'HEAVY_PARTIAL');
-            $this->partialAlloc($ants, 0, 1, 'ZERO_REMAINING');
-            $this->partialAlloc($whales, 0, 1, 'ZERO_REMAINING');
-            return $usages;
+            $this->partialAlloc($groups['base_pesada'], $remaining, $reqHeavy, 'TIER_HEAVY_INSUFFICIENT');
+            $remaining = 0;
         }
 
-        // Paso 3 y 4: HORMIGAS + ELEFANTES (Distribución Proporcional)
-        // MEJORA: Si no alcanza para ambas, distribuir proporcionalmente
+        // 4. Ballenas y Otros: ABSORBEN EL RESTO (Aires, TV, etc.)
+        // Son los que más varían y donde el ajuste es más elástico.
+        $variableGroup = $groups['ballenas']->concat($groups['otros']);
+        $reqVariable = $variableGroup->sum('kwh_estimated');
 
-        $reqVariable = $reqAnts + $reqElephants;
-
-        if ($remaining >= $reqVariable) {
-            // Alcanza para ambas: asignación completa
-            $this->fullAlloc($ants, 'PROTECTED_ANT');
-            // Para ELEFANTES, usar distribución ponderada con el remaining restante
-            $remainingElephants = $remaining - $reqAnts;
-            $this->distributePonderada($elephants, $remainingElephants, 'WEIGHTED_ADJUSTMENT');
-        } else if ($reqVariable > 0) {
-            // NO alcanza: DISTRIBUCIÓN PROPORCIONAL entre ANTS y ELEFANTES
-
-            // Calcular qué % del total variable representa cada grupo
-            $antsProportion = $reqAnts / $reqVariable;
-            $elephantsProportion = $reqElephants / $reqVariable;
-
-            $remainingAnts = $remaining * $antsProportion;
-            $remainingElephants = $remaining * $elephantsProportion;
-
-            // Distribuir proporcionalmente dentro de cada grupo
-            $this->partialAlloc($ants, $remainingAnts, $reqAnts, 'ANT_PROPORTIONAL');
-
-            // Para ELEFANTES, aplicar pesos por categoría
-            $this->distributePonderada($elephants, $remainingElephants, 'ELEPHANT_PROPORTIONAL');
+        if ($remaining > 0) {
+            if ($reqVariable > 0) {
+                // Distribuimos el remanente proporcionalmente entre las ballenas
+                $this->partialAlloc($variableGroup, $remaining, $reqVariable, 'TIER_VARIABLE_ADJUSTED');
+                $remaining = 0;
+            } else {
+                // Si no hay ballenas declaradas, repartimos el remanente en lo que haya (probablemente base pesada)
+                // para que la suma total sea exacta a la factura
+                $this->redistributeOverfill($usages, $remaining);
+            }
         } else {
-            // No hay ANTS ni WHALES (caso raro)
-            // El remaining sobra, podría distribuirse hacia arriba pero lo dejamos
+            // Si el remaining llegó a 0 antes, las ballenas quedan en 0 (ajuste forzado por falta de energía)
+            $this->fullAlloc($variableGroup, 'TIER_VARIABLE_ZERO');
         }
 
         return $usages;
     }
 
-    /**
-     * Distribución ponderada para ELEFANTES con pesos por categoría
-     */
-    private function distributePonderada($elephants, $available, $note)
+    private function getEquipmentTier($equipment)
     {
-        $totalScore = $elephants->sum(function ($u) {
-            return $u->kwh_estimated * $this->getCategoryWeight($u->equipment->category->name ?? '');
-        });
+        $name = strtolower($equipment->name ?? '');
+        $typeName = strtolower($equipment->type->name ?? '');
+        $combined = $name . ' ' . $typeName;
 
-        $elephants->each(function ($u) use ($available, $totalScore, $note) {
-            $weight = $this->getCategoryWeight($u->equipment->category->name ?? '');
-            $score = $u->kwh_estimated * $weight;
-            $share = ($totalScore > 0) ? ($score / $totalScore) : 0;
+        if (str_contains($combined, 'heladera') || str_contains($combined, 'freezer') || str_contains($combined, 'router') || str_contains($combined, 'modem') || str_contains($combined, 'alarma')) {
+            return 'base_critica';
+        }
 
-            $this->setReconciled($u, $available * $share, $note);
-        });
+        if (str_contains($combined, 'termotanque') || str_contains($combined, 'calefón') || str_contains($combined, 'bomba de agua')) {
+            return 'base_pesada';
+        }
+
+        if (str_contains($combined, 'lámpara') || str_contains($combined, 'lampara') || str_contains($combined, 'led') || str_contains($combined, 'tubo fluorescente') || str_contains($combined, 'cargador')) {
+            return 'hormigas';
+        }
+
+        if (str_contains($combined, 'aire') || str_contains($combined, 'estufa') || str_contains($combined, 'caloventor') || str_contains($combined, 'radiador') || str_contains($combined, 'televisor') || str_contains($combined, 'tv') || str_contains($combined, 'gamer') || str_contains($combined, 'consola')) {
+            return 'ballenas';
+        }
+
+        return 'otros';
     }
-
-    // --- Helpers ---
 
     private function fullAlloc($collection, $note)
     {
@@ -167,30 +133,21 @@ class ConsumptionCalibrator
         });
     }
 
-    private function zeroAlloc($collection)
+    private function redistributeOverfill($usages, $overfill)
     {
-        $collection->each(function ($u) {
-            $this->setReconciled($u, 0, 'ZERO_ALLOCATION');
+        $totalAllocated = $usages->sum('kwh_reconciled');
+        if ($totalAllocated == 0) return;
+
+        $usages->each(function ($u) use ($overfill, $totalAllocated) {
+            $share = $u->kwh_reconciled / $totalAllocated;
+            $u->kwh_reconciled += ($overfill * $share);
         });
     }
 
-    // Helper para asignar y guardar estado
     private function setReconciled($usage, $val, $note)
     {
-        $usage->kwh_reconciled = $val;
-        $usage->calibration_note = $note; // Usamos calibration_note para consistencia con UI existente
-        $usage->calibration_status = $note; // Usamos el note como status code
-    }
-
-    // Pesos de Voracidad
-    private function getCategoryWeight($cat)
-    {
-        return match ($cat) {
-            'Climatización' => 3.0,
-            'Cocina' => 1.5,
-            'Oficina' => 0.6,
-            'Entretenimiento' => 0.6,
-            default => 1.0
-        };
+        $usage->kwh_reconciled = round($val, 2);
+        $usage->calibration_note = $note;
+        $usage->calibration_status = $note;
     }
 }

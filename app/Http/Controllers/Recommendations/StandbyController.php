@@ -11,8 +11,9 @@ class StandbyController extends Controller
     public function analysis(string $id, StandbyAnalysisService $service)
     {
         $entity = Entity::findOrFail($id);
+        $config = config("entity_types.{$entity->type}", []);
         $result = $service->analyze($entity);
-        return view('standby.analysis', compact('entity', 'result'));
+        return view('entities.standby_analysis', compact('entity', 'result', 'config'));
     }
 
     public function toggle(Request $request, string $entityId, string $equipmentId, StandbyAnalysisService $service)

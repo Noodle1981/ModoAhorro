@@ -10,7 +10,8 @@ class BudgetController extends Controller
     public function index(string $id, BudgetService $budgetService)
     {
         $entity = Entity::findOrFail($id);
-        $budgetData = $budgetService->generateBudget($entity);
-        return view('budget.index', compact('entity', 'budgetData'));
+        $config = config("entity_types.{$entity->type}", []);
+        $budgetData = $budgetService->calculateBudgetData($entity);
+        return view('entities.budget', compact('entity', 'budgetData', 'config'));
     }
 }

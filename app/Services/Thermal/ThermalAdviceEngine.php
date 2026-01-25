@@ -42,7 +42,7 @@ class ThermalAdviceEngine
         }
 
         // B. Maintenance
-        if (in_array($profile['roof_type'] ?? '', ['sheet_metal', 'concrete_slab']) && empty($profile['roof_insulation'])) {
+        if (in_array($profile['roof_type'] ?? '', ['sheet_metal', 'sheet_metal_no_insulation', 'concrete_slab']) && empty($profile['roof_insulation'])) {
             $advice[] = [
                 'title' => 'Pintura Térmica en Techo',
                 'problem' => 'Tu techo absorbe la radiación solar y la transmite al interior.',

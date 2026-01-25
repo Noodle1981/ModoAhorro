@@ -18,6 +18,7 @@ class ReplacementController extends Controller
 
     public function index(Entity $entity)
     {
+        $config = config("entity_types.{$entity->type}", []);
         $invoice = Invoice::whereHas('contract', function ($query) use ($entity) {
             $query->where('entity_id', $entity->id);
         })->latest('end_date')->first();
@@ -30,18 +31,22 @@ class ReplacementController extends Controller
             $analyzableEquipments = $invoice->equipmentUsages()->with('equipment')->get()->pluck('equipment')->unique('id');
         }
 
-        return view('replacements.index', compact('entity', 'opportunities', 'invoice', 'analyzableEquipments'));
+        return view('replacements.index', compact('entity', 'opportunities', 'invoice', 'analyzableEquipments', 'config'));
     }
 
     public function refine($id)
     {
         $equipment = \App\Models\Equipment::findOrFail($id);
-        return view('replacements.refine', compact('equipment'));
+        $entity = $equipment->room->entity;
+        $config = config("entity_types.{$entity->type}", []);
+        return view('replacements.refine', compact('equipment', 'config'));
     }
 
     public function updateRefinement(Request $request, $id)
     {
         $equipment = \App\Models\Equipment::findOrFail($id);
+        $entity = $equipment->room->entity;
+        $config = config("entity_types.{$entity->type}", []);
         
         $validated = $request->validate([
             'acquisition_year' => 'nullable|integer|min:1900|max:' . date('Y'),
@@ -55,8 +60,6 @@ class ReplacementController extends Controller
 
         $equipment->update($validated);
 
-        $entityId = $equipment->room->entity_id;
-
-        return redirect()->route('replacements.index', $entityId)->with('success', 'Datos actualizados. La recomendación ha sido recalculada.');
+        return redirect()->route($config['route_prefix'] . '.replacements', $entity->id)->with('success', 'Datos actualizados. La recomendación ha sido recalculada.');
     }
 }

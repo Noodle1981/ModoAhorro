@@ -266,48 +266,48 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
     // =====================================================
     // RUTAS LEGACY (mantener compatibilidad temporal)
     // =====================================================
-    Route::get('/entities', [\App\Http\Controllers\EntityController::class, 'index'])->name('entities.index');
-    Route::get('/entities/create', [\App\Http\Controllers\EntityController::class, 'create'])->name('entities.create');
-    Route::post('/entities', [\App\Http\Controllers\EntityController::class, 'store'])->name('entities.store');
-    Route::get('/entities/{entity}', [\App\Http\Controllers\EntityController::class, 'show'])->name('entities.show');
-    Route::get('/entities/{entity}/edit', [\App\Http\Controllers\EntityController::class, 'edit'])->name('entities.edit');
-    Route::put('/entities/{entity}', [\App\Http\Controllers\EntityController::class, 'update'])->name('entities.update');
-    Route::delete('/entities/{entity}', [\App\Http\Controllers\EntityController::class, 'destroy'])->name('entities.destroy');
+    Route::get('/entities', [\App\Http\Controllers\DashboardController::class, 'index'])->name('entities.index');
+    Route::get('/entities/create', [\App\Http\Controllers\Entity\HomeEntityController::class, 'create'])->name('entities.create');
+    Route::post('/entities', [\App\Http\Controllers\Entity\HomeEntityController::class, 'store'])->name('entities.store');
+    Route::get('/entities/{entity}', [\App\Http\Controllers\Entity\HomeEntityController::class, 'show'])->name('entities.show');
+    Route::get('/entities/{entity}/edit', [\App\Http\Controllers\Entity\HomeEntityController::class, 'edit'])->name('entities.edit');
+    Route::put('/entities/{entity}', [\App\Http\Controllers\Entity\HomeEntityController::class, 'update'])->name('entities.update');
+    Route::delete('/entities/{entity}', [\App\Http\Controllers\Entity\HomeEntityController::class, 'destroy'])->name('entities.destroy');
 
     // Legacy routes anidadas (para compatibilidad mientras se migra)
-    Route::get('/entities/{entity}/budget', [\App\Http\Controllers\EntityController::class, 'budget'])->name('entities.budget');
-    Route::get('/entities/{entity}/solar-water-heater', [\App\Http\Controllers\EntityController::class, 'solarWaterHeater'])->name('entities.solar_water_heater');
-    Route::get('/entities/{entity}/standby-analysis', [\App\Http\Controllers\EntityController::class, 'standbyAnalysis'])->name('entities.standby_analysis');
-    Route::patch('/entities/{entity}/standby-analysis/{equipment}/toggle', [\App\Http\Controllers\EntityController::class, 'toggleStandby'])->name('entities.standby.toggle');
-    Route::get('/entities/{entity}/vacation', [\App\Http\Controllers\VacationController::class, 'index'])->name('vacation.index');
-    Route::post('/entities/{entity}/vacation', [\App\Http\Controllers\VacationController::class, 'calculate'])->name('vacation.calculate');
-    Route::post('/entities/{entity}/vacation/confirm', [\App\Http\Controllers\VacationController::class, 'confirm'])->name('vacation.confirm');
-    Route::get('/entities/{entity}/grid-optimization', [\App\Http\Controllers\EntityController::class, 'gridOptimization'])->name('grid.optimization');
-    Route::get('/entities/{entity}/smart-meter-demo', [\App\Http\Controllers\SmartMeterController::class, 'demo'])->name('smart_meter.demo');
-    Route::get('/entities/{entity}/rooms', [\App\Http\Controllers\RoomController::class, 'index'])->name('rooms.index');
-    Route::get('/entities/{entity}/rooms/create', [\App\Http\Controllers\RoomController::class, 'create'])->name('rooms.create');
-    Route::post('/entities/{entity}/rooms', [\App\Http\Controllers\RoomController::class, 'store'])->name('rooms.store');
-    Route::get('/entities/{entity}/rooms/{room}', [\App\Http\Controllers\RoomController::class, 'show'])->name('rooms.show');
-    Route::get('/entities/{entity}/rooms/{room}/edit', [\App\Http\Controllers\RoomController::class, 'edit'])->name('rooms.edit');
-    Route::put('/entities/{entity}/rooms/{room}', [\App\Http\Controllers\RoomController::class, 'update'])->name('rooms.update');
-    Route::delete('/entities/{entity}/rooms/{room}', [\App\Http\Controllers\RoomController::class, 'destroy'])->name('rooms.destroy');
-    Route::get('/entities/{entity}/rooms/{room}/equipment', [\App\Http\Controllers\RoomEquipmentController::class, 'dashboard'])->name('rooms.equipment.dashboard');
-    Route::post('/entities/{entity}/rooms/{room}/equipment', [\App\Http\Controllers\RoomEquipmentController::class, 'store'])->name('rooms.equipment.store');
-    Route::get('/entities/{entity}/rooms/{room}/equipment/{equipment}/edit', [\App\Http\Controllers\RoomEquipmentController::class, 'edit'])->name('rooms.equipment.edit');
-    Route::put('/entities/{entity}/rooms/{room}/equipment/{equipment}', [\App\Http\Controllers\RoomEquipmentController::class, 'update'])->name('rooms.equipment.update');
-    Route::delete('/entities/{entity}/rooms/{room}/equipment/{equipment}', [\App\Http\Controllers\RoomEquipmentController::class, 'destroy'])->name('rooms.equipment.destroy');
-    Route::get('/entities/{entity}/meter', [\App\Http\Controllers\ContractController::class, 'showForEntity'])->name('entities.meter.index');
-    Route::get('/entities/{entity}/invoices', [\App\Http\Controllers\InvoiceController::class, 'index'])->name('entities.invoices.index');
-    Route::get('/entities/{entity}/invoices/create', [\App\Http\Controllers\InvoiceController::class, 'create'])->name('entities.invoices.create');
-    Route::post('/entities/{entity}/invoices', [\App\Http\Controllers\InvoiceController::class, 'store'])->name('entities.invoices.store');
-    Route::get('/entities/{entity}/invoices/{invoice}/edit', [\App\Http\Controllers\InvoiceController::class, 'edit'])->name('entities.invoices.edit');
-    Route::put('/entities/{entity}/invoices/{invoice}', [\App\Http\Controllers\InvoiceController::class, 'update'])->name('entities.invoices.update');
-    Route::get('/entities/{entity}/maintenance', [\App\Http\Controllers\MaintenanceController::class, 'index'])->name('maintenance.index');
-    Route::get('/entities/{entity}/replacements', [\App\Http\Controllers\ReplacementController::class, 'index'])->name('replacements.index');
-    Route::get('/entities/{entity}/thermal', [\App\Http\Controllers\ThermalComfortController::class, 'index'])->name('thermal.index');
-    Route::get('/entities/{entity}/thermal/wizard', [\App\Http\Controllers\ThermalComfortController::class, 'wizard'])->name('thermal.wizard');
-    Route::post('/entities/{entity}/thermal', [\App\Http\Controllers\ThermalComfortController::class, 'store'])->name('thermal.store');
-    Route::get('/entities/{entity}/thermal/result', [\App\Http\Controllers\ThermalComfortController::class, 'result'])->name('thermal.result');
+    Route::get('/entities/{entity}/budget', [\App\Http\Controllers\Recommendations\BudgetController::class, 'index'])->name('entities.budget');
+    Route::get('/entities/{entity}/solar-water-heater', [\App\Http\Controllers\Recommendations\SolarController::class, 'waterHeater'])->name('entities.solar_water_heater');
+    Route::get('/entities/{entity}/standby-analysis', [\App\Http\Controllers\Recommendations\StandbyController::class, 'analysis'])->name('entities.standby_analysis');
+    Route::patch('/entities/{entity}/standby-analysis/{equipment}/toggle', [\App\Http\Controllers\Recommendations\StandbyController::class, 'toggle'])->name('entities.standby.toggle');
+    Route::get('/entities/{entity}/vacation', [\App\Http\Controllers\Recommendations\VacationController::class, 'index'])->name('vacation.index');
+    Route::post('/entities/{entity}/vacation', [\App\Http\Controllers\Recommendations\VacationController::class, 'calculate'])->name('vacation.calculate');
+    Route::post('/entities/{entity}/vacation/confirm', [\App\Http\Controllers\Recommendations\VacationController::class, 'confirm'])->name('vacation.confirm');
+    Route::get('/entities/{entity}/grid-optimization', [\App\Http\Controllers\Recommendations\GridController::class, 'optimization'])->name('grid.optimization');
+    Route::get('/entities/{entity}/smart-meter-demo', [\App\Http\Controllers\Consumption\SmartMeterController::class, 'demo'])->name('smart_meter.demo');
+    Route::get('/entities/{entity}/rooms', [\App\Http\Controllers\Physical\RoomController::class, 'index'])->name('rooms.index');
+    Route::get('/entities/{entity}/rooms/create', [\App\Http\Controllers\Physical\RoomController::class, 'create'])->name('rooms.create');
+    Route::post('/entities/{entity}/rooms', [\App\Http\Controllers\Physical\RoomController::class, 'store'])->name('rooms.store');
+    Route::get('/entities/{entity}/rooms/{room}', [\App\Http\Controllers\Physical\RoomController::class, 'show'])->name('rooms.show');
+    Route::get('/entities/{entity}/rooms/{room}/edit', [\App\Http\Controllers\Physical\RoomController::class, 'edit'])->name('rooms.edit');
+    Route::put('/entities/{entity}/rooms/{room}', [\App\Http\Controllers\Physical\RoomController::class, 'update'])->name('rooms.update');
+    Route::delete('/entities/{entity}/rooms/{room}', [\App\Http\Controllers\Physical\RoomController::class, 'destroy'])->name('rooms.destroy');
+    Route::get('/entities/{entity}/rooms/{room}/equipment', [\App\Http\Controllers\Physical\RoomEquipmentController::class, 'dashboard'])->name('rooms.equipment.dashboard');
+    Route::post('/entities/{entity}/rooms/{room}/equipment', [\App\Http\Controllers\Physical\RoomEquipmentController::class, 'store'])->name('rooms.equipment.store');
+    Route::get('/entities/{entity}/rooms/{room}/equipment/{equipment}/edit', [\App\Http\Controllers\Physical\RoomEquipmentController::class, 'edit'])->name('rooms.equipment.edit');
+    Route::put('/entities/{entity}/rooms/{room}/equipment/{equipment}', [\App\Http\Controllers\Physical\RoomEquipmentController::class, 'update'])->name('rooms.equipment.update');
+    Route::delete('/entities/{entity}/rooms/{room}/equipment/{equipment}', [\App\Http\Controllers\Physical\RoomEquipmentController::class, 'destroy'])->name('rooms.equipment.destroy');
+    Route::get('/entities/{entity}/meter', [\App\Http\Controllers\Physical\ContractController::class, 'showForEntity'])->name('entities.meter.index');
+    Route::get('/entities/{entity}/invoices', [\App\Http\Controllers\Physical\InvoiceController::class, 'index'])->name('entities.invoices.index');
+    Route::get('/entities/{entity}/invoices/create', [\App\Http\Controllers\Physical\InvoiceController::class, 'create'])->name('entities.invoices.create');
+    Route::post('/entities/{entity}/invoices', [\App\Http\Controllers\Physical\InvoiceController::class, 'store'])->name('entities.invoices.store');
+    Route::get('/entities/{entity}/invoices/{invoice}/edit', [\App\Http\Controllers\Physical\InvoiceController::class, 'edit'])->name('entities.invoices.edit');
+    Route::put('/entities/{entity}/invoices/{invoice}', [\App\Http\Controllers\Physical\InvoiceController::class, 'update'])->name('entities.invoices.update');
+    Route::get('/entities/{entity}/maintenance', [\App\Http\Controllers\Recommendations\MaintenanceController::class, 'index'])->name('maintenance.index');
+    Route::get('/entities/{entity}/replacements', [\App\Http\Controllers\Recommendations\ReplacementController::class, 'index'])->name('replacements.index');
+    Route::get('/entities/{entity}/thermal', [\App\Http\Controllers\Recommendations\ThermalComfortController::class, 'index'])->name('thermal.index');
+    Route::get('/entities/{entity}/thermal/wizard', [\App\Http\Controllers\Recommendations\ThermalComfortController::class, 'wizard'])->name('thermal.wizard');
+    Route::post('/entities/{entity}/thermal', [\App\Http\Controllers\Recommendations\ThermalComfortController::class, 'store'])->name('thermal.store');
+    Route::get('/entities/{entity}/thermal/result', [\App\Http\Controllers\Recommendations\ThermalComfortController::class, 'result'])->name('thermal.result');
 });
 
 // =====================================================
@@ -315,4 +315,9 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
 // =====================================================
 Route::middleware(['auth', 'super_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Admin\SuperAdminController::class, 'dashboard'])->name('dashboard');
+});
+
+// API Locations
+Route::middleware(['auth'])->group(function () {
+    Route::get('/api/provinces/{province}/localities', [\App\Http\Controllers\Api\LocationController::class, 'getLocalitiesByProvince'])->name('api.localities');
 });

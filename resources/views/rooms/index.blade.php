@@ -45,43 +45,60 @@
         @else
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach($rooms as $room)
-                    <x-card hover class="group relative">
+                    @php
+                        $isSystem = $room->isSystemRoom();
+                        $cardClass = $isSystem ? 'bg-gray-100 border-gray-200' : '';
+                        $iconClass = $room->name === 'Temporales' ? 'bi-tools' : ($room->name === 'Portátiles' ? 'bi-handbag' : ($config['rooms_icon'] ?? 'bi-door-open'));
+                    @endphp
+                    <x-card hover="{{ !$isSystem }}" class="group relative {{ $cardClass }}">
                         {{-- Room Icon --}}
                         <div class="flex items-start justify-between mb-4">
-                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <i class="{{ $config['rooms_icon'] ?? 'bi-door-open' }} text-xl text-blue-600"></i>
+                            <div class="w-12 h-12 {{ $isSystem ? 'bg-gray-200 text-gray-600' : 'bg-blue-100 text-blue-600' }} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <i class="bi {{ $iconClass }} text-xl"></i>
                             </div>
-                            <x-badge variant="{{ $room->equipment->count() > 0 ? 'success' : 'default' }}">
+                            <x-badge variant="{{ $room->equipment->count() > 0 ? ($isSystem ? 'secondary' : 'success') : 'default' }}">
                                 {{ $room->equipment->count() }} equipos
                             </x-badge>
                         </div>
                         
                         {{-- Room Info --}}
-                        <h3 class="font-semibold text-gray-900 text-lg mb-1">{{ $room->name }}</h3>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h3 class="font-semibold text-gray-900 text-lg">{{ $room->name }}</h3>
+                            @if($isSystem)
+                                <i class="bi bi-lock-fill text-gray-400 text-sm" title="Área del sistema (No editable)"></i>
+                            @endif
+                        </div>
                         <p class="text-gray-500 text-sm mb-4 line-clamp-2">
-                            {{ $room->description ?: 'Sin descripción' }}
+                            {{ $isSystem ? $room->getSystemDescription() : ($room->description ?: 'Sin descripción') }}
                         </p>
                         
                         {{-- Actions --}}
-                        <div class="flex items-center gap-2 pt-4 border-t border-gray-100">
+                        <div class="flex items-center gap-2 pt-4 border-t {{ $isSystem ? 'border-gray-200' : 'border-gray-100' }}">
                             <x-button variant="ghost" size="xs" href="{{ route($config['route_prefix'] . '.rooms.show', [$entity->id, $room->id]) }}" title="Ver">
                                 <i class="bi bi-eye"></i>
                             </x-button>
-                            <x-button variant="ghost" size="xs" href="{{ route($config['route_prefix'] . '.rooms.edit', [$entity->id, $room->id]) }}" title="Editar">
-                                <i class="bi bi-pencil"></i>
-                            </x-button>
-                            <x-button variant="primary" size="xs" href="{{ route($config['route_prefix'] . '.rooms.equipment', [$entity->id, $room->id]) }}" class="flex-1">
+                            
+                            @if(!$isSystem)
+                                <x-button variant="ghost" size="xs" href="{{ route($config['route_prefix'] . '.rooms.edit', [$entity->id, $room->id]) }}" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </x-button>
+                            @endif
+
+                            <x-button variant="{{ $isSystem ? 'secondary' : 'primary' }}" size="xs" href="{{ route($config['route_prefix'] . '.rooms.equipment', [$entity->id, $room->id]) }}" class="flex-1">
                                 <i class="bi bi-plug mr-1"></i> Equipos
                             </x-button>
-                            <form action="{{ route($config['route_prefix'] . '.rooms.destroy', [$entity->id, $room->id]) }}" method="POST" class="inline">
-                                @csrf
-                                @method('DELETE')
-                                <x-button variant="ghost" size="xs" type="submit" 
-                                    onclick="return confirm('¿Seguro que deseas eliminar esta habitación?')"
-                                    class="text-red-500 hover:text-red-700 hover:bg-red-50">
-                                    <i class="bi bi-trash"></i>
-                                </x-button>
-                            </form>
+
+                            @if(!$isSystem)
+                                <form action="{{ route($config['route_prefix'] . '.rooms.destroy', [$entity->id, $room->id]) }}" method="POST" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <x-button variant="ghost" size="xs" type="submit" 
+                                        onclick="return confirm('¿Seguro que deseas eliminar esta habitación?')"
+                                        class="text-red-500 hover:text-red-700 hover:bg-red-50">
+                                        <i class="bi bi-trash"></i>
+                                    </x-button>
+                                </form>
+                            @endif
                         </div>
                     </x-card>
                 @endforeach

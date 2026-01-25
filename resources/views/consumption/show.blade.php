@@ -189,7 +189,7 @@
                         <th class="px-6 py-4">Habitación</th>
                         <th class="px-6 py-4 text-right">Potencia</th>
                         <th class="px-6 py-4 text-right">Consumo</th>
-                        <th class="px-6 py-4">Estado</th>
+                        <th class="px-6 py-4">Equilibrio (Tanque)</th>
                     </tr>
                 </x-slot:head>
                 
@@ -208,22 +208,15 @@
                         <td class="px-6 py-4 text-right font-mono">{{ $usage->equipment->nominal_power_w ?? '-' }} W</td>
                         <td class="px-6 py-4 text-right font-bold text-blue-600">{{ number_format($consumos[$usage->equipment_id] ?? 0, 1) }} kWh</td>
                         <td class="px-6 py-4">
-                            @if($status === 'BASE_CRITICAL')
-                                <x-badge variant="success" title="{{ $note }}"><i class="bi bi-shield-lock-fill mr-1"></i> Base Crítica</x-badge>
-                            @elseif($status === 'BASE_HEAVY')
-                                <x-badge variant="success" title="{{ $note }}"><i class="bi bi-droplet-fill mr-1"></i> Base Pesada</x-badge>
-                            @elseif($status === 'PROTECTED_ANT')
-                                <x-badge variant="info" title="{{ $note }}"><i class="bi bi-shield-lock mr-1"></i> Hormiga</x-badge>
-                            @elseif($status === 'WEIGHTED_ADJUSTMENT')
-                                <x-badge variant="warning" title="{{ $note }}"><i class="bi bi-sliders mr-1"></i> Ballena</x-badge>
-                            @elseif($status === 'CRITICAL_CUT')
-                                <x-badge variant="danger" title="{{ $note }}"><i class="bi bi-exclamation-octagon mr-1"></i> Recorte Crítico</x-badge>
-                            @elseif($status === 'HEAVY_CUT')
-                                <x-badge variant="danger" title="{{ $note }}"><i class="bi bi-scissors mr-1"></i> Recorte Pesado</x-badge>
-                            @elseif($status === 'ANT_CUT')
-                                <x-badge variant="danger" title="{{ $note }}"><i class="bi bi-scissors mr-1"></i> Recorte Hormiga</x-badge>
-                            @elseif($status === 'ZERO_ALLOCATION')
-                                <x-badge variant="secondary" title="{{ $note }}"><i class="bi bi-slash-circle mr-1"></i> Apagado</x-badge>
+                            @php
+                                $tanque = $calibratedUsage->tanque ?? null;
+                            @php
+                            @if($tanque === 1)
+                                <x-badge variant="success" title="Inmutable 24/7"><i class="bi bi-shield-lock-fill mr-1"></i> Tanque 1</x-badge>
+                            @elseif($tanque === 2)
+                                <x-badge variant="info" title="Ajustado por Clima"><i class="bi bi-thermometer-half mr-1"></i> Tanque 2</x-badge>
+                            @elseif($tanque === 3)
+                                <x-badge variant="warning" title="Ajustado por Elasticidad"><i class="bi bi-sliders mr-1"></i> Tanque 3</x-badge>
                             @else
                                 <x-badge variant="secondary">-</x-badge>
                             @endif
@@ -233,54 +226,62 @@
             </x-table>
         </x-card>
 
+        {{-- Audit Logs --}}
+        @php $auditLogs = $calibratedUsages->first()->audit_logs ?? []; @endphp
+        @if(count($auditLogs) > 0)
+            <x-card class="mb-6 border-l-4 border-l-amber-500 bg-amber-50/30">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+                        <i class="bi bi-journal-text text-amber-600"></i>
+                    </div>
+                    <h3 class="font-semibold text-gray-900">Bitácora del Motor de Calibración (v3.0)</h3>
+                </div>
+                <div class="space-y-2">
+                    @foreach($auditLogs as $log)
+                        <div class="flex gap-3 text-sm text-gray-700">
+                            <span class="text-amber-500">•</span>
+                            <p>{{ $log }}</p>
+                        </div>
+                    @endforeach
+                </div>
+            </x-card>
+        @endif
+
         {{-- Adjustment Guide --}}
         <x-card>
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
                     <i class="bi bi-info-circle text-gray-600"></i>
                 </div>
-                <h3 class="font-semibold text-gray-900">Guía de Ajustes (Motor Integral)</h3>
+                <h3 class="font-semibold text-gray-900">Jerarquía de Tanques (Metodología v3.0)</h3>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="p-4 bg-emerald-50 rounded-xl">
                     <h4 class="font-semibold text-emerald-700 flex items-center gap-2 mb-2">
-                        <i class="bi bi-shield-lock-fill"></i> Base Crítica
+                        <i class="bi bi-shield-lock-fill"></i> Tanque 1: Base Automática
                     </h4>
-                    <p class="text-xs text-gray-600 mb-2">Intocables. Se llenan primero.</p>
+                    <p class="text-xs text-gray-600 mb-2">Equipos 24/7 de uso constante. Son inmutables en el tiempo.</p>
                     <ul class="text-xs text-gray-500 space-y-1">
-                        <li><i class="bi bi-check-circle-fill text-emerald-500 mr-1"></i> Heladeras</li>
-                        <li><i class="bi bi-check-circle-fill text-emerald-500 mr-1"></i> Routers / Alarmas</li>
-                    </ul>
-                </div>
-                <div class="p-4 bg-green-50 rounded-xl">
-                    <h4 class="font-semibold text-green-700 flex items-center gap-2 mb-2">
-                        <i class="bi bi-droplet-fill"></i> Base Pesada
-                    </h4>
-                    <p class="text-xs text-gray-600 mb-2">Confort básico. Se llenan segundo.</p>
-                    <ul class="text-xs text-gray-500 space-y-1">
-                        <li><i class="bi bi-check-circle text-green-500 mr-1"></i> Termotanques</li>
-                        <li><i class="bi bi-check-circle text-green-500 mr-1"></i> Bombas de Agua</li>
+                        <li><i class="bi bi-check-circle-fill text-emerald-500 mr-1"></i> Heladeras, Routers, Alarmas</li>
                     </ul>
                 </div>
                 <div class="p-4 bg-blue-50 rounded-xl">
                     <h4 class="font-semibold text-blue-700 flex items-center gap-2 mb-2">
-                        <i class="bi bi-shield-check"></i> Hormigas
+                        <i class="bi bi-thermometer-half"></i> Tanque 2: Climatización
                     </h4>
-                    <p class="text-xs text-gray-600 mb-2">Infraestructura. Se llenan tercero.</p>
+                    <p class="text-xs text-gray-600 mb-2">Sensible al clima exterior (HDD/CDD) y al Perfil Térmico de la vivienda.</p>
                     <ul class="text-xs text-gray-500 space-y-1">
-                        <li><i class="bi bi-lightbulb text-blue-500 mr-1"></i> Iluminación</li>
-                        <li><i class="bi bi-battery-charging text-blue-500 mr-1"></i> Cargadores</li>
+                        <li><i class="bi bi-snow text-blue-500 mr-1"></i> Aires, Estufas, Caloventores</li>
                     </ul>
                 </div>
                 <div class="p-4 bg-amber-50 rounded-xl">
                     <h4 class="font-semibold text-amber-700 flex items-center gap-2 mb-2">
-                        <i class="bi bi-sliders"></i> Ballenas
+                        <i class="bi bi-sliders"></i> Tanque 3: Rutina y Ocio
                     </h4>
-                    <p class="text-xs text-gray-600 mb-2">Ocio y Clima. Absorben variabilidad.</p>
+                    <p class="text-xs text-gray-600 mb-2">Equipos con alta variabilidad. Absorben el ajuste final por Elasticidad.</p>
                     <ul class="text-xs text-gray-500 space-y-1">
-                        <li><i class="bi bi-snow text-amber-500 mr-1"></i> Aires / Estufas</li>
-                        <li><i class="bi bi-pc-display text-amber-500 mr-1"></i> PC Gamer / TV</li>
+                        <li><i class="bi bi-pc-display text-amber-500 mr-1"></i> TV, Consolas, Microondas, Luces</li>
                     </ul>
                 </div>
             </div>

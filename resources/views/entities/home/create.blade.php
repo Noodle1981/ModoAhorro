@@ -11,7 +11,7 @@
                     <i class="bi bi-plus-lg text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Nueva {{ $config['label'] }}</h1>
+                    <h1 class="text-2xl font-bold text-gray-900">Nuevo {{ $config['label'] }}</h1>
                     <p class="text-gray-500 text-sm">Completa los datos para registrar tu {{ strtolower($config['label']) }}</p>
                 </div>
             </div>
@@ -35,6 +35,23 @@
                         required 
                     />
 
+                    {{-- Province --}}
+                    <div class="space-y-1.5">
+                        <label for="province_id" class="block text-sm font-medium text-gray-700">
+                            Provincia <span class="text-red-500">*</span>
+                        </label>
+                        <select id="province_id" required
+                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            <option value="">Seleccionar provincia...</option>
+                            @foreach($provinces as $province)
+                                <option value="{{ $province->id }}" {{ old('province_id') == $province->id ? 'selected' : '' }}>
+                                    {{ $province->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Locality --}}
                     <div class="space-y-1.5">
                         <label for="locality_id" class="block text-sm font-medium text-gray-700">
                             Localidad <span class="text-red-500">*</span>
@@ -42,17 +59,42 @@
                         <select name="locality_id" id="locality_id" required
                             class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                             <option value="">Seleccionar localidad...</option>
-                            @foreach($localities as $locality)
-                                <option value="{{ $locality->id }}" {{ old('locality_id') == $locality->id ? 'selected' : '' }}>
-                                    {{ $locality->name }} ({{ $locality->province->name ?? '' }})
-                                </option>
-                            @endforeach
                         </select>
                         @error('locality_id')
                             <p class="text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
+
+                <script>
+                    document.getElementById('province_id').addEventListener('change', function() {
+                        const provinceId = this.value;
+                        const localitySelect = document.getElementById('locality_id');
+                        
+                        localitySelect.innerHTML = '<option value="">Cargando localidades...</option>';
+                        
+                        if (!provinceId) {
+                            localitySelect.innerHTML = '<option value="">Seleccionar localidad...</option>';
+                            return;
+                        }
+
+                        fetch(`/api/provinces/${provinceId}/localities`)
+                            .then(response => response.json())
+                            .then(data => {
+                                localitySelect.innerHTML = '<option value="">Seleccionar localidad...</option>';
+                                data.forEach(locality => {
+                                    const option = document.createElement('option');
+                                    option.value = locality.id;
+                                    option.textContent = `${locality.name}${locality.postal_code ? ' (' + locality.postal_code + ')' : ''}`;
+                                    localitySelect.appendChild(option);
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Error fetching localities:', error);
+                                localitySelect.innerHTML = '<option value="">Error al cargar localidades</option>';
+                            });
+                    });
+                </script>
 
                 {{-- Address --}}
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">

@@ -38,6 +38,8 @@ class RoomEquipmentController extends Controller
             'type_id' => 'required|exists:equipment_types,id',
             'nominal_power_w' => 'required|integer|min:1',
             'cantidad' => 'required|integer|min:1',
+            'avg_daily_use_hours' => 'nullable|numeric|min:0|max:24',
+            'usage_frequency' => 'nullable|string',
         ]);
         
         for ($i = 0; $i < $validated['cantidad']; $i++) {
@@ -75,6 +77,8 @@ class RoomEquipmentController extends Controller
             'category_id' => 'required|exists:equipment_categories,id',
             'type_id' => 'required|exists:equipment_types,id',
             'nominal_power_w' => 'required|integer|min:1',
+            'avg_daily_use_hours' => 'nullable|numeric|min:0|max:24',
+            'usage_frequency' => 'nullable|string',
         ]);
         
         $equipment->update($request->all());

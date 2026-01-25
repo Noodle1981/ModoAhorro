@@ -10,7 +10,8 @@ class SolarController extends Controller
     public function waterHeater(string $id, SolarWaterHeaterService $service)
     {
         $entity = Entity::findOrFail($id);
+        $config = config("entity_types.{$entity->type}", []);
         $result = $service->analyze($entity);
-        return view('solar.water_heater', compact('entity', 'result'));
+        return view('entities.solar_water_heater', compact('entity', 'result', 'config'));
     }
 }

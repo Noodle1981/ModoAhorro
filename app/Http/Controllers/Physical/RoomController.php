@@ -11,6 +11,16 @@ class RoomController extends Controller
     {
         $entityId = request()->route('entity');
         $entity = \App\Models\Entity::findOrFail($entityId);
+        
+        // Asegurar que existan las áreas del sistema
+        $systemRooms = ['Portátiles', 'Temporales'];
+        foreach ($systemRooms as $roomName) {
+            $entity->rooms()->firstOrCreate(
+                ['name' => $roomName],
+                ['description' => "Área protegida del sistema: {$roomName}"]
+            );
+        }
+
         $rooms = $entity->rooms()->get();
         $config = config("entity_types.{$entity->type}", []);
         return view('rooms.index', compact('entity', 'rooms', 'config'));
@@ -59,10 +69,9 @@ class RoomController extends Controller
         $entity = \App\Models\Entity::findOrFail($entityId);
         $room = \App\Models\Room::findOrFail($roomId);
         $config = config("entity_types.{$entity->type}", []);
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+        if ($room->isSystemRoom()) {
+            return redirect()->back()->with('error', 'No se puede modificar el nombre de un área protegida del sistema.');
+        }
         $room->update($request->only(['name', 'description']));
         return redirect()->route($config['route_prefix'] . '.rooms', $entity->id)
             ->with('success', 'Habitación actualizada correctamente.');
@@ -73,6 +82,9 @@ class RoomController extends Controller
         $entity = \App\Models\Entity::findOrFail($entityId);
         $room = \App\Models\Room::findOrFail($roomId);
         $config = config("entity_types.{$entity->type}", []);
+        if ($room->isSystemRoom()) {
+            return redirect()->back()->with('error', 'No se puede eliminar un área protegida del sistema.');
+        }
         $room->delete();
         return redirect()->route($config['route_prefix'] . '.rooms', $entity->id)
             ->with('success', 'Habitación eliminada correctamente.');

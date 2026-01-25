@@ -1,0 +1,64 @@
+﻿--- CALIBRATED DATA FOR INVOICE 1 (#137756868) ---
+Period: 2025-01-15 to 2025-03-20
+Total Factura (kWh): 624
+
+| Equipo                    | Potencia   | Hrs Declara | kWh Calib  | Nota Ajuste          |
+-------------------------------------------------------------------------------------
+| Aire Grande               | 2400W      | 8          | 19.31      |                      |
+| Ventilador de Techo       | 60W        | 5          | 0.45       |                      |
+| Microondas                | 1000W      | 0.2        | 0.53       |                      |
+| Focos Ventilador          | 5W         | 5          | 1.28       |                      |
+| Focos Ventilador          | 5W         | 5          | 1.28       |                      |
+| Focos Ventilador          | 5W         | 5          | 1.28       |                      |
+| Tubo Led Cocina           | 5W         | 3          | 0.96       |                      |
+| Ventilador de Techo       | 60W        | 5          | 0.45       |                      |
+| TV Grande                 | 120W       | 4          | 27.65      |                      |
+| Foco Living               | 5W         | 3          | 0.96       |                      |
+| Router Wifi               | 20W        | 24         | 30.72      |                      |
+| Ventilador de Techo       | 60W        | 5          | 0.45       |                      |
+| Foco Ventilador           | 5W         | 5          | 1.28       |                      |
+| Foco Mesita de Luz        | 5W         | 3          | 0.96       |                      |
+| Ventilador de Techo       | 60W        | 5          | 0.45       |                      |
+| Foco Ventilador           | 40W        | 5          | 10.2       |                      |
+| Foco Mesita de Luz        | 40W        | 3          | 7.68       |                      |
+| TV Chico                  | 85W        | 2          | 6.89       |                      |
+| PC Gamer                  | 600W       | 4          | 1.89       |                      |
+| Monitor PC                | 50W        | 4          | 5.32       |                      |
+| Monitor PC                | 50W        | 4          | 5.32       |                      |
+| Ventilador de Techo       | 60W        | 5          | 0.45       |                      |
+| Foco Ventilador de Techo  | 5W         | 5          | 0.05       |                      |
+| Mesita de Luz             | 5W         | 3          | 0.96       |                      |
+| Aire Portatil             | 1400W      | 8          | 10.01      |                      |
+| Foco Ba├▒o                | 12W        | 3          | 2.3        |                      |
+| Secador de Pelo           | 1000W      | 0.15       | 0.11       |                      |
+| Maquina de Afeitar        | 12W        | 0.05       | 0          |                      |
+| Foco Led Grande           | 12W        | 3          | 2.3        |                      |
+| Focos Garage              | 5W         | 3          | 0.96       |                      |
+| Focos Garage              | 5W         | 3          | 0.96       |                      |
+| Heladera                  | 150W       | 24         | 92.74      |                      |
+| Lavarropa                 | 2500W      | 1.5        | 0.84       |                      |
+| Foco                      | 5W         | 3          | 0.96       |                      |
+| Foco                      | 5W         | 3          | 0.96       |                      |
+| Cargadores de Celular     | 5W         | 1.5        | 0.34       |                      |
+| Cargadores de Celular     | 5W         | 1.5        | 0.34       |                      |
+| Cargadores de Celular     | 5W         | 1.5        | 0.34       |                      |
+| Notebook                  | 65W        | 3          | 0.1        |                      |
+| PC Puesto 1               | 250W       | 4          | 0.79       |                      |
+| PC Puesto 2               | 250W       | 4          | 0.79       |                      |
+| PC Puesto 3               | 250W       | 4          | 0.79       |                      |
+| PC Puestos 4-10           | 250W       | 4          | 0.79       |                      |
+| Monitores Duales          | 30W        | 4          | 3.19       |                      |
+| Aire Sala Principal       | 1800W      | 8          | 14.48      |                      |
+| Aire Reuniones            | 900W       | 8          | 7.24       |                      |
+| Microondas                | 1000W      | 0.2        | 0.53       |                      |
+| Luces Reuniones           | 12W        | 3          | 2.3        |                      |
+| Luces Recepci├│n          | 12W        | 3          | 2.3        |                      |
+| Luces Ba├▒o               | 5W         | 3          | 0.96       |                      |
+| Heladera Comercial Grande | 500W       | 24         | 309.12     |                      |
+| Microondas Cocina         | 1200W      | 0.2        | 0.64       |                      |
+| Aire Sal├│n 1             | 1800W      | 8          | 14.48      |                      |
+| Aire Sal├│n 2             | 1800W      | 8          | 14.48      |                      |
+| Aire Cocina               | 900W       | 8          | 7.24       |                      |
+| Luces Sal├│n              | 12W        | 3          | 2.3        |                      |
+| Luces Ba├▒os              | 5W         | 3          | 0.96       |                      |
+| PC Caja                   | 200W       | 4          | 0.63       |                      |

@@ -85,6 +85,34 @@
                     />
                 </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    {{-- Daily Hours --}}
+                    <x-input 
+                        name="avg_daily_use_hours" 
+                        label="Horas de uso diario" 
+                        type="number"
+                        step="0.1"
+                        placeholder="Ej: 6"
+                        :value="old('avg_daily_use_hours', $equipment->avg_daily_use_hours)"
+                        helper="Horas estimadas que se usa por día"
+                    />
+                    
+                    {{-- Frequency --}}
+                    <div class="space-y-1.5">
+                        <label for="usage_frequency" class="block text-sm font-medium text-gray-700">
+                            Frecuencia de Uso
+                        </label>
+                        <select name="usage_frequency" id="usage_frequency"
+                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            @php $currentFreq = old('usage_frequency', $equipment->usage_frequency); @endphp
+                            <option value="diario" {{ $currentFreq == 'diario' ? 'selected' : '' }}>Todos los días (Diario)</option>
+                            <option value="semanal" {{ $currentFreq == 'semanal' ? 'selected' : '' }}>Algunas veces por semana</option>
+                            <option value="quincenal" {{ $currentFreq == 'quincenal' ? 'selected' : '' }}>Cada tanto (Quincenal)</option>
+                            <option value="mensual" {{ $currentFreq == 'mensual' ? 'selected' : '' }}>Raramente (Mensual)</option>
+                            <option value="puntual" {{ $currentFreq == 'puntual' ? 'selected' : '' }}>Uso muy puntual</option>
+                        </select>
+                    </div>
+                </div>
                 {{-- Status --}}
                 <div class="mb-6 p-4 bg-gray-50 rounded-xl">
                     <label class="flex items-center gap-3 cursor-pointer">

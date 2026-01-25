@@ -43,11 +43,11 @@
                         
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
                             <label class="relative cursor-pointer">
-                                <input type="radio" name="roof_type" value="sheet_metal" class="peer sr-only" {{ old('roof_type', $entity->thermal_profile['roof_type'] ?? '') == 'sheet_metal' ? 'checked' : '' }} required>
+                                <input type="radio" name="roof_type" value="sheet_metal_no_insulation" class="peer sr-only" {{ old('roof_type', $entity->thermal_profile['roof_type'] ?? '') == 'sheet_metal_no_insulation' ? 'checked' : '' }} required>
                                 <div class="p-4 border-2 border-gray-200 rounded-xl text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-gray-300 transition-colors">
                                     <i class="bi bi-house text-2xl text-gray-400 peer-checked:text-blue-500"></i>
                                     <p class="font-medium text-gray-900 mt-2">Chapa</p>
-                                    <p class="text-xs text-gray-500">Metal</p>
+                                    <p class="text-xs text-gray-500">Sin aislación</p>
                                 </div>
                             </label>
                             <label class="relative cursor-pointer">
@@ -59,11 +59,11 @@
                                 </div>
                             </label>
                             <label class="relative cursor-pointer">
-                                <input type="radio" name="roof_type" value="wood_tiles" class="peer sr-only" {{ old('roof_type', $entity->thermal_profile['roof_type'] ?? '') == 'wood_tiles' ? 'checked' : '' }}>
+                                <input type="radio" name="roof_type" value="insulated_panel" class="peer sr-only" {{ old('roof_type', $entity->thermal_profile['roof_type'] ?? '') == 'insulated_panel' ? 'checked' : '' }}>
                                 <div class="p-4 border-2 border-gray-200 rounded-xl text-center peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-gray-300 transition-colors">
                                     <i class="bi bi-grid-3x3 text-2xl text-gray-400 peer-checked:text-blue-500"></i>
-                                    <p class="font-medium text-gray-900 mt-2">Tejas</p>
-                                    <p class="text-xs text-gray-500">Madera</p>
+                                    <p class="font-medium text-gray-900 mt-2">Panel</p>
+                                    <p class="text-xs text-gray-500">Aislado</p>
                                 </div>
                             </label>
                         </div>

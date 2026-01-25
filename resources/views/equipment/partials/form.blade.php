@@ -64,6 +64,34 @@
             :value="old('cantidad', 1)"
             required 
         />
+        
+        {{-- Daily Hours --}}
+        <x-input 
+            name="avg_daily_use_hours" 
+            label="Horas de uso diario" 
+            type="number"
+            step="0.1"
+            placeholder="Ej: 6"
+            :value="old('avg_daily_use_hours')"
+            helper="Horas estimadas que se usa por día"
+        />
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {{-- Frequency --}}
+        <div class="space-y-1.5">
+            <label for="usage_frequency" class="block text-sm font-medium text-gray-700">
+                Frecuencia de Uso
+            </label>
+            <select name="usage_frequency" id="usage_frequency"
+                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                <option value="diario" {{ old('usage_frequency') == 'diario' ? 'selected' : '' }}>Todos los días (Diario)</option>
+                <option value="semanal" {{ old('usage_frequency') == 'semanal' ? 'selected' : '' }}>Algunas veces por semana</option>
+                <option value="quincenal" {{ old('usage_frequency') == 'quincenal' ? 'selected' : '' }}>Cada tanto (Quincenal)</option>
+                <option value="mensual" {{ old('usage_frequency') == 'mensual' ? 'selected' : '' }}>Raramente (Mensual)</option>
+                <option value="puntual" {{ old('usage_frequency') == 'puntual' ? 'selected' : '' }}>Uso muy puntual</option>
+            </select>
+        </div>
     </div>
     
     {{-- Submit --}}

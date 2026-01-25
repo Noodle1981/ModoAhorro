@@ -22,6 +22,7 @@ class MaintenanceController extends Controller
     public function index($entityId)
     {
         $entity = Entity::findOrFail($entityId);
+        $config = config("entity_types.{$entity->type}", []);
         
         $equipments = Equipment::whereHas('room', function($q) use ($entityId) {
             $q->where('entity_id', $entityId);
@@ -39,7 +40,7 @@ class MaintenanceController extends Controller
             }
         }
 
-        return view('maintenance.index', compact('entity', 'maintenanceData'));
+        return view('maintenance.index', compact('entity', 'maintenanceData', 'config'));
     }
 
     public function storeLog(Request $request, $equipmentId)

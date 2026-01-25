@@ -49,4 +49,21 @@ class Entity extends Model
     {
         return $this->hasMany(Room::class);
     }
+
+    /**
+     * Recalcula el score y la etiqueta energética basada en los datos técnicos.
+     */
+    public function updateThermalLabel()
+    {
+        $service = app(\App\Services\ThermalProfileService::class);
+        $result = $service->calculate($this->thermal_profile ?? []);
+        
+        $currentProfile = $this->thermal_profile ?? [];
+        $newProfile = array_merge($currentProfile, $result);
+        
+        $this->thermal_profile = $newProfile;
+        $this->save();
+        
+        return $this;
+    }
 }

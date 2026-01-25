@@ -4,23 +4,27 @@ namespace App\Services;
 
 use App\Models\EquipmentUsage;
 use App\Models\Invoice;
+use Carbon\Carbon;
 
 class ConsumptionAnalysisService
 {
     protected $usageSuggestionService;
     protected $climateDataService;
-    protected $consumptionCalibrator;
+    protected $energyEngine;
+    protected $climateService;
     protected $maintenanceService;
 
     public function __construct(
         \App\Services\Climate\UsageSuggestionService $usageSuggestionService,
         \App\Services\Climate\ClimateDataService $climateDataService,
-        \App\Services\ConsumptionCalibrator $consumptionCalibrator,
+        \App\Services\EnergyEngineService $energyEngine,
+        \App\Services\ClimateService $climateService,
         \App\Services\MaintenanceService $maintenanceService
     ) {
         $this->usageSuggestionService = $usageSuggestionService;
         $this->climateDataService = $climateDataService;
-        $this->consumptionCalibrator = $consumptionCalibrator;
+        $this->energyEngine = $energyEngine;
+        $this->climateService = $climateService;
         $this->maintenanceService = $maintenanceService;
     }
     /**
@@ -263,27 +267,53 @@ class ConsumptionAnalysisService
     }
 
     /**
-     * Calcula y CALIBRA el consumo para coincidir con la factura.
-     * Retorna una colección de objetos EquipmentUsage con la propiedad 'kwh_reconciled' inyectada.
-     * 
-     * @param Invoice $invoice
-     * @return \Illuminate\Support\Collection
+     * Calcula y CALIBRA el consumo para coincidir con la factura usando Motor v3.
      */
     public function calibrateInvoiceConsumption(Invoice $invoice): \Illuminate\Support\Collection
     {
-        // 1. Obtener Usages
+        $entity = $invoice->contract->entity;
+        
+        // 1. Obtener Grados-Día v3
+        $gradosDia = $this->climateService->getDegreeDaysForLocality(
+            $entity->locality,
+            $invoice->start_date,
+            $invoice->end_date
+        );
+
+        // 2. Preparar Equipos para el Motor
         $usages = $invoice->equipmentUsages()->with(['equipment.category', 'equipment.type'])->get();
-        
-        // 2. Calcular Consumo Teórico (Fase 2)
-        $usages->each(function($usage) use ($invoice) {
-            $usage->kwh_estimated = $this->calculateEquipmentConsumption($usage, $invoice);
-        });
-        
-        // 3. Calibrar (Fase 3)
-        // Pasamos el total de la factura para que el calibrador ajuste
-        $calibratedUsages = $this->consumptionCalibrator->calibrate($usages, $invoice->total_energy_consumed_kwh);
-        
-        return $calibratedUsages;
+        $equiposData = $usages->map(function($u) {
+            return [
+                'id' => $u->id,
+                'nombre' => $u->equipment->name,
+                'potencia_w' => $u->equipment->nominal_power_w,
+                'horas_declaradas' => $u->avg_daily_use_hours,
+                'periodicidad' => $u->usage_frequency, // debe coincidir con el mapa del motor
+                'intensity' => $u->equipment->type->intensity ?? 'medio',
+                'load_factor' => $u->equipment->type->load_factor ?? 1.0,
+                'es_climatizacion' => ($u->equipment->category->name === 'Climatización'),
+                'tipo_clima' => str_contains(strtolower($u->equipment->name), 'aire') ? 'frio' : 'calor',
+            ];
+        })->toArray();
+
+        // 3. Ejecutar Motor v3
+        $engineResult = $this->energyEngine->setData(
+            $invoice->total_energy_consumed_kwh,
+            Carbon::parse($invoice->start_date)->diffInDays(Carbon::parse($invoice->end_date)),
+            $entity->thermal_profile['energy_label'] ?? 'C',
+            $gradosDia
+        )->calibrate($equiposData);
+
+        // 4. Mapear resultados de vuelta a los Usages
+        foreach ($usages as $usage) {
+            $calibrado = collect($engineResult['equipos'])->firstWhere('id', $usage->id);
+            if ($calibrado) {
+                $usage->kwh_reconciled = $calibrado['calibrado_kwh'];
+                $usage->audit_logs = $engineResult['logs']; // Opcional: inyectar logs
+            }
+        }
+
+        return $usages;
     }
 
     /**

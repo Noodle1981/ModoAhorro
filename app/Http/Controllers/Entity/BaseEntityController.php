@@ -74,9 +74,9 @@ abstract class BaseEntityController extends Controller
         $this->authorize('create', [Entity::class, $this->entityType]);
 
         $config = $this->getConfig();
-        $localities = Locality::with('province')->get();
+        $provinces = \App\Models\Province::orderBy('name')->get();
         
-        return view("entities.{$this->getViewFolder()}.create", compact('localities', 'config'));
+        return view("entities.{$this->getViewFolder()}.create", compact('config', 'provinces'));
     }
 
     /**
@@ -134,8 +134,8 @@ abstract class BaseEntityController extends Controller
             'subscribed_at' => now(),
         ]);
 
-        return redirect()->route("{$config['route_prefix']}.show", $entity->id)
-            ->with('success', "{$config['label']} creado correctamente.");
+        return redirect()->route("entities.{$this->getViewFolder()}.thermal.wizard", $entity->id)
+            ->with('success', "{$config['label']} creado correctamente. Ahora completá el diagnóstico térmico.");
     }
 
     /**
@@ -186,9 +186,11 @@ abstract class BaseEntityController extends Controller
         $config = $this->getConfig();
         
         $entity = Entity::where('type', $this->entityType)->findOrFail($id);
-        $localities = Locality::all();
+        $provinces = \App\Models\Province::orderBy('name')->get();
+        $localities = Locality::where('province_id', $entity->locality->province_id ?? null)
+            ->orderBy('name')->get();
 
-        return view("entities.{$this->getViewFolder()}.edit", compact('entity', 'localities', 'config'));
+        return view("entities.{$this->getViewFolder()}.edit", compact('entity', 'provinces', 'localities', 'config'));
     }
 
     /**

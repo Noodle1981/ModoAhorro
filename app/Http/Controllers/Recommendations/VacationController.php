@@ -18,7 +18,8 @@ class VacationController extends Controller
     public function index($entityId)
     {
         $entity = Entity::findOrFail($entityId);
-        return view('vacation.index', compact('entity'));
+        $config = config("entity_types.{$entity->type}", []);
+        return view('vacation.index', compact('entity', 'config'));
     }
 
     public function calculate(Request $request, $entityId)
@@ -28,11 +29,12 @@ class VacationController extends Controller
         ]);
 
         $entity = Entity::with(['rooms.equipment.type'])->findOrFail($entityId);
+        $config = config("entity_types.{$entity->type}", []);
         $days = $request->input('days');
 
         $result = $this->vacationService->generateChecklist($entity, $days);
 
-        return view('vacation.result', compact('entity', 'days', 'result'));
+        return view('vacation.result', compact('entity', 'days', 'result', 'config'));
     }
 
     public function confirm(Request $request, $entityId)
@@ -42,6 +44,7 @@ class VacationController extends Controller
         ]);
 
         $entity = Entity::findOrFail($entityId);
+        $config = config("entity_types.{$entity->type}", []);
         $days = $request->input('days');
 
         $markedCount = $this->vacationService->markAnomalousInvoices($entity, $days);
@@ -51,6 +54,6 @@ class VacationController extends Controller
             $message .= " Se han marcado $markedCount facturas como 'Modo Vacaciones' para no afectar tus estadísticas.";
         }
 
-        return redirect()->route('entities.index')->with('success', $message);
+        return redirect()->route($config['route_prefix'] . '.show', $entity->id)->with('success', $message);
     }
 }

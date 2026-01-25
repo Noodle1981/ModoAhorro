@@ -24,14 +24,14 @@ return [
         'route_prefix' => 'entities.home',
         
         // Labels específicos
-        'rooms_label' => 'Habitaciones',
+        'rooms_label' => 'Áreas',
         'rooms_icon' => 'bi-door-open',
         'people_label' => 'Personas',
         'people_icon' => 'bi-people',
         
         // Comportamiento
         'has_business_hours' => false,
-        'default_rooms' => ['Portátiles'],
+        'default_rooms' => ['Portátiles', 'Temporales'],
         
         // Módulos de recomendaciones habilitados
         'recommendations' => [
@@ -119,7 +119,7 @@ return [
         
         // Comportamiento
         'has_business_hours' => true,
-        'default_rooms' => ['Recepción', 'Área de trabajo'],
+        'default_rooms' => ['Recepción', 'Área de trabajo', 'Portátiles', 'Temporales'],
         
         // Módulos de recomendaciones habilitados
         'recommendations' => [
@@ -199,7 +199,7 @@ return [
         
         // Comportamiento
         'has_business_hours' => true,
-        'default_rooms' => ['Salón Principal', 'Depósito'],
+        'default_rooms' => ['Salón Principal', 'Depósito', 'Portátiles', 'Temporales'],
         
         // Módulos de recomendaciones habilitados
         'recommendations' => [

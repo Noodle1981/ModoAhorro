@@ -9,13 +9,11 @@ use Illuminate\Http\Request;
 
 class ThermalComfortController extends Controller
 {
-    protected $scoreService;
-    protected $adviceEngine;
+    protected $profileService;
 
-    public function __construct(ThermalScoreService $scoreService, ThermalAdviceEngine $adviceEngine)
+    public function __construct(\App\Services\ThermalProfileService $profileService)
     {
-        $this->scoreService = $scoreService;
-        $this->adviceEngine = $adviceEngine;
+        $this->profileService = $profileService;
     }
 
     public function index(Entity $entity)
@@ -28,11 +26,13 @@ class ThermalComfortController extends Controller
 
     public function wizard(Entity $entity)
     {
-        return view('thermal.wizard', compact('entity'));
+        $config = config("entity_types.{$entity->type}", []);
+        return view('thermal.wizard', compact('entity', 'config'));
     }
 
     public function store(Request $request, Entity $entity)
     {
+        $config = config("entity_types.{$entity->type}", []);
         $validated = $request->validate([
             'roof_type' => 'required|string',
             'window_type' => 'required|string',
@@ -45,28 +45,30 @@ class ThermalComfortController extends Controller
         $validated['drafts_detected'] = $request->has('drafts_detected');
         $validated['south_window'] = $request->has('south_window');
 
-        $result = $this->scoreService->calculate($validated);
+        $result = $this->profileService->calculate($validated);
         
         $profile = array_merge($validated, [
-            'thermal_score' => $result['score'],
-            'energy_label' => $result['label']
+            'thermal_score' => $result['thermal_score'],
+            'energy_label' => $result['energy_label']
         ]);
 
         $entity->update(['thermal_profile' => $profile]);
 
-        return redirect()->route('thermal.result', $entity);
+        return redirect()->route($config['route_prefix'] . '.show', $entity)
+            ->with('success', "Diagnóstico completado. Tu casa es Categoría " . $result['energy_label']);
     }
 
     public function result(Entity $entity)
     {
+        $config = config("entity_types.{$entity->type}", []);
         if (!$entity->thermal_profile) {
-            return redirect()->route('thermal.wizard', $entity);
+            return redirect()->route($config['route_prefix'] . '.thermal.wizard', $entity);
         }
 
         $profile = $entity->thermal_profile;
         $scoreResult = $this->scoreService->calculate($profile);
         $recommendations = $this->adviceEngine->generateAdvice($profile, $scoreResult['score']);
 
-        return view('thermal.result', compact('entity', 'profile', 'scoreResult', 'recommendations'));
+        return view('thermal.result', compact('entity', 'profile', 'scoreResult', 'recommendations', 'config'));
     }
 }

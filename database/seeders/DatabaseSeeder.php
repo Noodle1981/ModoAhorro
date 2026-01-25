@@ -24,8 +24,8 @@ class DatabaseSeeder extends Seeder
             EquipmentCategorySeeder::class,
             EquipmentTypeSeeder::class,
 
-                // 2. Datos de entidades (hogar, oficina, comercio)
-            DatosHogarSeeder::class,
+            // 2. Datos de entidades (hogar, oficina, comercio)
+            BackupCasa27Seeder::class,
             DatosOficinaSeeder::class,
             DatosComercioSeeder::class,
 

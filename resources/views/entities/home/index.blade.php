@@ -17,7 +17,7 @@
             </div>
             <div class="mt-4 md:mt-0">
                 <x-button variant="primary" href="{{ route($config['route_prefix'] . '.create') }}">
-                    <i class="bi bi-plus-circle mr-2"></i> Nueva {{ $config['label'] }}
+                    <i class="bi bi-plus-circle mr-2"></i> Nuevo {{ $config['label'] }}
                 </x-button>
             </div>
         </div>

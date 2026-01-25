@@ -9,6 +9,17 @@ use App\Services\ConsumptionAnalysisService;
 
 class PanelController extends Controller
 {
+    protected $analysisService;
+    protected $climateDataService;
+
+    public function __construct(
+        ConsumptionAnalysisService $analysisService,
+        \App\Services\Climate\ClimateDataService $climateDataService
+    ) {
+        $this->analysisService = $analysisService;
+        $this->climateDataService = $climateDataService;
+    }
+
     public function index()
     {
         // Obtener todas las facturas para el gráfico (Historical Evolution)
@@ -21,12 +32,8 @@ class PanelController extends Controller
             ->orderBy('start_date', 'desc')
             ->paginate(5); // 5 per page as requested
 
-        // Initialize Services
-        $climateService = new \App\Services\Climate\ClimateDataService();
-        $usageSuggestionService = new \App\Services\Climate\UsageSuggestionService($climateService);
-        $consumptionCalibrator = new \App\Services\ConsumptionCalibrator();
-        $maintenanceService = new \App\Services\MaintenanceService();
-        $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService, $consumptionCalibrator, $maintenanceService);
+        $service = $this->analysisService;
+        $climateService = $this->climateDataService;
 
         // --- Process Chart Data (Full History) ---
         // --- Process Chart Data (Full History) ---
@@ -155,12 +162,8 @@ class PanelController extends Controller
             ->orderBy('start_date', 'desc')
             ->paginate(5);
 
-        // Initialize Services
-        $climateService = new \App\Services\Climate\ClimateDataService();
-        $usageSuggestionService = new \App\Services\Climate\UsageSuggestionService($climateService);
-        $consumptionCalibrator = new \App\Services\ConsumptionCalibrator();
-        $maintenanceService = new \App\Services\MaintenanceService();
-        $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService, $consumptionCalibrator, $maintenanceService);
+        $service = $this->analysisService;
+        $climateService = $this->climateDataService;
 
         // Process paginated invoices
         $paginatedInvoices->getCollection()->transform(function ($invoice) use ($service, $climateService) {
@@ -233,11 +236,8 @@ class PanelController extends Controller
             ->orderBy('start_date', 'desc')
             ->get();
 
-        $climateService = new \App\Services\Climate\ClimateDataService();
-        $usageSuggestionService = new \App\Services\Climate\UsageSuggestionService($climateService);
-        $consumptionCalibrator = new \App\Services\ConsumptionCalibrator();
-        $maintenanceService = new \App\Services\MaintenanceService();
-        $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService, $consumptionCalibrator, $maintenanceService);
+        $service = $this->analysisService;
+        $climateService = $this->climateDataService;
 
         $invoicesData = [];
         foreach ($invoices as $invoice) {
@@ -292,11 +292,8 @@ class PanelController extends Controller
         $invoice = Invoice::with(['contract.entity.locality', 'equipmentUsages.equipment.category', 'equipmentUsages.equipment.type', 'usageAdjustment'])
             ->findOrFail($invoiceId);
         
-        $climateService = new \App\Services\Climate\ClimateDataService();
-        $usageSuggestionService = new \App\Services\Climate\UsageSuggestionService($climateService);
-        $consumptionCalibrator = new \App\Services\ConsumptionCalibrator();
-        $maintenanceService = new \App\Services\MaintenanceService();
-        $service = new \App\Services\ConsumptionAnalysisService($usageSuggestionService, $climateService, $consumptionCalibrator, $maintenanceService);
+        $service = $this->analysisService;
+        $climateService = $this->climateDataService;
         $validationService = new \App\Services\Core\ValidationService();
 
         // ✅ CALCULAR EN TIEMPO REAL con el nuevo algoritmo (CALIBRADO)

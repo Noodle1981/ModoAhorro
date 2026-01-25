@@ -1,383 +1,70 @@
-# ModoAhorro - Roadmap del Proyecto
-
-## 🎯 Visión General
-
-Sistema SaaS de gestión energética inteligente que evoluciona desde ajuste manual hasta gemelo digital con IoT.
-
----
-
-## 📊 Estado Actual (Completado ~100%)
-
-### ✅ Módulos Implementados
-
-**1. Gestión de Entidades**
-- Planes (Gratuito, Premium, Enterprise)
-- Entities (Hogar, Comercio, Oficina)
-- Rooms (habitaciones personalizables)
-- Usuarios multi-entidad
-
-**2. Gestión de Equipos**
-- CRUD de equipos por habitación
-- 8 categorías (incluye Portátiles)
-- Potencia nominal (W)
-- Estado activo/inactivo
-
-**3. Gestión de Facturas**
-- Contratos con proveedores
-- Facturas con período de consumo
-- Consumo facturado vs calculado
-
-**4. Ajuste de Uso**
-- Frecuencia: diario, semanal, ocasional
-- Horas/día, días/semana
-- Agrupación por habitación
-- Preservación de histórico
-
-**5. Panel de Consumo**
-- Comparación facturado vs calculado
-- Desglose por categoría
-- Lista detallada de equipos
-
-**6. Rutas por Tipo de Entidad** ✅ COMPLETADO
-- Controladores específicos: `HomeEntityController`, `OfficeEntityController`, `TradeEntityController`
-- Rutas separadas: `/entities/home/*`, `/entities/office/*`, `/entities/trade/*`
-- 40 rutas por tipo (CRUD, rooms, invoices, recommendations, thermal, vacation)
-- Vistas específicas para Hogar, Oficina y Comercio (index, create, show, edit)
-- Seeders: `DatosHogarSeeder`, `DatosOficinaSeeder`, `DatosComercioSeeder`
-
-**7. UI Refactoring (Tailwind + UI Kit)** ✅ COMPLETADO (Dic 2024)
-- Migración completa de Bootstrap a Tailwind CSS
-- Sistema de componentes UI Kit (Card, Button, Badge, Table, Input, Select, Alert, Stat-Card)
-- Interactividad con Alpine.js (tabs, toggles, sliders)
-- Vistas refactorizadas:
-  - Dashboard y autenticación (login, register)
-  - Entities (home, office, trade)
-  - Rooms, Equipment, Invoices, Contracts
-  - Consumption Panel (panel, cards, show)
-  - Recommendations (solar, standby, thermal, replacements)
-  - Usage Adjustments (index, edit, show)
-
----
-
-### 📋 Completado: Rutas por Tipo de Entidad
-
-**Completado:**
-- [x] `HomeEntityController` + 40 rutas + 4 vistas Tailwind
-- [x] `OfficeEntityController` + 33 rutas + 4 vistas Tailwind
-- [x] `TradeEntityController` + 33 rutas + 4 vistas Tailwind
-- [x] Vistas para `/entities/office/*` con UI Kit
-- [x] Vistas para `/entities/trade/*` con UI Kit
-- [x] Rutas legacy mantenidas para compatibilidad
-- [x] UI Kit Components (Card, Button, Badge, Table, Input, Select, Alert)
-
-**Por hacer (mejoras opcionales):**
-- [ ] Migración: campos `opens_at`, `closes_at`, `operating_days` para oficina/comercio
-- [ ] Tests de rutas para cada tipo
-- [ ] Remover rutas legacy cuando migración esté completa
-
-## 🚀 Roadmap por Sprints
-
-### **SPRINT 0: Calibración Inteligente de Consumo** ✅ COMPLETADO
-*Objetivo: Ajustar consumo calculado al facturado usando lógica de categorías*
-
-**Estado:** ✅ COMPLETADO (Dic 2024)
-
-#### Problema Resuelto
-El cálculo simple `Potencia × Horas × Días` generaba valores muy altos porque:
-- Es difícil recordar días y horas exactas de uso
-- No considera variabilidad estacional
-
-**Solución:** Sistema de **Calibración Inteligente** que limita el consumo calculado al facturado y redistribuye proporcionalmente.
-
-#### Implementación: Sistema "Base / Hormigas / Elefantes"
-
-| Categoría | Ejemplos | Política |
-|-----------|----------|----------|
-| **BASE CRÍTICA** | Heladera, Router, Alarmas | Intocables - 24h, asignación completa |
-| **BASE PESADA** | Termotanque, Bomba de Agua | Esenciales, posible recorte |
-| **HORMIGAS** | Luces, Cargadores, Portátiles | Bajo consumo, protegidos |
-| **ELEFANTES** | Aires, Calefactores, PCs, TVs | Absorben el delta (ajuste ponderado) |
-
-#### Algoritmo Waterfall
-1. Primero se asigna 100% a BASE CRÍTICA
-2. Luego a BASE PESADA
-3. Después a HORMIGAS
-4. El **remaining** se distribuye a ELEFANTES con **pesos por categoría**:
-   - Climatización: x3.0 (mayor incertidumbre)
-   - Cocina: x1.5
-   - Oficina/Entretenimiento: x0.6
-
-#### Archivos Implementados
-- ✅ `ConsumptionCalibrator.php` - Lógica de calibración
-- ✅ `calibration_strategy.md` - Documentación detallada
-- ✅ Integración con `ConsumptionAnalysisService`
-
-#### Resultados de Tests
-| Factura | Estimado | Calibrado | Precisión |
-|---------|----------|-----------|-----------|
-| Verano 624 kWh | 278 kWh | 624 kWh | ✅ 100% |
-| Otoño 123 kWh | 228 kWh | 123 kWh | ✅ 100% |
-| Otoño 83 kWh | 257 kWh | 83 kWh | ✅ 100% |
-| Invierno 78 kWh | 217 kWh | 78 kWh | ✅ 100% |
-
-**Documentación:** [calibration_strategy.md](docs/logic/calibration_strategy.md)
-
----
-
-### **SPRINT 1: Validación y Trazabilidad** ✅ COMPLETADO (90%)
-*Objetivo: Evitar desviaciones absurdas y rastrear equipos en el tiempo*
-
-**Estado:** ✅ COMPLETADO (Dic 2024) - Solo falta bloqueo de facturas
-
-#### Implementado
-- ✅ `ValidationService` con cálculo de desviación y alertas (verde <10%, amarillo <30%, rojo >30%)
-- ✅ Campos `installed_at` y `removed_at` en equipos (migración 2025_12_02)
-- ✅ Alertas de desviación en panel de consumo
-- ✅ Sugerencias automáticas de ajuste
-
-#### Pendiente Menor
-- [ ] Campo `usage_locked` en facturas para bloquear períodos auditados
-
-#### Archivos Implementados
-- ✅ [ValidationService.php](app/Services/Core/ValidationService.php)
-- ✅ Migración `add_installation_dates_to_equipment.php`
-
-**Documentación:** [walkthrough_energy_fix.md](docs/archive/walkthrough_energy_fix.md)
-
----
-
-### **SPRINT 2: Asistencia Climática** ✅ COMPLETADO
-*Objetivo: Sugerencias automáticas para climatización*
-
-**Estado:** ✅ COMPLETADO (Nov 2024)
-
-#### Implementado
-- ✅ `ClimateDataService` (12KB) - Integración Open-Meteo
-- ✅ Tabla `climate_data` con cache de datos climáticos
-- ✅ `UsageSuggestionService` (7.5KB) - Cálculo de sugerencias
-- ✅ Días calor/frío para ajuste automático de climatización
-
-**Documentación:** [CLIMATE_API_INTEGRATION.md](docs/integrations/CLIMATE_API_INTEGRATION.md)
-
----
-
-### **SPRINT 3: Catálogo de Reemplazos** ✅ COMPLETADO
-*Objetivo: Recomendar equipos eficientes*
-
-**Estado:** ✅ COMPLETADO (Dic 2024)
-
-#### Implementado
-- ✅ Tabla `efficiency_benchmarks` - Catálogo de eficiencia
-- ✅ `ReplacementService` - Recomendaciones de reemplazo
-- ✅ Servicios por tipo: HogarRecommendationService, OficinaRecommendationService, ComercioRecommendationService
-- ✅ Cálculo de ROI y ahorro potencial
-
-**Documentación:** [REPLACEMENT_MODULE.md](docs/modules/REPLACEMENT_MODULE.md)
-
----
-
-### **SPRINT 4: Módulo de Vacaciones** ✅ COMPLETADO
-*Objetivo: Ajustar consumo por ausencias*
-
-**Estado:** ✅ COMPLETADO (Nov 2024)
-
-#### Implementado
-- ✅ `VacationService` (9.6KB) - Checklists personalizados
-- ✅ Marcado de facturas anómalas automático
-- ✅ Reglas: Conectividad, Refrigeración, Termotanque, Vampiro, Iluminación
-- ✅ Detección de períodos vacacionales
-
-**Documentación:** [VACATION_MODULE.md](docs/modules/VACATION_MODULE.md)
-
----
-
-### **SPRINT 5: Análisis de Standby** ✅ COMPLETADO
-*Objetivo: Identificar consumo fantasma*
-
-**Estado:** ✅ COMPLETADO (Nov 2024)
-
-#### Implementado
-- ✅ `StandbyAnalysisService` - Análisis de consumo vampiro
-- ✅ Identificación de equipos con standby
-- ✅ Cálculo de consumo fantasma
-- ✅ Recomendaciones de ahorro integradas
-
-**Documentación:** [STANDBY_IMPLEMENTATION.md](docs/modules/STANDBY_IMPLEMENTATION.md)
-
----
-
-### **SPRINT 6: Optimización de Red (Grid)** ✅ COMPLETADO
-*Objetivo: Optimizar uso según tarifa horaria*
-
-**Estado:** ✅ COMPLETADO (Nov 2024)
-
-#### Implementado
-- ✅ `GridOptimizerService` - Arbitraje de tarifas
-- ✅ Análisis Peak Shifting (horas pico vs valle)
-- ✅ Cálculo de ahorro por desplazamiento horario
-- ✅ Recomendaciones automáticas
-
-**Documentación:** [GRID_OPTIMIZATION_MODULE.md](docs/modules/GRID_OPTIMIZATION_MODULE.md)
-
----
-
-### **SPRINT 7: Calefón/Termotanque Solar** ✅ COMPLETADO
-*Objetivo: Evaluar viabilidad de calefón solar*
-
-**Estado:** ✅ COMPLETADO (Nov 2024)
-
-#### Implementado
-- ✅ `SolarWaterService` (6.3KB) - Cálculos térmicos
-- ✅ Cálculo de consumo actual de agua caliente
-- ✅ Estimación de ahorro con calefón solar
-- ✅ ROI y tiempo de recuperación
-
-**Documentación:** [SOLAR_WATER_LOGIC.md](docs/logic/SOLAR_WATER_LOGIC.md)
-
----
-
-### **SPRINT 8: Paneles Solares** ✅ COMPLETADO
-*Objetivo: Evaluar viabilidad de energía solar*
-
-**Estado:** ✅ COMPLETADO (Nov 2024)
-
-#### Implementado
-- ✅ `SolarPowerService` (2.6KB) - Cálculo fotovoltaico
-- ✅ Cálculo de área disponible (m² de techo)
-- ✅ Estimación de potencia instalable
-- ✅ ROI y tiempo de recuperación
-- ✅ Integración con datos de radiación solar (via ClimateDataService)
-
-**Documentación:** [SOLAR_COVERAGE_LOGIC.md](docs/logic/SOLAR_COVERAGE_LOGIC.MD)
-
----
-
-### **SPRINT 9: Dashboard Ejecutivo** (1 semana)
-*Objetivo: Métricas para CEOs/inversores*
-
-#### Tareas
-- [ ] Crear `ExecutiveDashboardService`
-- [ ] Métricas agregadas (usuarios, ahorro total)
-- [ ] Proyecciones con IoT
-- [ ] Gráficos de impacto
-- [ ] Exportación a PDF
-
-#### Entregables
-- Dashboard ejecutivo
-- Reporte de impacto
-- Proyecciones de crecimiento
-
----
-
-### **SPRINT 10: Preparación IoT** (2 semanas)
-*Objetivo: API para medidores inteligentes*
-
-#### Tareas
-- [ ] Crear tabla `equipment_readings`
-- [ ] Crear `IoTDataService`
-- [ ] API REST para recibir lecturas
-- [ ] Integración con cálculo existente
-- [ ] Documentación de API
-
-#### Entregables
-- API REST documentada
-- Sistema de autenticación de dispositivos
-- Dashboard de dispositivos conectados
-
----
-
-## 🏗️ Arquitectura de Services
-
-```
-app/Services/
-├── Core/
-│   ├── ConsumptionAnalysisService.php ✅ (EXISTE - Requiere Sprint 0)
-│   └── ValidationService.php (Sprint 1)
-│
-├── Climate/
-│   ├── ClimateDataService.php (Sprint 2)
-│   └── UsageSuggestionService.php (Sprint 2)
-│
-├── Recommendations/
-│   ├── ReplacementRecommendationService.php (Sprint 3)
-│   ├── StandbyAnalysisService.php (Sprint 5)
-│   └── TimeOfUseService.php (Sprint 6)
-│
-├── Lifestyle/
-│   └── VacationService.php (Sprint 4)
-│
-├── Solar/
-│   ├── SolarWaterHeaterService.php (Sprint 7)
-│   └── SolarPanelService.php (Sprint 8)
-│
-├── Analytics/
-│   └── ExecutiveDashboardService.php (Sprint 9)
-│
-└── IoT/
-    └── IoTDataService.php (Sprint 10)
+# Roadmap de Implementación: Modo Ahorro v3
+
+Este documento detalla el plan de reestructuración del motor de cálculo de Modo Ahorro para implementar la versión 3.0 basada en una Jerarquía de Tanques y Matriz de Elasticidad.
+
+## 1. Análisis de Situación Actual vs v3
+
+| Característica | Estado Actual (v2.5) | Propuesta (v3.0) |
+| :--- | :--- | :--- |
+| **Arquitectura** | Waterfall por Tiers (Base, Pesada, Hormigas, Ballenas) | Jerarquía de 3 Tanques con **Identificación Automática** |
+| **Tanque 1 (Base)**| Filtrado por nombres (Heladera, etc.) | **Automático 24/7**: (Horas=24, Diario, No Clima) |
+| **Tanque 3 (Ajuste)**| Proporcional por pesos | **Matriz de Elasticidad** basada en Intensidad (Alto/Medio/Bajo) |
+| **Clima** | Basado en "Días Calurosos" (>28°C) o "Fríos" (<15°C) | Basado en **Grados-Día (CDD/HDD)** con bases físicas (24°C/18°C) |
+| **Perfil Hogar** | Puntuación estática básica | **Categorización A-E** que afecta directamente el multiplicador de Tanque 2 |
+| **Transparencia** | Notas de calibración técnicas | **Audit Log Narrativo** |
+
+## 2. Reestructuración de Base de Datos y Modelos
+
+### Adaptaciones en `equipment_types`
+- `process_type`: (Motor, Resistencia, Electrónico, Iluminación)
+- `intensity`: (Bajo, Medio, Alto, Excesivo) - Determina la Elasticidad en el Tanque 3.
+- `load_factor`: Crucial para el Tanque 1 (Heladera 0.4 vs Router 1.0).
+
+### Adaptaciones en `equipment_usages`
+- `periodicidad`: Mapeo de (diariamente, frecuentemente, etc.) a factores decimales.
+
+### Adaptaciones en `climate_data`
+- Asegurar el cálculo correcto de `cooling_degree_days` y `heating_degree_days` en base a las nuevas temperaturas de confort.
+
+## 3. Plan de Acción (Hitos)
+
+### Fase A: Preparación de Datos (Data layer)
+1. **Migración de Metadatos**: Actualizar `equipment_types` con `intensity` y `load_factor` refinados.
+2. **Seeding de Lógica**: Asegurar que los equipos 24/7 tengan el `load_factor` correcto.
+
+### Fase B: El Nuevo Corazón (Energy Engine v3)
+1. **`ClimateService`**: Cálculo de HDD/CDD exactos.
+2. **`ThermalProfileService`**: Implementación del scoring A-E basado en el cuestionario de 4 pilares.
+3. **`EnergyEngineService`**: Implementación de la lógica de Tanques Automática:
+    - **Tanque 1 (Inmutable)**: Detecta uso 24/7 y aplica `Consumo = Potencia * 24 * Dias * load_factor`.
+    - **Tanque 2 (Clima)**: Ajuste físico por HDD/CDD e impacto térmico (A-E).
+    - **Tanque 3 (Ocio/Rutina)**: Distribución del remanente final por Elasticidad (Intensidad).
+
+### Fase C: Integración y Flujos
+1. **Refactorización de `ConsumptionAnalysisService`**: Integrar el nuevo motor.
+2. **Sistema de Audit Log**: Generar explicaciones basadas en la nueva jerarquía.
+
+### Fase D: UI y Visualización
+1. **Dashboard de Auditoría**: Mostrar el porqué de cada ajuste al usuario.
+2. **Wizard Térmico**: Formulario visual para determinar la categoría A-E.
+
+## 4. Cambios en el Flujo de Cálculo
+
+```mermaid
+graph TD
+    A[Factura Real KWh] --> B[Identificación Auto. de Tanques]
+    B --> C{¿Es 24/7 y no Clima?}
+    C -->|Si| D[TANQUE 1: Inmutable Base]
+    C -->|No| E{¿Es Climatización?}
+    E -->|Si| F[TANQUE 2: Ajuste por HDD/CDD + Confort]
+    E -->|No| G[TANQUE 3: Ajuste por Intensidad/Elasticidad]
+    D --> H[Resta Remanente]
+    F --> H
+    G --> H
+    H --> I[Consumo Reconciliado Final + Audit Log]
 ```
 
----
-
-## 📏 Principios de Desarrollo
-
-### 1. **Un Service por Módulo**
-Cada funcionalidad tiene su propio Service. No mezclar lógicas.
-
-### 2. **Testing por Service**
-Cada Service debe tener tests unitarios básicos.
-
-### 3. **Migraciones Incrementales**
-Nunca modificar migraciones antiguas. Crear nuevas.
-
-### 4. **Documentación Continua**
-Actualizar README.md con cada sprint completado.
-
-### 5. **Git Commits Semánticos**
-```
-feat: nueva funcionalidad
-fix: corrección de bug
-refactor: mejora de código
-docs: documentación
-test: tests
-```
-
----
-
-## 🎯 Hitos Clave
-
-- **Mes 1**: Sprints 1-2 → MVP mejorado con validación y clima
-- **Mes 2**: Sprints 3-4 → Recomendaciones básicas
-- **Mes 3**: Sprints 5-6 → Análisis avanzados
-- **Mes 4**: Sprints 7-8 → Energías renovables
-- **Mes 5**: Sprints 9-10 → Dashboard ejecutivo + IoT ready
-
----
-
-## 📊 Métricas de Éxito
-
-- **Precisión**: >85% entre calculado y facturado
-- **Adopción**: >70% de usuarios ajustan sus consumos
-- **Ahorro**: Promedio de 15% identificado por usuario
-- **Satisfacción**: NPS >50
-
----
-
-## 🚨 Riesgos y Mitigaciones
-
-| Riesgo | Probabilidad | Impacto | Mitigación |
-|--------|--------------|---------|------------|
-| Desviación de alcance | Alta | Alto | Roadmap estricto, un sprint a la vez |
-| APIs externas caídas | Media | Medio | Fallbacks, cache de datos |
-| Complejidad técnica | Media | Alto | Arquitectura modular, testing |
-| Falta de datos reales | Alta | Medio | Seeders realistas, beta testers |
-
----
-
-## 💡 Próximos Pasos Inmediatos
-
-1. ✅ **Sprint 0-8**: Todos completados
-2. ✅ **UI Refactoring**: Tailwind CSS + UI Kit completado
-3. ⏳ **Sprint 9: Dashboard Ejecutivo** - Próximo a implementar
-4. ⏳ **Sprint 10: Preparación IoT** - API para medidores inteligentes
-5. **Opcional**: Tests de rutas y migraciones adicionales
+## 5. Próximos Pasos Inmediatos
+1. Ejecutar migración para nuevos campos en `equipment_types`.
+2. Implementar `EnergyEngineService.php` como clase aislada para testing.
+3. Crear tests unitarios con facturas "testigo" para validar el cierre a 0 kWh.
