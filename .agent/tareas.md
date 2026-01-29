@@ -1,65 +1,123 @@
-Si un equipo está configurado como 24 horas y Diariamente, el motor puede inferir automáticamente que es un Consumo Base (Inmutable).
-Esto simplifica tu base de datos y hace que el sistema sea más inteligente. Sin embargo, para que esta lógica sea perfecta, debemos agregar una pequeña "regla de seguridad".
-La Nueva Lógica de "Inmutabilidad Automática"
-El motor ahora clasificará como Tanque 1 (Base) a cualquier equipo que cumpla esto:
-Horas Declaradas == 24.
-Periodicidad == "Diariamente".
-NO es de Climatización (porque un aire prendido 24hs sigue dependiendo del clima, no es un consumo lineal constante).
-¿Cómo cambia el cálculo para estos equipos?
-Aunque sean inmutables, hay una diferencia física entre ellos que el motor debe conocer mediante el load_factor (que ya tienes en tu tabla equipment_types):
-Equipo Lineal (Router/Cámaras): Gasta su potencia nominal todo el tiempo. (load_factor = 1.0).
-Equipo Cíclico (Heladera/Freezer): Está enchufado 24hs, pero el motor arranca y corta. (load_factor = 0.3 a 0.5).
-El motor hará esto en el Tanque 1:
-Consumo = Potencia * 24hs * Dias * load_factor
-Implementación en PHP (Laravel) con esta lógica automática
-Aquí tienes el fragmento del service actualizado. Ya no necesitamos buscar si se llama "Heladera", solo miramos sus horas y frecuencia:
+"Tengo un sistema en Laravel para gestión de energía. He actualizado EquipmentTypeSeeder.php con valores por defecto (Potencia, Load Factor, Horas).
+Tarea: Necesito implementar una funcionalidad de 'Valor Genérico' (o Equipo No Validado).
+Base de Datos: Sugiere una migración para agregar un flag is_validated o use_default_values en la tabla equipment.
+Vista: En la vista de carga de equipos (/entities/home/3/rooms/3/equipment), si el usuario no ingresa un valor manual, el sistema debe marcar el equipo como 'No Validado' y usar los datos del seeder.
+Motor de Cálculo: Modifica la lógica del motor para que, si un equipo no está validado, genere una advertencia en el Audit Log diciendo: 'El cálculo para [Equipo] usó valores genéricos. Para mayor precisión, por favor ingresa los datos reales de tu equipo'.
+Controlador: Ajusta el método store para que detecte si los valores vienen del seeder o fueron editados por el usuario."
+Cómo implementar la lógica de "Valor Genérico"
+Para que esto funcione, te sugiero estos 3 pasos técnicos:
+1. Migración (La "Etiqueta")
+Agregamos una columna a la tabla donde guardas los equipos del usuario (supongamos equipment o equipment_usages):
+code
+PHP
+Schema::table('equipment', function (Blueprint $table) {
+    $table->boolean('is_manual_value')->default(false); // false = es genérico
+});
+2. Lógica en el Motor (Laravel Service)
+En tu EnergyEngineService, cuando recorres los equipos para el Tanque 3 o el Log, haces esto:
+code
+PHP
+foreach ($equipos as $eq) {
+    if (!$eq['is_manual_value']) {
+        $this->logs[] = "⚠️ El equipo '{$eq['nombre']}' está usando valores genéricos. La precisión del ahorro podría ser menor.";
+    }
+}
+3. En la Vista (Blade/Vue/React)
+Para que el usuario sepa qué está pasando, en tu tabla de equipos puedes poner un badge:
+Si is_manual_value == true: ✅ Validado (Icono de check verde).
+Si is_manual_value == false: ⚠️ Valor Estimado (Un botón que diga "Corregir para más precisión").
+¿Por qué esto ayuda al Motor de Cálculo?
+Cuando el motor tenga que hacer un ajuste grande (por ejemplo, sobran 100 kWh), le dará prioridad de ajuste a los equipos que no están validados.
+La lógica sería: "Si el usuario no está seguro de cuánto consume su TV (valor genérico), es más probable que el error esté ahí que en la Heladera que es un valor físico conocido".
+
+
+Para implementar esto, necesitamos que el Controlador sea inteligente: debe comparar lo que el usuario envía desde el formulario con los valores por defecto que definiste en tu EquipmentTypeSeeder.
+Aquí tienes los 3 pasos para dejarlo funcionando:
+1. Preparar la Base de Datos
+Primero, añade la columna is_validated a tu tabla de equipos (donde se guardan las instancias del usuario).
+code
+PHP
+// Ejecuta: php artisan make:migration add_validated_to_equipment_table
+Schema::table('equipment', function (Blueprint $table) {
+    // Si es false, significa que usa valores genéricos del seeder
+    $table->boolean('is_validated')->default(false); 
+});
+2. Lógica del Controlador (EquipmentController.php)
+Este es el método store. La clave está en comparar el input con el EquipmentType.
+code
+PHP
+public function store(Request $request, $entityId, $roomId)
+{
+    // 1. Buscamos el "molde" (el tipo de equipo del seeder)
+    $type = EquipmentType::findOrFail($request->equipment_type_id);
+
+    // 2. Comparamos lo que envió el usuario con el valor por defecto
+    // Si el usuario NO cambió los Watts y NO cambió las horas, sigue siendo "genérico"
+    $isValidated = true;
+
+    if ($request->nominal_power_w == $type->default_power_watts && 
+        $request->avg_daily_use_hours == $type->default_avg_daily_use_hours) {
+        $isValidated = false; // El usuario aceptó el valor recomendado sin editar
+    }
+
+    // 3. Guardamos el equipo
+    Equipment::create([
+        'entity_id' => $entityId,
+        'room_id' => $roomId,
+        'equipment_type_id' => $type->id,
+        'name' => $request->name ?? $type->name,
+        'nominal_power_w' => $request->nominal_power_w,
+        'avg_daily_use_hours' => $request->avg_daily_use_hours,
+        'is_validated' => $isValidated, // <--- Aquí guardamos el estado
+        'periodicidad' => $request->periodicidad,
+        'intensidad' => $type->intensity, // Tomamos la intensidad del seeder
+    ]);
+
+    return redirect()->back()->with('success', 'Equipo agregado correctamente');
+}
+3. En la Vista Blade (equipment/index.blade.php)
+Para que el usuario vea qué equipos "faltan ajustar", añadimos un badge visual en tu tabla de equipos:
+code
+Html
+@foreach($room->equipments as $equipment)
+    <tr>
+        <td>{{ $equipment->name }}</td>
+        <td>
+            @if($equipment->is_validated)
+                <span class="badge bg-success">✅ Validado</span>
+            @else
+                <span class="badge bg-warning text-dark" title="Usando valores recomendados">
+                    ⚠️ Genérico
+                </span>
+                <small class="text-muted d-block">Ajuste para más precisión</small>
+            @endif
+        </td>
+        <td>{{ $equipment->nominal_power_w }} W</td>
+        <td>
+            <!-- Botón para editar y validar -->
+            <button onclick="openEditModal({{ $equipment->id }})" class="btn btn-sm btn-outline-primary">
+                Editar
+            </button>
+        </td>
+    </tr>
+@endforeach
+¿Cómo lo usa el Motor de Cálculo? (El toque final)
+Cuando ejecutes el motor que hicimos antes, ahora puedes generar un aviso automático para el reporte final:
 code
 PHP
 // Dentro de EnergyEngineService.php
 
-public function calibrate(array $equipos)
+public function getAuditSummary($equiposCalibrados)
 {
-    $remanenteFactura = $this->facturaTotal;
+    $noValidadosCount = collect($equiposCalibrados)->where('is_validated', false)->count();
 
-    // --- PASO 0: Identificación Automática de Tanques ---
-    foreach ($equipos as &$eq) {
-        
-        // REGLA DE ORO: Si es 24/7 y no es Clima, es INMUTABLE (Tanque 1)
-        if ($eq['horas_declaradas'] == 24 && 
-            $eq['periodicidad'] === 'diariamente' && 
-            !$eq['es_climatizacion']) {
-            
-            $eq['tanque'] = 1;
-            $eq['elasticidad'] = 0; // No se toca
-        } 
-        elseif ($eq['es_climatizacion']) {
-            $eq['tanque'] = 2; // Clima
-        } 
-        else {
-            $eq['tanque'] = 3; // Rutina / Ocio
-        }
+    if ($noValidadosCount > 0) {
+        $this->logs[] = "ℹ️ Nota: Se utilizaron valores genéricos para $noValidadosCount equipos. 
+                         Para que tu plan de ahorro sea más exacto, te recomendamos 
+                         verificar la potencia real de estos dispositivos.";
     }
-
-    // --- PROCESAR TANQUE 1 (Base Automática) ---
-    foreach ($equipos as &$eq) {
-        if ($eq['tanque'] === 1) {
-            // El load_factor es clave: Heladera (0.4), Router (1.0)
-            $eq['calibrado_kwh'] = ($eq['potencia_w'] * 24 * $this->diasPeriodo * ($eq['load_factor'] ?? 1.0)) / 1000;
-            $remanenteFactura -= $eq['calibrado_kwh'];
-            $eq['ajustado'] = true;
-        }
-    }
-
-    // ... seguir con Tanque 2 y 3 ...
 }
-¿Qué pasa con los valores de intensidad (Alto, Medio, Bajo)?
-Como ahora el Tanque 1 se define solo por las 24hs, las categorías de Intensidad solo las usaremos para el Tanque 3 (Ocio/Rutina) para saber a quién "castigar" o "premiar" más cuando ajustemos el sobrante de la factura.
-Ejemplo de Tanque 3 con tus intensidades:
-Usuario declara: Lavarropas (Intensidad: Alto) y TV (Intensidad: Medio).
-Situación: La factura es más baja de lo que el usuario calculó.
-Acción del motor: Como el Lavarropas es "Alto", el motor le quita más kWh al lavarropas que a la TV, porque los equipos potentes tienen más margen de error en la estimación del usuario.
-Resumen de tu nueva arquitectura simplificada:
-¿Es 24/7? -> Tanque 1 (Inmutable).
-¿Es Clima? -> Tanque 2 (Ajuste por API y Confort Térmico).
-¿Es otra cosa? -> Tanque 3 (Ajuste por Intensidad: Alto/Medio/Bajo).
-¿Te gusta más este enfoque? Es mucho más robusto porque se adapta a lo que el usuario cargue, sin listas fijas de equipos.
+Por qué esta solución es excelente:
+Menos fricción: El usuario carga rápido su casa usando tus valores del seeder.
+Transparencia: No le mientes al usuario; le dices que es una estimación.
+Gamificación: El usuario querrá ver todos sus equipos con el check verde (Validado), lo que lo motiva a mirar las etiquetas de sus electrodomésticos y mejorar los datos del sistema.

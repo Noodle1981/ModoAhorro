@@ -74,6 +74,13 @@
                             <td class="px-6 py-4 text-gray-600">{{ $equipment->type->name ?? '-' }}</td>
                             <td class="px-6 py-4">
                                 <span class="font-mono text-gray-900">{{ number_format($equipment->nominal_power_w, 0) }} W</span>
+                                @if(isset($equipment->is_validated) && !$equipment->is_validated)
+                                    <div class="mt-1">
+                                        <x-badge variant="warning" size="xs" title="Usando valores genéricos">
+                                            <i class="bi bi-exclamation-triangle mr-1"></i> Genérico
+                                        </x-badge>
+                                    </div>
+                                @endif
                             </td>
                             <td class="px-6 py-4">
                                 @if($equipment->is_active)

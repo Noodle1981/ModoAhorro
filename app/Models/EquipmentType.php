@@ -12,11 +12,13 @@ class EquipmentType extends Model
         'default_power_watts',
         'default_avg_daily_use_hours',
         'default_standby_power_w',
+        'standby_power',
         'is_shiftable',
         'process_type',
         'load_factor',
         'efficiency',
         'intensity',
+        'is_climatization',
     ];
 
     public function isClimate(): bool

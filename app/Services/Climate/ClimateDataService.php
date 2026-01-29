@@ -293,7 +293,30 @@ class ClimateDataService
      */
     public function getLocalityClimateProfile(Locality $locality): array
     {
+        // 1. Verificar si tenemos datos recientes (últimos 365 días)
+        $oneYearAgo = Carbon::now()->subYear();
+        $yesterday = Carbon::yesterday();
+        
+        $count = ClimateData::where('latitude', $locality->latitude)
+            ->where('longitude', $locality->longitude)
+            ->where('date', '>=', $oneYearAgo->format('Y-m-d'))
+            ->count();
+
+        // 2. Si tenemos menos de 300 días de datos, intentar obtener históricos
+        if ($count < 300) {
+            $fetchResult = $this->fetchHistoricalData($locality, $oneYearAgo, $yesterday);
+            
+            if ($fetchResult['success']) {
+                $this->saveWeatherData($locality, $fetchResult['data']);
+            }
+        }
+
         $cacheKey = "climate_profile_{$locality->latitude}_{$locality->longitude}";
+
+        // Force refresh cache if we just fetched data
+        if ($count < 300 && isset(self::$cache[$cacheKey])) {
+            unset(self::$cache[$cacheKey]);
+        }
 
         if (isset(self::$cache[$cacheKey])) {
             return self::$cache[$cacheKey];
@@ -301,14 +324,35 @@ class ClimateDataService
 
         $data = ClimateData::where('latitude', $locality->latitude)
             ->where('longitude', $locality->longitude)
+            ->where('date', '>=', $oneYearAgo->format('Y-m-d'))
             ->get();
 
         if ($data->isEmpty()) {
             return [];
         }
 
+        $avgTemp = round($data->avg('temp_avg'), 1);
+        $hdd = $data->sum('heating_degree_days');
+
+        // Estimación muy simplificada de Zona Bioambiental (IRAM 11603) basada en HDD anuales
+        // Esta es una aproximación para mostrar algo útil
+        $zone = 'N/A';
+        if ($hdd < 700) { // Muy cálido
+            $zone = 'I (Muy Cálida)';
+        } elseif ($hdd < 1400) { // Cálido
+            $zone = 'II (Cálida)';
+        } elseif ($hdd < 2400) { // Templado Cálido
+            $zone = 'III (Templada)';
+        } elseif ($hdd < 3500) { // Templado Frio
+            $zone = 'IV (Fría)';
+        } else { // Muy Frío
+            $zone = 'V (Muy Fría)';
+        }
+
         $result = [
-            'avg_temp' => round($data->avg('temp_avg'), 1),
+            'avg_temperature' => $avgTemp, // Key expected by view
+            'climate_zone' => $zone,       // Key expected by view
+            'avg_temp' => $avgTemp,
             'avg_max_temp' => round($data->avg('temp_max'), 1),
             'avg_min_temp' => round($data->avg('temp_min'), 1),
             'avg_cloud_cover' => round($data->avg('cloudcover_mean'), 0),

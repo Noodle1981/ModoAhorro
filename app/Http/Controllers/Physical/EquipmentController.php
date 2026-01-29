@@ -58,7 +58,21 @@ class EquipmentController extends Controller
             'is_active' => 'nullable|boolean',
             'room_id' => 'required|exists:rooms,id',
         ]);
-        
+
+        // Logic for Generic Values
+        $type = EquipmentType::findOrFail($request->type_id);
+
+        // Compare user input with default values
+        // If values match defaults AND use hours match default, it's considered unvalidated (generic)
+        $isValidated = true;
+        if ($request->nominal_power_w == $type->default_power_watts && 
+            $request->avg_daily_use_hours == $type->default_avg_daily_use_hours) {
+            $isValidated = false;
+        }
+
+        $validated['is_validated'] = $isValidated;
+        $validated['intensity'] = $type->intensity; // Capture intensity from type
+
         Equipment::create($validated);
         return redirect()->route('equipment.index')->with('success', 'Equipo agregado correctamente.');
     }

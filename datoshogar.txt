@@ -22,7 +22,7 @@ ID 1
 Numero de Factura 137756868
 Fecha de Emision 28/03/2025
 Periodo de Consumo
-15/01/2025 a 20/30/2025
+15/01/2025 a 20/03/2025
 Consumo Facturado
 624.00 kWh
 Total Energía 67876.86

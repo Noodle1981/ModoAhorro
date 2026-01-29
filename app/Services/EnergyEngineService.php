@@ -111,6 +111,9 @@ class EnergyEngineService
             $this->procesarTanqueRutina($equipos, $remanenteFactura);
         }
 
+        // --- AUDITORIA DE VALORES GENÉRICOS ---
+        $this->getAuditSummary($equipos);
+
         return [
             'factura_real' => $this->facturaTotal,
             'remanente_final' => round($remanenteFactura, 4),
@@ -190,5 +193,17 @@ class EnergyEngineService
         // Recalcular remanente final (debería tender a 0)
         $totalCalibrado = array_sum(array_column($equipos, 'calibrado_kwh'));
         $remanenteFactura = $this->facturaTotal - $totalCalibrado;
+    }
+
+    /**
+     * Genera auditoría sobre la calidad de los datos (Valores Genéricos)
+     */
+    protected function getAuditSummary($equiposCalibrados)
+    {
+        $noValidadosCount = collect($equiposCalibrados)->where('is_validated', false)->count();
+
+        if ($noValidadosCount > 0) {
+            $this->logs[] = "ℹ️ Nota: Se utilizaron valores genéricos para $noValidadosCount equipos. Para que tu plan de ahorro sea más exacto, te recomendamos verificar la potencia real de estos dispositivos (marcados como 'Genérico').";
+        }
     }
 }
