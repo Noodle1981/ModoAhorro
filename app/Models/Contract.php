@@ -16,6 +16,7 @@ class Contract extends Model
         'tariff_type',
         'contract_number',
         'rate_name',
+        'is_three_phase',
         'contracted_power_kw_p1',
         'contracted_power_kw_p2',
         'contracted_power_kw_p3',

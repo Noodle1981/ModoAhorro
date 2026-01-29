@@ -210,7 +210,7 @@
                         <td class="px-6 py-4">
                             @php
                                 $tanque = $calibratedUsage->tanque ?? null;
-                            @php
+                            @endphp
                             @if($tanque === 1)
                                 <x-badge variant="success" title="Inmutable 24/7"><i class="bi bi-shield-lock-fill mr-1"></i> Tanque 1</x-badge>
                             @elseif($tanque === 2)

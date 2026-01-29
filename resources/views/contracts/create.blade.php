@@ -41,7 +41,7 @@
                                 class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option value="">Seleccione una entidad...</option>
                                 @foreach($entities as $entity)
-                                    <option value="{{ $entity->id }}" {{ old('entity_id') == $entity->id ? 'selected' : '' }}>
+                                    <option value="{{ $entity->id }}" {{ (old('entity_id') == $entity->id || (isset($selectedEntityId) && $selectedEntityId == $entity->id)) ? 'selected' : '' }}>
                                         {{ $entity->name }}
                                     </option>
                                 @endforeach
@@ -78,7 +78,6 @@
                             label="N° de Suministro" 
                             placeholder="Ej: 123456789"
                             :value="old('supply_number')"
-                            required 
                         />
                         <x-input 
                             name="serial_number" 
@@ -97,19 +96,26 @@
                             label="Nombre de Tarifa" 
                             placeholder="Ej: T1R, T2, Residencial"
                             :value="old('rate_name')"
-                            required 
                         />
                     </div>
                 </div>
 
                 {{-- Power Section --}}
-                <div class="mb-8 pb-8 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
-                        <i class="bi bi-lightning-charge text-amber-500"></i>
-                        Potencia Contratada
-                    </h3>
+                <div class="mb-8 pb-8 border-b border-gray-200" x-data="{ isThreePhase: {{ old('is_three_phase') ? 'true' : 'false' }} }">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="bi bi-lightning-charge text-amber-500"></i>
+                            Potencia Contratada
+                        </h3>
+                        
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="is_three_phase" value="1" x-model="isThreePhase"
+                                class="rounded border-gray-300 text-indigo-500 focus:ring-indigo-500 w-4 h-4">
+                            <span class="text-sm font-medium text-gray-700">Trifásica</span>
+                        </label>
+                    </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" x-show="isThreePhase" x-transition>
                         <x-input 
                             name="contracted_power_kw_p1" 
                             label="Potencia P1 (kW)" 
@@ -135,23 +141,35 @@
                             helper="Resto"
                         />
                     </div>
+                    <div x-show="!isThreePhase" class="text-sm text-gray-500 italic bg-gray-50 p-3 rounded-lg border border-gray-200">
+                        <i class="bi bi-info-circle mr-1"></i>
+                        La potencia detallada solo está disponible para suministros trifásicos. Habilita la opción "Trifásica" para ingresarla.
+                    </div>
                 </div>
 
                 {{-- Dates Section --}}
-                <div class="mb-8">
+                <div class="mb-8" x-data="{ unknownStartDate: false }">
                     <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
                         <i class="bi bi-calendar3 text-emerald-500"></i>
                         Vigencia
                     </h3>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <x-input 
-                            name="start_date" 
-                            label="Fecha de Inicio" 
-                            type="date"
-                            :value="old('start_date')"
-                            required 
-                        />
+                        <div class="space-y-1.5">
+                            <x-input 
+                                name="start_date" 
+                                label="Fecha de Inicio" 
+                                type="date"
+                                :value="old('start_date')"
+                                x-bind:disabled="unknownStartDate"
+                                x-bind:required="!unknownStartDate"
+                            />
+                            <label class="flex items-center gap-2 mt-2 cursor-pointer">
+                                <input type="checkbox" name="unknown_start_date" value="1" x-model="unknownStartDate"
+                                    class="rounded border-gray-300 text-indigo-500 focus:ring-indigo-500 w-4 h-4">
+                                <span class="text-sm text-gray-500">Desconozco fecha de inicio (Usar fecha de hoy)</span>
+                            </label>
+                        </div>
                         <x-input 
                             name="end_date" 
                             label="Fecha de Fin" 

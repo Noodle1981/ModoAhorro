@@ -23,17 +23,44 @@ class ContractController extends Controller
         return view('contracts.index', compact('contracts'));
     }
 
+    public function createForEntity($entityId)
+    {
+        $entities = Entity::all();
+        $proveedores = Proveedor::all();
+        $selectedEntityId = $entityId;
+        return view('contracts.create', compact('entities', 'proveedores', 'selectedEntityId'));
+    }
+
     public function create()
     {
         $entities = Entity::all();
         $proveedores = Proveedor::all();
-        return view('contracts.create', compact('entities', 'proveedores'));
+        $selectedEntityId = null;
+        return view('contracts.create', compact('entities', 'proveedores', 'selectedEntityId'));
     }
 
     public function store(Request $request)
     {
         $data = $request->all();
+        
+        // Handle unknown start date
+        if ($request->has('unknown_start_date')) {
+            $data['start_date'] = now()->toDateString();
+        }
+
+        // Auto-generate contract number if missing
+        if (empty($data['contract_number'])) {
+            $data['contract_number'] = 'CONT-' . strtoupper(uniqid());
+        }
+
+        // Legacy/Compatibility fields
+        $data['utility_company_id'] = $data['proveedor_id']; // Map provider to utility company
+        $data['meter_number'] = $data['meter_number'] ?? 'N/A'; // Default or null if allowed
+        $data['client_number'] = $data['client_number'] ?? 'N/A';
+        $data['tariff_type'] = $data['tariff_type'] ?? 'Residencial'; // Default
+        
         $data['is_active'] = $request->has('is_active');
+        $data['is_three_phase'] = $request->has('is_three_phase');
         Contract::create($data);
         return redirect()->route('contracts.index')->with('success', 'Contrato creado correctamente.');
     }
@@ -51,6 +78,7 @@ class ContractController extends Controller
         $contract = Contract::findOrFail($id);
         $data = $request->all();
         $data['is_active'] = $request->has('is_active');
+        $data['is_three_phase'] = $request->has('is_three_phase');
         $contract->update($data);
         return redirect()->route('contracts.index')->with('success', 'Contrato actualizado correctamente.');
     }

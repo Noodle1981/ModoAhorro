@@ -44,7 +44,20 @@ class InvoiceController extends Controller
             'total_energy_consumed_kwh' => 'required|numeric',
             'total_amount' => 'required|numeric',
         ]);
-        $invoice = new Invoice($request->all());
+
+        $data = $request->all();
+        // Fix for missing issue_date
+        $data['issue_date'] = $data['invoice_date'] ?? now();
+        
+        // Round monetary values to avoid decimal issues
+        $monetaryFields = ['cost_for_energy', 'cost_for_power', 'taxes', 'other_charges', 'total_amount'];
+        foreach ($monetaryFields as $field) {
+            if (isset($data[$field])) {
+                $data[$field] = round($data[$field]);
+            }
+        }
+
+        $invoice = new Invoice($data);
         $invoice->contract_id = $contract->id;
         $invoice->save();
         return redirect()->route($config['route_prefix'] . '.invoices', $entityId)
@@ -66,7 +79,20 @@ class InvoiceController extends Controller
         $config = config("entity_types.{$entity->type}", []);
         $contract = $entity->contracts()->where('is_active', true)->first();
         $invoice = Invoice::where('contract_id', optional($contract)->id)->findOrFail($invoiceId);
-        $invoice->update($request->all());
+        
+        $data = $request->all();
+        // Fix for missing issue_date
+        $data['issue_date'] = $data['invoice_date'] ?? $invoice->issue_date;
+
+        // Round monetary values
+        $monetaryFields = ['cost_for_energy', 'cost_for_power', 'taxes', 'other_charges', 'total_amount'];
+        foreach ($monetaryFields as $field) {
+            if (isset($data[$field])) {
+                $data[$field] = round($data[$field]);
+            }
+        }
+
+        $invoice->update($data);
         return redirect()->route($config['route_prefix'] . '.invoices', $entityId)
             ->with('success', 'Factura actualizada correctamente.');
     }

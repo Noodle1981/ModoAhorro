@@ -94,6 +94,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
 
         // Medidor/Contrato
         Route::get('/{entity}/meter', [\App\Http\Controllers\Physical\ContractController::class, 'showForEntity'])->name('meter');
+        Route::get('/{entity}/contracts/create', [\App\Http\Controllers\Physical\ContractController::class, 'createForEntity'])->name('contracts.create');
 
         // Facturas
         Route::get('/{entity}/invoices', [\App\Http\Controllers\Physical\InvoiceController::class, 'index'])->name('invoices');
@@ -160,6 +161,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
 
         // Medidor/Contrato
         Route::get('/{entity}/meter', [\App\Http\Controllers\Physical\ContractController::class, 'showForEntity'])->name('meter');
+        Route::get('/{entity}/contracts/create', [\App\Http\Controllers\Physical\ContractController::class, 'createForEntity'])->name('contracts.create');
 
         // Facturas
         Route::get('/{entity}/invoices', [\App\Http\Controllers\Physical\InvoiceController::class, 'index'])->name('invoices');
@@ -226,6 +228,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
 
         // Medidor/Contrato
         Route::get('/{entity}/meter', [\App\Http\Controllers\Physical\ContractController::class, 'showForEntity'])->name('meter');
+        Route::get('/{entity}/contracts/create', [\App\Http\Controllers\Physical\ContractController::class, 'createForEntity'])->name('contracts.create');
 
         // Facturas
         Route::get('/{entity}/invoices', [\App\Http\Controllers\Physical\InvoiceController::class, 'index'])->name('invoices');

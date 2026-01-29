@@ -15,7 +15,7 @@
                     <p class="text-gray-500 text-sm">{{ $entity->name }}</p>
                 </div>
             </div>
-            <x-button variant="secondary" href="{{ route($config['route_prefix'] . '.show', $entity->id) }}">
+            <x-button variant="secondary" href="{{ route($config['route_prefix'] . '.invoices', $entity->id) }}">
                 <i class="bi bi-arrow-left mr-2"></i> Volver
             </x-button>
         </div>

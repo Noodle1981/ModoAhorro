@@ -29,8 +29,8 @@ class ClimateService
             ->where('longitude', $longitude)
             ->whereBetween('date', [$fechaInicio, $fechaFin])
             ->select(
-                DB::raw('SUM(GREATEST(0, temp_avg - ' . self::BASE_TEMP_COOLING . ')) as cdd'), // Cooling Degree Days
-                DB::raw('SUM(GREATEST(0, ' . self::BASE_TEMP_HEATING . ' - temp_avg)) as hdd')  // Heating Degree Days
+                DB::raw('SUM(CASE WHEN (temp_avg - ' . self::BASE_TEMP_COOLING . ') > 0 THEN (temp_avg - ' . self::BASE_TEMP_COOLING . ') ELSE 0 END) as cdd'), // Cooling Degree Days
+                DB::raw('SUM(CASE WHEN (' . self::BASE_TEMP_HEATING . ' - temp_avg) > 0 THEN (' . self::BASE_TEMP_HEATING . ' - temp_avg) ELSE 0 END) as hdd')  // Heating Degree Days
             )
             ->first();
 

@@ -80,6 +80,7 @@
                         Consumo de Energía
                     </h3>
                     
+                    @if($contract->is_three_phase)
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                         <x-input 
                             name="energy_consumed_p1_kwh" 
@@ -106,6 +107,7 @@
                             helper="Resto"
                         />
                     </div>
+                    @endif
                     
                     <div class="bg-emerald-50 rounded-xl p-4">
                         <x-input 

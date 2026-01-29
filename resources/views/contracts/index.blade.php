@@ -89,7 +89,7 @@
 
                         {{-- Actions --}}
                         <div class="flex gap-2 pt-4 border-t border-gray-100">
-                            <x-button variant="ghost" size="sm" href="{{ route('contracts.show', $contract->id) }}" class="flex-1">
+                            <x-button variant="ghost" size="sm" href="{{ route(config('entity_types.' . $contract->entity->type . '.route_prefix') . '.meter', $contract->entity->id) }}" class="flex-1">
                                 <i class="bi bi-eye mr-1"></i> Ver
                             </x-button>
                             <x-button variant="ghost" size="sm" href="{{ route('contracts.edit', $contract->id) }}" class="flex-1">
