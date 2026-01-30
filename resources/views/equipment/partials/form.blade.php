@@ -16,16 +16,35 @@
             </select>
         </div>
 
-        {{-- Name --}}
+        {{-- Type --}}
         <div class="space-y-1.5">
-            <label for="name" class="block text-sm font-medium text-gray-700">
-                Nombre del Equipo <span class="text-red-500">*</span>
+            <label for="type_id" class="block text-sm font-medium text-gray-700">
+                Tipo de Equipo <span class="text-red-500">*</span>
             </label>
-            <input type="text" name="name" id="name" required
-                value="{{ old('name') }}"
-                placeholder="Ej: Aire Acondicionado Split"
-                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+            <select name="type_id" id="type_id" required disabled
+                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 bg-gray-50">
+                <option value="">Primero seleccione categoría...</option>
+                @foreach($types as $type)
+                    <option value="{{ $type->id }}" 
+                        data-category="{{ $type->category_id }}"
+                        data-power="{{ $type->default_power_watts }}"
+                        data-name="{{ $type->name }}">
+                        {{ $type->name }}
+                    </option>
+                @endforeach
+            </select>
         </div>
+    </div>
+
+    {{-- Name --}}
+    <div class="mb-6 space-y-1.5">
+        <label for="name" class="block text-sm font-medium text-gray-700">
+            Nombre del Equipo <span class="text-red-500">*</span>
+        </label>
+        <input type="text" name="name" id="name" required
+            value="{{ old('name') }}"
+            placeholder="Ej: Aire Acondicionado Split"
+            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
     </div>
     
     {{-- Suggestions (Dynamic) --}}
@@ -36,20 +55,35 @@
         <div id="suggestions-list" class="flex flex-wrap gap-2">
             {{-- Injected via JS --}}
         </div>
-        <p class="text-xs text-purple-600 mt-3">Haz clic en una sugerencia para auto-completar nombre y potencia.</p>
+        <p class="text-xs text-purple-600 mt-3">Haz clic en una sugerencia para auto-completar.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {{-- Power --}}
         <div class="space-y-1.5">
-            <label for="nominal_power_w" class="block text-sm font-medium text-gray-700">
-                Potencia Nominal (W) <span class="text-red-500">*</span>
-            </label>
+            <div class="flex justify-between items-end mb-1">
+                <label for="nominal_power_w" class="block text-sm font-medium text-gray-700">
+                    Potencia Nominal (W) <span class="text-red-500">*</span>
+                </label>
+                
+                {{-- Validation Toggles --}}
+                <div class="flex gap-3 text-xs">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="power_mode" value="suggested" class="form-radio text-purple-600 focus:ring-purple-500 h-3 w-3" checked>
+                        <span class="ml-1.5 text-gray-600">Sugerido</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="power_mode" value="real" class="form-radio text-emerald-600 focus:ring-emerald-500 h-3 w-3">
+                        <span class="ml-1.5 text-gray-600">Real</span>
+                    </label>
+                </div>
+            </div>
+            
             <input type="number" name="nominal_power_w" id="nominal_power_w" required
                 value="{{ old('nominal_power_w') }}"
                 placeholder="Ej: 1500"
-                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-            <p class="text-xs text-gray-500">Verificá el consumo en la etiqueta del equipo</p>
+                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 transition-colors bg-gray-50">
+            <p class="text-xs text-gray-500" id="power-help-text">Valor promedio para este tipo de equipo.</p>
         </div>
 
         {{-- Quantity --}}
@@ -57,7 +91,7 @@
             <label for="cantidad" class="block text-sm font-medium text-gray-700">
                 Cantidad <span class="text-red-500">*</span>
             </label>
-            <input type="number" name="cantidad" id="cantidad" required
+            <input type="number" name="cantidad" id="cantidad" required min="1"
                 value="{{ old('cantidad', 1) }}"
                 placeholder="1"
                 class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
@@ -66,36 +100,14 @@
     
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {{-- Daily Hours --}}
-        <div class="space-y-1.5">
-            <label for="avg_daily_use_hours" class="block text-sm font-medium text-gray-700">
-                Horas de uso diario
-            </label>
-            <input type="number" name="avg_daily_use_hours" id="avg_daily_use_hours"
-                step="0.1"
-                value="{{ old('avg_daily_use_hours') }}"
-                placeholder="Ej: 6"
-                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-            <p class="text-xs text-gray-500">Horas estimadas que se usa por día</p>
-        </div>
+
         
         {{-- Frequency --}}
-        <div class="space-y-1.5">
-            <label for="usage_frequency" class="block text-sm font-medium text-gray-700">
-                Frecuencia de Uso
-            </label>
-            <select name="usage_frequency" id="usage_frequency"
-                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
-                <option value="diario" {{ old('usage_frequency') == 'diario' ? 'selected' : '' }}>Todos los días (Diario)</option>
-                <option value="semanal" {{ old('usage_frequency') == 'semanal' ? 'selected' : '' }}>Algunas veces por semana</option>
-                <option value="quincenal" {{ old('usage_frequency') == 'quincenal' ? 'selected' : '' }}>Cada tanto (Quincenal)</option>
-                <option value="mensual" {{ old('usage_frequency') == 'mensual' ? 'selected' : '' }}>Raramente (Mensual)</option>
-                <option value="puntual" {{ old('usage_frequency') == 'puntual' ? 'selected' : '' }}>Uso muy puntual</option>
-            </select>
-        </div>
+
     </div>
     
-    {{-- Hidden Type ID --}}
-    <input type="hidden" name="type_id" id="type_id" value="">
+    {{-- Hidden Validation Flag --}}
+    <input type="hidden" name="is_validated" id="is_validated" value="0">
 
     {{-- Submit --}}
     <div class="flex justify-end pt-4 border-t border-gray-200">
@@ -109,21 +121,58 @@
     // Function to initialize the form logic
     function initEquipmentForm() {
         // Datos de los tipos (pasados desde PHP a JS)
-        // Ensure that $types is available in view
         const equipmentTypes = @json($types ?? []);
         
         const categorySelect = document.getElementById('category_id');
+        const typeSelect = document.getElementById('type_id');
+        
         const suggestionsContainer = document.getElementById('suggestions-container');
         const suggestionsList = document.getElementById('suggestions-list');
         
         const nameInput = document.getElementById('name');
         const powerInput = document.getElementById('nominal_power_w');
-        const hoursInput = document.getElementById('avg_daily_use_hours');
-        const typeIdInput = document.getElementById('type_id');
+        const isValidatedInput = document.getElementById('is_validated');
+        
+        const radioSuggested = document.querySelector('input[name="power_mode"][value="suggested"]');
+        const radioReal = document.querySelector('input[name="power_mode"][value="real"]');
+        const powerHelpText = document.getElementById('power-help-text');
 
-        if (!categorySelect) return; // Guard clause
+        let currentTypeDefaultPower = null;
 
-        // Remove existing listeners to prevent duplication if re-initialized
+        // Helper to set mode
+        function setPowerMode(mode) {
+            if (mode === 'suggested') {
+                radioSuggested.checked = true;
+                isValidatedInput.value = '0';
+                powerInput.classList.add('bg-gray-50', 'text-gray-500');
+                powerHelpText.textContent = "Valor promedio para este tipo de equipo.";
+                
+                // Restore default if available
+                if (currentTypeDefaultPower) {
+                    powerInput.value = currentTypeDefaultPower;
+                }
+            } else {
+                radioReal.checked = true;
+                isValidatedInput.value = '1';
+                powerInput.classList.remove('bg-gray-50', 'text-gray-500');
+                powerHelpText.textContent = "Ingresa el valor exacto de la etiqueta.";
+            }
+        }
+
+        // Listeners for Radios
+        radioSuggested.addEventListener('change', () => setPowerMode('suggested'));
+        radioReal.addEventListener('change', () => setPowerMode('real'));
+
+        // Auto-switch to Real if user types different value
+        powerInput.addEventListener('input', function() {
+            if (radioSuggested.checked && this.value != currentTypeDefaultPower) {
+                setPowerMode('real');
+            }
+        });
+
+        if (!categorySelect || !typeSelect) return; 
+
+        // -- LOGICA CATEGORIA -> TIPO --
         const newCategorySelect = categorySelect.cloneNode(true);
         categorySelect.parentNode.replaceChild(newCategorySelect, categorySelect);
         
@@ -131,45 +180,79 @@
             const catId = this.value;
             suggestionsList.innerHTML = '';
             
-            if (!catId) {
-                suggestionsContainer.classList.add('hidden');
-                return;
+            // Filtrar Tipos select
+            let hasOptions = false;
+            typeSelect.value = "";
+            
+            for (let i = 0; i < typeSelect.options.length; i++) {
+                const opt = typeSelect.options[i];
+                if (!opt.value) continue; // Skip placeholder
+                
+                if (catId && opt.getAttribute('data-category') == catId) {
+                    opt.style.display = '';
+                    hasOptions = true;
+                } else {
+                    opt.style.display = 'none';
+                }
             }
 
-            // Filtrar tipos por la categoría seleccionada
-            const filtered = equipmentTypes.filter(t => t.category_id == catId);
+            if (catId) {
+                typeSelect.disabled = !hasOptions;
+                typeSelect.classList.remove('bg-gray-50');
+            } else {
+                typeSelect.disabled = true;
+                typeSelect.classList.add('bg-gray-50');
+            }
 
-            if (filtered.length > 0) {
+            // Suggestions Buttons (Quick Pick)
+            if (catId && hasOptions) {
+                // Filtrar array original para botones
+                const filtered = equipmentTypes.filter(t => t.category_id == catId);
                 suggestionsContainer.classList.remove('hidden');
+                
                 filtered.forEach(type => {
-                    // Crear el "botoncito" sugerencia
                     const btn = document.createElement('button');
                     btn.type = 'button';
                     btn.className = "px-3 py-1 bg-white border border-purple-200 rounded-full text-xs font-medium text-purple-700 hover:bg-purple-100 transition shadow-sm";
                     btn.innerHTML = `${type.name} <span class="text-gray-400 ml-1">(${type.default_power_watts}W)</span>`;
                     
-                    // Al hacer clic, autocompletar todo
                     btn.onclick = () => {
-                        nameInput.value = type.name;
-                        powerInput.value = type.default_power_watts;
-                        hoursInput.value = type.default_avg_daily_use_hours;
-                        typeIdInput.value = type.id;
-                        
-                        // Efecto visual de resaltado
-                        [nameInput, powerInput, hoursInput].forEach(el => {
-                            el.classList.add('bg-yellow-50');
-                            setTimeout(() => el.classList.remove('bg-yellow-50'), 1000);
-                        });
+                        // Seleccionar en el dropdown
+                        typeSelect.value = type.id;
+                        typeSelect.dispatchEvent(new Event('change')); // Trigger autofill
                     };
-                    
                     suggestionsList.appendChild(btn);
                 });
             } else {
                 suggestionsContainer.classList.add('hidden');
             }
         });
+
+        // -- LOGICA TIPO -> AUTOFILL --
+        typeSelect.addEventListener('change', function() {
+            const selectedOpt = this.options[this.selectedIndex];
+            if (!selectedOpt || !selectedOpt.value) return;
+
+            const defaultPower = selectedOpt.getAttribute('data-power');
+            const defaultName = selectedOpt.getAttribute('data-name');
+            
+            currentTypeDefaultPower = defaultPower;
+
+            // Auto-fill Name (solo si esta vacio o parece generico, para no sobreescribir custom)
+            // Simplificacion: Sobreescribimos para feedback inmediato, usuario puede editar despues
+            nameInput.value = defaultName;
+            
+            // Set Power & Suggested Mode
+            setPowerMode('suggested');
+            
+            // Highlight
+             [nameInput, powerInput].forEach(el => {
+                el.classList.add('bg-yellow-50');
+                setTimeout(() => el.classList.remove('bg-yellow-50'), 1000);
+            });
+        });
         
-        // Trigger change if value exists (edit mode or back button)
+        // Init state
         if (newCategorySelect.value) {
             newCategorySelect.dispatchEvent(new Event('change'));
         }
@@ -178,6 +261,5 @@
     // Run immediately
     initEquipmentForm();
 
-    // Re-run on Livewire navigation (if applicable)
     document.addEventListener('livewire:navigated', initEquipmentForm);
 </script>

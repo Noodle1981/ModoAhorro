@@ -85,11 +85,11 @@ class UsageAdjustmentController extends Controller
         }
 
         // Agrupar equipos por Tiers
+        // Agrupar equipos por Tiers
         $equipmentTiers = [
-            'base_critica' => ['label' => 'Base Crítica', 'icon' => 'bi-shield-check', 'color' => 'red', 'desc' => 'Inmutables Automáticos.', 'items' => collect()],
-            'base_pesada'  => ['label' => 'Tanque 2: Clima', 'icon' => 'bi-moisture', 'color' => 'blue', 'desc' => 'Ajustados por API Climática.', 'items' => collect()],
-            'ballenas'     => ['label' => 'Tanque 3: Elasticidad', 'icon' => 'bi-wind', 'color' => 'purple', 'desc' => 'Absorben la varianza de la factura.', 'items' => collect()],
-            'otros'        => ['label' => 'Otros / Rutina', 'icon' => 'bi-question-circle', 'color' => 'gray', 'desc' => 'Uso general.', 'items' => collect()],
+            'base_critica' => ['label' => 'Tanque 1: Base Crítica', 'icon' => 'bi-shield-check', 'color' => 'red', 'desc' => 'Consumo continuo e indispensable (24hs).', 'items' => collect()],
+            'base_pesada'  => ['label' => 'Tanque 2: Climatización', 'icon' => 'bi-thermometer-sun', 'color' => 'blue', 'desc' => 'Equipos de gestión climática.', 'items' => collect()],
+            'ballenas'     => ['label' => 'Tanque 3: Elasticidad / Rutina', 'icon' => 'bi-controller', 'color' => 'purple', 'desc' => 'Uso variable dependiente del usuario.', 'items' => collect()],
         ];
 
         foreach ($rooms as $room) {
@@ -104,31 +104,23 @@ class UsageAdjustmentController extends Controller
 
     private function getEquipmentTier($equipment)
     {
-        $name = strtolower($equipment->name ?? '');
-        $typeName = strtolower($equipment->type->name ?? '');
-        $combined = $name . ' ' . $typeName;
+        // 1. Tanque 2: Climatización (Prioridad por tipo)
+        if ($equipment->type && $equipment->type->is_climatization) {
+            return 'base_pesada'; // Usamos este key para mantener compatibilidad con la vista por ahora
+        }
 
-        // Base Crítica: Heladeras, Routers, Alarmas
-        if (str_contains($combined, 'heladera') || str_contains($combined, 'freezer') || str_contains($combined, 'router') || str_contains($combined, 'modem') || str_contains($combined, 'alarma')) {
+        // 2. Tanque 1: Base Crítica (24hs y Diariamente)
+        // Verificamos si tiene un uso asignado o usamos los defaults del tipo
+        $hours = $equipment->avg_daily_use_hours ?? $equipment->type->default_avg_daily_use_hours;
+        $freq = $equipment->usage_frequency ?? 'diariamente'; 
+        
+        // Si es 24hs (o cerca) y diario, es base crítica
+        if ($hours >= 23 && ($freq == 'diariamente' || $freq == 'diario')) {
             return 'base_critica';
         }
 
-        // Base Pesada: Termotanques, Bombas de Agua
-        if (str_contains($combined, 'termotanque') || str_contains($combined, 'calefón') || str_contains($combined, 'bomba de agua')) {
-            return 'base_pesada';
-        }
-
-        // Hormigas: Iluminación, Cargadores
-        if (str_contains($combined, 'lámpara') || str_contains($combined, 'lampara') || str_contains($combined, 'led') || str_contains($combined, 'tubo fluorescente') || str_contains($combined, 'cargador')) {
-            return 'hormigas';
-        }
-
-        // Ballenas: Aires, Estufas, PC Gamer, TV
-        if (str_contains($combined, 'aire') || str_contains($combined, 'estufa') || str_contains($combined, 'caloventor') || str_contains($combined, 'radiador') || str_contains($combined, 'televisor') || str_contains($combined, 'tv') || str_contains($combined, 'gamer') || str_contains($combined, 'consola')) {
-            return 'ballenas';
-        }
-
-        return 'otros';
+        // 3. Tanque 3: Elasticidad / Rutina (Resto)
+        return 'ballenas'; 
     }
 
     // Guarda el ajuste realizado

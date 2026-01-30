@@ -33,7 +33,7 @@
             </div>
         </div>
 
-        <form action="{{ route($config['route_prefix'] . '.usage_adjustments.update', $invoice->id) }}" method="POST">
+        <form action="{{ route($config['route_prefix'] . '.usage_adjustments.update', [$entity->id, $invoice->id]) }}" method="POST">
             @csrf
             
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -71,6 +71,15 @@
                                                 </p>
                                                 <div class="flex items-center gap-2">
                                                     <span class="text-xs font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-600">{{ $equipment->nominal_power_w }}W</span>
+                                                    @if($equipment->is_validated)
+                                                        <span class="text-[10px] bg-green-50 text-green-600 px-1.5 py-0.5 rounded border border-green-100 flex items-center gap-1" title="Potencia Real Validada">
+                                                            <i class="bi bi-check-circle-fill"></i> Real
+                                                        </span>
+                                                    @else
+                                                        <span class="text-[10px] bg-yellow-50 text-yellow-600 px-1.5 py-0.5 rounded border border-yellow-100 flex items-center gap-1" title="Potencia Promedio Sugerida">
+                                                            <i class="bi bi-exclamation-circle"></i> Sugerido
+                                                        </span>
+                                                    @endif
                                                     @if($equipment->is_standby)
                                                         <span class="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded border border-red-100 flex items-center gap-1">
                                                             <i class="bi bi-lightning-charge"></i> Vampiro
@@ -93,12 +102,13 @@
                                                     <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Periodicidad</label>
                                                     <select name="{{ $prefix }}[usage_frequency]" 
                                                         class="w-full rounded-lg border-gray-200 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                                        @php $f = $usage ? $usage->usage_frequency : 'diario'; @endphp
-                                                        <option value="diario" {{ $f == 'diario' ? 'selected' : '' }}>Diario</option>
-                                                        <option value="semanal" {{ $f == 'semanal' ? 'selected' : '' }}>Semanal</option>
-                                                        <option value="quincenal" {{ $f == 'quincenal' ? 'selected' : '' }}>Quincenal</option>
-                                                        <option value="mensual" {{ $f == 'mensual' ? 'selected' : '' }}>Mensual</option>
-                                                        <option value="puntual" {{ $f == 'puntual' ? 'selected' : '' }}>Puntual</option>
+                                                        @php $f = $usage ? $usage->usage_frequency : 'diariamente'; @endphp
+                                                        <option value="diariamente" {{ $f == 'diariamente' ? 'selected' : '' }}>Diariamente</option>
+                                                        <option value="casi_frecuentemente" {{ $f == 'casi_frecuentemente' ? 'selected' : '' }}>Casi frecuentemente</option>
+                                                        <option value="frecuentemente" {{ $f == 'frecuentemente' ? 'selected' : '' }}>Frecuentemente</option>
+                                                        <option value="ocasionalmente" {{ $f == 'ocasionalmente' ? 'selected' : '' }}>Ocasionalmente</option>
+                                                        <option value="raramente" {{ $f == 'raramente' ? 'selected' : '' }}>Raramente</option>
+                                                        <option value="nunca" {{ $f == 'nunca' ? 'selected' : '' }}>Nunca</option>
                                                     </select>
                                                 </div>
                                             </div>

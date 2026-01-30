@@ -5,7 +5,7 @@
     <div class="w-full max-w-md">
         {{-- Logo --}}
         <div class="text-center mb-8">
-            <img src="{{ asset('logo.png') }}" alt="Modo Ahorro" class="h-12 mx-auto mb-4">
+            <img src="{{ asset('logo.png') }}" alt="Modo Ahorro" style="height: 32px;" class="mx-auto mb-4">
             <h1 class="text-2xl font-bold text-gray-900">Bienvenido de vuelta</h1>
             <p class="text-gray-500">Ingresá a tu cuenta para continuar</p>
         </div>
