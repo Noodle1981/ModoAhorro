@@ -122,10 +122,10 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
 
         // Ajustes de Uso (contextual a la entidad)
         Route::get('/{entity}/usage-adjustments', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'indexForEntity'])->name('usage_adjustments');
-        Route::get('/{entity}/usage-adjustments/{invoice}/edit', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'edit'])->name('usage_adjustments.edit');
-        Route::post('/{entity}/usage-adjustments/{invoice}', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'update'])->name('usage_adjustments.update');
-        Route::post('/{entity}/usage-adjustments/{invoice}/unlock', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'unlock'])->name('usage_adjustments.unlock');
-        Route::get('/{entity}/usage-adjustments/{invoice}', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'show'])->name('usage_adjustments.show');
+        Route::get('/{entity}/usage-adjustments/{invoice}/edit', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'editForEntity'])->name('usage_adjustments.edit');
+        Route::post('/{entity}/usage-adjustments/{invoice}', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'updateForEntity'])->name('usage_adjustments.update');
+        Route::post('/{entity}/usage-adjustments/{invoice}/unlock', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'unlockForEntity'])->name('usage_adjustments.unlock');
+        Route::get('/{entity}/usage-adjustments/{invoice}', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'showForEntity'])->name('usage_adjustments.show');
 
         // Panel de Consumo (contextual a la entidad)
         Route::get('/{entity}/consumption', [\App\Http\Controllers\Consumption\PanelController::class, 'showForEntity'])->name('consumption');
@@ -189,10 +189,10 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
 
         // Ajustes de Uso (contextual a la entidad)
         Route::get('/{entity}/usage-adjustments', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'indexForEntity'])->name('usage_adjustments');
-        Route::get('/{entity}/usage-adjustments/{invoice}/edit', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'edit'])->name('usage_adjustments.edit');
-        Route::post('/{entity}/usage-adjustments/{invoice}', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'update'])->name('usage_adjustments.update');
-        Route::post('/{entity}/usage-adjustments/{invoice}/unlock', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'unlock'])->name('usage_adjustments.unlock');
-        Route::get('/{entity}/usage-adjustments/{invoice}', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'show'])->name('usage_adjustments.show');
+        Route::get('/{entity}/usage-adjustments/{invoice}/edit', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'editForEntity'])->name('usage_adjustments.edit');
+        Route::post('/{entity}/usage-adjustments/{invoice}', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'updateForEntity'])->name('usage_adjustments.update');
+        Route::post('/{entity}/usage-adjustments/{invoice}/unlock', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'unlockForEntity'])->name('usage_adjustments.unlock');
+        Route::get('/{entity}/usage-adjustments/{invoice}', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'showForEntity'])->name('usage_adjustments.show');
 
         // Panel de Consumo (contextual a la entidad)
         Route::get('/{entity}/consumption', [\App\Http\Controllers\Consumption\PanelController::class, 'showForEntity'])->name('consumption');
@@ -256,10 +256,10 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
 
         // Ajustes de Uso (contextual a la entidad)
         Route::get('/{entity}/usage-adjustments', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'indexForEntity'])->name('usage_adjustments');
-        Route::get('/{entity}/usage-adjustments/{invoice}/edit', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'edit'])->name('usage_adjustments.edit');
-        Route::post('/{entity}/usage-adjustments/{invoice}', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'update'])->name('usage_adjustments.update');
-        Route::post('/{entity}/usage-adjustments/{invoice}/unlock', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'unlock'])->name('usage_adjustments.unlock');
-        Route::get('/{entity}/usage-adjustments/{invoice}', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'show'])->name('usage_adjustments.show');
+        Route::get('/{entity}/usage-adjustments/{invoice}/edit', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'editForEntity'])->name('usage_adjustments.edit');
+        Route::post('/{entity}/usage-adjustments/{invoice}', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'updateForEntity'])->name('usage_adjustments.update');
+        Route::post('/{entity}/usage-adjustments/{invoice}/unlock', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'unlockForEntity'])->name('usage_adjustments.unlock');
+        Route::get('/{entity}/usage-adjustments/{invoice}', [\App\Http\Controllers\Consumption\UsageAdjustmentController::class, 'showForEntity'])->name('usage_adjustments.show');
 
         // Panel de Consumo (contextual a la entidad)
         Route::get('/{entity}/consumption', [\App\Http\Controllers\Consumption\PanelController::class, 'showForEntity'])->name('consumption');

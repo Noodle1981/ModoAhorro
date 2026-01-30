@@ -27,6 +27,14 @@ class ConsumptionAnalysisService
         $this->climateService = $climateService;
         $this->maintenanceService = $maintenanceService;
     }
+
+    /**
+     * Proxy para configurar el motor interno
+     */
+    public function setEngineData($facturaKwh, $diasPeriodo, $categoriaHogar = 'C', $gradosDia = [])
+    {
+        $this->energyEngine->setData($facturaKwh, $diasPeriodo, $categoriaHogar, $gradosDia);
+    }
     /**
      * Calcula el consumo total de un equipo en un periodo
      * 
@@ -60,10 +68,20 @@ class ConsumptionAnalysisService
         // CRITICAL FIX: Eliminamos $efficiency de la ecuación de costo/facturación.
         // El medidor cobra la energía entrante, la ineficiencia ya está incluida en el consumo.
         
-        // 3. Cálculo para Frecuencia Diaria/Semanal
-        if (in_array($usage->usage_frequency, ['diario', 'semanal']) || empty($usage->usage_frequency)) {
+        // 3. Cálculo para Frecuencia Diaria/Semanal (O cualquier frecuencia si se definieron horas diarias)
+        // Si hay horas diarias definidas, usamos la lógica de días * horas
+        if ($usage->avg_daily_use_hours > 0 || in_array($usage->usage_frequency, ['diario', 'diariamente', 'semanal']) || empty($usage->usage_frequency)) {
             $hoursPerDay = $usage->avg_daily_use_hours ?? 0;
-            $daysInPeriod = $usage->use_days_in_period ?? 0;
+            $daysInPeriod = $usage->use_days_in_period;
+            
+            // Fallback: Si no hay días guardados (null/0), calcular según función centralizada
+            if (empty($daysInPeriod)) {
+                $totalDays = \Carbon\Carbon::parse($invoice->start_date)->diffInDays(\Carbon\Carbon::parse($invoice->end_date));
+                // Asegurar al menos 1 día si las fechas son iguales
+                $totalDays = max(1, $totalDays);
+                
+                $daysInPeriod = $this->getDaysByFrequency($usage->usage_frequency, $totalDays);
+            }
             
             // 🌡️ AJUSTE CLIMÁTICO: Para equipos de climatización, ajustar días según clima
             $effectiveDays = $this->getEffectiveDaysWithClimate($usage, $invoice, $daysInPeriod);
@@ -98,7 +116,7 @@ class ConsumptionAnalysisService
                 $consumption += $standbyConsumption;
             }
             
-            return round($consumption, 2);
+            return round($consumption, 4);
         }
         
         // 4. Cálculo para uso Puntual (quincenal, mensual, puntual)
@@ -111,7 +129,7 @@ class ConsumptionAnalysisService
         $maintenancePenalty = $this->maintenanceService->getPenaltyFactor($usage->equipment);
         $consumption *= $maintenancePenalty;
 
-        return round($consumption, 2);
+        return round($consumption, 4);
     }
     
     /**
@@ -133,6 +151,28 @@ class ConsumptionAnalysisService
         if ($category !== 'Climatización') {
             return $totalDays;
         }
+
+        // Obtener datos climáticos del motor (si ya se corrió) o del servicio
+        $climateDays = $this->energyEngine->getClimateDays(); 
+        
+        // Si hay datos climáticos definidos (aunque sean 0), los usamos.
+        // Solo hacemos fallback a totalDays si NO hay datos (array vacío o keys faltantes)
+        $hasClimateData = isset($climateDays['cooling_days']) || isset($climateDays['heating_days']);
+        
+        if (!$hasClimateData) {
+             return $totalDays; 
+        }
+
+        // Detectar tipo según CATEGORÍA (Más robusto que nombre)
+        // Climatización -> Frío (Aires, Ventiladores) -> Usa Días de Calor
+        // Calefacción   -> Calor (Estufas)           -> Usa Días de Frío
+        $isCooling = ($category === 'Climatización');
+        
+        $detectedDays = $isCooling ? ($climateDays['cooling_days'] ?? 0) : ($climateDays['heating_days'] ?? 0);
+
+        // Si la API detectó 0 días (ej: invierno para aire), usamos 0.
+        // Si detectó días, usamos eso, pero nunca más que los días totales del periodo.
+        return min($detectedDays, $totalDays);
         
         try {
             // Obtener coordenadas de la localidad
@@ -269,16 +309,23 @@ class ConsumptionAnalysisService
     /**
      * Calcula y CALIBRA el consumo para coincidir con la factura usando Motor v3.
      */
-    public function calibrateInvoiceConsumption(Invoice $invoice): \Illuminate\Support\Collection
+    public function calibrateInvoiceConsumption(Invoice $invoice): array
     {
         $entity = $invoice->contract->entity;
         
-        // 1. Obtener Grados-Día v3
-        $gradosDia = $this->climateService->getDegreeDaysForLocality(
+        // 1. Obtener Grados-Día v3 (Días de Calor y Frío)
+        // Usamos el servicio de datos climáticos para obtener los CONTADORES de días
+        $climateData = $this->climateDataService->getOrFetchData(
             $entity->locality,
             $invoice->start_date,
             $invoice->end_date
         );
+        
+        // Mapear a formato esperado por el motor
+        $gradosDia = [
+            'cooling_days' => $climateData['cooling_days'] ?? 0,
+            'heating_days' => $climateData['heating_days'] ?? 0
+        ];
 
         // 2. Preparar Equipos para el Motor
         $usages = $invoice->equipmentUsages()->with(['equipment.category', 'equipment.type'])->get();
@@ -293,6 +340,7 @@ class ConsumptionAnalysisService
                 'load_factor' => $u->equipment->type->load_factor ?? 1.0,
                 'es_climatizacion' => ($u->equipment->category->name === 'Climatización'),
                 'tipo_clima' => str_contains(strtolower($u->equipment->name), 'aire') ? 'frio' : 'calor',
+                'is_validated' => $u->equipment->is_validated ?? false,
             ];
         })->toArray();
 
@@ -313,7 +361,11 @@ class ConsumptionAnalysisService
             }
         }
 
-        return $usages;
+        return [
+            'usages' => $usages,
+            'summary' => $engineResult['precision_summary'] ?? null,
+            'climate_data' => $engineResult['climate_data'] ?? []
+        ];
     }
 
     /**

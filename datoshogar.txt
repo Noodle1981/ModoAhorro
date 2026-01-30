@@ -101,6 +101,9 @@ Focos Ventilador	Iluminación	Cocina / Comedor	5
 Focos Ventilador	Iluminación	Cocina / Comedor	5	
 Focos Ventilador	Iluminación	Cocina / Comedor	5
 Tubo Led Cocina	Iluminación	Cocina / Comedor	5
+
+
+
 Ventilador de Techo	Climatización	Living	60
 TV Grande	Entretenimiento	Living	120
 Foco Living	Iluminación	Living	5
@@ -113,6 +116,7 @@ Foco Ventilador	Iluminación	Habitación Papa	40
 Foco Mesita de Luz	Iluminación	Habitación Papa	40
 TV Chico	Entretenimiento	Habitación Papa	85
 PC Gamer	Oficina	Habitación Hermanos	600
+
 Monitor PC	Oficina	Habitación Hermanos	50
 Monitor PC	Oficina	Habitación Hermanos	50
 Ventilador de Techo	Climatización	Habitación Hermanos	60

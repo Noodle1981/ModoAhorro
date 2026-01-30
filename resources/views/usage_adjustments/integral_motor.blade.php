@@ -56,69 +56,80 @@
                             </div>
 
                             <div class="divide-y divide-gray-100">
-                                @forelse($tier['items'] as $equipment)
-                                    @php 
-                                        $usage = $usages[$equipment->id] ?? null; 
-                                        $prefix = "usages[{$equipment->id}]";
-                                    @endphp
-                                    <div class="p-6 hover:bg-gray-50/50 transition-colors">
-                                        <div class="flex flex-col md:flex-row gap-6">
-                                            {{-- Info Equipo --}}
-                                            <div class="md:w-1/3">
-                                                <h4 class="font-semibold text-gray-900 mb-1">{{ $equipment->name }}</h4>
-                                                <p class="text-xs text-gray-500 mb-2 flex items-center gap-1">
-                                                    <i class="bi bi-geo-alt"></i> {{ $equipment->room->name ?? 'Gral' }}
-                                                </p>
-                                                <div class="flex items-center gap-2">
-                                                    <span class="text-xs font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-600">{{ $equipment->nominal_power_w }}W</span>
-                                                    @if($equipment->is_validated)
-                                                        <span class="text-[10px] bg-green-50 text-green-600 px-1.5 py-0.5 rounded border border-green-100 flex items-center gap-1" title="Potencia Real Validada">
-                                                            <i class="bi bi-check-circle-fill"></i> Real
-                                                        </span>
-                                                    @else
-                                                        <span class="text-[10px] bg-yellow-50 text-yellow-600 px-1.5 py-0.5 rounded border border-yellow-100 flex items-center gap-1" title="Potencia Promedio Sugerida">
-                                                            <i class="bi bi-exclamation-circle"></i> Sugerido
-                                                        </span>
-                                                    @endif
-                                                    @if($equipment->is_standby)
-                                                        <span class="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded border border-red-100 flex items-center gap-1">
-                                                            <i class="bi bi-lightning-charge"></i> Vampiro
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                            </div>
+                                @php
+                                    $groupedByRoom = $tier['items']->groupBy(fn($item) => $item->room->name ?? 'Zonas Generales')->sortKeys();
+                                @endphp
 
-                                            {{-- Inputs de Ajuste --}}
-                                            <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div>
-                                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Horas/Día</label>
-                                                    <input type="number" step="0.1" min="0" max="24" 
-                                                        name="{{ $prefix }}[avg_daily_use_hours]" 
-                                                        value="{{ $usage ? $usage->avg_daily_use_hours : '' }}"
-                                                        class="w-full rounded-lg border-gray-200 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                                        placeholder="Ej: 4.5">
-                                                </div>
-                                                <div>
-                                                    <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Periodicidad</label>
-                                                    <select name="{{ $prefix }}[usage_frequency]" 
-                                                        class="w-full rounded-lg border-gray-200 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                                        @php $f = $usage ? $usage->usage_frequency : 'diariamente'; @endphp
-                                                        <option value="diariamente" {{ $f == 'diariamente' ? 'selected' : '' }}>Diariamente</option>
-                                                        <option value="casi_frecuentemente" {{ $f == 'casi_frecuentemente' ? 'selected' : '' }}>Casi frecuentemente</option>
-                                                        <option value="frecuentemente" {{ $f == 'frecuentemente' ? 'selected' : '' }}>Frecuentemente</option>
-                                                        <option value="ocasionalmente" {{ $f == 'ocasionalmente' ? 'selected' : '' }}>Ocasionalmente</option>
-                                                        <option value="raramente" {{ $f == 'raramente' ? 'selected' : '' }}>Raramente</option>
-                                                        <option value="nunca" {{ $f == 'nunca' ? 'selected' : '' }}>Nunca</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @empty
+                                @if($groupedByRoom->isEmpty())
                                     <div class="p-8 text-center text-gray-400 text-sm">
                                         No hay equipos en esta categoría.
                                     </div>
-                                @endforelse
+                                @else
+                                    @foreach($groupedByRoom as $roomName => $items)
+                                        <div class="px-6 py-1.5 bg-gray-50 border-y border-gray-100 flex items-center gap-2">
+                                            <i class="bi bi-geo-alt text-gray-400 text-xs"></i>
+                                            <h4 class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{{ $roomName }}</h4>
+                                        </div>
+
+                                        @foreach($items as $equipment)
+                                            @php 
+                                                $usage = $usages[$equipment->id] ?? null; 
+                                                $prefix = "usages[{$equipment->id}]";
+                                            @endphp
+                                            <div class="p-6 hover:bg-gray-50/50 transition-colors">
+                                                <div class="flex flex-col md:flex-row gap-6">
+                                                    {{-- Info Equipo --}}
+                                                    <div class="md:w-1/3">
+                                                        <h4 class="font-semibold text-gray-900 mb-1">{{ $equipment->name }}</h4>
+                                                        
+                                                        <div class="flex items-center gap-2 mt-2">
+                                                            <span class="text-xs font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-600">{{ $equipment->nominal_power_w }}W</span>
+                                                            @if($equipment->is_validated)
+                                                                <span class="text-[10px] bg-green-50 text-green-600 px-1.5 py-0.5 rounded border border-green-100 flex items-center gap-1" title="Potencia Real Validada">
+                                                                    <i class="bi bi-check-circle-fill"></i> Real
+                                                                </span>
+                                                            @else
+                                                                <span class="text-[10px] bg-yellow-50 text-yellow-600 px-1.5 py-0.5 rounded border border-yellow-100 flex items-center gap-1" title="Potencia Promedio Sugerida">
+                                                                    <i class="bi bi-exclamation-circle"></i> Sugerido
+                                                                </span>
+                                                            @endif
+                                                            @if($equipment->is_standby)
+                                                                <span class="text-[10px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded border border-red-100 flex items-center gap-1">
+                                                                    <i class="bi bi-lightning-charge"></i> Vampiro
+                                                                </span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- Inputs de Ajuste --}}
+                                                    <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Horas/Día</label>
+                                                            <input type="number" step="0.1" min="0" max="24" 
+                                                                name="{{ $prefix }}[avg_daily_use_hours]" 
+                                                                value="{{ $usage ? $usage->avg_daily_use_hours : '' }}"
+                                                                class="w-full rounded-lg border-gray-200 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                                                placeholder="Ej: 4.5">
+                                                        </div>
+                                                        <div>
+                                                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Periodicidad</label>
+                                                            <select name="{{ $prefix }}[usage_frequency]" 
+                                                                class="w-full rounded-lg border-gray-200 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                                                @php $f = $usage ? $usage->usage_frequency : 'diario'; @endphp
+                                                                <option value="diario" {{ ($f == 'diario' || $f == 'diariamente') ? 'selected' : '' }}>Diariamente</option>
+                                                                <option value="casi_frecuentemente" {{ $f == 'casi_frecuentemente' ? 'selected' : '' }}>Casi frecuentemente</option>
+                                                                <option value="frecuentemente" {{ $f == 'frecuentemente' ? 'selected' : '' }}>Frecuentemente</option>
+                                                                <option value="ocasionalmente" {{ $f == 'ocasionalmente' ? 'selected' : '' }}>Ocasionalmente</option>
+                                                                <option value="raramente" {{ $f == 'raramente' ? 'selected' : '' }}>Raramente</option>
+                                                                <option value="nunca" {{ $f == 'nunca' ? 'selected' : '' }}>Nunca</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    @endforeach
+                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -160,4 +171,4 @@
     </div>
 </div>
 @endsection
- Elephant
+

@@ -366,4 +366,44 @@ class ClimateDataService
         self::$cache[$cacheKey] = $result;
         return $result;
     }
+    /**
+     * Obtiene datos climáticos o los descarga si no existen, y devuelve estadísticas resumidas
+     * 
+     * @return array ['cooling_days' => int, 'heating_days' => int]
+     */
+    public function getOrFetchData(Locality $locality, string $startDateStr, string $endDateStr): array
+    {
+        $startDate = Carbon::parse($startDateStr);
+        $endDate = Carbon::parse($endDateStr);
+
+        // 1. Verificar existencia en BD para evitar llamadas API incesantes
+        $exists = ClimateData::where('latitude', $locality->latitude)
+            ->where('longitude', $locality->longitude)
+            ->where('date', $startDate->format('Y-m-d'))
+            ->exists();
+
+        if (!$exists) {
+            $result = $this->fetchHistoricalData($locality, $startDate, $endDate);
+            if ($result['success']) {
+                $this->saveWeatherData($locality, $result['data']);
+            }
+        }
+
+        // 2. Calcular estadísticas
+        // Umbrales: Calor >= 28°C, Frío <= 15°C (ajustables según necesidad)
+        $stats = $this->getClimateStats(
+            $locality->latitude,
+            $locality->longitude,
+            $startDate,
+            $endDate,
+            24.0, // Hot Threshold ajustado (24°C avg es más realista para encender aire)
+            18.0  // Cold Threshold ajustado (18°C avg es más realista para estufa)
+        );
+
+        return [
+            'cooling_days' => $stats['hot_days_count'] ?? 0,
+            'heating_days' => $stats['cold_days_count'] ?? 0,
+            'avg_temp'     => $stats['avg_temp_avg'] ?? 0
+        ];
+    }
 }

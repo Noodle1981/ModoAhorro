@@ -61,6 +61,7 @@ class EquipmentTypeSeeder extends Seeder
             
             // --- NUEVOS PEDIDOS ---
             ['name' => 'Cortadora de Fiambre', 'category' => 'Electrodomésticos', 'watts' => 200, 'use_h' => 0.5, 'process' => 'Motor', 'load' => 0.8, 'eff' => 0.85, 'int' => 'medio', 'clima' => false],
+            ['name' => 'Cargador de Celular', 'category' => 'Entretenimiento', 'watts' => 15, 'use_h' => 2.0, 'process' => 'Electrónico', 'load' => 1.0, 'eff' => 0.9, 'int' => 'bajo', 'clima' => false],
         ];
 
         foreach ($types as $type) {

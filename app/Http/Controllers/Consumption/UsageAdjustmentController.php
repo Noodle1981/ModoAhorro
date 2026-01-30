@@ -87,9 +87,9 @@ class UsageAdjustmentController extends Controller
         // Agrupar equipos por Tiers
         // Agrupar equipos por Tiers
         $equipmentTiers = [
-            'base_critica' => ['label' => 'Tanque 1: Base Crítica', 'icon' => 'bi-shield-check', 'color' => 'red', 'desc' => 'Consumo continuo e indispensable (24hs).', 'items' => collect()],
-            'base_pesada'  => ['label' => 'Tanque 2: Climatización', 'icon' => 'bi-thermometer-sun', 'color' => 'blue', 'desc' => 'Equipos de gestión climática.', 'items' => collect()],
-            'ballenas'     => ['label' => 'Tanque 3: Elasticidad / Rutina', 'icon' => 'bi-controller', 'color' => 'purple', 'desc' => 'Uso variable dependiente del usuario.', 'items' => collect()],
+            'base_critica' => ['label' => 'Base Crítica y 24hs', 'icon' => 'bi-shield-check', 'color' => 'red', 'desc' => 'Consumo continuo e indispensable (Heladeras, Wifi, Seguridad).', 'items' => collect()],
+            'base_pesada'  => ['label' => 'Climatización y Gestión Térmica', 'icon' => 'bi-thermometer-sun', 'color' => 'blue', 'desc' => 'Equipos de gestión climática (Aires, Estufas, Ventiladores).', 'items' => collect()],
+            'ballenas'     => ['label' => 'Uso Diario y Variable', 'icon' => 'bi-controller', 'color' => 'purple', 'desc' => 'Uso variable dependiente del usuario (TV, Lavarropas, Luces).', 'items' => collect()],
         ];
 
         foreach ($rooms as $room) {
@@ -154,19 +154,42 @@ class UsageAdjustmentController extends Controller
                 $usage->equipment_id = $equipmentId;
             }
             $usage->is_standby = isset($data['is_standby']) ? 1 : 0;
-            $usage->usage_frequency = $data['usage_frequency'] ?? 'diario';
+            
+            // Normalizar frecuencia
+            $freq = $data['usage_frequency'] ?? 'diario';
+            if ($freq === 'diariamente') $freq = 'diario';
+            $usage->usage_frequency = $freq;
+
             $usage->usage_count = $data['usage_count'] ?? null;
             $usage->avg_use_duration = $data['avg_use_duration'] ?? null;
             $usage->avg_daily_use_hours = $data['avg_daily_use_hours'] ?? null;
+            
             // Guardar días de la semana seleccionados
             $daysOfWeek = isset($data['use_days_of_week']) ? implode(',', $data['use_days_of_week']) : '';
             $usage->use_days_of_week = $daysOfWeek;
-            // Calcular cantidad de días en el periodo solo si es diario/semanal
-            if (in_array($usage->usage_frequency, ['diario', 'semanal'])) {
-                $weeks = max(1, ceil((strtotime($invoice->end_date) - strtotime($invoice->start_date)) / (60*60*24*7)));
-                $usage->use_days_in_period = count($data['use_days_of_week'] ?? []) * $weeks;
+            
+            // Calcular cantidad de días en el periodo
+            $daysInPeriod = Carbon::parse($invoice->start_date)->diffInDays(Carbon::parse($invoice->end_date));
+            $daysInPeriod = max(1, $daysInPeriod);
+
+            if (in_array($usage->usage_frequency, ['diario', 'semanal', 'diariamente'])) {
+                if (!empty($data['use_days_of_week'])) {
+                    $weeks = max(1, ceil($daysInPeriod / 7));
+                    $usage->use_days_in_period = count($data['use_days_of_week']) * $weeks;
+                } else {
+                    $usage->use_days_in_period = $daysInPeriod;
+                }
             } else {
-                $usage->use_days_in_period = null;
+                // Para otras frecuencias, aplicar ponderación usando la misma lógica que el Service (getDaysByFrequency)
+                $factor = match($usage->usage_frequency) {
+                    'casi_frecuentemente' => 0.85,
+                    'frecuentemente'      => 0.60,
+                    'ocasionalmente'      => 0.30,
+                    'raramente'           => 0.10,
+                    'nunca'               => 0.0,
+                    default               => 0.60,
+                };
+                $usage->use_days_in_period = floor($daysInPeriod * $factor);
             }
 
             $usage->save();
@@ -175,14 +198,20 @@ class UsageAdjustmentController extends Controller
             $usage->save();
         }
 
+        // Ejecutar Motor de Calibración v3 (Jerarquía de Confianza)
+        $calibrationResult = $consumptionService->calibrateInvoiceConsumption($invoice);
+        $summaryMsg = $calibrationResult['summary']['message'] ?? '';
+
         // Bloquear la factura si se solicita
         if ($request->has('lock_invoice')) {
             $invoice->usage_locked = true;
             $invoice->save();
-            return redirect()->route($config['route_prefix'] . '.usage_adjustments', $entity->id)->with('success', 'Ajuste guardado y periodo CERRADO correctamente.');
+            return redirect()->route($config['route_prefix'] . '.usage_adjustments', $entity->id)
+                ->with('success', 'Ajuste guardado y periodo CERRADO. ' . $summaryMsg);
         }
 
-        return redirect()->route($config['route_prefix'] . '.usage_adjustments', $entity->id)->with('success', 'Ajuste guardado correctamente.');
+        return redirect()->route($config['route_prefix'] . '.usage_adjustments', $entity->id)
+            ->with('success', 'Ajuste guardado. ' . $summaryMsg);
     }
 
     // Desbloquear factura
@@ -196,6 +225,7 @@ class UsageAdjustmentController extends Controller
     }
 
     // Muestra el detalle del ajuste de uso para una factura
+    // Muestra el detalle del ajuste de uso para una factura
     public function show($invoiceId, \App\Services\ConsumptionAnalysisService $consumptionService)
     {
         $invoice = Invoice::findOrFail($invoiceId);
@@ -203,16 +233,49 @@ class UsageAdjustmentController extends Controller
         $config = config("entity_types.{$entity->type}", []);
         
         // Obtener todos los usos de equipos para la factura
-        $equipmentUsages = $invoice->equipmentUsages()->with(['equipment.room'])->get();
+        $equipmentUsages = $invoice->equipmentUsages()->with(['equipment.room', 'equipment.type'])->get();
 
-        // Calcular consumo por equipo
+        // Calcular consumo por equipo y totales
         $consumptionDetails = [];
         $totalCalculatedConsumption = 0;
+
+        // Estructuras para resumen
+        $tierStats = [
+            'base_critica' => ['label' => 'Base Crítica', 'kwh' => 0, 'count' => 0, 'color' => 'red', 'icon' => 'bi-shield-check'],
+            'base_pesada'  => ['label' => 'Climatización', 'kwh' => 0, 'count' => 0, 'color' => 'blue', 'icon' => 'bi-thermometer-sun'],
+            'ballenas'     => ['label' => 'Consumo Variable', 'kwh' => 0, 'count' => 0, 'color' => 'purple', 'icon' => 'bi-controller'],
+        ];
 
         foreach ($equipmentUsages as $usage) {
             $kwh = $consumptionService->calculateEquipmentConsumption($usage, $invoice);
             $consumptionDetails[$usage->equipment_id] = $kwh;
             $totalCalculatedConsumption += $kwh;
+
+            // Clasificar por Tier
+            $tier = $this->getEquipmentTier($usage->equipment);
+            
+            // Inyectar Tier al objeto usage para la vista
+            $usage->tier = $tier; 
+            $usage->tier_label = $tierStats[$tier]['label'];
+            $usage->tier_color = $tierStats[$tier]['color'];
+
+            // Acumular estadísticas
+            if (isset($tierStats[$tier])) {
+                $tierStats[$tier]['kwh'] += $kwh;
+                $tierStats[$tier]['count']++;
+            }
+        }
+
+        // Ejecutar calibración "en vivo" para ver sugerencias de la API
+        $calibrationResult = $consumptionService->calibrateInvoiceConsumption($invoice);
+        $apiSummary = $calibrationResult['summary'] ?? [];
+        
+        // Mapear resultados calibrados a los usages para mostrar diferencia
+        foreach ($equipmentUsages as $usage) {
+            $calibrado = collect($calibrationResult['usages'])->firstWhere('id', $usage->id);
+            if ($calibrado) {
+                $usage->kwh_reconciled = $calibrado->kwh_reconciled ?? null;
+            }
         }
 
         // Agrupar por habitación
@@ -220,6 +283,29 @@ class UsageAdjustmentController extends Controller
             return $usage->equipment->room->name ?? 'Sin habitación';
         });
 
-        return view('usage_adjustments.show', compact('invoice', 'groupedUsages', 'consumptionDetails', 'totalCalculatedConsumption', 'config', 'entity'));
+        return view('usage_adjustments.show', compact('invoice', 'groupedUsages', 'consumptionDetails', 'totalCalculatedConsumption', 'config', 'entity', 'tierStats', 'apiSummary'));
+    }
+
+    // --- Métodos "ForEntity" para manejar las rutas anidadas con el parámetro {entity} ---
+
+    public function editForEntity($entityId, $invoiceId)
+    {
+        // Podríamos validar que la factura pertenezca a la entidad si fuera necesario
+        return $this->edit($invoiceId);
+    }
+
+    public function updateForEntity(Request $request, $entityId, $invoiceId, \App\Services\ConsumptionAnalysisService $consumptionService)
+    {
+        return $this->update($request, $invoiceId, $consumptionService);
+    }
+
+    public function unlockForEntity($entityId, $invoiceId)
+    {
+        return $this->unlock($invoiceId);
+    }
+
+    public function showForEntity($entityId, $invoiceId, \App\Services\ConsumptionAnalysisService $consumptionService)
+    {
+        return $this->show($invoiceId, $consumptionService);
     }
 }
