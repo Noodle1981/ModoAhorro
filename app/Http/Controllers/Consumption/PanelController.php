@@ -38,7 +38,8 @@ class PanelController extends Controller
         // --- Process Chart Data (Full History) ---
         // --- Process Chart Data (Full History) ---
         $chartData = $allInvoices->map(function ($invoice) use ($service, $climateService) {
-            $calibratedUsages = $service->calibrateInvoiceConsumption($invoice);
+            $calibrationResult = $service->calibrateInvoiceConsumption($invoice);
+            $calibratedUsages = $calibrationResult['usages'];
             $totalEnergia = $calibratedUsages->sum('kwh_reconciled');
             
             $startDate = \Carbon\Carbon::parse($invoice->start_date);
@@ -46,33 +47,18 @@ class PanelController extends Controller
             $days = max(1, $startDate->diffInDays($endDate));
             $dailyAvg = $totalEnergia / $days;
 
-            // Fetch Climate Data for visual correlation
-            $locality = $invoice->contract->entity->locality ?? null;
-            $avgTemp = null;
-            $hotDays = 0;
-            $coldDays = 0;
-            
-            if ($locality && $locality->latitude && $locality->longitude) {
-                 // Ensure data is loaded (this checks cache/DB first)
-                 $climateService->loadDataForInvoice($invoice);
-                 
-                 $stats = $climateService->getClimateStats(
-                     $locality->latitude, 
-                     $locality->longitude, 
-                     $startDate, 
-                     $endDate
-                 );
-                 $avgTemp = $stats['avg_temp_avg'] ?? null;
-                 $hotDays = $stats['hot_days_count'] ?? 0;
-                 $coldDays = $stats['cold_days_count'] ?? 0;
-            }
+            // Fetch Climate Data for visual correlation (Reuse calibrated data)
+            $climateData = $calibrationResult['climate_data'] ?? [];
+            $avgTemp = $climateData['avg_temp'] ?? null;
+            $hotDays = $climateData['cooling_days'] ?? 0;
+            $coldDays = $climateData['heating_days'] ?? 0;
 
             // Financial Metrics
             $dailyCost = $invoice->total_amount / $days;
             $costPerKwh = $totalEnergia > 0 ? ($invoice->total_amount / $totalEnergia) : 0;
 
             return [
-                'label' => $startDate->format('M Y'),
+                'label' => ucfirst($startDate->locale('es')->translatedFormat('F Y')),
                 'consumption' => round($totalEnergia, 2),
                 'cost' => $invoice->total_amount,
                 'avg' => round($dailyAvg, 2),
@@ -90,7 +76,8 @@ class PanelController extends Controller
         // Note: Pagination returns a LengthAwarePaginator. We can transform items but must keep it as paginator.
         
         $paginatedInvoices->getCollection()->transform(function ($invoice) use ($service, $climateService) {
-             $calibratedUsages = $service->calibrateInvoiceConsumption($invoice);
+             $calibrationResult = $service->calibrateInvoiceConsumption($invoice);
+             $calibratedUsages = $calibrationResult['usages'];
              $totalEnergia = $calibratedUsages->sum('kwh_reconciled');
              $consumoFacturado = $invoice->total_energy_consumed_kwh ?? 0;
              $porcentaje = $consumoFacturado > 0 ? ($totalEnergia / $consumoFacturado) * 100 : 0;
@@ -102,22 +89,9 @@ class PanelController extends Controller
              $dailyAvg = $totalEnergia / $days;
              $costPerKwh = $totalEnergia > 0 ? ($invoice->total_amount / $totalEnergia) : 0;
 
-             // Fetch Climate Data for Table
-             $locality = $invoice->contract->entity->locality ?? null;
-             $hotDays = 0;
-             
-             if ($locality && $locality->latitude && $locality->longitude) {
-                 // Ensure data is loaded (this checks cache/DB first)
-                 $climateService->loadDataForInvoice($invoice);
-                 
-                 $stats = $climateService->getClimateStats(
-                     $locality->latitude, 
-                     $locality->longitude, 
-                     $startDate, 
-                     $endDate
-                 );
-                 $hotDays = $stats['hot_days_count'] ?? 0;
-             }
+             // Fetch Climate Data for Table (Reuse calibrated data)
+             $climateData = $calibrationResult['climate_data'] ?? [];
+             $hotDays = $climateData['cooling_days'] ?? 0;
              
              // Status Logic
              $isAdjusted = $invoice->usageAdjustment && $invoice->usageAdjustment->adjusted;
@@ -167,7 +141,8 @@ class PanelController extends Controller
 
         // Process paginated invoices
         $paginatedInvoices->getCollection()->transform(function ($invoice) use ($service, $climateService) {
-            $calibratedUsages = $service->calibrateInvoiceConsumption($invoice);
+            $calibrationResult = $service->calibrateInvoiceConsumption($invoice);
+            $calibratedUsages = $calibrationResult['usages'];
             $totalEnergia = $calibratedUsages->sum('kwh_reconciled');
             $consumoFacturado = $invoice->total_energy_consumed_kwh ?? 0;
             $porcentaje = $consumoFacturado > 0 ? ($totalEnergia / $consumoFacturado) * 100 : 0;
@@ -206,17 +181,36 @@ class PanelController extends Controller
             ->get();
 
         $chartData = $allInvoices->map(function ($invoice) use ($service) {
-            $calibratedUsages = $service->calibrateInvoiceConsumption($invoice);
+            $calibrationResult = $service->calibrateInvoiceConsumption($invoice);
+            $calibratedUsages = $calibrationResult['usages'];
             $totalEnergia = $calibratedUsages->sum('kwh_reconciled');
             $startDate = \Carbon\Carbon::parse($invoice->start_date);
             $endDate = \Carbon\Carbon::parse($invoice->end_date);
             $days = max(1, $startDate->diffInDays($endDate));
             
+            
+            $dailyAvg = $totalEnergia / $days;
+
+            // Fetch Climate Data for visual correlation (Reuse calibrated data)
+            $climateData = $calibrationResult['climate_data'] ?? [];
+            $avgTemp = $climateData['avg_temp'] ?? null;
+            $hotDays = $climateData['cooling_days'] ?? 0;
+            $coldDays = $climateData['heating_days'] ?? 0;
+
+            // Financial Metrics
+            $dailyCost = $invoice->total_amount / $days;
+            $costPerKwh = $totalEnergia > 0 ? ($invoice->total_amount / $totalEnergia) : 0;
+
             return [
-                'label' => $startDate->format('M Y'),
+                'label' => ucfirst($startDate->locale('es')->translatedFormat('F Y')),
                 'consumption' => round($totalEnergia, 2),
                 'cost' => $invoice->total_amount,
-                'avg' => round($totalEnergia / $days, 2),
+                'avg' => round($dailyAvg, 2),
+                'avg_temp' => $avgTemp, 
+                'daily_cost' => round($dailyCost, 2),
+                'cost_per_kwh' => round($costPerKwh, 2),
+                'hot_days' => $hotDays,
+                'cold_days' => $coldDays
             ];
         });
 
@@ -241,7 +235,8 @@ class PanelController extends Controller
 
         $invoicesData = [];
         foreach ($invoices as $invoice) {
-            $calibratedUsages = $service->calibrateInvoiceConsumption($invoice);
+            $calibrationResult = $service->calibrateInvoiceConsumption($invoice);
+            $calibratedUsages = $calibrationResult['usages'];
             $totalEnergia = $calibratedUsages->sum('kwh_reconciled');
             $consumoFacturado = $invoice->total_energy_consumed_kwh ?? 0;
             $porcentaje = $consumoFacturado > 0 ? ($totalEnergia / $consumoFacturado) * 100 : 0;
@@ -297,7 +292,8 @@ class PanelController extends Controller
         $validationService = new \App\Services\Core\ValidationService();
 
         // ✅ CALCULAR EN TIEMPO REAL con el nuevo algoritmo (CALIBRADO)
-        $calibratedUsages = $service->calibrateInvoiceConsumption($invoice);
+        $calibrationResult = $service->calibrateInvoiceConsumption($invoice);
+        $calibratedUsages = $calibrationResult['usages'];
         
         // Mapear para la vista: [equipment_id => kwh_reconciled]
         $consumos = $calibratedUsages->pluck('kwh_reconciled', 'equipment_id')->toArray();

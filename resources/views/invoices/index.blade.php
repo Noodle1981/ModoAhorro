@@ -96,6 +96,8 @@
                             <td class="px-6 py-4">
                                 @if($invoice->usage_locked)
                                     <x-badge variant="success" dot>Calibrado</x-badge>
+                                @elseif($invoice->usageAdjustment && $invoice->usageAdjustment->adjusted)
+                                    <x-badge variant="info" dot>En Progreso</x-badge>
                                 @else
                                     <x-badge variant="warning" dot>Pendiente</x-badge>
                                 @endif

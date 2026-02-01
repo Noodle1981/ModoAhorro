@@ -13,7 +13,7 @@ class InvoiceController extends Controller
         $entity = Entity::findOrFail($entityId);
         $config = config("entity_types.{$entity->type}", []);
         $contract = $entity->contracts()->where('is_active', true)->first();
-        $invoices = $contract ? $contract->invoices : collect();
+        $invoices = $contract ? $contract->invoices()->with('usageAdjustment')->orderBy('start_date', 'desc')->get() : collect();
         return view('invoices.index', compact('entity', 'contract', 'invoices', 'config'));
     }
 
