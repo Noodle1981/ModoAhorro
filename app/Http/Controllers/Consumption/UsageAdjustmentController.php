@@ -231,6 +231,11 @@ class UsageAdjustmentController extends Controller
         $invoice = Invoice::findOrFail($invoiceId);
         $entity = $invoice->contract->entity;
         $config = config("entity_types.{$entity->type}", []);
+
+        // 1. Ejecutar calibración/carga de datos climáticos PRIMERO para inicializar el motor
+        $calibrationResult = $consumptionService->calibrateInvoiceConsumption($invoice);
+        $apiSummary = $calibrationResult['summary'] ?? [];
+        $climateData = $calibrationResult['climate_data'] ?? [];
         
         // Obtener todos los usos de equipos para la factura
         $equipmentUsages = $invoice->equipmentUsages()->with(['equipment.room', 'equipment.type'])->get();
@@ -247,6 +252,8 @@ class UsageAdjustmentController extends Controller
         ];
 
         foreach ($equipmentUsages as $usage) {
+            // Ahora el Service ya tiene los datos climáticos cargados en el motor, 
+            // por lo que calculateEquipmentConsumption usará los días efectivos correctos.
             $kwh = $consumptionService->calculateEquipmentConsumption($usage, $invoice);
             $consumptionDetails[$usage->equipment_id] = $kwh;
             $totalCalculatedConsumption += $kwh;
@@ -264,14 +271,8 @@ class UsageAdjustmentController extends Controller
                 $tierStats[$tier]['kwh'] += $kwh;
                 $tierStats[$tier]['count']++;
             }
-        }
 
-        // Ejecutar calibración "en vivo" para ver sugerencias de la API
-        $calibrationResult = $consumptionService->calibrateInvoiceConsumption($invoice);
-        $apiSummary = $calibrationResult['summary'] ?? [];
-        
-        // Mapear resultados calibrados a los usages para mostrar diferencia
-        foreach ($equipmentUsages as $usage) {
+            // Mapear reconciliación desde el resultado de calibración previo
             $calibrado = collect($calibrationResult['usages'])->firstWhere('id', $usage->id);
             if ($calibrado) {
                 $usage->kwh_reconciled = $calibrado->kwh_reconciled ?? null;
@@ -283,7 +284,7 @@ class UsageAdjustmentController extends Controller
             return $usage->equipment->room->name ?? 'Sin habitación';
         });
 
-        return view('usage_adjustments.show', compact('invoice', 'groupedUsages', 'consumptionDetails', 'totalCalculatedConsumption', 'config', 'entity', 'tierStats', 'apiSummary'));
+        return view('usage_adjustments.show', compact('invoice', 'groupedUsages', 'consumptionDetails', 'totalCalculatedConsumption', 'config', 'entity', 'tierStats', 'apiSummary', 'climateData'));
     }
 
     // --- Métodos "ForEntity" para manejar las rutas anidadas con el parámetro {entity} ---

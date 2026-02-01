@@ -90,11 +90,12 @@ class ConsumptionAnalysisService
             $consumption = $powerKw * $hoursPerDay * $effectiveDays * $realUsageFactor;
 
             // 🌡️ AJUSTE CLIMÁTICO ESPECÍFICO: Termotanques
-            // Consumen MÁS en invierno (agua fría, mayor pérdida) y MENOS en verano.
             if ($this->isWaterHeater($usage)) {
                 $factor = $this->getWaterHeaterClimateFactor($usage, $invoice);
                 $consumption *= $factor;
             }
+
+
 
             // 🛠️ AJUSTE POR MANTENIMIENTO: Penalización por tareas vencidas
             $maintenancePenalty = $this->maintenanceService->getPenaltyFactor($usage->equipment);
@@ -250,6 +251,8 @@ class ConsumptionAnalysisService
         }
         return false;
     }
+
+
 
     private function getWaterHeaterClimateFactor(EquipmentUsage $usage, Invoice $invoice): float
     {
@@ -448,5 +451,21 @@ class ConsumptionAnalysisService
             'locality' => $locality->name,
             'details' => $analysis
         ];
+    }
+    /**
+     * Calcula los días de uso basados en la frecuencia
+     */
+    private function getDaysByFrequency($frequency, $totalDays)
+    {
+        $factor = match($frequency) {
+            'casi_frecuentemente' => 0.85,
+            'frecuentemente' => 0.60,
+            'ocasionalmente' => 0.30,
+            'raramente' => 0.10,
+            'nunca' => 0.0,
+            default => 0.60
+        };
+        
+        return floor($totalDays * $factor);
     }
 }

@@ -182,37 +182,53 @@
                                         
                                         $percent = ($usedDays / $totalDays) * 100;
                                         $freqLabel = ucfirst($usage->usage_frequency ?? 'Diario');
+
+                                        // Variables para lógica climática
+                                        $catName = $usage->equipment->category->name ?? '';
+                                        $isClimate = ($catName === 'Climatización' || $catName === 'Calefacción');
+                                        $climateText = "";
+                                        $detectedDays = 0;
+                                        
+                                        if ($isClimate) {
+                                            $isCooling = ($catName === 'Climatización'); // O mejorar detección si es Estufa vs Aire
+                                            // Ajuste fino por nombre si la categoría es genérica
+                                            if (str_contains(strtolower($usage->equipment->name), 'estufa') || str_contains(strtolower($usage->equipment->name), 'calefac')) {
+                                                $isCooling = false;
+                                            }
+
+                                            $typeLabel = $isCooling ? 'calor' : 'frío'; // Aire (frío) se usa en días de Calor
+                                            
+                                            $apiDays = null;
+                                            if (isset($climateData) && 
+                                               (isset($climateData['cooling_days']) || isset($climateData['heating_days']))) {
+                                                $apiDays = $isCooling ? ($climateData['cooling_days'] ?? 0) : ($climateData['heating_days'] ?? 0);
+                                            }
+                                            $detectedDays = $apiDays ?? 0;
+                                            $climateText = " - {$detectedDays} dias de {$typeLabel} detectados";
+                                        }
                                     @endphp
                                     <div class="text-sm">
+                                        {{-- Header: Frecuencia (Días Uso) [ - Clima detectado] --}}
                                         <div class="font-bold text-gray-700 mb-1">
-                                            {{ $freqLabel }} ({{ $usedDays }} días) =
+                                            @if($isClimate)
+                                                {{ $freqLabel }} ({{ $usedDays }} días){{ $climateText }}
+                                            @else
+                                                @if($usedDays == $totalDays)
+                                                    {{ $freqLabel }} ({{ $usedDays }}/{{ $totalDays }}) =
+                                                @else
+                                                    {{ $freqLabel }} ({{ $usedDays }} días) =
+                                                @endif
+                                            @endif
                                         </div>
-                                        <span class="font-medium">{{ $usage->avg_daily_use_hours }} h/día</span>
-                                        <span class="text-gray-400 mx-1">&bull;</span>
-                                        
-                                        @php
-                                            $catName = $usage->equipment->category->name ?? '';
-                                        @endphp
-                                        @if($catName === 'Climatización' || $catName === 'Calefacción')
-                                            @php
-                                                // Lógica de visualización estandarizada por Categoría
-                                                $isCooling = ($catName === 'Climatización');
-                                                $typeLabel = $isCooling ? 'calor' : 'frío'; 
-                                                
-                                                $apiDays = null;
-                                                if (isset($climateData) && 
-                                                   (isset($climateData['cooling_days']) || isset($climateData['heating_days']))) {
-                                                    $apiDays = $isCooling ? ($climateData['cooling_days'] ?? 0) : ($climateData['heating_days'] ?? 0);
-                                                }
-                                                
-                                                $effectiveDisplayDays = ($apiDays !== null) ? min($usedDays, $apiDays) : $usedDays;
-                                            @endphp
-                                            <span class="text-blue-600 font-medium" title="Días efectivos: Mínimo entre Frecuencia ({{$usedDays}}) y Clima ({{$apiDays ?? 'N/A'}})">
-                                                {{ $effectiveDisplayDays }} días de {{ $typeLabel }} detectados / {{ $totalDays }} total
+
+                                        {{-- Calculation Line --}}
+                                        @if($isClimate)
+                                            <span class="font-medium text-blue-600">
+                                                {{ $usage->avg_daily_use_hours }} h/día • {{ $detectedDays }} / {{ $totalDays }} total
                                             </span>
                                         @else
-                                            <span class="text-gray-500" title="Cobertura del periodo">
-                                                {{ $usedDays }} / {{ $totalDays }} días ({{ round($percent) }}%)
+                                            <span class="font-medium">
+                                                {{ $usage->avg_daily_use_hours }} h/día • {{ $usedDays }} / {{ $totalDays }} días ({{ round($percent) }}%)
                                             </span>
                                         @endif
                                     </div>
