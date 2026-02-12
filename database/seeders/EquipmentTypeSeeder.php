@@ -20,48 +20,42 @@ class EquipmentTypeSeeder extends Seeder
         }
 
         $types = [
-            // --- CLIMATIZACIÓN (Tanque 2) ---
-            ['name' => 'Aire Acondicionado (2200 frigorías)', 'category' => 'Climatización', 'watts' => 1013, 'use_h' => 6, 'process' => 'Motor', 'load' => 0.7, 'eff' => 0.9, 'int' => 'excesivo', 'clima' => true],
-            ['name' => 'Aire Acondicionado (3500 frigorías)', 'category' => 'Climatización', 'watts' => 1613, 'use_h' => 6, 'process' => 'Motor', 'load' => 0.7, 'eff' => 0.9, 'int' => 'excesivo', 'clima' => true],
-            ['name' => 'Aire Acondicionado Portátil', 'category' => 'Climatización', 'watts' => 1400, 'use_h' => 6, 'process' => 'Motor', 'load' => 0.7, 'eff' => 0.9, 'int' => 'excesivo', 'clima' => true],
-            ['name' => 'Ventilador de techo', 'category' => 'Climatización', 'watts' => 75, 'use_h' => 8, 'process' => 'Motor', 'load' => 0.8, 'eff' => 0.9, 'int' => 'medio', 'clima' => true],
-            ['name' => 'Caloventor', 'category' => 'Climatización', 'watts' => 2000, 'use_h' => 4, 'process' => 'Resistencia', 'load' => 1.0, 'eff' => 0.7, 'int' => 'excesivo', 'clima' => true],
-            ['name' => 'Estufa Halógena', 'category' => 'Climatización', 'watts' => 1200, 'use_h' => 4, 'process' => 'Resistencia', 'load' => 1.0, 'eff' => 0.7, 'int' => 'excesivo', 'clima' => true],
+            // --- CLIMATIZACIÓN (Load 0.5 - El termostato corta el motor al llegar a temperatura) ---
+            ['name' => 'Aire Acondicionado (2200 frigorías)', 'category' => 'Climatización', 'watts' => 900, 'use_h' => 6, 'process' => 'Motor', 'load' => 0.6, 'eff' => 0.9, 'int' => 'Excesivo', 'clima' => true, 'shift' => false],
+            ['name' => 'Aire Acondicionado (3500 frigorías)', 'category' => 'Climatización', 'watts' => 1200, 'use_h' => 6, 'process' => 'Motor', 'load' => 0.6, 'eff' => 0.9, 'int' => 'Excesivo', 'clima' => true, 'shift' => false],
+            ['name' => 'Aire Acondicionado Portátil', 'category' => 'Climatización', 'watts' => 1400, 'use_h' => 6, 'process' => 'Motor', 'load' => 0.7, 'eff' => 0.9, 'int' => 'Excesivo', 'clima' => true, 'shift' => false],
+            ['name' => 'Ventilador de techo', 'category' => 'Climatización', 'watts' => 75, 'use_h' => 8, 'process' => 'Motor', 'load' => 0.9, 'eff' => 0.9, 'int' => 'Medio', 'clima' => true, 'shift' => false],
+            ['name' => 'Caloventor', 'category' => 'Climatización', 'watts' => 2000, 'use_h' => 4, 'process' => 'Resistencia', 'load' => 1.0, 'eff' => 1.0, 'int' => 'Excesivo', 'clima' => true, 'shift' => false],
+            ['name' => 'Estufa Halógena', 'category' => 'Climatización', 'watts' => 1200, 'use_h' => 4, 'process' => 'Resistencia', 'load' => 1.0, 'eff' => 1.0, 'int' => 'Excesivo', 'clima' => true, 'shift' => false],
 
-            // --- ILUMINACIÓN (Tanque 3 - Elasticidad Baja) ---
-            ['name' => 'Lámpara LED 9W', 'category' => 'Iluminación', 'watts' => 9, 'use_h' => 6, 'process' => 'Electroluminiscencia', 'load' => 1.0, 'eff' => 0.9, 'int' => 'bajo', 'clima' => false],
-            ['name' => 'Tubo Fluorescente 36W', 'category' => 'Iluminación', 'watts' => 36, 'use_h' => 8, 'process' => 'Gas', 'load' => 1.0, 'eff' => 0.8, 'int' => 'bajo', 'clima' => false],
+            // --- ILUMINACIÓN (Load 1.0 - Consumo constante mientras están prendidos) ---
+            ['name' => 'Lámpara LED 9W', 'category' => 'Iluminación', 'watts' => 9, 'use_h' => 6, 'process' => 'Electroluminiscencia', 'load' => 1.0, 'eff' => 0.9, 'int' => 'Bajo', 'clima' => false, 'shift' => false],
+            ['name' => 'Tubo Fluorescente 36W', 'category' => 'Iluminación', 'watts' => 36, 'use_h' => 8, 'process' => 'Gas', 'load' => 1.0, 'eff' => 0.8, 'int' => 'Bajo', 'clima' => false, 'shift' => false],
+            ['name' => 'Foco Ventilador', 'category' => 'Iluminación', 'watts' => 5, 'use_h' => 6, 'process' => 'Electroluminiscencia', 'load' => 1.0, 'eff' => 0.9, 'int' => 'Bajo', 'clima' => false, 'shift' => false],
+            ['name' => 'Tubo LED', 'category' => 'Iluminación', 'watts' => 18, 'use_h' => 6, 'process' => 'Electroluminiscencia', 'load' => 1.0, 'eff' => 0.9, 'int' => 'Bajo', 'clima' => false, 'shift' => false],
+            ['name' => 'Foco LED Grande', 'category' => 'Iluminación', 'watts' => 12, 'use_h' => 6, 'process' => 'Electroluminiscencia', 'load' => 1.0, 'eff' => 0.9, 'int' => 'Bajo', 'clima' => false, 'shift' => false],
+            ['name' => 'Foco Pequeño', 'category' => 'Iluminación', 'watts' => 5, 'use_h' => 6, 'process' => 'Electroluminiscencia', 'load' => 1.0, 'eff' => 0.9, 'int' => 'Bajo', 'clima' => false, 'shift' => false],
 
-            // --- ELECTRODOMÉSTICOS (Tanque 1 si es 24h, sino Tanque 3) ---
-            ['name' => 'Heladera con Freezer', 'category' => 'Electrodomésticos', 'watts' => 150, 'use_h' => 24, 'process' => 'Motor', 'load' => 0.4, 'eff' => 0.9, 'int' => 'critico', 'clima' => false], 
-            ['name' => 'Lavarropas Automático', 'category' => 'Electrodomésticos', 'watts' => 500, 'use_h' => 1, 'process' => 'Motor', 'load' => 0.7, 'eff' => 0.9, 'int' => 'alto', 'clima' => false],
-            ['name' => 'Termotanque Eléctrico', 'category' => 'Otros', 'watts' => 1500, 'use_h' => 4, 'process' => 'Resistencia', 'load' => 1.0, 'eff' => 0.7, 'int' => 'excesivo', 'clima' => false],
+            // --- ELECTRODOMÉSTICOS (Load bajo para Heladera por ciclos de motor, 0.4 para lavado mixto) ---
+            ['name' => 'Heladera con Freezer', 'category' => 'Electrodomésticos', 'watts' => 150, 'use_h' => 24, 'process' => 'Motor', 'load' => 0.35, 'eff' => 0.9, 'int' => 'Alto', 'clima' => false, 'shift' => false], 
+            ['name' => 'Lavarropas Automático', 'category' => 'Electrodomésticos', 'watts' => 500, 'use_h' => 1, 'process' => 'Motor', 'load' => 0.4, 'eff' => 0.9, 'int' => 'Alto', 'clima' => false, 'shift' => true],
+            ['name' => 'Cortadora de Fiambre', 'category' => 'Electrodomésticos', 'watts' => 200, 'use_h' => 0.5, 'process' => 'Motor', 'load' => 0.6, 'eff' => 0.85, 'int' => 'Medio', 'clima' => false, 'shift' => false],
 
-            // --- ENTRETENIMIENTO / OFICINA (Tanque 3) ---
-            // --- ENTRETENIMIENTO / OFICINA (Tanque 3) ---
-            ['name' => 'TV LED 50"', 'category' => 'Entretenimiento', 'watts' => 100, 'use_h' => 5, 'process' => 'Electrónico', 'load' => 1.0, 'eff' => 0.9, 'int' => 'medio', 'clima' => false],
-            ['name' => 'PC Gamer', 'category' => 'Oficina', 'watts' => 500, 'use_h' => 4, 'process' => 'Electrónico', 'load' => 0.6, 'eff' => 0.8, 'int' => 'alto', 'clima' => false],
-            ['name' => 'Router WiFi', 'category' => 'Oficina', 'watts' => 15, 'use_h' => 24, 'process' => 'Electrónico', 'load' => 1.0, 'eff' => 0.9, 'int' => 'critico', 'clima' => false],
-            ['name' => 'Cargador de Celular', 'category' => 'Oficina', 'watts' => 10, 'use_h' => 4, 'process' => 'Electrónico', 'load' => 1.0, 'eff' => 0.8, 'int' => 'bajo', 'clima' => false],
+            // --- ENTRETENIMIENTO / OFICINA (Load 0.5-0.7 porque el brillo y el procesamiento varían) ---
+            ['name' => 'TV LED 50"', 'category' => 'Entretenimiento', 'watts' => 100, 'use_h' => 5, 'process' => 'Electrónico', 'load' => 0.85, 'eff' => 0.9, 'int' => 'Medio', 'clima' => false, 'shift' => false],
+            ['name' => 'TV Grande (Smart 55+)', 'category' => 'Entretenimiento', 'watts' => 120, 'use_h' => 4, 'process' => 'Electrónico', 'load' => 0.85, 'eff' => 0.9, 'int' => 'Medio', 'clima' => false, 'shift' => false],
+            ['name' => 'TV Chico (32/Monitor)', 'category' => 'Entretenimiento', 'watts' => 85, 'use_h' => 4, 'process' => 'Electrónico', 'load' => 0.85, 'eff' => 0.9, 'int' => 'Medio', 'clima' => false, 'shift' => false],
+            ['name' => 'PC Gamer', 'category' => 'Oficina', 'watts' => 500, 'use_h' => 4, 'process' => 'Electrónico', 'load' => 0.7, 'eff' => 0.8, 'int' => 'Alto', 'clima' => false, 'shift' => false],
+            ['name' => 'Router WiFi', 'category' => 'Oficina', 'watts' => 15, 'use_h' => 24, 'process' => 'Electrónico', 'load' => 1.0, 'eff' => 0.9, 'int' => 'Alto', 'clima' => false, 'shift' => false],
+            ['name' => 'Monitor PC', 'category' => 'Oficina', 'watts' => 50, 'use_h' => 6, 'process' => 'Electrónico', 'load' => 0.9, 'eff' => 0.9, 'int' => 'Bajo', 'clima' => false, 'shift' => false],
+            ['name' => 'Notebook', 'category' => 'Oficina', 'watts' => 65, 'use_h' => 6, 'process' => 'Electrónico', 'load' => 0.6, 'eff' => 0.9, 'int' => 'Medio', 'clima' => false, 'shift' => false],
+            ['name' => 'Cargador de Celular', 'category' => 'Entretenimiento', 'watts' => 15, 'use_h' => 2.0, 'process' => 'Electrónico', 'load' => 0.8, 'eff' => 0.9, 'int' => 'Bajo', 'clima' => false, 'shift' => false],
 
-            // --- DE DATOSHOGAR.TXT ---
-            ['name' => 'Aire Acondicionado Grande', 'category' => 'Climatización', 'watts' => 2500, 'use_h' => 6, 'process' => 'Motor', 'load' => 0.7, 'eff' => 0.9, 'int' => 'excesivo', 'clima' => true],
-            ['name' => 'Aire Acondicionado Mediano', 'category' => 'Climatización', 'watts' => 1800, 'use_h' => 6, 'process' => 'Motor', 'load' => 0.7, 'eff' => 0.9, 'int' => 'excesivo', 'clima' => true],
-            ['name' => 'Microondas', 'category' => 'Cocina', 'watts' => 1000, 'use_h' => 0.5, 'process' => 'Resistencia', 'load' => 1.0, 'eff' => 0.6, 'int' => 'alto', 'clima' => false],
-            ['name' => 'Foco Ventilador', 'category' => 'Iluminación', 'watts' => 5, 'use_h' => 6, 'process' => 'Electroluminiscencia', 'load' => 1.0, 'eff' => 0.9, 'int' => 'bajo', 'clima' => false],
-            ['name' => 'Tubo LED', 'category' => 'Iluminación', 'watts' => 18, 'use_h' => 6, 'process' => 'Electroluminiscencia', 'load' => 1.0, 'eff' => 0.9, 'int' => 'bajo', 'clima' => false],
-            ['name' => 'TV Grande (Smart 55+)', 'category' => 'Entretenimiento', 'watts' => 120, 'use_h' => 4, 'process' => 'Electrónico', 'load' => 1.0, 'eff' => 0.9, 'int' => 'medio', 'clima' => false],
-            ['name' => 'TV Chico (32/Monitor)', 'category' => 'Entretenimiento', 'watts' => 85, 'use_h' => 4, 'process' => 'Electrónico', 'load' => 1.0, 'eff' => 0.9, 'int' => 'medio', 'clima' => false],
-            ['name' => 'Monitor PC', 'category' => 'Oficina', 'watts' => 50, 'use_h' => 6, 'process' => 'Electrónico', 'load' => 1.0, 'eff' => 0.9, 'int' => 'bajo', 'clima' => false],
-            ['name' => 'Notebook', 'category' => 'Oficina', 'watts' => 65, 'use_h' => 6, 'process' => 'Electrónico', 'load' => 1.0, 'eff' => 0.9, 'int' => 'medio', 'clima' => false],
-            ['name' => 'Secador de Pelo', 'category' => 'Otros', 'watts' => 1000, 'use_h' => 0.5, 'process' => 'Resistencia', 'load' => 1.0, 'eff' => 0.8, 'int' => 'alto', 'clima' => false],
-            ['name' => 'Máquina de Afeitar', 'category' => 'Otros', 'watts' => 12, 'use_h' => 0.2, 'process' => 'Motor', 'load' => 1.0, 'eff' => 0.8, 'int' => 'bajo', 'clima' => false],
-            ['name' => 'Foco LED Grande', 'category' => 'Iluminación', 'watts' => 12, 'use_h' => 6, 'process' => 'Electroluminiscencia', 'load' => 1.0, 'eff' => 0.9, 'int' => 'bajo', 'clima' => false],
-            ['name' => 'Foco Pequeño', 'category' => 'Iluminación', 'watts' => 5, 'use_h' => 6, 'process' => 'Electroluminiscencia', 'load' => 1.0, 'eff' => 0.9, 'int' => 'bajo', 'clima' => false],
-            
-            // --- NUEVOS PEDIDOS ---
-            ['name' => 'Cortadora de Fiambre', 'category' => 'Electrodomésticos', 'watts' => 200, 'use_h' => 0.5, 'process' => 'Motor', 'load' => 0.8, 'eff' => 0.85, 'int' => 'medio', 'clima' => false],
-            ['name' => 'Cargador de Celular', 'category' => 'Entretenimiento', 'watts' => 15, 'use_h' => 2.0, 'process' => 'Electrónico', 'load' => 1.0, 'eff' => 0.9, 'int' => 'bajo', 'clima' => false],
+            // --- COCINA Y OTROS ---
+            ['name' => 'Microondas', 'category' => 'Cocina', 'watts' => 1000, 'use_h' => 0.5, 'process' => 'Resistencia', 'load' => 1.0, 'eff' => 0.6, 'int' => 'Alto', 'clima' => false, 'shift' => false],
+            ['name' => 'Termotanque Eléctrico', 'category' => 'Otros', 'watts' => 1500, 'use_h' => 4, 'process' => 'Resistencia', 'load' => 1.0, 'eff' => 0.7, 'int' => 'Excesivo', 'clima' => false, 'shift' => true],
+            ['name' => 'Secador de Pelo', 'category' => 'Otros', 'watts' => 1000, 'use_h' => 0.5, 'process' => 'Resistencia', 'load' => 1.0, 'eff' => 0.8, 'int' => 'Alto', 'clima' => false, 'shift' => false],
+            ['name' => 'Máquina de Afeitar', 'category' => 'Otros', 'watts' => 12, 'use_h' => 0.2, 'process' => 'Motor', 'load' => 1.0, 'eff' => 0.8, 'int' => 'Bajo', 'clima' => false, 'shift' => false],
         ];
 
         foreach ($types as $type) {
@@ -74,11 +68,11 @@ class EquipmentTypeSeeder extends Seeder
                     'process_type'               => $type['process'],
                     'load_factor'                => $type['load'],
                     'efficiency'                 => $type['eff'],
-                    'intensity'                  => $type['int'], // AHORA SÍ LO GUARDAMOS
-                    'is_climatization'           => $type['clima'], // PARA EL TANQUE 2
-                    'default_standby_power_w'    => ($type['int'] == 'bajo' || $type['int'] == 'medio') ? 1.5 : 0, // Consumo vampiro opcional
+                    'intensity'                  => $type['int'],
+                    'is_climatization'           => $type['clima'],
+                    'default_standby_power_w'    => ($type['int'] == 'bajo' || $type['int'] == 'medio') ? 1.5 : 0,
+                    'is_shiftable'               => $type['shift'],
                 ]
             );
-        }
-    }
+        }    }
 }

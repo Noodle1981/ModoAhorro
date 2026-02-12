@@ -10,10 +10,12 @@ use Illuminate\Http\Request;
 class ThermalComfortController extends Controller
 {
     protected $profileService;
+    protected $adviceEngine;
 
-    public function __construct(\App\Services\ThermalProfileService $profileService)
+    public function __construct(\App\Services\ThermalProfileService $profileService, ThermalAdviceEngine $adviceEngine)
     {
         $this->profileService = $profileService;
+        $this->adviceEngine = $adviceEngine;
     }
 
     public function index(Entity $entity)
@@ -66,8 +68,8 @@ class ThermalComfortController extends Controller
         }
 
         $profile = $entity->thermal_profile;
-        $scoreResult = $this->scoreService->calculate($profile);
-        $recommendations = $this->adviceEngine->generateAdvice($profile, $scoreResult['score']);
+        $scoreResult = $this->profileService->calculate($profile);
+        $recommendations = $this->adviceEngine->generateAdvice($profile, $scoreResult['thermal_score']);
 
         return view('thermal.result', compact('entity', 'profile', 'scoreResult', 'recommendations', 'config'));
     }

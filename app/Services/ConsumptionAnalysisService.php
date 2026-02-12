@@ -28,13 +28,7 @@ class ConsumptionAnalysisService
         $this->maintenanceService = $maintenanceService;
     }
 
-    /**
-     * Proxy para configurar el motor interno
-     */
-    public function setEngineData($facturaKwh, $diasPeriodo, $categoriaHogar = 'C', $gradosDia = [])
-    {
-        $this->energyEngine->setData($facturaKwh, $diasPeriodo, $categoriaHogar, $gradosDia);
-    }
+    // Método setEngineData eliminado por obsolescencia del Motor v3 (Stateless)
     /**
      * Calcula el consumo total de un equipo en un periodo
      * 
@@ -314,60 +308,48 @@ class ConsumptionAnalysisService
      */
     public function calibrateInvoiceConsumption(Invoice $invoice): array
     {
-        $entity = $invoice->contract->entity;
-        
-        // 1. Obtener Grados-Día v3 (Días de Calor y Frío)
-        // Usamos el servicio de datos climáticos para obtener los CONTADORES de días
-        $climateData = $this->climateDataService->getOrFetchData(
-            $entity->locality,
-            $invoice->start_date,
-            $invoice->end_date
-        );
-        
-        // Mapear a formato esperado por el motor
-        $gradosDia = [
-            'cooling_days' => $climateData['cooling_days'] ?? 0,
-            'heating_days' => $climateData['heating_days'] ?? 0
-        ];
-
-        // 2. Preparar Equipos para el Motor
+        // 1. Obtener Usages
         $usages = $invoice->equipmentUsages()->with(['equipment.category', 'equipment.type'])->get();
-        $equiposData = $usages->map(function($u) {
-            return [
-                'id' => $u->id,
-                'nombre' => $u->equipment->name,
-                'potencia_w' => $u->equipment->nominal_power_w,
-                'horas_declaradas' => $u->avg_daily_use_hours,
-                'periodicidad' => $u->usage_frequency, // debe coincidir con el mapa del motor
-                'intensity' => $u->equipment->type->intensity ?? 'medio',
-                'load_factor' => $u->equipment->type->load_factor ?? 1.0,
-                'es_climatizacion' => ($u->equipment->category->name === 'Climatización'),
-                'tipo_clima' => str_contains(strtolower($u->equipment->name), 'aire') ? 'frio' : 'calor',
-                'is_validated' => $u->equipment->is_validated ?? false,
-            ];
-        })->toArray();
+        
+        // 2. Mapear Usages a objetos Equipment simulados (para que el Engine los procese)
+        // El Engine espera objetos con acceso a ->type y ->avg_daily_use_hours
+        $simulatedEquipments = $usages->map(function($usage) {
+            $eq = $usage->equipment;
+            // Inyectamos las horas del periodo actual para que el engine use ESTE valor y no el default
+            $eq->avg_daily_use_hours = $usage->avg_daily_use_hours; 
+            // Inyectamos referencia al usage id para mapear vuelta
+            $eq->_usage_id = $usage->id;
+            return $eq;
+        });
 
         // 3. Ejecutar Motor v3
-        $engineResult = $this->energyEngine->setData(
-            $invoice->total_energy_consumed_kwh,
-            Carbon::parse($invoice->start_date)->diffInDays(Carbon::parse($invoice->end_date)),
-            $entity->thermal_profile['energy_label'] ?? 'C',
-            $gradosDia
-        )->calibrate($equiposData);
-
+        $engineResult = $this->energyEngine->processInvoice($invoice, $simulatedEquipments);
+        
         // 4. Mapear resultados de vuelta a los Usages
-        foreach ($usages as $usage) {
-            $calibrado = collect($engineResult['equipos'])->firstWhere('id', $usage->id);
-            if ($calibrado) {
-                $usage->kwh_reconciled = $calibrado['calibrado_kwh'];
-                $usage->audit_logs = $engineResult['logs']; // Opcional: inyectar logs
+        // El engine devolvió un arreglo con 'equipos' que son los objetos modificados, 
+        // o podemos iterar $simulatedEquipments que fueron modificados por referencia (objetos).
+        $logs = $engineResult['logs'] ?? [];
+        
+        foreach ($simulatedEquipments as $processedEq) {
+            $usage = $usages->firstWhere('id', $processedEq->_usage_id);
+            if ($usage) {
+                $usage->kwh_reconciled = $processedEq->calculated_consumption_kwh;
+                $usage->tank_assignment = $processedEq->tank_assignment;
+                // Guardamos los logs específicos en el usage
+                $usage->audit_logs = $processedEq->audit_logs ?? [];
             }
         }
 
         return [
             'usages' => $usages,
-            'summary' => $engineResult['precision_summary'] ?? null,
-            'climate_data' => $engineResult['climate_data'] ?? []
+            'summary' => [
+                'tank_1' => $engineResult['tank_1_base'],
+                'tank_2' => $engineResult['tank_2_climate'],
+                'tank_3' => $engineResult['tank_3_elasticity'],
+                'unassigned' => $engineResult['unassigned_remainder'],
+                'logs' => $logs
+            ],
+            'climate_data' => [] // Ya no exponemos raw data aqui, el engine manejó todo
         ];
     }
 

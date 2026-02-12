@@ -10,31 +10,34 @@ El **Motor de Cálculo** no es solo una funcionalidad más; es el **núcleo de v
 
 *   **Confianza del Usuario**: Si el sistema estima un consumo que difiere drásticamente de la realidad sin justificación, el usuario perderá la confianza instantáneamente.
 *   **Viabilidad de Inversiones**: Las recomendaciones de ROI (ej. "Instalar un termotanque solar te ahorrará $X/mes") dependen de cálculos precisos. Un error aquí puede llevar a decisiones financieras erróneas por parte del cliente.
-*   **Diferenciador de Mercado**: La capacidad de "calibrar" consumos teóricos contra facturas reales es lo que distingue a Modo Ahorro de una simple calculadora de Excel.
+*   **Diferenciador de Mercado**: La capacidad de distribuir consumos de forma transparente y auditable es lo que distingue a Modo Ahorro de una simple calculadora de Excel.
 
-### 2.2 Complejidad Técnica
-El motor de cálculo actual (`ConsumptionCalibrator`, `ConsumptionAnalysisService`) posee una alta complejidad debido a las siguientes capas de lógica:
+### 2.2 Arquitectura del Motor v3 (Febrero 2026)
+El motor actual (`EnergyEngineService`) implementa un sistema de **3 Tanques Virtuales** que distribuye el consumo total de una factura de forma jerárquica y transparente:
 
-1.  **Dependencia Climática Dinámica**:
-    *   Integra APIs externas (Open-Meteo) para ajustar consumos de climatización basados en temperaturas históricas reales (Grados-Día).
+
+1.  **Tanque 1 - Base (24/7)**:
+    *   Equipos de consumo constante (heladeras, routers).
+    *   Cálculo directo: `potencia × 24h × load_factor × días`.
+    *   *Ventaja*: Consumo predecible y confiable.
+
+2.  **Tanque 2 - Clima (Integración con Open-Meteo)**:
+    *   Equipos de climatización (aires, calefacción).
+    *   Integra datos climáticos reales (Grados-Día HDD/CDD) vía API Open-Meteo.
+    *   Ajusta consumo según eficiencia térmica del hogar (Etiqueta A-E del Wizard Térmico).
     *   *Desafío*: Manejar fallos de API, latencia y falta de datos históricos para ciertas ubicaciones.
 
-2.  **Lógica de Calibración Jerárquica ("Smart Calibration")**:
-    *   No todos los consumos son iguales. El motor debe distinguir entre:
-        *   **Base Crítica (Inelástica)**: Heladeras, alarmas (siempre ON).
-        *   **Consumos Hormiga**: Iluminación, cargadores (predecibles pero menores).
-        *   **Ballenas (Elástica)**: Aires acondicionados, calefacción (altamente variables).
-    *   *Desafío*: El algoritmo debe decidir inteligentemente qué categorías "absorben" la diferencia entre el consumo declarado por el usuario y la factura real.
+3.  **Tanque 3 - Elasticidad (Distribución Proporcional)**:
+    *   Resto de equipos (TV, PC, luces, microondas).
+    *   Distribuye el remanente de la factura (Total - Tanque1 - Tanque2) proporcionalmente según intensidad.
+    *   *Ventaja*: Garantiza que la suma coincida exactamente con la factura real.
 
-3.  **Factores de Corrección Multifactoriales**:
-    *   Ajustes por estacionalidad (ej. temperatura de agua en red en invierno vs verano).
-    *   Penalizaciones por falta de mantenimiento en equipos.
-    *   Cálculo de "Consumo Vampiro" (Standby) automatizado.
+### 2.3 Sistema de Auditoría (Transparencia)
+*   Cada cálculo genera un **Audit Log** en `equipment_usages.audit_logs` (JSON).
+*   Dashboard de Auditoría (`/admin/audit/dashboard`) permite inspeccionar la lógica paso a paso.
+*   *Ejemplo de log*: `["Tanque asignado: 2 (Clima)", "HDD detectados: 10 días", "Multiplicador térmico: 1.4 (Casa C)"]`
 
-4.  **Reconciliación Input vs Realidad**:
-    *   El usuario ingresa datos subjetivos ("Creo que uso el aire 4 horas").
-    *   La factura presenta datos objetivos ("Se consumieron 450 kWh").
-    *   *Complejidad*: El motor debe "negociar" estas dos verdades para ofrecer un desglose coherente sin romper la lógica física.
+### 2.4 Complejidad Técnica Resuelta
 
 ## 3. Requisitos para Salida a Producción (Readiness)
 

@@ -1,9 +1,9 @@
-# THERMAL_COMFORT_MODULE.md
-# Módulo Implementado: Diagnóstico de Envolvente Térmica
+# Módulo de Confort Térmico
 
 ## 1. Descripción General
-Modulo que permite al usuario realizar una autoevaluación rápida de la calidad térmica de su vivienda para identificar pérdidas de energía pasiva y recibir recomendaciones de aislamiento.
-Este módulo ataca la "Causa Raíz" del consumo ineficiente (la vivienda), complementando el análisis de equipos (los síntomas).
+Módulo que permite al usuario realizar una autoevaluación rápida de la calidad térmica de su vivienda para identificar pérdidas de energía pasiva y recibir recomendaciones de aislamiento.
+
+**Integración con Motor v3:** El perfil térmico calculado se utiliza directamente en el `EnergyEngineService` (Tanque 2) para ajustar el consumo estimado de climatización según la eficiencia real del hogar.
 
 ---
 
@@ -30,19 +30,27 @@ Este módulo ataca la "Causa Raíz" del consumo ineficiente (la vivienda), compl
 ```
 
 ### Arquitectura de Servicios
-1.  **`ThermalScoreService`** (`App\Services\Thermal\ThermalScoreService`):
+
+1.  **`ThermalProfileService`** (`App\Services\ThermalProfileService`):
+    -   **Método principal:** `calculate(array $profile): array`
     -   Calcula un puntaje base de 50.
-    -   **Techumbre:** Penaliza chapa (-20) y losa (-10), premia aislación (+15).
-    -   **Aberturas:** Premia DVH (+20), penaliza chifletes (-15).
-    -   **Bioclimática (Argentina):** 
-        -   Premia eje Norte-Sur (+15) y Ventana al Sur (+10).
-        -   Penaliza eje Este-Oeste (-10) y Exposición Solar Alta (-10).
-    -   Determina la etiqueta (A > 90, B > 75, etc.).
+    -   **Techumbre:** Penaliza chapa (-15) y losa (0), premia aislación (+10).
+    -   **Aberturas:** Premia DVH (+15), penaliza chifletes (-15).
+    -   **Bioclimática:** Ajusta según orientación y exposición solar.
+    -   Determina la etiqueta (A >= 85, B >= 70, C >= 50, D >= 30, E < 30).
+    -   **Retorna:** `['thermal_score' => int, 'energy_label' => string]`
+    -   **Método clave:** `getMultiplierForScore(string $label): float`
+        - A = 1.0 (sin penalización)
+        - B = 1.2
+        - C = 1.4
+        - D = 1.6
+        - E = 1.8 (penalización severa)
+    -   **Uso en Motor v3:** El multiplicador se aplica al consumo de climatización en el Tanque 2.
 
 2.  **`ThermalAdviceEngine`** (`App\Services\Thermal\ThermalAdviceEngine`):
     -   Genera recomendaciones basadas en condiciones específicas.
-    -   *Ejemplo:* Si `orientation` es "Este-Oeste" -> Recomienda "Escudo Solar / Cortinas".
-    -   *Ejemplo:* Si `south_window` es false -> Recomienda ventilación forzada o mejoras pasivas.
+    -   *Ejemplo:* Si `drafts_detected` es true -> Recomienda "Instalar Burletes Autoadhesivos".
+    -   *Ejemplo:* Si `window_type` es 'single_glass' y score < 60 -> Recomienda "Plan Canje de Ventanas a DVH".
 
 ### Rutas y Controladores
 -   **Controller:** `ThermalComfortController`

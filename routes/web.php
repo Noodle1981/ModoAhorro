@@ -318,6 +318,7 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
 // =====================================================
 Route::middleware(['auth', 'super_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Admin\SuperAdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/audit/dashboard', [\App\Http\Controllers\AuditDashboardController::class, 'index'])->name('audit.dashboard');
 });
 
 // API Locations

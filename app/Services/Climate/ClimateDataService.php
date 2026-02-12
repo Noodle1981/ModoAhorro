@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
+/**
+ * @deprecated Legacy Service. Use App\Services\ClimateService instead.
+ * Mantenido temporalmente para compatibilidad con datos históricos en DB local.
+ */
 class ClimateDataService
 {
     /**

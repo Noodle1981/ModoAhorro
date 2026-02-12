@@ -13,31 +13,48 @@ El sistema evoluciona desde una herramienta de auditoría pasiva hacia gestión 
 
 ## Servicios Principales
 
+### Motor Energético v3 (Núcleo)
 | Servicio | Propósito |
 |----------|-----------|
-| `ConsumptionAnalysisService` | Motor de cálculo de consumo y proyecciones |
-| `ConsumptionCalibrator` | Calibración Base/Hormigas/Elefantes |
+| `EnergyEngineService` | **Motor principal**: Distribuye consumo en 3 tanques virtuales (Base/Clima/Elasticidad) |
+| `ClimateService` | Integración con Open-Meteo API, cálculo de Grados-Día (HDD/CDD) |
+| `ThermalProfileService` | Evaluación de eficiencia térmica del hogar (A-E), multiplicadores para Tanque 2 |
+| `ConsumptionAnalysisService` | Orquestador de análisis de consumo, integra Motor v3 y genera reportes |
+
+### Módulos Especializados
+| Servicio | Propósito |
+|----------|-----------|
 | `SolarPowerService` | Calculadora de viabilidad fotovoltaica |
 | `SolarWaterHeaterService` | Análisis de termotanques solares |
 | `VacationService` | Detección de anomalías y checklists de viaje |
 | `GridOptimizerService` | Arbitraje de tarifas (Peak Shifting) |
-| `ClimateDataService` | Integración con APIs climáticas |
-| `ThermalScoreService` | Evaluación de envolvente térmica |
 | `ReplacementService` | Recomendaciones de equipos eficientes |
 | `MaintenanceService` | Seguimiento de mantenimiento de equipos |
 | `StandbyAnalysisService` | Análisis de consumo fantasma (vampiro) |
 
-## Estado Actual
-Ver [ROADMAP.md](../ROADMAP.md) para el estado detallado de sprints.
+## Estado Actual (Febrero 2026)
 
-**Completado (~70%):**
+**Motor Energético v3 - COMPLETADO:**
+- ✅ Sistema de 3 Tanques (Base 24/7, Clima, Elasticidad)
+- ✅ Integración con Open-Meteo para datos climáticos reales
+- ✅ Wizard Térmico para calificación de hogares (A-E)
+- ✅ Dashboard de Auditoría (`/admin/audit/dashboard`)
+- ✅ Sistema de Audit Logs en `equipment_usages`
+- ✅ Tests unitarios (`ClimateServiceTest`, `EnergyEngineTest`)
+
+**Módulos Funcionales:**
 - Gestión de entidades, habitaciones, equipos
 - Gestión de facturas y contratos
 - Panel de consumo (calculado vs facturado)
 - Módulo de vacaciones
-- Módulo térmico (Confort Térmico)
 - Análisis solar (paneles + termotanque)
 - Optimización de red (tarifas horarias)
+
+**Limpieza Técnica Reciente:**
+- Eliminadas tablas obsoletas: `devices`, `device_usages`, `utility_companies`
+- Eliminados modelos: `Device.php`, `UtilityCompany.php`, `ConsumptionCalibrator.php`
+- Consolidación de proveedores en modelo `Contract`
+- Unificación de cálculos climáticos (base 18°C/24°C)
 
 ## Convenciones
 

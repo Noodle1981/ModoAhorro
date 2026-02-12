@@ -53,4 +53,12 @@ class Invoice extends Model
     {
         return $this->hasMany(\App\Models\EquipmentUsage::class, 'invoice_id');
     }
+
+    public function getDaysInPeriodAttribute()
+    {
+        if ($this->start_date && $this->end_date) {
+            return \Carbon\Carbon::parse($this->start_date)->diffInDays(\Carbon\Carbon::parse($this->end_date)) + 1; // Inclusive
+        }
+        return 30; // Fallback
+    }
 }

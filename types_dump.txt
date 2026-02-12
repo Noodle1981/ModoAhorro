@@ -1,0 +1,37 @@
+Illuminate\Support\Collection Object
+(
+    [items:protected] => Array
+        (
+            [1] => Aire Acondicionado (2200 frigorías)
+            [2] => Aire Acondicionado (3500 frigorías)
+            [16] => Aire Acondicionado Grande
+            [17] => Aire Acondicionado Mediano
+            [3] => Aire Acondicionado Portátil
+            [5] => Caloventor
+            [15] => Cargador de Celular
+            [29] => Cortadora de Fiambre
+            [6] => Estufa Halógena
+            [27] => Foco LED Grande
+            [28] => Foco Pequeño
+            [19] => Foco Ventilador
+            [9] => Heladera con Freezer
+            [10] => Lavarropas Automático
+            [7] => Lámpara LED 9W
+            [18] => Microondas
+            [23] => Monitor PC
+            [26] => Máquina de Afeitar
+            [24] => Notebook
+            [13] => PC Gamer
+            [14] => Router WiFi
+            [25] => Secador de Pelo
+            [22] => TV Chico (32/Monitor)
+            [21] => TV Grande (Smart 55+)
+            [12] => TV LED 50"
+            [11] => Termotanque Eléctrico
+            [8] => Tubo Fluorescente 36W
+            [20] => Tubo LED
+            [4] => Ventilador de techo
+        )
+
+    [escapeWhenCastingToString:protected] => 
+)

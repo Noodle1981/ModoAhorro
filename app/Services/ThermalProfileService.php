@@ -77,4 +77,37 @@ class ThermalProfileService
         if ($score >= 30) return 'D';
         return 'E';
     }
+
+    /**
+     * Obtiene el multiplicador de ineficiencia para el Motor v3 (Tanque 2).
+     * A = 1.0 (Sin penalización)
+     * E = 1.8 (Penalización severa)
+     */
+    public function getMultiplierForScore(string $label): float
+    {
+        $map = [
+            'A' => 1.0,
+            'B' => 1.2,
+            'C' => 1.4,
+            'D' => 1.6,
+            'E' => 1.8,
+        ];
+        return $map[strtoupper($label)] ?? 1.4;
+    }
+
+    /**
+     * Helper para obtener el multiplicador directamente de una entidad.
+     */
+    public function calculateMultiplier(\App\Models\Entity $entity): float
+    {
+        $profile = $entity->thermal_profile ?? [];
+        // Si ya tiene etiqueta calculada, usala
+        if (isset($profile['energy_label'])) {
+            return $this->getMultiplierForScore($profile['energy_label']);
+        }
+        
+        // Si no, calcula al vuelo
+        $result = $this->calculate($profile);
+        return $this->getMultiplierForScore($result['energy_label']);
+    }
 }

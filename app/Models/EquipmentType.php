@@ -23,7 +23,7 @@ class EquipmentType extends Model
 
     public function isClimate(): bool
     {
-        return $this->category && $this->category->name === 'Climatización';
+        return $this->is_climatization ?? ($this->category && $this->category->name === 'Climatización');
     }
 
     public function isBase(): bool
@@ -37,9 +37,9 @@ class EquipmentType extends Model
         return $this->belongsTo(EquipmentCategory::class, 'category_id');
     }
 
-    public function devices()
+    public function equipment()
     {
-        return $this->hasMany(Device::class);
+        return $this->hasMany(Equipment::class);
     }
 
     public function maintenanceTasks()
