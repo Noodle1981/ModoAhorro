@@ -238,7 +238,11 @@ class UsageAdjustmentController extends Controller
         $climateData = $calibrationResult['climate_data'] ?? [];
         
         // Obtener todos los usos de equipos para la factura
-        $equipmentUsages = $invoice->equipmentUsages()->with(['equipment.room', 'equipment.type'])->get();
+        // 1. Obtener Usages
+        // IMPORTANT: This relationship MUST include inactive equipment to preserve history.
+        // Since we use a manual 'is_active' flag and not Laravel's SoftDeletes trait on the Equipment model,
+        // the relationship naturally includes all records unless explicitly filtered.
+        $equipmentUsages = $invoice->equipmentUsages()->with(['equipment.category', 'equipment.type'])->get();
 
         // Calcular consumo por equipo y totales
         $consumptionDetails = [];

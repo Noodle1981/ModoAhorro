@@ -1,4 +1,5 @@
-<form method="POST" action="{{ route($config['route_prefix'] . '.rooms.equipment.store', [$room->entity_id, $room->id]) }}">
+<form method="POST" action="{{ route($config['route_prefix'] . '.rooms.equipment.store', [$room->entity_id, $room->id]) }}"
+      onsubmit="const btn = this.querySelector('button[type=submit]'); btn.disabled = true; btn.innerHTML = '<i class=\'bi bi-hourglass-split mr-2\'></i> Guardando...';">
     @csrf
     
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

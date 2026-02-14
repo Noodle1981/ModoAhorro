@@ -12,7 +12,9 @@ class RoomEquipmentController extends Controller
 {
     public function dashboard($entityId, $roomId)
     {
-        $room = Room::with(['equipment.category', 'equipment.type'])->findOrFail($roomId);
+        $room = Room::with(['equipment' => function($query) {
+            $query->where('is_active', true);
+        }, 'equipment.category', 'equipment.type'])->findOrFail($roomId);
         $entity = $room->entity;
         $config = config("entity_types.{$entity->type}", []);
         

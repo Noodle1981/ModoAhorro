@@ -11,6 +11,7 @@ class EnergyEngineService
 {
     protected $climateService;
     protected $thermalService;
+    protected $lastClimateDays = []; // Store the last calculated climate days
 
     public function __construct(ClimateService $climateService, ThermalProfileService $thermalService)
     {
@@ -67,6 +68,8 @@ class EnergyEngineService
                 $invoice->start_date, 
                 $invoice->end_date
             );
+            
+            $this->lastClimateDays = $climateStats; // Store for retrieval
             
             // Factor Térmico del Hogar (A-E)
             $thermalMultiplier = $this->thermalService->calculateMultiplier($invoice->contract->entity);
@@ -164,7 +167,13 @@ class EnergyEngineService
             'tank_3_elasticity' => $tank3Consumption,
             'unassigned_remainder' => max(0, $remainingKwh - $tank3Consumption),
             'equipments_processed' => $equipments->count(),
-            'logs' => $logs
+            'logs' => $logs,
+            'climate_data' => $this->lastClimateDays // Return it in the result too
         ];
+    }
+
+    public function getClimateDays(): array
+    {
+        return $this->lastClimateDays;
     }
 }

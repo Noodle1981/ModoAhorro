@@ -91,3 +91,20 @@ Para garantizar un servicio correcto, el ciclo de QA debe ser riguroso y estar d
 2.  **Fase de Implementación de Tests**: Creación de la suite de tests unitarios y de integración.
 3.  **Fase de Calibración**: Ajuste fino de constantes (factores climáticos) usando el set de "Casos de Oro".
 4.  **Soft Launch**: Despliegue en producción para segmento limitado.
+
+## 6. Evolución Futura: Estrategia de Gemelos Digitales (Digital Twins)
+
+### 6.1 Concepto
+Transformar el modelo de datos estático en una **réplica virtual dinámica** de la vivienda. En lugar de calcular consumos históricos, el Gemelo Digital simulará el comportamiento físico de la casa minuto a minuto.
+
+### 6.2 Objetivos y Beneficios
+1.  **Simulaciones "What-If"**: Permitir al usuario proyectar ahorros reales antes de invertir.
+    *   *Ejemplo*: "¿Cuánto ahorro si cambio el aire acondicionado por un Inverter o si aíslo el techo?"
+2.  **Detección de Anomalías (Mantenimiento Predictivo)**: Comparar el consumo teórico del gemelo con el consumo real del medidor.
+    *   *Alerta*: "Tu heladera consume 40% más de lo que la física dicta. Revisa los burletes."
+3.  **Gamificación**: Competir contra el "Gemelo Perfecto" (la versión más eficiente de tu propia casa).
+
+### 6.3 Hoja de Ruta de Implementación
+*   **Fase 1 (Actual)**: Estabilización del Motor v3 y recolección de datos históricos (1-3 meses) para "entrenar" el modelo base.
+*   **Fase 2 (Modelado Físico)**: Enriquecer el modelo de datos con propiedades térmicas (aislación, inercia) y curvas de eficiencia de equipos.
+*   **Fase 3 (Simulación)**: Implementar motor de simulación física diaria para comparativa Real vs. Teórico.
