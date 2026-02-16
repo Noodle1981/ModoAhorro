@@ -108,31 +108,38 @@ Ventilador de Techo	Climatización	Living	60
 TV Grande	Entretenimiento	Living	120
 Foco Living	Iluminación	Living	5
 Router Wifi	Oficina	Living	20
+
 Ventilador de Techo	Climatización	Habitación Mamá	60
 Foco Ventilador	Iluminación	Habitación Mamá	5
 Foco Mesita de Luz	Iluminación	Habitación Mamá	5
+
 Ventilador de Techo	Climatización	Habitación Papa	60
 Foco Ventilador	Iluminación	Habitación Papa	40
 Foco Mesita de Luz	Iluminación	Habitación Papa	40
 TV Chico	Entretenimiento	Habitación Papa	85
-PC Gamer	Oficina	Habitación Hermanos	600
 
+PC Gamer	Oficina	Habitación Hermanos	600
 Monitor PC	Oficina	Habitación Hermanos	50
 Monitor PC	Oficina	Habitación Hermanos	50
 Ventilador de Techo	Climatización	Habitación Hermanos	60
 Foco Ventilador de Techo	Iluminación	Habitación Hermanos	5
 Mesita de Luz	Iluminación	Habitación Hermanos	5
 Aire Portatil	Climatización	Habitación Hermanos	1400
+
 Foco Baño	Iluminación	Baño	
 Secador de Pelo	Otros	Baño	1000
 Maquina de Afeitar	Otros	Baño	12
+
 Foco Led Grande	Iluminación	Fondo	12
+
 Focos Garage	Iluminación	Garage	5
 Focos Garage	Iluminación	Garage	5
 Heladera	Electrodomésticos	Garage	150
 Lavarropa	Electrodomésticos	Garage	2500
+
 Foco	Iluminación	Hall	5
 Foco	Iluminación	Frente / Vereda	5
+
 Cargadores de Celular	Oficina	Portátiles	5	
 Cargadores de Celular	Oficina	Portátiles	5	
 Cargadores de Celular	Oficina	Portátiles	5

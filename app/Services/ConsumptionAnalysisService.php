@@ -349,7 +349,7 @@ class ConsumptionAnalysisService
                 'unassigned' => $engineResult['unassigned_remainder'],
                 'logs' => $logs
             ],
-            'climate_data' => [] // Ya no exponemos raw data aqui, el engine manejó todo
+            'climate_data' => $engineResult['climate_data'] ?? []
         ];
     }
 

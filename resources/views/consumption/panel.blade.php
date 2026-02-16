@@ -50,7 +50,7 @@
                             <th class="px-6 py-4">Período</th>
                             <th class="px-6 py-4">Fechas</th>
                             <th class="px-6 py-4 text-center">Días</th>
-                            <th class="px-6 py-4 text-center">Días Calor</th>
+                            <th class="px-6 py-4 text-center">Días Extremos</th>
                             <th class="px-6 py-4 text-center">Consumo</th>
                             <th class="px-6 py-4 text-right">Monto</th>
                             <th class="px-6 py-4 text-center">Acciones</th>
@@ -77,14 +77,21 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-center">
-                                @if(($invoice->calculated_metrics->hot_days ?? 0) > 0)
-                                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-red-50 text-red-600 rounded-lg text-sm">
-                                        <i class="bi bi-fire"></i>
-                                        {{ $invoice->calculated_metrics->hot_days }}
-                                    </span>
-                                @else
-                                    <span class="text-gray-400">-</span>
-                                @endif
+                                <div class="flex flex-col gap-1 items-center justify-center">
+                                    @if(($invoice->calculated_metrics->hot_days ?? 0) > 0)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-600 rounded text-xs font-medium" title="Días con calor (>24°C)">
+                                            <i class="bi bi-fire"></i> {{ $invoice->calculated_metrics->hot_days }} días
+                                        </span>
+                                    @endif
+                                    @if(($invoice->calculated_metrics->cold_days ?? 0) > 0)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs font-medium" title="Días con frío (<18°C)">
+                                            <i class="bi bi-snow"></i> {{ $invoice->calculated_metrics->cold_days }} días
+                                        </span>
+                                    @endif
+                                    @if(($invoice->calculated_metrics->hot_days ?? 0) == 0 && ($invoice->calculated_metrics->cold_days ?? 0) == 0)
+                                        <span class="text-gray-400 text-xs">-</span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <span class="font-mono text-gray-900">

@@ -57,19 +57,20 @@ class EnergyEngineService
         // --- TANQUE 2: CLIMATIZACIÓN ---
         $tank2Consumption = 0;
         $tank2Equipments = $equipments->filter(function ($eq) {
-            return $eq->type->isClimate();
+                return $eq->type->isClimate();
         });
 
+        // Datos climáticos (SIEMPRE CARGARLOS para histórico)
+        $locality = $invoice->contract->entity->locality;
+        $climateStats = $this->climateService->getDegreeDaysForLocality(
+            $locality, 
+            $invoice->start_date, 
+            $invoice->end_date
+        );
+        
+        $this->lastClimateDays = $climateStats; // Store for retrieval
+        
         if ($tank2Equipments->isNotEmpty()) {
-            // Datos climáticos
-            $locality = $invoice->contract->entity->locality;
-            $climateStats = $this->climateService->getDegreeDaysForLocality(
-                $locality, 
-                $invoice->start_date, 
-                $invoice->end_date
-            );
-            
-            $this->lastClimateDays = $climateStats; // Store for retrieval
             
             // Factor Térmico del Hogar (A-E)
             $thermalMultiplier = $this->thermalService->calculateMultiplier($invoice->contract->entity);

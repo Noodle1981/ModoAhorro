@@ -30,13 +30,17 @@ class ClimateService
             ->whereBetween('date', [$fechaInicio, $fechaFin])
             ->select(
                 DB::raw('SUM(CASE WHEN (temp_avg - ' . self::BASE_TEMP_COOLING . ') > 0 THEN (temp_avg - ' . self::BASE_TEMP_COOLING . ') ELSE 0 END) as cdd'), // Cooling Degree Days
-                DB::raw('SUM(CASE WHEN (' . self::BASE_TEMP_HEATING . ' - temp_avg) > 0 THEN (' . self::BASE_TEMP_HEATING . ' - temp_avg) ELSE 0 END) as hdd')  // Heating Degree Days
+                DB::raw('SUM(CASE WHEN (' . self::BASE_TEMP_HEATING . ' - temp_avg) > 0 THEN (' . self::BASE_TEMP_HEATING . ' - temp_avg) ELSE 0 END) as hdd'),  // Heating Degree Days
+                DB::raw('COUNT(CASE WHEN temp_avg > ' . self::BASE_TEMP_COOLING . ' THEN 1 END) as hot_day_count'), // Count of hot days
+                DB::raw('COUNT(CASE WHEN temp_avg < ' . self::BASE_TEMP_HEATING . ' THEN 1 END) as cold_day_count')  // Count of cold days
             )
             ->first();
 
         return [
             'cooling_days' => (float) ($data->cdd ?? 0),
-            'heating_days' => (float) ($data->hdd ?? 0)
+            'heating_days' => (float) ($data->hdd ?? 0),
+            'hot_day_count' => (int) ($data->hot_day_count ?? 0),
+            'cold_day_count' => (int) ($data->cold_day_count ?? 0)
         ];
     }
 

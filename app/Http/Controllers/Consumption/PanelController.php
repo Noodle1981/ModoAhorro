@@ -91,7 +91,8 @@ class PanelController extends Controller
 
              // Fetch Climate Data for Table (Reuse calibrated data)
              $climateData = $calibrationResult['climate_data'] ?? [];
-             $hotDays = $climateData['cooling_days'] ?? 0;
+             $hotDays = $climateData['hot_day_count'] ?? 0;
+             $coldDays = $climateData['cold_day_count'] ?? 0;
              
              // Status Logic
              $isAdjusted = $invoice->usageAdjustment && $invoice->usageAdjustment->adjusted;
@@ -110,7 +111,8 @@ class PanelController extends Controller
                  'daily_avg' => $dailyAvg,
                  'cost_per_kwh' => $costPerKwh,
                  'days' => $days,
-                 'hot_days' => $hotDays
+                 'hot_days' => $hotDays,
+                 'cold_days' => $coldDays
              ];
              
              return $invoice;
@@ -158,6 +160,11 @@ class PanelController extends Controller
             if ($porcentaje > 130 || $porcentaje < 70) $status = 'critical';
             elseif ($porcentaje > 110 || $porcentaje < 90) $status = 'warning';
             
+            // Fetch Climate Data for Table (Reuse calibrated data)
+            $climateData = $calibrationResult['climate_data'] ?? [];
+            $hotDays = $climateData['hot_day_count'] ?? 0;
+            $coldDays = $climateData['cold_day_count'] ?? 0;
+
             $invoice->calculated_metrics = (object) [
                 'total_kwh_calculated' => $totalEnergia,
                 'total_kwh_billed' => $consumoFacturado,
@@ -167,6 +174,8 @@ class PanelController extends Controller
                 'daily_avg' => $dailyAvg,
                 'cost_per_kwh' => $costPerKwh,
                 'days' => $days,
+                'hot_days' => $hotDays,
+                'cold_days' => $coldDays
             ];
             
             return $invoice;
