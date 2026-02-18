@@ -4,7 +4,7 @@
             {{-- Logo --}}
             <div class="flex items-center">
                 <a href="/dashboard" class="flex items-center gap-2">
-                    <img src="{{ asset('logo.png') }}" alt="Modo Ahorro" class="h-8 w-auto">
+                    <img src="{{ asset('logo.png') }}" alt="Modo Ahorro" class="h-10 w-auto">
                 </a>
             </div>
 
@@ -59,11 +59,8 @@
                 @endauth
                 
                 @guest
-                    <a href="/login" class="text-gray-600 hover:text-emerald-600 font-medium transition-colors">
+                    <a href="/login" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                         Iniciar sesión
-                    </a>
-                    <a href="/register" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                        Registrarse
                     </a>
                 @endguest
             </div>
@@ -110,11 +107,8 @@
                 </a>
             @endauth
             @guest
-                <a href="/login" class="block px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50">
+                <a href="/login" class="block px-3 py-2 rounded-lg bg-emerald-500 text-white text-center">
                     Iniciar sesión
-                </a>
-                <a href="/register" class="block px-3 py-2 rounded-lg bg-emerald-500 text-white text-center">
-                    Registrarse
                 </a>
             @endguest
         </div>

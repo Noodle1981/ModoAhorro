@@ -1,4 +1,4 @@
-<div class="h-full">
+<div class="h-full" x-data="{ showUpgradeModal: false }">
     <x-card :padding="false" class="h-full flex flex-col overflow-hidden">
         {{-- Header --}}
         <div class="bg-gradient-to-r {{ $config['tailwind_gradient'] ?? 'from-emerald-500 to-emerald-600' }} px-5 py-4 flex justify-between items-center">
@@ -18,9 +18,9 @@
                         <i class="bi bi-lock text-3xl text-gray-400"></i>
                     </div>
                     <p class="text-gray-500 mb-3">Disponible en plan superior</p>
-                    <x-button variant="outline" size="sm" href="#">
-                        <i class="bi bi-arrow-up-circle mr-1"></i> Upgrade
-                    </x-button>
+                    <button @click="showUpgradeModal = true" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        <i class="bi bi-arrow-up-circle"></i> Upgrade
+                    </button>
                 </div>
             @elseif($entities->isEmpty())
                 {{-- Empty State --}}
@@ -65,13 +65,53 @@
         {{-- Footer --}}
         @if($allowed)
             <div class="px-5 py-4 bg-gray-50 border-t border-gray-100 flex gap-2">
-                <x-button variant="outline" size="sm" href="{{ route($config['route_prefix'] . '.index') }}" class="flex-1">
-                    <i class="bi bi-list mr-1"></i> Ver todos
-                </x-button>
-                <x-button variant="primary" size="sm" href="{{ route($config['route_prefix'] . '.create') }}">
-                    <i class="bi bi-plus"></i>
-                </x-button>
+                <a href="{{ route($config['route_prefix'] . '.index') }}" 
+                   class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 hover:border-gray-300 transition-all group no-underline">
+                    <i class="bi bi-grid-3x3-gap text-gray-500 group-hover:text-gray-700"></i>
+                    <span>Ver todos</span>
+                </a>
+                <a href="{{ route($config['route_prefix'] . '.create') }}"
+                   class="inline-flex items-center justify-center w-10 h-10 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-lg shadow-sm hover:shadow-md transition-all no-underline">
+                    <i class="bi bi-plus text-lg"></i>
+                </a>
             </div>
         @endif
     </x-card>
+
+    {{-- Upgrade Modal --}}
+    <div x-show="showUpgradeModal" 
+         x-cloak
+         @click.away="showUpgradeModal = false"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+         style="display: none;">
+        <div @click.stop class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all">
+            {{-- Modal Header --}}
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4 flex items-center justify-between">
+                <h3 class="text-white font-semibold text-lg flex items-center gap-2">
+                    <i class="bi bi-info-circle"></i>
+                    Funcionalidad No Disponible
+                </h3>
+                <button @click="showUpgradeModal = false" class="text-white/80 hover:text-white transition-colors">
+                    <i class="bi bi-x-lg text-xl"></i>
+                </button>
+            </div>
+            
+            {{-- Modal Body --}}
+            <div class="p-6 text-center">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="bi bi-lock text-3xl text-blue-600"></i>
+                </div>
+                <h4 class="text-xl font-bold text-gray-900 mb-2">Esta opción no está disponible</h4>
+                <p class="text-gray-600 mb-6">
+                    Esta funcionalidad no está habilitada en la versión demo. Para acceder a {{ strtolower($config['label_plural']) }}, contactá con el administrador.
+                </p>
+                
+                {{-- Modal Actions --}}
+                <button @click="showUpgradeModal = false" 
+                        class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

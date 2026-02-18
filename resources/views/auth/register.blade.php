@@ -1,11 +1,11 @@
-@extends('layouts.app')
+@extends('layouts.guest')
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-emerald-50 flex items-center justify-center py-12 px-4">
     <div class="w-full max-w-md">
         {{-- Logo --}}
         <div class="text-center mb-8">
-            <img src="{{ asset('logo.png') }}" alt="Modo Ahorro" class="h-12 mx-auto mb-4">
+            <img src="{{ asset('logo.png') }}" alt="Modo Ahorro" class="h-10 mx-auto mb-4">
             <h1 class="text-2xl font-bold text-gray-900">Creá tu cuenta</h1>
             <p class="text-gray-500">Comenzá a optimizar tu consumo energético</p>
         </div>

@@ -32,13 +32,9 @@
             </div>
         </div>
 
-        {{-- Stats Overview --}}
-        <section class="mb-10">
-            <livewire:dashboard.stats-overview />
-        </section>
 
         {{-- My Entities --}}
-        <section class="mb-10">
+        <section>
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                     <i class="bi bi-collection text-emerald-500"></i>
@@ -56,18 +52,6 @@
                     />
                 @endforeach
             </div>
-        </section>
-
-        {{-- Quick Access --}}
-        <section>
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                    <i class="bi bi-lightning-charge text-amber-500"></i>
-                    Acceso Rápido
-                </h2>
-            </div>
-            
-            <livewire:dashboard.quick-access-panel />
         </section>
 
     </div>

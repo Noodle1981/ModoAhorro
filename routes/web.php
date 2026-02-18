@@ -31,8 +31,9 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
 
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
-Route::get('register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
-Route::post('register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
+// Registro deshabilitado - Solo por invitación en producción
+// Route::get('register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
+// Route::post('register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
 
 Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->group(function () {
     // Rutas CRUD para contratos

@@ -83,24 +83,6 @@
                                     <x-button variant="secondary" size="sm" href="{{ route($config['route_prefix'] . '.show', $entity->id) }}" title="Ver detalles">
                                         <i class="bi bi-eye text-lg"></i>
                                     </x-button>
-                                    <x-button variant="secondary" size="sm" href="{{ route($config['route_prefix'] . '.edit', $entity->id) }}" title="Editar">
-                                        <i class="bi bi-pencil text-lg"></i>
-                                    </x-button>
-                                    <x-button variant="secondary" size="sm" href="{{ route($config['route_prefix'] . '.rooms', $entity->id) }}" title="{{ $config['rooms_label'] }}">
-                                        <i class="{{ $config['rooms_icon'] }} text-lg"></i>
-                                    </x-button>
-                                    <x-button variant="secondary" size="sm" href="{{ route($config['route_prefix'] . '.invoices', $entity->id) }}" title="Facturas">
-                                        <i class="bi bi-receipt text-lg"></i>
-                                    </x-button>
-                                    <form action="{{ route($config['route_prefix'] . '.destroy', $entity->id) }}" method="POST" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <x-button variant="ghost" size="sm" type="submit" 
-                                            onclick="return confirm('¿Seguro que deseas eliminar esta {{ strtolower($config['label']) }}?')"
-                                            class="text-red-500 hover:text-red-700 hover:bg-red-50">
-                                            <i class="bi bi-trash text-lg"></i>
-                                        </x-button>
-                                    </form>
                                 </div>
                             </td>
                         </tr>

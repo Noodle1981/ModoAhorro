@@ -17,7 +17,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
             <a class="navbar-brand fw-bold text-primary" href="#">
-                <img src="{{ asset('logo.png') }}" alt="Modo Ahorro Logo" style="height: 100px;" class="d-inline-block align-text-top me-2">
+                <img src="{{ asset('logo.png') }}" alt="Modo Ahorro Logo" style="height: 40px;" class="d-inline-block align-text-top me-2">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -31,13 +31,8 @@
                             </li>
                         @else
                             <li class="nav-item">
-                                <a href="{{ route('login') }}" class="btn btn-outline-primary">Iniciar Sesión</a>
+                                <a href="{{ route('login') }}" class="btn btn-primary">Iniciar Sesión</a>
                             </li>
-                            @if (Route::has('register'))
-                                <li class="nav-item">
-                                    <a href="{{ route('register') }}" class="btn btn-primary">Registrarse</a>
-                                </li>
-                            @endif
                         @endauth
                     @endif
                 </ul>
@@ -55,8 +50,8 @@
                         Gestiona tus facturas, monitorea el consumo de tus electrodomésticos y optimiza tus gastos con Modo Ahorro.
                     </p>
                     <div class="d-grid gap-2 d-md-flex justify-content-md-start">
-                        @if (Route::has('register'))
-                            <a href="{{ route('register') }}" class="btn btn-primary btn-lg px-4 me-md-2">Comenzar Gratis</a>
+                        @if (Route::has('login'))
+                            <a href="{{ route('login') }}" class="btn btn-primary btn-lg px-4 me-md-2">Ingresar Demo</a>
                         @endif
                         <a href="#features" class="btn btn-outline-secondary btn-lg px-4">Saber más</a>
                     </div>

@@ -1,13 +1,11 @@
-@extends('layouts.app')
+@extends('layouts.guest')
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 flex items-center justify-center py-12 px-4">
     <div class="w-full max-w-md">
         {{-- Logo --}}
         <div class="text-center mb-8">
-            <img src="{{ asset('logo.png') }}" alt="Modo Ahorro" style="height: 32px;" class="mx-auto mb-4">
-            <h1 class="text-2xl font-bold text-gray-900">Bienvenido de vuelta</h1>
-            <p class="text-gray-500">Ingresá a tu cuenta para continuar</p>
+            <img src="{{ asset('logo.png') }}" alt="Modo Ahorro" style="height: 40px;" class="mx-auto">
         </div>
 
         {{-- Login Card --}}
@@ -84,13 +82,7 @@
             </div>
         </div>
 
-        {{-- Register Link --}}
-        <p class="text-center mt-6 text-gray-600">
-            ¿No tenés cuenta? 
-            <a href="{{ route('register') }}" class="text-emerald-600 hover:text-emerald-700 font-medium">
-                Registrate aquí
-            </a>
-        </p>
+
     </div>
 </div>
 @endsection
