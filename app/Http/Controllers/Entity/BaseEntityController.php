@@ -160,12 +160,9 @@ abstract class BaseEntityController extends Controller
         })->latest('end_date')->first();
 
         // Calculate replacement opportunities
-        $replacementsCount = 0;
-        if ($invoice) {
-            $service = new ReplacementService();
-            $opportunities = $service->generateOpportunities($invoice);
-            $replacementsCount = count($opportunities);
-        }
+        $service = new ReplacementService();
+        $opportunities = $service->generateOpportunities($entity, $invoice);
+        $replacementsCount = count($opportunities);
 
         $recommendations = $this->getEnabledRecommendations();
 

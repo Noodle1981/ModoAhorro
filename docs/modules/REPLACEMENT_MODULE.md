@@ -1,109 +1,117 @@
 # REPLACEMENT_MODULE.md
-# Especificación Técnica: Motor de ROI y Reemplazos (Largo Plazo)
-
-## 1. Objetivo
-Analizar los equipos de alto consumo ("Ballenas") del usuario, compararlos con estándares de eficiencia modernos y calcular el Retorno de Inversión (ROI).
-**Nota:** Se aceptan inversiones con retorno de hasta **10 años (120 meses)**, alineándose con la vida útil promedio de los grandes electrodomésticos.
+# Módulo de Reemplazos: Cómo Funciona
 
 ---
 
-## 2. Base de Datos: Benchmarks de Mercado
+## Dos vistas, dos propósitos
 
-**Tabla:** `efficiency_benchmarks`
-* `equipment_type_id`: FK.
-* `target_name`: String (Ej: "Aire Inverter A++").
-* `efficiency_gain_factor`: Float (Ej: 0.40 -> Ahorra un 40%).
-* `average_market_price`: Decimal.
-* `min_kwh_trigger`: Float.
-* `max_payback_months`: Int (**Default: 120**).
+### `/efficiency-benchmarks` — Panel de Administración
 
----
+**¿Para quién?** El administrador del sistema (vos).
 
-## 3. Datos Semilla (Seeder Ajustado a 10 Años)
+**¿Qué muestra?** La *base de datos* de alternativas eficientes: qué tipos de equipo tienen benchmark, cuánto ahorro se estima, precio de referencia y término de búsqueda en Mercado Libre.
 
-| Equipo Usuario | Reemplazo Sugerido | Ahorro (%) | Costo Est. | Gatillo (kWh) | Payback Máx |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Aire Acondicionado** | Tecnología Inverter A++ | **35%** | $850,000 | 100 kWh | **120 meses** |
-| **Heladera** | Heladera Inverter No-Frost | **45%** | $1,200,000 | 60 kWh | **120 meses** |
-| **Lavarropas** | Lavarropas Inverter | **30%** | $700,000 | 25 kWh | **120 meses** |
-| **Iluminación** | Pack LED Alta Eficiencia | **80%** | $25,000 | 10 kWh | **24 meses** |
-| **Termotanque Elec.** | Termotanque Solar | **75%** | $900,000 | 150 kWh | **120 meses** |
-| **Calefón a Gas** | Termotanque Solar | **60%** | $900,000 | N/A | **120 meses** |
-
-*Nota: Para Iluminación mantenemos un payback corto porque los focos duran menos.*
+**¿Para qué sirve?** Para configurar y mantener el sistema. Es el "catálogo de productos" que gestiona el administrador — los usuarios finales no lo ven.
 
 ---
 
-## 4. Lógica del Motor de ROI (`ReplacementService`)
+### `/entities/{type}/{id}/replacements` — Vista del Usuario
 
-```php
-public function generateOpportunities($reconciledUsages, $kwhPrice)
-{
-    $opportunities = [];
+**¿Para quién?** El usuario final (dueño de la entidad).
 
-    foreach ($reconciledUsages as $usage) {
-        $benchmark = EfficiencyBenchmark::where('equipment_type_id', $usage->equipment->type_id)->first();
-        
-        if (!$benchmark || $usage->kwh_reconciled < $benchmark->min_kwh_trigger) continue;
+**¿Qué muestra?** Recomendaciones *personalizadas* para **sus equipos específicos**: "Tu heladera consume X kWh/mes, si la reemplazás por esta otra ahorrás $Y en Z meses".
 
-        // Cálculo Financiero
-        $currentMonthlyCost = $usage->kwh_reconciled * $kwhPrice;
-        $monthlySavings = $currentMonthlyCost * $benchmark->efficiency_gain_factor;
-        
-        // Evitar división por cero
-        if ($monthlySavings <= 0) continue;
+**¿Para qué sirve?** Para tomar decisiones de compra concretas, con ROI calculado sobre sus datos reales.
 
-        $paybackMonths = $benchmark->average_market_price / $monthlySavings;
+---
 
-        // FILTRO: Aceptamos hasta el límite configurado (120 meses / 10 años)
-        if ($paybackMonths <= $benchmark->max_payback_months) {
-            
-            $opportunities[] = [
-                'device_name' => $usage->equipment->name,
-                'current_tech' => $usage->equipment->type->name,
-                'target_tech' => $benchmark->target_name,
-                'investment_cost' => $benchmark->average_market_price,
-                'monthly_savings' => round($monthlySavings, 2),
-                'payback_months' => round($paybackMonths, 1),
-                'roi_verdict' => $this->getVerdictLabel($paybackMonths), // Etiqueta inteligente
-                'roi_color' => $this->getVerdictColor($paybackMonths),
-                'years_to_profit' => round($paybackMonths / 12, 1)
-            ];
-        }
-    }
+### Relación entre ambas
 
-    return collect($opportunities)->sortBy('payback_months');
-}
+```
+[efficiency-benchmarks]          [equipos del usuario]
+  "¿Qué alternativas              "¿Cuánto consume
+   existen en el mercado?"         cada equipo tuyo?"
+         │                                │
+         └──────────────┬─────────────────┘
+                        ▼
+              [ReplacementService]
+                        │
+                        ▼
+           [/replacements - Vista usuario]
+         "¿Qué te conviene cambiar primero?"
+```
 
-/**
- * Define la atractividad de la inversión según el tiempo.
- */
-private function getVerdictLabel($months) {
-    if ($months < 12) return '💎 Retorno Inmediato (< 1 año)';
-    if ($months < 36) return '🔥 Gran Oportunidad (2-3 años)';
-    if ($months < 60) return '✅ Buena Inversión (4-5 años)';
-    if ($months <= 120) return '📈 Ahorro a Largo Plazo (Vida Útil)';
-    return '⚠️ Retorno Lento';
-}
+Sin benchmarks cargados → el servicio no puede generar recomendaciones → muestra "Todo Optimizado".
 
-private function getVerdictColor($months) {
-    if ($months < 36) return 'success'; // Verde
-    if ($months < 60) return 'info';    // Azul
-    return 'warning';                   // Amarillo/Naranja
-}
+---
 
+## Lógica del Motor (`ReplacementService`)
 
+### Fuente de datos de consumo
 
+El servicio prioriza datos reales, pero tiene fallback:
 
-Visualización en Dashboard (UI)
-Tarjeta: Aire Acondicionado (Ejemplo Largo Plazo)
+1. **Datos reales** → `EquipmentUsage.consumption_kwh` de la última factura analizada
+2. **Estimación** → `nominal_power_w × avg_daily_use_hours × 30 días / 1000` (kWh/mes)
 
-🔄 Renovación Estratégica Aire Grande (Cocina) es antiguo e ineficiente.
+Las tarjetas muestran el badge **"estimado"** cuando se usa el fallback.
 
-Tu Gasto Actual: $25,000 / mes
+### Ajustes al factor de ahorro
 
-Con Inverter A++: Ahorras $8,750 / mes
+El `efficiency_gain_factor` del benchmark se ajusta dinámicamente:
 
-Costo Equipo: $850,000
+| Condición | Ajuste |
+|---|---|
+| Equipo tiene >10 años | +15% de ahorro potencial |
+| Etiqueta energética C, D o E | +10% de ahorro potencial |
+| Equipo ya es Inverter y tiene <10 años | Se omite (ya es eficiente) |
 
-📈 Veredicto: Ahorro a Largo Plazo Recuperas tu dinero en 8 años. ¿Por qué conviene? Un aire de buena calidad dura 12-15 años. Una vez pagado, tendrás 7 años de ganancia neta ($735,000 acumulados).
+### Cálculo de ROI
+
+```
+Ahorro mensual (ARS) = consumo_kwh × factor_ahorro × tarifa_kwh
+Meses de recupero   = precio_referencia / ahorro_mensual
+```
+
+### Veredictos
+
+| Meses de recupero | Veredicto |
+|---|---|
+| ≤ 12 meses | 💎 Retorno Inmediato |
+| ≤ 36 meses | 🔥 Gran Oportunidad |
+| > 36 meses | 📈 Ahorro a Largo Plazo |
+
+---
+
+## Archivos clave
+
+| Archivo | Rol |
+|---|---|
+| `app/Services/Recommendations/ReplacementService.php` | Motor de cálculo |
+| `app/Http/Controllers/Recommendations/ReplacementController.php` | Controlador |
+| `app/Http/Controllers/Admin/EfficiencyBenchmarkController.php` | CRUD admin |
+| `app/Models/EfficiencyBenchmark.php` | Modelo de benchmarks |
+| `resources/views/replacements/index.blade.php` | Vista del usuario |
+| `resources/views/efficiency_benchmarks/index.blade.php` | Vista admin |
+| `database/seeders/EfficiencyBenchmarkSeeder.php` | Datos iniciales |
+
+---
+
+## Datos semilla disponibles
+
+Ejecutar para cargar benchmarks iniciales:
+
+```bash
+php artisan db:seed --class=EfficiencyBenchmarkSeeder
+```
+
+Cubre 19 tipos de equipo: aires acondicionados (todos → Inverter), iluminación (fluorescente/incandescente → LED), heladera, lavarropas, termotanque eléctrico (→ solar), TVs, PC Gamer, Monitor.
+
+---
+
+## Próximas mejoras sugeridas
+
+- [ ] Filtrar por categoría en la vista del usuario
+- [ ] Botón "Buscar en MeLi" que abra la búsqueda directamente
+- [ ] Integrar precios reales via API de Mercado Libre
+- [ ] Mostrar comparativa visual (equipo actual vs. recomendado)

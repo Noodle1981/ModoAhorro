@@ -19,17 +19,21 @@ class ReplacementController extends Controller
     public function index(Entity $entity)
     {
         $config = config("entity_types.{$entity->type}", []);
+        
+        $entity->load(['rooms.equipment.type.category', 'rooms.equipment.category']);
+
         $invoice = Invoice::whereHas('contract', function ($query) use ($entity) {
             $query->where('entity_id', $entity->id);
         })->latest('end_date')->first();
 
-        $service = new \App\Services\Recommendations\ReplacementService();
-        $opportunities = $invoice ? $service->generateOpportunities($invoice) : [];
+        $opportunities = $this->replacementService->generateOpportunities($entity, $invoice);
 
-        $analyzableEquipments = [];
-        if ($invoice) {
-            $analyzableEquipments = $invoice->equipmentUsages()->with('equipment')->get()->pluck('equipment')->unique('id');
-        }
+        // All equipment for the refinement table
+        $analyzableEquipments = $entity->rooms
+            ->flatMap->equipment
+            ->filter(fn($eq) => $eq->type !== null)
+            ->unique('id')
+            ->values();
 
         return view('replacements.index', compact('entity', 'opportunities', 'invoice', 'analyzableEquipments', 'config'));
     }

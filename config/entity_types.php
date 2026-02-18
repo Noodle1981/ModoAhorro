@@ -35,14 +35,14 @@ return [
         
         // Módulos de recomendaciones habilitados
         'recommendations' => [
-            'solar' => [
+            'solar_panels' => [
                 'enabled' => true,
                 'label' => 'Paneles Solares',
                 'icon' => 'bi-sun',
                 'color' => 'warning',
                 'description' => 'Calcula el potencial de energía solar para tu hogar y solicita un presupuesto.',
             ],
-            'water_heater' => [
+            'solar_water_heater' => [
                 'enabled' => true,
                 'label' => 'Calefones Solares',
                 'icon' => 'bi-droplet-half',
@@ -56,7 +56,7 @@ return [
                 'color' => 'primary',
                 'description' => 'Descubre qué equipos conviene renovar por eficiencia energética.',
             ],
-            'standby' => [
+            'standby_analysis' => [
                 'enabled' => true,
                 'label' => 'Consumo Fantasma',
                 'icon' => 'bi-power',
@@ -123,14 +123,14 @@ return [
         
         // Módulos de recomendaciones habilitados
         'recommendations' => [
-            'solar' => [
+            'solar_panels' => [
                 'enabled' => true,
                 'label' => 'Paneles Solares',
                 'icon' => 'bi-sun',
                 'color' => 'warning',
                 'description' => 'Calcula el potencial de energía solar para tu oficina.',
             ],
-            'water_heater' => [
+            'solar_water_heater' => [
                 'enabled' => false,
             ],
             'replacements' => [
@@ -140,7 +140,7 @@ return [
                 'color' => 'primary',
                 'description' => 'Identifica equipos de oficina que conviene renovar.',
             ],
-            'standby' => [
+            'standby_analysis' => [
                 'enabled' => true,
                 'label' => 'Consumo Fantasma',
                 'icon' => 'bi-power',
@@ -203,14 +203,14 @@ return [
         
         // Módulos de recomendaciones habilitados
         'recommendations' => [
-            'solar' => [
+            'solar_panels' => [
                 'enabled' => true,
                 'label' => 'Paneles Solares',
                 'icon' => 'bi-sun',
                 'color' => 'warning',
                 'description' => 'Reduce costos operativos con energía solar.',
             ],
-            'water_heater' => [
+            'solar_water_heater' => [
                 'enabled' => false,
             ],
             'replacements' => [
@@ -220,7 +220,7 @@ return [
                 'color' => 'primary',
                 'description' => 'Equipos comerciales que conviene renovar.',
             ],
-            'standby' => [
+            'standby_analysis' => [
                 'enabled' => true,
                 'label' => 'Consumo Fantasma',
                 'icon' => 'bi-power',

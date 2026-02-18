@@ -17,10 +17,13 @@ class SolarWaterHeaterService
     /**
      * Calculate solar water heater data for an entity
      */
-    public function calculateWaterHeaterData(Entity $entity): array
+    public function calculateWaterHeaterData(Entity $entity, ?int $peopleCountOverride = null): array
     {
         // Load invoices
         $entity->load(['locality', 'contracts.invoices']);
+
+        // Use override or entity value
+        $peopleCount = $peopleCountOverride ?? $entity->people_count;
 
         // Get climate profile
         $climateProfile = null;
@@ -38,7 +41,7 @@ class SolarWaterHeaterService
 
         // Calculate water heater data
         $waterHeaterData = $this->waterService->calculateWaterHeater(
-            $entity->people_count,
+            $peopleCount,
             $climateProfile,
             $averageTariff
         );

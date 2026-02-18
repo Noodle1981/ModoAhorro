@@ -12,7 +12,7 @@
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">Consumo Fantasma</h1>
-                    <p class="text-gray-500">{{ $entity->name }} - Equipos en Stand By</p>
+                    <p class="text-gray-500">{{ $entity->name }} — Equipos en Stand By</p>
                 </div>
             </div>
             <x-button variant="secondary" href="{{ route($config['route_prefix'] . '.show', $entity->id) }}">
@@ -22,7 +22,7 @@
 
         {{-- Stats Cards --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {{-- Current Consumption --}}
+            {{-- Consumo actual --}}
             <div class="bg-gradient-to-br from-gray-700 to-gray-900 rounded-2xl p-6 text-white shadow-lg">
                 <div class="flex items-center gap-3 mb-4">
                     <i class="bi bi-lightning-fill text-2xl text-amber-400"></i>
@@ -32,7 +32,7 @@
                 <p class="text-gray-300 text-sm">Consumo mensual por Stand By</p>
             </div>
 
-            {{-- Estimated Cost --}}
+            {{-- Costo estimado --}}
             <div class="bg-white rounded-2xl p-6 border-2 border-gray-200 shadow-sm">
                 <div class="flex items-center gap-3 mb-4">
                     <i class="bi bi-piggy-bank text-2xl text-gray-600"></i>
@@ -42,7 +42,7 @@
                 <p class="text-gray-500 text-sm">Costo mensual adicional</p>
             </div>
 
-            {{-- Savings --}}
+            {{-- Ahorro --}}
             <div class="bg-white rounded-2xl p-6 border-2 border-emerald-200 shadow-sm">
                 <div class="flex items-center gap-3 mb-4">
                     <i class="bi bi-check-circle text-2xl text-emerald-600"></i>
@@ -60,11 +60,22 @@
 
         {{-- Equipment Table --}}
         <x-card :padding="false">
-            <div class="px-6 py-4 border-b border-gray-100">
-                <h3 class="font-semibold text-gray-900 flex items-center gap-2">
-                    <i class="bi bi-plug text-gray-500"></i>
-                    Equipos con Consumo Fantasma
-                </h3>
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                    <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+                        <i class="bi bi-plug text-gray-500"></i>
+                        Mis Equipos
+                    </h3>
+                    <p class="text-sm text-gray-400 mt-0.5">Marcá los equipos que dejás enchufados cuando no los usás</p>
+                </div>
+                <div class="flex items-center gap-4 text-xs text-gray-500">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-amber-400 inline-block"></span> Enchufado (consume)
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span> Desenchufado (ahorra)
+                    </span>
+                </div>
             </div>
 
             @if($equipmentList->isEmpty())
@@ -72,76 +83,61 @@
                     <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <i class="bi bi-check-circle text-4xl text-emerald-600"></i>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2">¡Excelente!</h3>
-                    <p class="text-gray-500">No se detectaron equipos con consumo fantasma significativo.</p>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">¡Sin equipos para analizar!</h3>
+                    <p class="text-gray-500">Agregá equipos a tus ambientes para ver el análisis de consumo fantasma.</p>
                 </div>
             @else
-                <x-table hover>
-                    <x-slot:head>
-                        <tr>
-                            <th class="px-6 py-4">Equipo</th>
-                            <th class="px-6 py-4">Ubicación</th>
-                            <th class="px-6 py-4">Potencia Stand By</th>
-                            <th class="px-6 py-4">Horas en Espera</th>
-                            <th class="px-6 py-4">Consumo/Mes</th>
-                            <th class="px-6 py-4">Estado</th>
-                            <th class="px-6 py-4">Acción</th>
-                        </tr>
-                    </x-slot:head>
-                    
-                    @foreach($equipmentList as $eq)
+                {{-- Group by category --}}
+                @foreach($equipmentList->groupBy(fn($eq) => $eq->category->name ?? 'Sin categoría') as $categoryName => $items)
+                    <div class="px-6 py-2 bg-gray-50 border-b border-gray-100">
+                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ $categoryName }}</span>
+                    </div>
+                    @foreach($items as $eq)
                         @php
-                            $standbyPowerKw = ($eq->type->default_standby_power_w ?? 0) / 1000;
-                            $potentialStandbyHours = max(0, 24 - ($eq->avg_daily_use_hours ?? 0));
-                            $monthlyKwh = $standbyPowerKw * $potentialStandbyHours * 30;
-                            $monthlyCost = $monthlyKwh * 150;
+                            $standbyPowerW  = $eq->type->default_standby_power_w ?? 5;
+                            $standbyPowerKw = $standbyPowerW / 1000;
+                            $activeHours    = $eq->avg_daily_use_hours ?? 2;
+                            $standbyHours   = max(0, 24 - $activeHours);
+                            $monthlyKwh     = $standbyPowerKw * $standbyHours * 30;
+                            $monthlyCost    = $monthlyKwh * 150;
                         @endphp
-                        <tr class="{{ $eq->is_standby ? '' : 'bg-gray-50 opacity-60' }}">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 {{ $eq->is_standby ? 'bg-amber-100' : 'bg-emerald-100' }} rounded-lg flex items-center justify-center">
-                                        <i class="bi bi-plug {{ $eq->is_standby ? 'text-amber-600' : 'text-emerald-600' }}"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium text-gray-900">{{ $eq->name }}</p>
-                                        <p class="text-xs text-gray-500">{{ $eq->type->name ?? 'Desconocido' }}</p>
-                                    </div>
+                        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-50 hover:bg-gray-50 transition-colors {{ $eq->is_standby ? '' : 'opacity-60' }}">
+                            {{-- Equipo info --}}
+                            <div class="flex items-center gap-3 flex-1">
+                                <div class="w-10 h-10 {{ $eq->is_standby ? 'bg-amber-100' : 'bg-emerald-100' }} rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="bi bi-plug {{ $eq->is_standby ? 'text-amber-600' : 'text-emerald-600' }}"></i>
                                 </div>
-                            </td>
-                            <td class="px-6 py-4 text-gray-600">{{ $eq->room->name ?? '-' }}</td>
-                            <td class="px-6 py-4 font-mono">{{ $eq->type->default_standby_power_w ?? 0 }} W</td>
-                            <td class="px-6 py-4">{{ number_format($potentialStandbyHours, 1) }} hs/día</td>
-                            <td class="px-6 py-4">
+                                <div>
+                                    <p class="font-medium text-gray-900 text-sm">{{ $eq->name }}</p>
+                                    <p class="text-xs text-gray-400">{{ $eq->room->name ?? '-' }} · {{ $standbyPowerW }}W standby · {{ number_format($standbyHours, 0) }}h/día en espera</p>
+                                </div>
+                            </div>
+
+                            {{-- Consumo --}}
+                            <div class="text-right mr-8 hidden sm:block">
                                 @if($eq->is_standby)
-                                    <span class="font-bold text-gray-900">{{ number_format($monthlyKwh, 1) }} kWh</span>
-                                    <p class="text-xs text-red-500">${{ number_format($monthlyCost, 0, ',', '.') }}</p>
+                                    <p class="text-sm font-bold text-gray-800">{{ number_format($monthlyKwh, 1) }} kWh/mes</p>
+                                    <p class="text-xs text-red-500">${{ number_format($monthlyCost, 0, ',', '.') }}/mes</p>
                                 @else
-                                    <span class="line-through text-gray-400">{{ number_format($monthlyKwh, 1) }} kWh</span>
-                                    <p class="text-xs text-emerald-500">Ahorrado</p>
+                                    <p class="text-sm text-emerald-600 font-medium">Ahorrando</p>
+                                    <p class="text-xs text-emerald-400">${{ number_format($monthlyCost, 0, ',', '.') }}/mes</p>
                                 @endif
-                            </td>
-                            <td class="px-6 py-4">
-                                @if($eq->is_standby)
-                                    <x-badge variant="warning"><i class="bi bi-plug-fill mr-1"></i> Enchufado</x-badge>
-                                @else
-                                    <x-badge variant="success"><i class="bi bi-plug mr-1"></i> Desenchufado</x-badge>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4">
-                                <form action="{{ route($config['route_prefix'] . '.standby.toggle', ['entity' => $entity->id, 'equipment' => $eq->id]) }}" method="POST">
-                                    @csrf
-                                    @method('PATCH')
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" class="sr-only peer" 
-                                            {{ $eq->is_standby ? 'checked' : '' }} 
-                                            onchange="this.form.submit()">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-                                    </label>
-                                </form>
-                            </td>
-                        </tr>
+                            </div>
+
+                            {{-- Toggle --}}
+                            <form action="{{ route($config['route_prefix'] . '.standby.toggle', ['entity' => $entity->id, 'equipment' => $eq->id]) }}" method="POST">
+                                @csrf
+                                @method('PATCH')
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer"
+                                        {{ $eq->is_standby ? 'checked' : '' }}
+                                        onchange="this.form.submit()">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-amber-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                                </label>
+                            </form>
+                        </div>
                     @endforeach
-                </x-table>
+                @endforeach
             @endif
         </x-card>
 
@@ -150,7 +146,7 @@
             <div class="flex items-start gap-3">
                 <i class="bi bi-lightbulb text-xl"></i>
                 <div>
-                    <strong>Tip:</strong> Usa zapatillas con interruptor para desconectar fácilmente varios equipos a la vez cuando no los uses.
+                    <strong>¿Cómo funciona?</strong> Activá el toggle en los equipos que dejás enchufados cuando no los usás (TV, microondas, cargadores, etc.). El sistema calcula cuánto consumen en modo espera y cuánto podrías ahorrar desenchufándolos o usando zapatillas con interruptor.
                 </div>
             </div>
         </x-alert>

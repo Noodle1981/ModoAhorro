@@ -10,26 +10,37 @@ use Carbon\Carbon;
 class VacationService
 {
     /**
+     * Obtiene la tarifa real de la última factura de la entidad.
+     * Si no hay factura, usa $150 como fallback.
+     */
+    private function getRealTariff(Entity $entity): float
+    {
+        $invoice = Invoice::whereHas('contract', function ($q) use ($entity) {
+            $q->where('entity_id', $entity->id);
+        })->latest('end_date')->first();
+
+        if ($invoice
+            && ($invoice->total_energy_consumed_kwh ?? 0) > 0
+            && ($invoice->total_amount ?? 0) > 0
+        ) {
+            return round($invoice->total_amount / $invoice->total_energy_consumed_kwh, 2);
+        }
+
+        return 150.0; // fallback
+    }
+
+    /**
      * Marks invoices as anomalous if the vacation duration is significant.
-     *
-     * @param Entity $entity
-     * @param int $days
-     * @return int Number of invoices marked
      */
     public function markAnomalousInvoices(Entity $entity, int $days): int
     {
-        // Threshold: If trip is less than 7 days, it doesn't significantly impact the monthly average.
         if ($days < 7) {
             return 0;
         }
 
-        // We assume the vacation starts "today" for the purpose of this simulation/action.
         $startDate = Carbon::now();
-        $endDate = Carbon::now()->addDays($days);
+        $endDate   = Carbon::now()->addDays($days);
 
-        // Find invoices that overlap with the vacation period
-        // Access invoices via the entity's contracts.
-        
         $invoices = Invoice::whereHas('contract', function ($query) use ($entity) {
                 $query->where('entity_id', $entity->id);
             })
@@ -47,7 +58,7 @@ class VacationService
         foreach ($invoices as $invoice) {
             $invoice->update([
                 'is_representative' => false,
-                'anomaly_reason' => 'VACATION_MODE'
+                'anomaly_reason'    => 'VACATION_MODE'
             ]);
             $count++;
         }
@@ -56,56 +67,48 @@ class VacationService
     }
 
     /**
-     * Generates a personalized vacation checklist based on trip duration and inventory.
-     *
-     * @param Entity $entity
-     * @param int $days
-     * @return array
+     * Generates a personalized vacation checklist.
      */
     public function generateChecklist(Entity $entity, int $days): array
     {
-        $checklist = [];
+        $tariff   = $this->getRealTariff($entity);
+        $checklist    = [];
         $totalSavings = 0;
 
-        // 1. Security & Connectivity Rule (Router)
-        $connectivity = $this->checkConnectivityRule($entity, $days);
-        $checklist[] = $connectivity;
+        $connectivity = $this->checkConnectivityRule($entity, $days, $tariff);
+        $checklist[]  = $connectivity;
         $totalSavings += $connectivity['savings'] ?? 0;
 
-        // 2. Refrigeration Rule (Fridge)
-        $refrigeration = $this->checkRefrigerationRule($entity, $days);
+        $refrigeration = $this->checkRefrigerationRule($entity, $days, $tariff);
         if ($refrigeration) {
-            $checklist[] = $refrigeration;
+            $checklist[]  = $refrigeration;
             $totalSavings += $refrigeration['savings'] ?? 0;
         }
 
-        // 3. Water Heater Rule
-        $waterHeater = $this->checkWaterHeaterRule($entity, $days);
+        $waterHeater = $this->checkWaterHeaterRule($entity, $days, $tariff);
         if ($waterHeater) {
-            $checklist[] = $waterHeater;
+            $checklist[]  = $waterHeater;
             $totalSavings += $waterHeater['savings'] ?? 0;
         }
 
-        // 4. Vampire Power Rule (Standby)
-        $vampires = $this->checkVampireRule($entity, $days);
+        $vampires = $this->checkVampireRule($entity, $days, $tariff);
         if ($vampires) {
-            $checklist[] = $vampires;
+            $checklist[]  = $vampires;
             $totalSavings += $vampires['savings'] ?? 0;
         }
-        
-        // 5. Lighting Rule (Simulation)
-        $lighting = $this->checkLightingRule($entity);
+
+        $lighting    = $this->checkLightingRule($entity);
         $checklist[] = $lighting;
 
         return [
-            'checklist' => $checklist,
-            'total_savings' => $totalSavings
+            'checklist'    => $checklist,
+            'total_savings' => round($totalSavings, 0),
+            'tariff_used'  => $tariff,
         ];
     }
 
-    private function checkConnectivityRule(Entity $entity, int $days): array
+    private function checkConnectivityRule(Entity $entity, int $days, float $tariff): array
     {
-        // Check for security devices
         $hasSecurity = $entity->rooms->flatMap->equipment->contains(function ($eq) {
             $name = strtolower($eq->name);
             $type = strtolower($eq->type->name ?? '');
@@ -117,39 +120,36 @@ class VacationService
 
         if ($hasSecurity) {
             return [
-                'category' => 'security',
-                'title' => 'Router Wi-Fi',
-                'action' => 'NO TOCAR',
+                'category'    => 'security',
+                'title'       => 'Router Wi-Fi',
+                'action'      => 'NO TOCAR',
                 'description' => 'Tus cámaras y sensores dependen del Wi-Fi. No lo desconectes.',
-                'icon' => 'bi-router-fill',
-                'color' => 'danger', // Critical to NOT touch
-                'savings' => 0
+                'icon'        => 'bi-router-fill',
+                'color'       => 'danger',
+                'savings'     => 0,
             ];
         }
 
-        // Calculate potential savings if turned off
-        // Find router/modem power
-        $router = $entity->rooms->flatMap->equipment->first(function ($eq) {
+        $router   = $entity->rooms->flatMap->equipment->first(function ($eq) {
             $name = strtolower($eq->name);
             return str_contains($name, 'modem') || str_contains($name, 'router');
         });
-        
-        $powerW = $router ? ($router->nominal_power_w ?? 10) : 10; // Default 10W
-        $savingsKwh = ($powerW * 24 * $days) / 1000;
-        $savingsMoney = $savingsKwh * 150; // Approx tariff
+        $powerW      = $router ? ($router->nominal_power_w ?? 10) : 10;
+        $savingsKwh  = ($powerW * 24 * $days) / 1000;
+        $savingsMoney = round($savingsKwh * $tariff, 0);
 
         return [
-            'category' => 'savings',
-            'title' => 'Router Wi-Fi',
-            'action' => 'DESCONECTAR',
-            'description' => 'No tienes equipos de seguridad. Apágalo para ahorrar.',
-            'icon' => 'bi-router',
-            'color' => 'success',
-            'savings' => $savingsMoney
+            'category'    => 'savings',
+            'title'       => 'Router Wi-Fi',
+            'action'      => 'DESCONECTAR',
+            'description' => "Sin equipos de seguridad, apagarlo ahorra " . number_format($savingsKwh, 1) . " kWh en {$days} días.",
+            'icon'        => 'bi-router',
+            'color'       => 'success',
+            'savings'     => $savingsMoney,
         ];
     }
 
-    private function checkRefrigerationRule(Entity $entity, int $days): ?array
+    private function checkRefrigerationRule(Entity $entity, int $days, float $tariff): ?array
     {
         $fridge = $entity->rooms->flatMap->equipment->first(function ($eq) {
             $name = strtolower($eq->name);
@@ -159,35 +159,42 @@ class VacationService
         if (!$fridge) return null;
 
         if ($days < 20) {
+            // En modo eco (temperatura mínima) se ahorra ~30% del consumo normal
+            $powerW       = $fridge->nominal_power_w ?? 150;
+            $loadFactor   = 0.35; // compresor corre ~35% del tiempo
+            $ecoSaving    = 0.30; // modo eco reduce ~30%
+            $savingsKwh   = ($powerW * 24 * $loadFactor * $ecoSaving * $days) / 1000;
+            $savingsMoney = round($savingsKwh * $tariff, 0);
+
             return [
-                'category' => 'recommendation',
-                'title' => 'Heladera / Freezer',
-                'action' => 'MODO ECO (Mínimo)',
-                'description' => 'No la desconectes. Sube la temperatura al mínimo (1) y vacía perecederos.',
-                'icon' => 'bi-snow',
-                'color' => 'warning',
-                'savings' => 0
+                'category'    => 'recommendation',
+                'title'       => 'Heladera / Freezer',
+                'action'      => 'MODO ECO (Temperatura mínima)',
+                'description' => "No la desconectes para viajes cortos. Subí la temperatura al mínimo y vaciá los perecederos. Ahorrás ~" . number_format($savingsKwh, 1) . " kWh en {$days} días.",
+                'icon'        => 'bi-snow',
+                'color'       => 'warning',
+                'savings'     => $savingsMoney,
             ];
         }
 
-        // Long trip > 20 days
-        $powerW = $fridge->nominal_power_w ?? 150;
-        $loadFactor = 0.35; // Compressor runs ~35% of time
-        $savingsKwh = ($powerW * 24 * $loadFactor * $days) / 1000;
-        $savingsMoney = $savingsKwh * 150;
+        // Viaje largo > 20 días: conviene desconectarla
+        $powerW      = $fridge->nominal_power_w ?? 150;
+        $loadFactor  = 0.35; // El compresor corre ~35% del tiempo
+        $savingsKwh  = ($powerW * 24 * $loadFactor * $days) / 1000;
+        $savingsMoney = round($savingsKwh * $tariff, 0);
 
         return [
-            'category' => 'critical',
-            'title' => 'Heladera / Freezer',
-            'action' => 'DESCONECTAR Y ABRIR',
-            'description' => 'Por más de 20 días, conviene vaciarla y desconectarla. ¡Deja la puerta abierta!',
-            'icon' => 'bi-snow2',
-            'color' => 'danger',
-            'savings' => $savingsMoney
+            'category'    => 'critical',
+            'title'       => 'Heladera / Freezer',
+            'action'      => 'DESCONECTAR Y DEJAR PUERTA ABIERTA',
+            'description' => "Más de 20 días: vaciala, desconectala y dejá la puerta entreabierta. Ahorrás " . number_format($savingsKwh, 1) . " kWh.",
+            'icon'        => 'bi-snow2',
+            'color'       => 'danger',
+            'savings'     => $savingsMoney,
         ];
     }
 
-    private function checkWaterHeaterRule(Entity $entity, int $days): ?array
+    private function checkWaterHeaterRule(Entity $entity, int $days, float $tariff): ?array
     {
         $heater = $entity->rooms->flatMap->equipment->first(function ($eq) {
             $name = strtolower($eq->name);
@@ -196,67 +203,73 @@ class VacationService
 
         if (!$heater) return null;
 
-        // Assume electric for savings calc if not specified (safe bet for high savings)
-        // If we knew it was gas, we'd say "Pilot OFF"
-        
-        // Simple calc: 1500W * 4h/day standby loss equivalent? 
-        // Or just assume a daily cost. Let's use a conservative estimate.
-        // A standard electric water heater loses ~1-2 kWh/day just maintaining temp.
-        $dailyLossKwh = 1.5; 
-        $savingsKwh = $dailyLossKwh * $days;
-        $savingsMoney = $savingsKwh * 150;
+        // Un termotanque eléctrico pierde ~1 kWh/día solo manteniendo la temperatura
+        $dailyLossKwh = 1.0;
+        $savingsKwh   = $dailyLossKwh * $days;
+        $savingsMoney = round($savingsKwh * $tariff, 0);
 
         return [
-            'category' => 'critical',
-            'title' => 'Termotanque',
-            'action' => 'DESCONECTAR',
-            'description' => 'Es un gasto innecesario mantener agua caliente que nadie usará.',
-            'icon' => 'bi-droplet-half',
-            'color' => 'danger',
-            'savings' => $savingsMoney
+            'category'    => 'critical',
+            'title'       => 'Termotanque Eléctrico',
+            'action'      => 'DESCONECTAR',
+            'description' => "Mantener agua caliente sin nadie en casa gasta ~{$dailyLossKwh} kWh/día. En {$days} días son " . number_format($savingsKwh, 1) . " kWh innecesarios.",
+            'icon'        => 'bi-droplet-half',
+            'color'       => 'danger',
+            'savings'     => $savingsMoney,
         ];
     }
 
-    private function checkVampireRule(Entity $entity, int $days): ?array
+    private function checkVampireRule(Entity $entity, int $days, float $tariff): ?array
     {
         $vampires = $entity->rooms->flatMap->equipment->filter(function ($eq) {
-            return ($eq->type->default_standby_power_w ?? 0) > 0 &&
-                   !str_contains(strtolower($eq->name), 'modem') && 
+            $standbyW = $eq->type->default_standby_power_w ?? 0;
+            return $standbyW > 0 &&
+                   !str_contains(strtolower($eq->name), 'modem') &&
                    !str_contains(strtolower($eq->name), 'router');
         });
 
         if ($vampires->isEmpty()) return null;
 
         $totalDailyStandbyKwh = 0;
+        $equipmentNames = [];
         foreach ($vampires as $v) {
-            $watts = $v->type->default_standby_power_w;
-            $totalDailyStandbyKwh += ($watts * 24) / 1000;
+            $standbyW = $v->type->default_standby_power_w;
+            // Standby ocurre las horas que el equipo NO está en uso
+            $activeHours  = $v->avg_daily_use_hours ?? 2;
+            $standbyHours = max(0, 24 - $activeHours);
+            $totalDailyStandbyKwh += ($standbyW * $standbyHours) / 1000;
+            $equipmentNames[] = $v->name;
         }
 
-        $savingsKwh = $totalDailyStandbyKwh * $days;
-        $savingsMoney = $savingsKwh * 150;
+        $savingsKwh   = round($totalDailyStandbyKwh * $days, 1);
+        $savingsMoney = round($savingsKwh * $tariff, 0);
+
+        $nameList = implode(', ', array_slice($equipmentNames, 0, 3));
+        if (count($equipmentNames) > 3) {
+            $nameList .= ' y ' . (count($equipmentNames) - 3) . ' más';
+        }
 
         return [
-            'category' => 'critical',
-            'title' => 'Vampiros (TV, PC, Consolas)',
-            'action' => 'DESCONECTAR TODO',
-            'description' => 'Desenchufa de la pared para ahorrar y proteger de tormentas.',
-            'icon' => 'bi-plug-fill',
-            'color' => 'danger',
-            'savings' => $savingsMoney
+            'category'    => 'critical',
+            'title'       => 'Consumo Fantasma (' . count($equipmentNames) . ' equipos)',
+            'action'      => 'DESCONECTAR DE LA PARED',
+            'description' => "{$nameList}. Desenchufados de la pared ahorrás {$savingsKwh} kWh y los protegés de tormentas eléctricas.",
+            'icon'        => 'bi-plug-fill',
+            'color'       => 'danger',
+            'savings'     => $savingsMoney,
         ];
     }
-    
+
     private function checkLightingRule(Entity $entity): array
     {
         return [
-            'category' => 'security',
-            'title' => 'Iluminación',
-            'action' => 'SIMULACIÓN',
-            'description' => 'No dejes luces fijas 24h. Usa fotocélulas o timers para simular presencia.',
-            'icon' => 'bi-lightbulb',
-            'color' => 'info',
-            'savings' => 0
+            'category'    => 'security',
+            'title'       => 'Iluminación',
+            'action'      => 'USAR TIMER O FOTOCÉLULA',
+            'description' => 'No dejes luces fijas 24h — delata que no estás. Usá un timer para que se prendan de 20 a 23hs.',
+            'icon'        => 'bi-lightbulb',
+            'color'       => 'info',
+            'savings'     => 0,
         ];
     }
 }

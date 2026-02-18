@@ -74,7 +74,8 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
 
         // Recomendaciones
         Route::get('/{entity}/budget', [\App\Http\Controllers\Recommendations\BudgetController::class, 'index'])->name('budget');
-        Route::get('/{entity}/solar-water-heater', [\App\Http\Controllers\Recommendations\SolarController::class, 'waterHeater'])->name('solar_water_heater');
+        Route::match(['get', 'post'], '/{entity}/solar-panels', [\App\Http\Controllers\Recommendations\SolarController::class, 'panels'])->name('solar_panels');
+        Route::match(['get', 'post'], '/{entity}/solar-water-heater', [\App\Http\Controllers\Recommendations\SolarController::class, 'waterHeater'])->name('solar_water_heater');
         Route::get('/{entity}/standby-analysis', [\App\Http\Controllers\Recommendations\StandbyController::class, 'analysis'])->name('standby_analysis');
         Route::patch('/{entity}/standby-analysis/{equipment}/toggle', [\App\Http\Controllers\Recommendations\StandbyController::class, 'toggle'])->name('standby.toggle');
         Route::get('/{entity}/grid-optimization', [\App\Http\Controllers\Recommendations\GridController::class, 'optimization'])->name('grid_optimization');
@@ -146,7 +147,8 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
 
         // Recomendaciones
         Route::get('/{entity}/budget', [\App\Http\Controllers\Recommendations\BudgetController::class, 'index'])->name('budget');
-        Route::get('/{entity}/solar-water-heater', [\App\Http\Controllers\Recommendations\SolarController::class, 'waterHeater'])->name('solar_water_heater');
+        Route::match(['get', 'post'], '/{entity}/solar-panels', [\App\Http\Controllers\Recommendations\SolarController::class, 'panels'])->name('solar_panels');
+        Route::match(['get', 'post'], '/{entity}/solar-water-heater', [\App\Http\Controllers\Recommendations\SolarController::class, 'waterHeater'])->name('solar_water_heater');
         Route::get('/{entity}/standby-analysis', [\App\Http\Controllers\Recommendations\StandbyController::class, 'analysis'])->name('standby_analysis');
         Route::patch('/{entity}/standby-analysis/{equipment}/toggle', [\App\Http\Controllers\Recommendations\StandbyController::class, 'toggle'])->name('standby.toggle');
         Route::get('/{entity}/grid-optimization', [\App\Http\Controllers\Recommendations\GridController::class, 'optimization'])->name('grid_optimization');
@@ -213,7 +215,8 @@ Route::middleware(['auth', \App\Http\Middleware\CheckPlanEntities::class])->grou
 
         // Recomendaciones
         Route::get('/{entity}/budget', [\App\Http\Controllers\Recommendations\BudgetController::class, 'index'])->name('budget');
-        Route::get('/{entity}/solar-water-heater', [\App\Http\Controllers\Recommendations\SolarController::class, 'waterHeater'])->name('solar_water_heater');
+        Route::match(['get', 'post'], '/{entity}/solar-panels', [\App\Http\Controllers\Recommendations\SolarController::class, 'panels'])->name('solar_panels');
+        Route::match(['get', 'post'], '/{entity}/solar-water-heater', [\App\Http\Controllers\Recommendations\SolarController::class, 'waterHeater'])->name('solar_water_heater');
         Route::get('/{entity}/standby-analysis', [\App\Http\Controllers\Recommendations\StandbyController::class, 'analysis'])->name('standby_analysis');
         Route::patch('/{entity}/standby-analysis/{equipment}/toggle', [\App\Http\Controllers\Recommendations\StandbyController::class, 'toggle'])->name('standby.toggle');
         Route::get('/{entity}/grid-optimization', [\App\Http\Controllers\Recommendations\GridController::class, 'optimization'])->name('grid_optimization');

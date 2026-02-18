@@ -12,8 +12,10 @@ class StandbyController extends Controller
     {
         $entity = Entity::findOrFail($id);
         $config = config("entity_types.{$entity->type}", []);
-        $result = $service->analyze($entity);
-        return view('entities.standby_analysis', compact('entity', 'result', 'config'));
+        $result = $service->calculateStandbyAnalysis($entity);
+        // Unpack result array so the view can use variables directly
+        extract($result); // equipmentList, totalStandbyKwh, totalStandbyCost, totalPotentialSavings, totalRealizedSavings
+        return view('entities.standby_analysis', compact('entity', 'config', 'equipmentList', 'totalStandbyKwh', 'totalStandbyCost', 'totalPotentialSavings', 'totalRealizedSavings'));
     }
 
     public function toggle(Request $request, string $entityId, string $equipmentId, StandbyAnalysisService $service)

@@ -48,7 +48,10 @@
                                     </span>
                                     <h3 class="text-lg font-bold text-gray-900 mt-1">{{ $op['equipment_name'] }}</h3>
                                     <p class="text-sm text-gray-500">
-                                        Consumo actual: <strong>{{ $op['current_consumption_kwh'] }} kWh</strong>
+                                        Consumo: <strong>{{ $op['current_consumption_kwh'] }} kWh/mes</strong>
+                                        @if($op['is_estimated'] ?? false)
+                                            <span class="ml-1 text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">estimado</span>
+                                        @endif
                                     </p>
                                 </div>
                                 <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center">
@@ -99,8 +102,12 @@
                 </div>
                 <h3 class="text-xl font-semibold text-gray-900 mb-2">¡Todo Optimizado!</h3>
                 <p class="text-gray-500 max-w-md mx-auto">
-                    No detectamos oportunidades obvias de reemplazo con la información actual.
+                    No encontramos equipos con alternativas más eficientes disponibles.
+                    Puede que los equipos ya sean eficientes, o que les falte potencia/horas de uso cargadas.
                 </p>
+                <a href="{{ route('efficiency-benchmarks.index') }}" class="inline-flex items-center gap-2 mt-4 text-sm text-blue-600 hover:underline">
+                    <i class="bi bi-gear"></i> Ver benchmarks disponibles
+                </a>
             </x-card>
         @endif
 
