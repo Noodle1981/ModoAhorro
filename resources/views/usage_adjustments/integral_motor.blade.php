@@ -75,8 +75,15 @@
                                             @php 
                                                 $usage = $usages[$equipment->id] ?? null; 
                                                 $prefix = "usages[{$equipment->id}]";
+                                                $currentFrequency = $usage ? $usage->usage_frequency : 'diario';
+                                                if ($currentFrequency == 'diariamente') $currentFrequency = 'diario';
+                                                $currentHours = $usage ? $usage->avg_daily_use_hours : '';
                                             @endphp
-                                            <div class="p-6 hover:bg-gray-50/50 transition-colors">
+                                            <div class="p-6 hover:bg-gray-50/50 transition-colors" 
+                                                x-data="{ 
+                                                    frequency: '{{ $currentFrequency }}', 
+                                                    hours: '{{ $currentHours }}' 
+                                                }">
                                                 <div class="flex flex-col md:flex-row gap-6">
                                                     {{-- Info Equipo --}}
                                                     <div class="md:w-1/3">
@@ -107,21 +114,22 @@
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Horas/Día</label>
                                                             <input type="number" step="0.1" min="0" max="24" 
                                                                 name="{{ $prefix }}[avg_daily_use_hours]" 
-                                                                value="{{ $usage ? $usage->avg_daily_use_hours : '' }}"
+                                                                x-model="hours"
                                                                 class="w-full rounded-lg border-gray-200 text-sm focus:ring-indigo-500 focus:border-indigo-500"
                                                                 placeholder="Ej: 4.5">
                                                         </div>
                                                         <div>
                                                             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Periodicidad</label>
                                                             <select name="{{ $prefix }}[usage_frequency]" 
+                                                                x-model="frequency"
+                                                                @change="if(frequency === 'nunca') hours = 0"
                                                                 class="w-full rounded-lg border-gray-200 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                                                @php $f = $usage ? $usage->usage_frequency : 'diario'; @endphp
-                                                                <option value="diario" {{ ($f == 'diario' || $f == 'diariamente') ? 'selected' : '' }}>Diariamente</option>
-                                                                <option value="casi_frecuentemente" {{ $f == 'casi_frecuentemente' ? 'selected' : '' }}>Casi frecuentemente</option>
-                                                                <option value="frecuentemente" {{ $f == 'frecuentemente' ? 'selected' : '' }}>Frecuentemente</option>
-                                                                <option value="ocasionalmente" {{ $f == 'ocasionalmente' ? 'selected' : '' }}>Ocasionalmente</option>
-                                                                <option value="raramente" {{ $f == 'raramente' ? 'selected' : '' }}>Raramente</option>
-                                                                <option value="nunca" {{ $f == 'nunca' ? 'selected' : '' }}>Nunca</option>
+                                                                <option value="diario">Diariamente</option>
+                                                                <option value="casi_frecuentemente">Casi frecuentemente</option>
+                                                                <option value="frecuentemente">Frecuentemente</option>
+                                                                <option value="ocasionalmente">Ocasionalmente</option>
+                                                                <option value="raramente">Raramente</option>
+                                                                <option value="nunca">Nunca</option>
                                                             </select>
                                                         </div>
                                                     </div>
