@@ -58,6 +58,11 @@ class ConsumptionAnalysisService
         // Si no está definido, usamos 1.0 (peor escenario)
         $equipmentType = $usage->equipment->type;
         $realUsageFactor = $equipmentType->load_factor ?? 1.0;
+
+        // ❄️ CÁLCULO ESPECÍFICO PARA HELADERAS (Modelo Avanzado)
+        if ($this->isFridge($usage)) {
+            return $this->calculateFridgeConsumption($usage, $invoice);
+        }
         
         // CRITICAL FIX: Eliminamos $efficiency de la ecuación de costo/facturación.
         // El medidor cobra la energía entrante, la ineficiencia ya está incluida en el consumo.
@@ -282,6 +287,105 @@ class ConsumptionAnalysisService
         }
 
         return 1.0;
+    }
+
+    private function isFridge(EquipmentUsage $usage): bool
+    {
+        $name = strtolower($usage->equipment->name);
+        $type = strtolower($usage->equipment->type->name ?? '');
+        $category = strtolower($usage->equipment->category->name ?? '');
+        
+        // Detectar si es heladera/freezer
+        if (str_contains($name, 'heladera') || str_contains($name, 'freezer') || 
+            str_contains($type, 'heladera') || str_contains($type, 'refrigerador')) {
+            return true;
+        }
+        return false;
+    }
+
+    private function calculateFridgeConsumption(EquipmentUsage $usage, Invoice $invoice): float
+    {
+        // 1. Datos Básicos
+        $powerKw = ($usage->equipment->nominal_power_w ?? 0) / 1000;
+        
+        // Determinar días del periodo
+        $daysInPeriod = $usage->use_days_in_period;
+        if (empty($daysInPeriod)) {
+            $totalDays = \Carbon\Carbon::parse($invoice->start_date)->diffInDays(\Carbon\Carbon::parse($invoice->end_date));
+            $daysInPeriod = max(1, $totalDays);
+        }
+
+        // 2. Modelo de Consumo Dividido
+        
+        // A) CONSUMO BASE (Nocturno/Reposo)
+        // Factor 0.25: Representa el ciclo de mantenimiento de frío sin aperturas (noche/madrugada)
+        // Antes era 0.35 fijo para todo el día.
+        $baseLoadFactor = 0.25; 
+        $baseConsumption = $powerKw * 24 * $daysInPeriod * $baseLoadFactor;
+
+        // B) CONSUMO POR ACTIVIDAD (Personas)
+        // Solo aplica si hay gente en la casa.
+        // Factor 0.015 por persona: Representa el impacto de abrir la puerta y meter comida.
+        // Equivale a ~1.5% de carga extra por persona sobre el total de 24h.
+        $peopleCount = $invoice->contract->entity->people_count ?? 1;
+        // Limitar a un rango lógico (ej: mín 1, máx 10 para evitar explosiones)
+        $peopleCount = max(1, min($peopleCount, 15));
+        
+        $activityFactorPerPerson = 0.015;
+        $activityLoadAdded = $peopleCount * $activityFactorPerPerson;
+        
+        // El consumo de actividad se suma al base
+        // Fórmula: Potencia * 24h * Días * (CargaBase + CargaActividad)
+        // O verlo como: ConsumoBase + (Potencia * 24 * Días * CargaActividad)
+        $totalLoadFactor = $baseLoadFactor + $activityLoadAdded;
+        
+        $consumption = $powerKw * 24 * $daysInPeriod * $totalLoadFactor;
+
+        // 3. Ajuste Climático (Temperatura)
+        // Si hace calor, el delta T es mayor y el motor trabaja más tiempo.
+        // Usamos datos climáticos si están disponibles.
+        
+        try {
+            $locality = $invoice->contract->entity->locality;
+            if ($locality && $locality->latitude) {
+                // Carga lazy de datos si no están
+                $this->climateDataService->loadDataForInvoice($invoice);
+                
+                $stats = $this->climateDataService->getClimateStats(
+                    $locality->latitude,
+                    $locality->longitude,
+                    \Carbon\Carbon::parse($invoice->start_date),
+                    \Carbon\Carbon::parse($invoice->end_date)
+                );
+                
+                $avgTemp = $stats['avg_temp_avg'] ?? 20;
+                
+                // Pivot en 20°C. 
+                // +2% por cada grado arriba de 20
+                // -1% por cada grado abajo de 20 (hasta 15°C)
+                
+                $climateCorrection = 1.0;
+                
+                if ($avgTemp > 20) {
+                    $diff = $avgTemp - 20;
+                    $climateCorrection += ($diff * 0.02); // +2% por grado
+                } elseif ($avgTemp < 20) {
+                    $diff = 20 - $avgTemp;
+                    $climateCorrection -= ($diff * 0.01); // -1% por grado (menos impacto al bajar)
+                }
+                
+                // Límites de seguridad para la corrección (0.8 a 1.5)
+                $climateCorrection = max(0.8, min($climateCorrection, 1.5));
+                
+                $consumption *= $climateCorrection;
+                
+                \Log::info("❄️ HELADERA: {$usage->equipment->name} (Personas: $peopleCount, Temp: $avgTemp °C) -> FactorCarga: $totalLoadFactor, CorrecciónClima: $climateCorrection");
+            }
+        } catch (\Exception $e) {
+            \Log::warning("Error ajuste climático heladera: " . $e->getMessage());
+        }
+
+        return round($consumption, 4);
     }
 
     /**
