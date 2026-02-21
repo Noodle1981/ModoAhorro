@@ -114,20 +114,58 @@
             </div>
         </div>
 
-        {{-- Rooms & Usage --}}
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Detalle por Habitación</h3>
+        {{-- Room Summary Cards --}}
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Resumen por Ambientes</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+            @foreach($groupedUsages as $roomName => $usages)
+                @php
+                    $roomKwh = 0;
+                    $roomCount = $usages->count();
+                    foreach($usages as $u) {
+                        $roomKwh += $consumptionDetails[$u->equipment_id] ?? 0;
+                    }
+                    $percent = $totalCalculatedConsumption > 0 ? ($roomKwh / $totalCalculatedConsumption) * 100 : 0;
+                @endphp
+                <x-card :padding="false" class="relative overflow-hidden">
+                    <div class="px-4 py-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                    <i class="bi bi-door-open text-lg"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900 truncate" title="{{ $roomName }}">{{ $roomName }}</p>
+                                    <p class="text-xs text-gray-500">{{ $roomCount }} equipos</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-baseline justify-between">
+                            <span class="text-lg font-bold text-gray-900">{{ number_format($roomKwh, 1) }} <span class="text-xs font-normal text-gray-500">kWh</span></span>
+                            <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">{{ round($percent) }}%</span>
+                        </div>
+                    </div>
+                    <div class="h-1 w-full bg-gray-100">
+                        <div class="h-1 bg-indigo-500" style="width: {{ $percent }}%"></div>
+                    </div>
+                </x-card>
+            @endforeach
+        </div>
+
+        {{-- Rooms & Usage Tables --}}
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Detalle de Equipos</h3>
         
         @forelse($groupedUsages as $roomName => $usages)
             <x-card :padding="false" class="mb-6 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                     <h3 class="font-semibold text-gray-900 flex items-center gap-2">
                         <i class="bi bi-door-open text-blue-500"></i>
-                        {{ $roomName }}
+                         {{ $roomName }}
                     </h3>
                     <span class="text-xs font-medium text-gray-500 bg-white px-2 py-1 rounded border border-gray-200">
-                        {{ $usages->count() }} equipos
+                         {{ $usages->count() }} equipos
                     </span>
                 </div>
+
                 
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">

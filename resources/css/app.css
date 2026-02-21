@@ -1,36 +1,8 @@
 /* Tailwind CSS */
 @import "tailwindcss";
 
-/* Bootstrap (coexistencia temporal durante migración) */
-@import 'bootstrap/dist/css/bootstrap.min.css';
+/* Bootstrap Icons & FontAwesome (Iconos) */
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 @import '@fortawesome/fontawesome-free/css/all.min.css';
 
-:root {
-    --bs-primary: #3AC454;
-    --bs-primary-rgb: 58, 196, 84;
-    --bs-link-color: #3AC454;
-    --bs-link-hover-color: #2ea346;
-}
-
-.btn-primary {
-    --bs-btn-bg: #3AC454;
-    --bs-btn-border-color: #3AC454;
-    --bs-btn-hover-bg: #2ea346;
-    --bs-btn-hover-border-color: #2ea346;
-    --bs-btn-active-bg: #2ea346;
-    --bs-btn-active-border-color: #2ea346;
-}
-
-.btn-outline-primary {
-    --bs-btn-color: #3AC454;
-    --bs-btn-border-color: #3AC454;
-    --bs-btn-hover-bg: #3AC454;
-    --bs-btn-hover-border-color: #3AC454;
-    --bs-btn-active-bg: #3AC454;
-    --bs-btn-active-border-color: #3AC454;
-}
-
-.text-primary {
-    color: #3AC454 !important;
-}
+/* Custom Styles if needed */

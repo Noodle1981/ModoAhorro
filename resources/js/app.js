@@ -1,5 +1,5 @@
 import './bootstrap';
-import 'bootstrap';
+import './bootstrap';
 
 // Alpine.js for interactive components
 import Alpine from 'alpinejs';
