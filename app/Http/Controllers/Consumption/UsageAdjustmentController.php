@@ -200,18 +200,17 @@ class UsageAdjustmentController extends Controller
 
         // Ejecutar Motor de Calibración v3 (Jerarquía de Confianza)
         $calibrationResult = $consumptionService->calibrateInvoiceConsumption($invoice);
-        $summaryMsg = $calibrationResult['summary']['message'] ?? '';
 
         // Bloquear la factura si se solicita
         if ($request->has('lock_invoice')) {
             $invoice->usage_locked = true;
             $invoice->save();
             return redirect()->route($config['route_prefix'] . '.usage_adjustments', $entity->id)
-                ->with('success', 'Ajuste guardado y periodo CERRADO. ' . $summaryMsg);
+                ->with('success', 'Ajuste guardado y periodo CERRADO.');
         }
 
         return redirect()->route($config['route_prefix'] . '.usage_adjustments', $entity->id)
-            ->with('success', 'Ajuste guardado. ' . $summaryMsg);
+            ->with('success', 'Ajuste guardado.');
     }
 
     // Desbloquear factura
@@ -250,9 +249,9 @@ class UsageAdjustmentController extends Controller
 
         // Estructuras para resumen
         $tierStats = [
-            'base_critica' => ['label' => 'Base Crítica', 'kwh' => 0, 'count' => 0, 'color' => 'red', 'icon' => 'bi-shield-check'],
-            'base_pesada'  => ['label' => 'Climatización', 'kwh' => 0, 'count' => 0, 'color' => 'blue', 'icon' => 'bi-thermometer-sun'],
-            'ballenas'     => ['label' => 'Consumo Variable', 'kwh' => 0, 'count' => 0, 'color' => 'purple', 'icon' => 'bi-controller'],
+            'base_critica' => ['label' => 'Base Crítica', 'kwh' => 0, 'reconciled_kwh' => 0, 'count' => 0, 'color' => 'red', 'icon' => 'bi-shield-check', 'key' => 'base_critica'],
+            'base_pesada'  => ['label' => 'Climatización', 'kwh' => 0, 'reconciled_kwh' => 0, 'count' => 0, 'color' => 'blue', 'icon' => 'bi-thermometer-sun', 'key' => 'base_pesada'],
+            'ballenas'     => ['label' => 'Consumo Variable', 'kwh' => 0, 'reconciled_kwh' => 0, 'count' => 0, 'color' => 'purple', 'icon' => 'bi-controller', 'key' => 'ballenas'],
         ];
 
         foreach ($equipmentUsages as $usage) {
@@ -270,16 +269,19 @@ class UsageAdjustmentController extends Controller
             $usage->tier_label = $tierStats[$tier]['label'];
             $usage->tier_color = $tierStats[$tier]['color'];
 
+            // Mapear reconciliación desde el resultado de calibración previo
+            $calibrado = collect($calibrationResult['usages'])->firstWhere('id', $usage->id);
+            $reconciledVal = $kwh; // Default to theoretical if no reconciliation is ready yet
+            if ($calibrado && isset($calibrado->kwh_reconciled)) {
+                $usage->kwh_reconciled = $calibrado->kwh_reconciled;
+                $reconciledVal = $calibrado->kwh_reconciled;
+            }
+
             // Acumular estadísticas
             if (isset($tierStats[$tier])) {
                 $tierStats[$tier]['kwh'] += $kwh;
+                $tierStats[$tier]['reconciled_kwh'] += $reconciledVal;
                 $tierStats[$tier]['count']++;
-            }
-
-            // Mapear reconciliación desde el resultado de calibración previo
-            $calibrado = collect($calibrationResult['usages'])->firstWhere('id', $usage->id);
-            if ($calibrado) {
-                $usage->kwh_reconciled = $calibrado->kwh_reconciled ?? null;
             }
         }
 

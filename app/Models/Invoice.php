@@ -30,6 +30,7 @@ class Invoice extends Model
         'is_representative',
         'anomaly_reason',
         'usage_locked',
+        'recommended_kwh',
     ];
 
     protected $casts = [

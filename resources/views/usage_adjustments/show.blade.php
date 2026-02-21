@@ -48,41 +48,79 @@
                         </p>
                         <div class="flex gap-2 mt-2">
                              @if($invoice->usage_locked)
-                                <x-badge variant="success"><i class="bi bi-lock-fill mr-1"></i> Cerrado / Validado</x-badge>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
+                                    <i class="bi bi-lock-fill mr-1.5 opacity-80"></i> Cerrado / Validado
+                                </span>
                              @else
-                                <x-badge variant="warning"><i class="bi bi-unlock-fill mr-1"></i> Abierto / En Borrador</x-badge>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-medium bg-amber-50 text-amber-700 border border-amber-200 shadow-sm">
+                                    <i class="bi bi-unlock-fill mr-1.5 opacity-80"></i> Abierto / En Borrador
+                                </span>
                              @endif
 
                              @if(count($apiSummary) > 0)
-                                <x-badge variant="info" title="Calibración Automática Activa">
-                                    <i class="bi bi-cpu mr-1"></i> Motor v3 Activo
-                                </x-badge>
+                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-sm" title="Calibración Automática Activa">
+                                    <i class="bi bi-cpu mr-1.5 opacity-80"></i> Motor v3 Activo
+                                </span>
                              @endif
                         </div>
                     </div>
-                    <div class="text-right">
-                        <div class="mb-4">
-                            <p class="text-xs text-gray-500 uppercase tracking-wide">Consumo Facturado</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ number_format($invoice->total_energy_consumed_kwh, 0) }} kWh</p>
+                    @php
+                        $facturadoKwh = $invoice->total_energy_consumed_kwh ?? $invoice->consumption_kwh ?? 0;
+                        $teoricoKwh = $apiSummary['theoretical_total'] ?? $totalCalculatedConsumption;
+                        $recomendadoKwh = $apiSummary['calibrated_total'] ?? 0;
+                        
+                        $pctDiff = $facturadoKwh > 0 ? (($recomendadoKwh - $facturadoKwh) / $facturadoKwh) * 100 : 0;
+                        $pctSign = $pctDiff > 0 ? '+' : '';
+                    @endphp
+
+                    <div class="flex flex-wrap items-end justify-end gap-4 mt-4 md:mt-0">
+                        <!-- Facturado -->
+                        <div class="flex flex-col items-center min-w-[120px]">
+                            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1.5">Facturado</span>
+                            <div class="bg-gray-800 text-white px-4 py-2.5 rounded-xl shadow-sm w-full text-center">
+                                <span class="text-2xl font-bold tracking-tight">{{ number_format($facturadoKwh, 0) }}</span>
+                                <span class="text-xs font-medium opacity-80 ml-0.5">kWh</span>
+                            </div>
                         </div>
-                        <div>
-                            <p class="text-xs text-gray-500 uppercase tracking-wide">Calculado (Suma)</p>
-                            <p class="text-2xl font-bold text-blue-600">{{ number_format($totalCalculatedConsumption, 0) }} kWh</p>
+                        
+                        <!-- Separator -->
+                        <div class="text-gray-300 pb-3.5 px-1 hidden sm:block">
+                            <i class="bi bi-chevron-right text-lg"></i>
+                        </div>
+
+                        <!-- Calculado -->
+                        <div class="flex flex-col items-center min-w-[120px]">
+                            <span class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1.5">Calculado (Suma)</span>
+                            <div class="bg-white border border-gray-200 text-gray-700 px-4 py-2.5 rounded-xl shadow-sm w-full text-center">
+                                <span class="text-2xl font-bold tracking-tight">{{ number_format($teoricoKwh, 0) }}</span>
+                                <span class="text-xs font-medium opacity-80 ml-0.5">kWh</span>
+                            </div>
+                        </div>
+
+                        <!-- Separator -->
+                        <div class="text-indigo-300 pb-3.5 px-1 hidden sm:block">
+                            <i class="bi bi-arrow-right-short text-2xl"></i>
+                        </div>
+
+                        <!-- Recomendado -->
+                        <div class="flex flex-col items-center min-w-[150px]">
+                            <span class="text-[10px] text-indigo-600 uppercase tracking-widest font-bold mb-1.5">Cálculo Recomendado</span>
+                            <div class="bg-indigo-50 border border-indigo-200 text-indigo-700 px-4 py-2.5 rounded-xl shadow-sm ring-2 ring-indigo-500/20 w-full text-center flex items-center justify-center gap-2">
+                                <div class="flex items-baseline">
+                                    <span class="text-2xl font-bold tracking-tight">{{ number_format($recomendadoKwh, 0) }}</span>
+                                    <span class="text-xs font-bold opacity-90 ml-0.5">kWh</span>
+                                </div>
+                                
+                                @if($facturadoKwh > 0 && $recomendadoKwh != $facturadoKwh)
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold bg-indigo-200 text-indigo-800 shadow-sm border border-indigo-300" title="Respecto al Facturado">
+                                        {{ $pctSign }}{{ number_format($pctDiff, 1) }}%
+                                    </span>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                @if(isset($apiSummary['message']))
-                    <div class="mt-4 p-3 bg-blue-50 text-blue-800 rounded-md text-sm border border-blue-100 flex items-start gap-2">
-                        <i class="bi bi-info-circle-fill mt-0.5"></i>
-                        <div>
-                            <strong>Estado Motor:</strong> {{ $apiSummary['message'] }}
-                            @if(isset($apiSummary['gap_kwh']))
-                                <div class="text-xs mt-1 opacity-80">Brecha: {{ number_format($apiSummary['gap_kwh'], 1) }} kWh ({{ number_format($apiSummary['error_percent'] ?? 0, 1) }}%)</div>
-                            @endif
-                        </div>
-                    </div>
-                @endif
             </x-card>
 
             {{-- Categories --}}
@@ -100,14 +138,59 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <span class="block font-bold text-gray-900">{{ number_format($stat['kwh'], 0) }}</span>
-                            <span class="text-xs text-gray-500">kWh</span>
+                            @php
+                                $isTank3 = isset($stat['key']) && $stat['key'] === 'ballenas';
+                                $reconciledVal = $stat['reconciled_kwh'] ?? $stat['kwh'];
+                                $globalExcess = $facturadoKwh > 0 ? max(0, $recomendadoKwh - $facturadoKwh) : 0;
+                                $t3Excess = $isTank3 ? min($reconciledVal, $globalExcess) : 0;
+                            @endphp
+
+                            @if($isTank3 && ($stat['kwh'] > $reconciledVal || $t3Excess > 0))
+                                <div class="flex items-center justify-end gap-1.5 mb-0.5 flex-wrap">
+                                    @if($stat['kwh'] > $reconciledVal)
+                                        <span class="text-[11px] text-gray-400 line-through" title="Teórico Original">{{ number_format($stat['kwh'], 1) }}</span>
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 tracking-tight" title="Recorte del Motor">
+                                            {{ number_format((($reconciledVal - $stat['kwh']) / $stat['kwh']) * 100, 1) }}%
+                                        </span>
+                                    @endif
+                                    @if($t3Excess > 0)
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 tracking-tight border border-red-200" title="Exceso tolerado sobre factura real">
+                                            +{{ number_format($t3Excess, 1) }} kWh Tolerado
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="font-bold text-gray-900 text-lg leading-none">{{ number_format($reconciledVal, 1) }} <span class="text-[11px] text-gray-500 font-normal">kWh</span></div>
+                            @else
+                                <span class="block font-bold text-gray-900 text-lg leading-none">{{ number_format($reconciledVal, 1) }}</span>
+                                <span class="text-[11px] text-gray-500">kWh</span>
+                            @endif
                         </div>
                     </div>
                     {{-- Progress bar --}}
-                    @php $percent = $totalCalculatedConsumption > 0 ? ($stat['kwh'] / $totalCalculatedConsumption) * 100 : 0; @endphp
-                    <div class="h-1 w-full bg-gray-100">
-                        <div class="h-1 bg-{{ $stat['color'] }}-500" style="width: {{ $percent }}%"></div>
+                    @php 
+                        $totalBasis = $totalCalculatedConsumption > 0 ? $totalCalculatedConsumption : 1;
+                        $t3Good = $reconciledVal - $t3Excess;
+
+                        $percentGood = ($t3Good / $totalBasis) * 100;
+                        $percentExcess = ($t3Excess / $totalBasis) * 100;
+                        
+                        $percentTotal = ($stat['kwh'] / $totalBasis) * 100;
+                        $percentCut = max(0, $percentTotal - ($percentGood + $percentExcess));
+                    @endphp
+                    <div class="h-2 w-full bg-gray-100 flex rounded-b-lg overflow-hidden">
+                        <div class="h-full bg-{{ $stat['color'] }}-500 transition-all duration-500" style="width: {{ $percentGood }}%" title="Consumo Meta"></div>
+                        
+                        @if($percentExcess > 0)
+                            <div class="h-full bg-red-500 relative transition-all duration-500" style="width: {{ $percentExcess }}%" title="Exceso Tolerado ({{ number_format($t3Excess, 1) }} kWh sobre factura)"></div>
+                        @endif
+
+                        @if(isset($stat['key']) && $stat['key'] === 'ballenas' && $percentCut > 0)
+                            <div class="h-full bg-rose-400 relative transition-all duration-500" style="width: {{ $percentCut }}%" title="Ahorro por Límite de Motor">
+                                <div class="absolute inset-0 opacity-40 mix-blend-overlay" style="background-image: repeating-linear-gradient(-45deg, transparent, transparent 4px, currentColor 4px, currentColor 8px); color: white;"></div>
+                            </div>
+                        @elseif($percentCut > 0)
+                            <div class="h-full bg-{{ $stat['color'] }}-300 opacity-50 transition-all duration-500" style="width: {{ $percentCut }}%"></div>
+                        @endif
                     </div>
                 </x-card>
                 @endforeach

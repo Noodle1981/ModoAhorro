@@ -417,12 +417,14 @@ class ConsumptionAnalysisService
         
         // 2. Mapear Usages a objetos Equipment simulados (para que el Engine los procese)
         // El Engine espera objetos con acceso a ->type y ->avg_daily_use_hours
-        $simulatedEquipments = $usages->map(function($usage) {
+        $simulatedEquipments = $usages->map(function($usage) use ($invoice) {
             $eq = $usage->equipment;
             // Inyectamos las horas del periodo actual para que el engine use ESTE valor y no el default
             $eq->avg_daily_use_hours = $usage->avg_daily_use_hours; 
             // Inyectamos referencia al usage id para mapear vuelta
             $eq->_usage_id = $usage->id;
+            // Inyectamos el consumo teórico exacto y REAL basado en Días de uso, frecuencia y clima
+            $eq->_theo_kwh = $this->calculateEquipmentConsumption($usage, $invoice);
             return $eq;
         });
 
@@ -447,10 +449,12 @@ class ConsumptionAnalysisService
         return [
             'usages' => $usages,
             'summary' => [
-                'tank_1' => $engineResult['tank_1_base'],
-                'tank_2' => $engineResult['tank_2_climate'],
-                'tank_3' => $engineResult['tank_3_elasticity'],
-                'unassigned' => $engineResult['unassigned_remainder'],
+                'tank_1' => $engineResult['tank_1_base'] ?? 0,
+                'tank_2' => $engineResult['tank_2_climate'] ?? 0,
+                'tank_3' => $engineResult['tank_3_elasticity'] ?? 0,
+                'theoretical_total' => $engineResult['theoretical_total'] ?? 0,
+                'calibrated_total' => $engineResult['calibrated_total'] ?? 0,
+                'unassigned' => $engineResult['unassigned_remainder'] ?? 0,
                 'logs' => $logs
             ],
             'climate_data' => $engineResult['climate_data'] ?? []
