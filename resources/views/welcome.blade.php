@@ -12,100 +12,98 @@
     <!-- Styles / Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-light">
+<body class="bg-gray-50 text-gray-800 font-sans antialiased">
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold text-primary" href="#">
-                <img src="{{ asset('logo.png') }}" alt="Modo Ahorro Logo" style="height: 40px;" class="d-inline-block align-text-top me-2">
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav gap-2">
+    <nav class="bg-white shadow-sm border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="#" class="flex-shrink-0 flex items-center">
+                        <img src="{{ asset('logo.png') }}" alt="Modo Ahorro Logo" class="h-10 w-auto mr-2">
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
                     @if (Route::has('login'))
                         @auth
-                            <li class="nav-item">
-                                <a href="{{ url('/dashboard') }}" class="btn btn-outline-primary">Dashboard</a>
-                            </li>
+                            <a href="{{ url('/dashboard') }}" class="text-blue-600 hover:text-blue-800 font-medium px-4 py-2 border border-blue-600 rounded-md transition">Dashboard</a>
                         @else
-                            <li class="nav-item">
-                                <a href="{{ route('login') }}" class="btn btn-primary">Iniciar Sesión</a>
-                            </li>
+                            <a href="{{ route('login') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-md transition">Iniciar Sesión</a>
                         @endauth
                     @endif
-                </ul>
+                </div>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <header class="py-5 bg-white border-bottom">
-        <div class="container py-5">
-            <div class="row align-items-center">
-                <div class="col-lg-6">
-                    <h1 class="display-4 fw-bold mb-3">Toma el control de tu consumo energético</h1>
-                    <p class="lead text-muted mb-4">
+    <header class="bg-white py-16 sm:py-24 border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="lg:grid lg:grid-cols-2 lg:gap-8 items-center">
+                <div class="mb-12 lg:mb-0">
+                    <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl mb-6">
+                        Toma el control de tu consumo energético
+                    </h1>
+                    <p class="text-lg text-gray-500 mb-8 max-w-2xl">
                         Gestiona tus facturas, monitorea el consumo de tus electrodomésticos y optimiza tus gastos con Modo Ahorro.
                     </p>
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <div class="flex flex-col sm:flex-row gap-4">
                         @if (Route::has('login'))
-                            <a href="{{ route('login') }}" class="btn btn-primary btn-lg px-4 me-md-2">Ingresar Demo</a>
+                            <a href="{{ route('login') }}" class="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-sm transition">
+                                Ingresar Demo
+                            </a>
                         @endif
-                        <a href="#features" class="btn btn-outline-secondary btn-lg px-4">Saber más</a>
+                        <a href="#features" class="inline-flex justify-center items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 shadow-sm transition">
+                            Saber más
+                        </a>
                     </div>
                 </div>
-                <div class="col-lg-6 mt-4 mt-lg-0 text-center">
-                    <img src="https://placehold.co/600x400/e9ecef/495057?text=Dashboard+Preview" alt="App Preview" class="img-fluid rounded shadow-lg">
+                <div class="relative mx-auto w-full rounded-lg shadow-lg lg:max-w-md text-center bg-gray-100 flex items-center justify-center overflow-hidden" style="min-height: 250px;">
+                    <img src="https://placehold.co/600x400/e9ecef/495057?text=Dashboard+Preview" alt="App Preview" class="w-full h-auto object-cover">
                 </div>
             </div>
         </div>
     </header>
 
     <!-- Features Section -->
-    <section id="features" class="py-5">
-        <div class="container py-5">
-            <div class="text-center mb-5">
-                <h2 class="fw-bold">¿Por qué usar Modo Ahorro?</h2>
-                <p class="text-muted">Herramientas diseñadas para ayudarte a ahorrar dinero y energía.</p>
+    <section id="features" class="py-16 sm:py-24 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">¿Por qué usar Modo Ahorro?</h2>
+                <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-500">Herramientas diseñadas para ayudarte a ahorrar dinero y energía.</p>
             </div>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm text-center p-4">
-                        <div class="text-primary mb-3">
-                            <i class="bi bi-bar-chart-fill fs-1"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Monitoreo de Consumo</h5>
-                        <p class="card-text text-muted">Visualiza gráficos detallados de tu consumo eléctrico y detecta patrones de uso.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center transition hover:shadow-md">
+                    <div class="text-blue-500 mb-4 inline-flex items-center justify-center h-16 w-16 rounded-full bg-blue-50">
+                        <i class="bi bi-bar-chart-fill text-3xl"></i>
                     </div>
+                    <h5 class="text-xl font-bold text-gray-900 mb-2">Monitoreo de Consumo</h5>
+                    <p class="text-gray-500">Visualiza gráficos detallados de tu consumo eléctrico y detecta patrones de uso.</p>
                 </div>
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm text-center p-4">
-                        <div class="text-success mb-3">
-                            <i class="bi bi-cash-coin fs-1"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Gestión de Facturas</h5>
-                        <p class="card-text text-muted">Registra tus facturas y compáralas mes a mes para evitar sorpresas.</p>
+                <!-- Feature 2 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center transition hover:shadow-md">
+                    <div class="text-green-500 mb-4 inline-flex items-center justify-center h-16 w-16 rounded-full bg-green-50">
+                        <i class="bi bi-cash-coin text-3xl"></i>
                     </div>
+                    <h5 class="text-xl font-bold text-gray-900 mb-2">Gestión de Facturas</h5>
+                    <p class="text-gray-500">Registra tus facturas y compáralas mes a mes para evitar sorpresas.</p>
                 </div>
-                <div class="col-md-4">
-                    <div class="card h-100 border-0 shadow-sm text-center p-4">
-                        <div class="text-info mb-3">
-                            <i class="bi bi-house-gear-fill fs-1"></i>
-                        </div>
-                        <h5 class="card-title fw-bold">Control de Equipos</h5>
-                        <p class="card-text text-muted">Administra tus electrodomésticos y conoce cuánto consume cada uno.</p>
+                <!-- Feature 3 -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center transition hover:shadow-md">
+                    <div class="text-teal-500 mb-4 inline-flex items-center justify-center h-16 w-16 rounded-full bg-teal-50">
+                        <i class="bi bi-house-gear-fill text-3xl"></i>
                     </div>
+                    <h5 class="text-xl font-bold text-gray-900 mb-2">Control de Equipos</h5>
+                    <p class="text-gray-500">Administra tus electrodomésticos y conoce cuánto consume cada uno.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="py-4 bg-dark text-white">
-        <div class="container text-center">
-            <p class="mb-0">&copy; {{ date('Y') }} Modo Ahorro. Todos los derechos reservados.</p>
+    <footer class="bg-gray-900 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-400 text-sm">&copy; {{ date('Y') }} Modo Ahorro. Todos los derechos reservados.</p>
         </div>
     </footer>
 </body>

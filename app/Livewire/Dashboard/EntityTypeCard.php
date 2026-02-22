@@ -4,6 +4,7 @@ namespace App\Livewire\Dashboard;
 
 use Livewire\Component;
 use App\Models\Entity;
+use Livewire\Attributes\Computed;
 
 class EntityTypeCard extends Component
 {
@@ -18,7 +19,8 @@ class EntityTypeCard extends Component
         $this->allowed = $allowed;
     }
 
-    public function getEntitiesProperty()
+    #[Computed]
+    public function entities()
     {
         return Entity::where('type', $this->type)
             ->whereHas('users', fn($q) => $q->where('user_id', auth()->id()))
@@ -29,7 +31,7 @@ class EntityTypeCard extends Component
     public function render()
     {
         return view('livewire.dashboard.entity-type-card', [
-            'entities' => $this->entities,
+            'entities' => $this->entities(),
         ]);
     }
 }

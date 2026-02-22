@@ -154,7 +154,7 @@
                                         </span>
                                     @endif
                                     @if($t3Excess > 0)
-                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 tracking-tight border border-red-200" title="Exceso tolerado sobre factura real">
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-700 tracking-tight border border-gray-200" title="Exceso tolerado sobre factura real">
                                             +{{ number_format($t3Excess, 1) }} kWh Tolerado
                                         </span>
                                     @endif
@@ -181,7 +181,7 @@
                         <div class="h-full bg-{{ $stat['color'] }}-500 transition-all duration-500" style="width: {{ $percentGood }}%" title="Consumo Meta"></div>
                         
                         @if($percentExcess > 0)
-                            <div class="h-full bg-red-500 relative transition-all duration-500" style="width: {{ $percentExcess }}%" title="Exceso Tolerado ({{ number_format($t3Excess, 1) }} kWh sobre factura)"></div>
+                            <div class="h-full bg-gray-400 relative transition-all duration-500" style="width: {{ $percentExcess }}%" title="Exceso Tolerado ({{ number_format($t3Excess, 1) }} kWh sobre factura)"></div>
                         @endif
 
                         @if(isset($stat['key']) && $stat['key'] === 'ballenas' && $percentCut > 0)
