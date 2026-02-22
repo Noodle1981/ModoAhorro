@@ -80,13 +80,23 @@
                                 <span class="px-2 py-0.5 bg-gray-100 rounded text-xs font-medium">{{ $days }} días</span>
                             </div>
                             
-                            {{-- Main Consumption --}}
-                            <div class="text-center py-4 mb-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
-                                <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Consumo Facturado</p>
-                                <p class="text-3xl font-bold text-blue-600">
-                                    {{ number_format($invoice->total_energy_consumed_kwh ?? 0, 0) }}
-                                </p>
-                                <p class="text-sm text-gray-500">kWh</p>
+                            {{-- Motor v3 Metrics --}}
+                            <div class="grid grid-cols-3 gap-2 mb-4">
+                                <div class="py-3 bg-gray-50 rounded-lg text-center border border-gray-100">
+                                    <p class="text-[10px] text-gray-500 uppercase tracking-wide mb-1">Facturado</p>
+                                    <p class="font-bold text-gray-900 text-lg leading-none">{{ number_format($invoice->total_energy_consumed_kwh ?? 0, 0) }}</p>
+                                    <p class="text-[10px] text-gray-400 mt-0.5">kWh</p>
+                                </div>
+                                <div class="py-3 bg-rose-50 rounded-lg text-center border border-rose-100">
+                                    <p class="text-[10px] text-rose-600 uppercase tracking-wide mb-1 opacity-80" title="Suma Teórica Total">Calculado</p>
+                                    <p class="font-bold text-rose-700 text-lg leading-none">{{ number_format($data['teorico'], 0) }}</p>
+                                    <p class="text-[10px] text-rose-500 opacity-80 mt-0.5">kWh</p>
+                                </div>
+                                <div class="py-3 bg-indigo-50 rounded-lg text-center border border-indigo-200 shadow-sm relative">
+                                    <p class="text-[10px] text-indigo-700 font-bold uppercase tracking-wide mb-1">Cálculo Meta</p>
+                                    <p class="font-bold text-indigo-700 text-xl leading-none">{{ number_format($data['recomendado'], 0) }}</p>
+                                    <p class="text-[10px] text-indigo-600 opacity-80 mt-0.5">kWh</p>
+                                </div>
                             </div>
                             
                             {{-- Metrics Row --}}

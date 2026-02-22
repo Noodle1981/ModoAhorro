@@ -303,6 +303,10 @@ class PanelController extends Controller
                 $mensaje = 'Revisar ajustes';
             }
 
+            // Motor v3 Variables
+            $teorico = $calibrationResult['summary']['theoretical_total'] ?? 0;
+            $recomendado = $invoice->recommended_kwh ?? $totalEnergia;
+
             $isAdjusted = $invoice->usageAdjustment && $invoice->usageAdjustment->adjusted;
             $startDate = \Carbon\Carbon::parse($invoice->start_date);
             $endDate = \Carbon\Carbon::parse($invoice->end_date);
@@ -314,6 +318,8 @@ class PanelController extends Controller
                 'invoice' => $invoice,
                 'totalEnergia' => $totalEnergia,
                 'porcentaje' => $porcentaje,
+                'teorico' => $teorico,
+                'recomendado' => $recomendado,
                 'color' => $color,
                 'mensaje' => $mensaje,
                 'isAdjusted' => $isAdjusted,
