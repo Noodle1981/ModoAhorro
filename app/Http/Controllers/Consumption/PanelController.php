@@ -57,6 +57,16 @@ class PanelController extends Controller
             $dailyCost = $invoice->total_amount / $days;
             $costPerKwh = $totalEnergia > 0 ? ($invoice->total_amount / $totalEnergia) : 0;
 
+            // Motor v3 Variables
+            $facturado = $invoice->total_energy_consumed_kwh ?? 0;
+            $teorico = $calibrationResult['summary']['theoretical_total'] ?? 0;
+            $recomendado = $invoice->recommended_kwh ?? $totalEnergia;
+            
+            // Tanks Composition
+            $tank1 = $calibrationResult['summary']['tank_1'] ?? 0;
+            $tank2 = $calibrationResult['summary']['tank_2'] ?? 0;
+            $tank3 = $calibrationResult['summary']['tank_3'] ?? 0;
+
             return [
                 'label' => ucfirst($startDate->locale('es')->translatedFormat('F Y')),
                 'consumption' => round($totalEnergia, 2),
@@ -65,8 +75,16 @@ class PanelController extends Controller
                 'avg_temp' => $avgTemp, 
                 'daily_cost' => round($dailyCost, 2),
                 'cost_per_kwh' => round($costPerKwh, 2),
-                'hot_days' => $hotDays, // New
-                'cold_days' => $coldDays // New
+                'hot_days' => $hotDays, 
+                'cold_days' => $coldDays,
+                
+                // New Variables for Advanced Charts
+                'facturado' => round($facturado, 2),
+                'teorico' => round($teorico, 2),
+                'recomendado' => round($recomendado, 2),
+                'tank_1' => round($tank1, 2),
+                'tank_2' => round($tank2, 2),
+                'tank_3' => round($tank3, 2)
             ];
         });
 
@@ -210,6 +228,16 @@ class PanelController extends Controller
             $dailyCost = $invoice->total_amount / $days;
             $costPerKwh = $totalEnergia > 0 ? ($invoice->total_amount / $totalEnergia) : 0;
 
+            // Motor v3 Variables
+            $facturado = $invoice->total_energy_consumed_kwh ?? 0;
+            $teorico = $calibrationResult['summary']['theoretical_total'] ?? 0;
+            $recomendado = $invoice->recommended_kwh ?? $totalEnergia;
+            
+            // Tanks Composition
+            $tank1 = $calibrationResult['summary']['tank_1'] ?? 0;
+            $tank2 = $calibrationResult['summary']['tank_2'] ?? 0;
+            $tank3 = $calibrationResult['summary']['tank_3'] ?? 0;
+
             return [
                 'label' => ucfirst($startDate->locale('es')->translatedFormat('F Y')),
                 'consumption' => round($totalEnergia, 2),
@@ -219,7 +247,15 @@ class PanelController extends Controller
                 'daily_cost' => round($dailyCost, 2),
                 'cost_per_kwh' => round($costPerKwh, 2),
                 'hot_days' => $hotDays,
-                'cold_days' => $coldDays
+                'cold_days' => $coldDays,
+                
+                // New Variables for Advanced Charts
+                'facturado' => round($facturado, 2),
+                'teorico' => round($teorico, 2),
+                'recomendado' => round($recomendado, 2),
+                'tank_1' => round($tank1, 2),
+                'tank_2' => round($tank2, 2),
+                'tank_3' => round($tank3, 2)
             ];
         });
 

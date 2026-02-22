@@ -136,6 +136,34 @@
                     <canvas id="tempChart" height="80"></canvas>
                 </x-card>
 
+                {{-- Motor v3 Tendencies --}}
+                <x-card>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                            <i class="bi bi-cpu text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Eficiencia Motor v3</h3>
+                            <p class="text-sm text-gray-500">Facturado vs. Calculado (Suma) vs. Cálculo Recomendado</p>
+                        </div>
+                    </div>
+                    <canvas id="motorChart" height="100"></canvas>
+                </x-card>
+
+                {{-- Thermodynamic Composition (Tanks) --}}
+                <x-card>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-rose-500 to-orange-500 rounded-lg flex items-center justify-center">
+                            <i class="bi bi-layers text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900">Composición Termodinámica</h3>
+                            <p class="text-sm text-gray-500">Distribución por Base Crítica, Climatización y Variable</p>
+                        </div>
+                    </div>
+                    <canvas id="tanksChart" height="100"></canvas>
+                </x-card>
+
                 {{-- Extreme Days --}}
                 <x-card>
                     <div class="flex items-center gap-3 mb-4">
@@ -206,6 +234,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const costsPerKwh = chartData.map(d => d.cost_per_kwh);
     const hotDays = chartData.map(d => d.hot_days);
     const coldDays = chartData.map(d => d.cold_days);
+    
+    // Motor v3 Variables
+    const facturados = chartData.map(d => d.facturado);
+    const teoricos = chartData.map(d => d.teorico);
+    const recomendados = chartData.map(d => d.recomendado);
+    
+    // Tanks Variables
+    const tanks1 = chartData.map(d => d.tank_1);
+    const tanks2 = chartData.map(d => d.tank_2);
+    const tanks3 = chartData.map(d => d.tank_3);
 
     const chartOptions = {
         responsive: true,
@@ -248,6 +286,92 @@ document.addEventListener('DOMContentLoaded', function() {
             scales: {
                 y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Consumo (kWh)' } },
                 y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Temperatura (°C)' } }
+            }
+        }
+    });
+
+    // 1A. Eficiencia Motor v3
+    new Chart(document.getElementById('motorChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Facturado',
+                    data: facturados,
+                    borderColor: 'rgba(55, 65, 81, 1)', // Gray 700
+                    backgroundColor: 'rgba(55, 65, 81, 0.1)',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    tension: 0.3,
+                    pointRadius: 4
+                },
+                {
+                    label: 'Calculado (Suma Teórica)',
+                    data: teoricos,
+                    borderColor: 'rgba(239, 68, 68, 0.7)', // Red 500
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)', 
+                    borderWidth: 2,
+                    tension: 0.3,
+                    pointRadius: 4
+                },
+                {
+                    label: 'Cálculo Recomendado',
+                    data: recomendados,
+                    borderColor: 'rgba(79, 70, 229, 1)', // Indigo 600
+                    backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointBackgroundColor: 'rgba(79, 70, 229, 1)',
+                }
+            ]
+        },
+        options: {
+            ...chartOptions,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: 'Consumo (kWh)' } }
+            }
+        }
+    });
+
+    // 1B. Composición Termodinámica (Tanques)
+    new Chart(document.getElementById('tanksChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Base Crítica (T1)',
+                    data: tanks1,
+                    backgroundColor: 'rgba(239, 68, 68, 0.8)', // Red
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Climatización (T2)',
+                    data: tanks2,
+                    backgroundColor: 'rgba(59, 130, 246, 0.8)', // Blue
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Consumo Variable (T3)',
+                    data: tanks3,
+                    backgroundColor: 'rgba(168, 85, 247, 0.8)', // Purple
+                    borderColor: 'rgba(168, 85, 247, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            ...chartOptions,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: { stacked: true },
+                y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Consumo Autorizado (kWh)' } }
             }
         }
     });
