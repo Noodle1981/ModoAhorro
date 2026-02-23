@@ -19,6 +19,10 @@
 - [ ] **Micro-interacciones**: Feedback visual inmediato al guardar/editar (spinners, toasts mejorados).
 - [ ] **Visualización Dinámica**: Gráficos interactivos en tiempo real al ajustar parámetros.
 
+### 5. Readiness B2B (Oficinas/Comercios)
+- [ ] **Integración de Horarios Laborales**: Permitir a entidades no residenciales definir sus días y horas de operación (`opens_at`, `closes_at`, `operating_days`) en la base de datos para diferenciar su consumo del perfil 24/7 de un hogar.
+- [ ] **Motor Energy Engine Adaptativo**: Ajustar la inferencia matemática del motor en entidades comerciales para basar los consumos base en la ventana horaria operativa.
+
 ---
 
 ## Implementaciones Post-MVP (Mediano/Largo Plazo)

@@ -48,6 +48,11 @@ Para considerar el motor listo para producción, se deben cumplir los siguientes
 *   **Trazabilidad (Audit Logs)**: Cada cálculo debe generar un log detallado explicando *por qué* se tomó una decisión de calibración (ej. "Se redujo horas de Aire Acondicionado para coincidir con la factura").
 *   **Manejo de Outliers**: Detección automática de facturas anómalas (ej. medidores rotos o errores de lectura) para no contaminar el perfil de consumo del usuario.
 
+### 3.1 B2B Readiness (Oficinas y Comercios)
+Para permitir pruebas reales (User Acceptance Testing) en entornos comerciales y de oficina, el sistema debe cumplir con:
+*   **Horarios de Operación (Business Hours)**: El modelo base de la entidad debe ser capaz de almacenar sus horarios (`opens_at`, `closes_at`) y días de semana operativos (`operating_days`).
+*   **Ajuste Matemático B2B (Motor v3.1)**: El motor debe dejar de asumir una operación 24/7 para equipos base en estas entidades. Si no hay uso explícito declarado, debe inferir el consumo multiplicando la diferencia horaria diaria de apertura/cierre por la cantidad de días operativos efectivos en el período facturado.
+
 ## 4. Estrategia de Testing (Etapas de Validación)
 
 Para garantizar un servicio correcto, el ciclo de QA debe ser riguroso y estar dividido en etapas claras:

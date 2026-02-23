@@ -68,3 +68,8 @@ graph TD
 1. Ejecutar migración para nuevos campos en `equipment_types`.
 2. Implementar `EnergyEngineService.php` como clase aislada para testing.
 3. Crear tests unitarios con facturas "testigo" para validar el cierre a 0 kWh.
+
+## 6. Expansión a Entidades B2B (Oficinas/Comercios)
+Para permitir que el Motor v3.0 sea utilizado en pruebas con perfiles comerciales, se deben resolver las siguientes dependencias críticas (Bloqueos de Testing):
+1. **Horarios de Operación en el Modelo:** Agregar `opens_at`, `closes_at` y `operating_days` al array `$fillable` del modelo `Entity` para que el formulario de creación de `Office` los guarde correctamente y la Base de Datos preserve estos datos reales.
+2. **Motor B2B No-24/7:** Refactorizar el cálculo base del `EnergyEngineService` para verificar los horarios de operación de la oficina. Romper la asunción matemática de operación constante 24/7 para que equipos base (ej. servidores, routers) calculen su consumo en kWh basados solo en el diferencial de apertura/cierre y los días laborables estipulados.
