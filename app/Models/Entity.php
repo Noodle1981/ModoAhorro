@@ -25,11 +25,15 @@ class Entity extends Model
         'description',
         'square_meters',
         'people_count',
+        'opens_at',
+        'closes_at',
+        'operating_days',
         'thermal_profile',
     ];
 
     protected $casts = [
         'thermal_profile' => 'array',
+        'operating_days' => 'array',
     ];
 
     public function users()
