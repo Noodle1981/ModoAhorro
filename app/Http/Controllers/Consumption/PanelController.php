@@ -10,14 +10,14 @@ use App\Services\ConsumptionAnalysisService;
 class PanelController extends Controller
 {
     protected $analysisService;
-    protected $climateDataService;
+    protected $climateService;
 
     public function __construct(
         ConsumptionAnalysisService $analysisService,
-        \App\Services\Climate\ClimateDataService $climateDataService
+        \App\Services\ClimateService $climateService
     ) {
         $this->analysisService = $analysisService;
-        $this->climateDataService = $climateDataService;
+        $this->climateService = $climateService;
     }
 
     public function index()
@@ -33,7 +33,7 @@ class PanelController extends Controller
             ->paginate(5); // 5 per page as requested
 
         $service = $this->analysisService;
-        $climateService = $this->climateDataService;
+        $climateService = $this->climateService;
 
         // --- Process Chart Data (Full History) ---
         // --- Process Chart Data (Full History) ---
@@ -157,7 +157,7 @@ class PanelController extends Controller
             ->paginate(5);
 
         $service = $this->analysisService;
-        $climateService = $this->climateDataService;
+        $climateService = $this->climateService;
 
         // Process paginated invoices
         $paginatedInvoices->getCollection()->transform(function ($invoice) use ($service, $climateService) {
@@ -276,7 +276,7 @@ class PanelController extends Controller
             ->get();
 
         $service = $this->analysisService;
-        $climateService = $this->climateDataService;
+        $climateService = $this->climateService;
 
         $invoicesData = [];
         foreach ($invoices as $invoice) {
@@ -339,7 +339,7 @@ class PanelController extends Controller
             ->findOrFail($invoiceId);
         
         $service = $this->analysisService;
-        $climateService = $this->climateDataService;
+        $climateService = $this->climateService;
         $validationService = new \App\Services\Core\ValidationService();
 
         // ✅ CALCULAR EN TIEMPO REAL con el nuevo algoritmo (CALIBRADO)

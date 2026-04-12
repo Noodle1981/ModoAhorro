@@ -12,6 +12,7 @@ class EnergyEngineService
     protected $climateService;
     protected $thermalService;
     protected $lastClimateDays = []; // Store the last calculated climate days
+    protected $isFallbackMode = false;
 
     public function __construct(ClimateService $climateService, ThermalProfileService $thermalService)
     {
@@ -128,6 +129,10 @@ class EnergyEngineService
                 $eq->calculated_consumption_kwh = $periodKwh;
                 $eq->tank_assignment = 2;
                 $tank2Consumption += $periodKwh;
+
+                if ($this->isFallbackMode) {
+                    $eq->audit_logs[] = "⚠️ Datos de proximidad (API Offline)";
+                }
             }
         }
 
@@ -206,21 +211,15 @@ class EnergyEngineService
                 $logs[] = "[Tanque 3] Totalmente anulado (Límite superado por consumo rígido).";
             }
         }
-        
-        $totalAssigned = $tank1Consumption + $tank2Consumption + $tank3Consumption;
 
-        // --- Novedad: Guardar el Cálculo Recomendado en la factura ---
-        if ($isDynamic) {
-            $invoice->update(['recommended_kwh' => $recommendedTotalKwh]);
-        } else {
-            // Si no hay factura, el recomendado es el teórico base
-            $invoice->update(['recommended_kwh' => $totalTheoretical]);
-        }
+        // --- Cálculo Final ---
+        $totalAssigned = $tank1Consumption + $tank2Consumption + $tank3Consumption;
 
         return [
             'total_bill' => $totalBillKwh,
             'theoretical_total' => $totalTheoretical,
             'calibrated_total' => $totalAssigned,
+            'recommended_total_kwh' => $recommendedTotalKwh, // Devolvemos el recomendado para que el servicio lo guarde
             'tank_1_base' => $tank1Consumption,
             'tank_2_climate' => $tank2Consumption,
             'tank_3_elasticity' => $tank3Consumption,
@@ -229,6 +228,12 @@ class EnergyEngineService
             'logs' => $logs,
             'climate_data' => $this->lastClimateDays
         ];
+    }
+
+    public function setFallbackMode(bool $isFallback): self
+    {
+        $this->isFallbackMode = $isFallback;
+        return $this;
     }
 
     public function getClimateDays(): array

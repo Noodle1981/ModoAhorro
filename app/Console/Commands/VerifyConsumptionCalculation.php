@@ -6,14 +6,14 @@ use Illuminate\Console\Command;
 use App\Models\Invoice;
 use App\Services\ConsumptionAnalysisService;
 use App\Services\Climate\UsageSuggestionService;
-use App\Services\Climate\ClimateDataService;
+use App\Services\ClimateService;
 
 class VerifyConsumptionCalculation extends Command
 {
     protected $signature = 'verify:consumption {invoice_id=2}';
     protected $description = 'Verifica el cálculo de consumo energético para una factura';
 
-    public function handle()
+    public function handle(ConsumptionAnalysisService $service)
     {
         $invoiceId = $this->argument('invoice_id');
         
@@ -28,11 +28,7 @@ class VerifyConsumptionCalculation extends Command
         $this->info("Periodo: {$invoice->start_date} - {$invoice->end_date}");
         $this->newLine();
         
-        $climateService = new ClimateDataService();
-        $usageSuggestionService = new UsageSuggestionService($climateService);
-        $calibrator = new \App\Services\ConsumptionCalibrator();
-        $maintenanceService = new \App\Services\MaintenanceService();
-        $service = new ConsumptionAnalysisService($usageSuggestionService, $climateService, $calibrator, $maintenanceService);
+        // service is now injected and correctly configured
         
         $total = 0;
         $details = [];

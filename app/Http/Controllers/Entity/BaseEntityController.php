@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Entity;
 use App\Http\Controllers\Controller;
 use App\Models\Entity;
 use App\Models\Locality;
-use App\Services\Climate\ClimateDataService;
+use App\Services\ClimateService;
 use App\Services\Recommendations\ReplacementService;
 use Illuminate\Http\Request;
 
@@ -45,10 +45,10 @@ abstract class BaseEntityController extends Controller
     /**
      * Display a listing of entities.
      */
-    public function index()
+    public function index(Request $request)
     {
         $config = $this->getConfig();
-        $user = auth()->user();
+        $user = $request->user();
         
         $entities = $user->entities()
             ->where('type', $this->entityType)
@@ -126,7 +126,7 @@ abstract class BaseEntityController extends Controller
         }
 
         // Associate entity with user's current plan
-        $user = auth()->user();
+        $user = $request->user();
         $currentPlan = $user->currentPlan();
 
         $user->entities()->attach($entity->id, [
@@ -141,7 +141,7 @@ abstract class BaseEntityController extends Controller
     /**
      * Display the specified entity.
      */
-    public function show(string $id, ClimateDataService $climateService)
+    public function show(string $id, ClimateService $climateService)
     {
         $config = $this->getConfig();
         

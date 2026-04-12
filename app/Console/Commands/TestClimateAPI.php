@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Services\Climate\ClimateDataService;
+use App\Services\ClimateService;
 use App\Models\Locality;
 use Carbon\Carbon;
 
@@ -12,7 +12,7 @@ class TestClimateAPI extends Command
     protected $signature = 'test:climate {locality_id?}';
     protected $description = 'Test Open-Meteo API integration';
 
-    public function handle()
+    public function handle(ClimateService $climateService)
     {
         $this->info('🌡️  Probando integración con Open-Meteo API...');
         $this->newLine();
@@ -48,7 +48,7 @@ class TestClimateAPI extends Command
         $this->newLine();
         
         // Probar servicio de clima
-        $climateService = new ClimateDataService();
+        // $climateService is injected in handle()
         
         // Usar un rango de fechas reciente pero histórico (ej. mes pasado)
         $endDate = Carbon::now()->subDays(2);
@@ -131,7 +131,6 @@ class TestClimateAPI extends Command
                 
                 // Debug: Test loadDataForInvoice separately
                 $this->info("Testing loadDataForInvoice...");
-                $climateService = app(\App\Services\Climate\ClimateDataService::class);
                 $loadResult = $climateService->loadDataForInvoice($invoice);
                 if (!$loadResult['success']) {
                     $this->error("loadDataForInvoice failed: " . $loadResult['message']);

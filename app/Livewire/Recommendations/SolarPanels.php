@@ -7,7 +7,7 @@ use Livewire\Attributes\Layout;
 use App\Models\Entity;
 use App\Models\Invoice;
 use App\Services\Solar\SolarPowerService;
-use App\Services\Climate\ClimateDataService;
+use App\Services\ClimateService;
 
 #[Layout('layouts.app')]
 class SolarPanels extends Component
@@ -19,7 +19,7 @@ class SolarPanels extends Component
     public $maxConsumption = 0;
     public $climateProfile = null;
 
-    public function mount(Entity $entity, ClimateDataService $climateService)
+    public function mount(Entity $entity, ClimateService $climateService)
     {
         $this->entity = $entity;
         

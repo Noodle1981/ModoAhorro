@@ -4,17 +4,16 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Invoice;
-use App\Services\Climate\ClimateDataService;
+use App\Services\ClimateService;
 
 class LoadClimateData extends Command
 {
     protected $signature = 'climate:load {invoice_id?}';
     protected $description = 'Carga datos climáticos para una factura específica o todas las facturas';
 
-    public function handle()
+    public function handle(ClimateService $climateService)
     {
         $invoiceId = $this->argument('invoice_id');
-        $climateService = new ClimateDataService();
         
         if ($invoiceId) {
             $invoice = Invoice::find($invoiceId);

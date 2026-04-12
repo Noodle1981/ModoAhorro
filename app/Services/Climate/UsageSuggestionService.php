@@ -4,13 +4,14 @@ namespace App\Services\Climate;
 
 use App\Models\Invoice;
 use App\Models\Equipment;
+use App\Services\ClimateService;
 use Carbon\Carbon;
 
 class UsageSuggestionService
 {
-    private ClimateDataService $climateService;
+    private ClimateService $climateService;
     
-    public function __construct(ClimateDataService $climateService)
+    public function __construct(ClimateService $climateService)
     {
         $this->climateService = $climateService;
     }

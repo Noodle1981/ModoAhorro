@@ -3,13 +3,13 @@
 namespace App\Services;
 
 use App\Models\Entity;
-use App\Services\Climate\ClimateDataService;
+use App\Services\ClimateService;
 use App\Services\Solar\SolarPowerService;
 
 class BudgetService
 {
     public function __construct(
-        private ClimateDataService $climateService,
+        private ClimateService $climateService,
         private SolarPowerService $solarService
     ) {
     }

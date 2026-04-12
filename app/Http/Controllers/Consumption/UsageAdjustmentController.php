@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Invoice;
 use App\Models\UsageAdjustment;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class UsageAdjustmentController extends Controller
 {
@@ -231,17 +232,33 @@ class UsageAdjustmentController extends Controller
         $entity = $invoice->contract->entity;
         $config = config("entity_types.{$entity->type}", []);
 
-        // 1. Ejecutar calibración/carga de datos climáticos PRIMERO para inicializar el motor
-        $calibrationResult = $consumptionService->calibrateInvoiceConsumption($invoice);
-        $apiSummary = $calibrationResult['summary'] ?? [];
-        $climateData = $calibrationResult['climate_data'] ?? [];
-        
-        // Obtener todos los usos de equipos para la factura
-        // 1. Obtener Usages
-        // IMPORTANT: This relationship MUST include inactive equipment to preserve history.
-        // Since we use a manual 'is_active' flag and not Laravel's SoftDeletes trait on the Equipment model,
-        // the relationship naturally includes all records unless explicitly filtered.
-        $equipmentUsages = $invoice->equipmentUsages()->with(['equipment.category', 'equipment.type'])->get();
+        // 1. Optimización: Si ya existe un cálculo guardado, no recalibrar (ahorra API y CPU)
+        if ($invoice->calibrated_at !== null) {
+            $equipmentUsages = $invoice->equipmentUsages()->with(['equipment.category', 'equipment.type'])->get();
+            
+            // Reconstruir el resumen desde la base de datos
+            $apiSummary = [
+                'tank_1' => $equipmentUsages->where('tank_assignment', 1)->sum('kwh_reconciled'),
+                'tank_2' => $equipmentUsages->where('tank_assignment', 2)->sum('kwh_reconciled'),
+                'tank_3' => $equipmentUsages->where('tank_assignment', 3)->sum('kwh_reconciled'),
+                'calibrated_total' => $invoice->recommended_kwh,
+                'theoretical_total' => $equipmentUsages->sum('consumption_kwh'), 
+            ];
+            
+            // Log de control
+            Log::info("🚀 Cargando auditoría cacheada para Factura #{$invoice->id} (Calibrada el: {$invoice->calibrated_at})");
+            
+            $climateData = app(\App\Services\ClimateService::class)->getDegreeDaysForLocality(
+                $invoice->contract->entity->locality,
+                $invoice->start_date,
+                $invoice->end_date
+            );
+        } else {
+            $calibrationResult = $consumptionService->calibrateInvoiceConsumption($invoice);
+            $apiSummary = $calibrationResult['summary'] ?? [];
+            $climateData = $calibrationResult['climate_data'] ?? [];
+            $equipmentUsages = $calibrationResult['usages'];
+        }
 
         // Calcular consumo por equipo y totales
         $consumptionDetails = [];
@@ -269,13 +286,8 @@ class UsageAdjustmentController extends Controller
             $usage->tier_label = $tierStats[$tier]['label'];
             $usage->tier_color = $tierStats[$tier]['color'];
 
-            // Mapear reconciliación desde el resultado de calibración previo
-            $calibrado = collect($calibrationResult['usages'])->firstWhere('id', $usage->id);
-            $reconciledVal = $kwh; // Default to theoretical if no reconciliation is ready yet
-            if ($calibrado && isset($calibrado->kwh_reconciled)) {
-                $usage->kwh_reconciled = $calibrado->kwh_reconciled;
-                $reconciledVal = $calibrado->kwh_reconciled;
-            }
+            // Mapear reconciliación
+            $reconciledVal = $usage->kwh_reconciled ?? $kwh; 
 
             // Acumular estadísticas
             if (isset($tierStats[$tier])) {
