@@ -50,7 +50,7 @@ class ThermalAdviceEngine
                 'cost_level' => '$$',
                 'impact' => 'Alto',
                 'icon' => 'fas fa-paint-roller',
-                'color' => 'orange'
+                'color' => 'warning'
             ];
         }
 

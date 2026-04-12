@@ -26,14 +26,27 @@
     <div class="min-h-screen flex flex-col lg:flex-row">
         
         {{-- Sidebar (Desktop) --}}
-        <aside class="hidden lg:block">
-            @include('layouts.sidebar')
-        </aside>
+        @unless(request()->routeIs('dashboard'))
+            <aside class="hidden lg:block border-r border-gray-100 dark:border-gray-800">
+                @include('layouts.sidebar')
+            </aside>
+        @endunless
 
         {{-- Mobile Header --}}
-        <header class="lg:hidden sticky top-0 z-50">
-            @include('layouts.navbar')
-        </header>
+        @if(request()->routeIs('dashboard'))
+            <header class="lg:hidden sticky top-0 z-50 bg-white border-b border-gray-100 p-4 flex justify-center">
+                <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-linear-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center text-white shadow-sm">
+                        <i class="bi bi-lightning-charge-fill text-sm"></i>
+                    </div>
+                    <span class="text-sm font-black text-gray-900 tracking-tighter uppercase">Modo<span class="text-indigo-600">Ahorro</span></span>
+                </a>
+            </header>
+        @else
+            <header class="lg:hidden sticky top-0 z-50">
+                @include('layouts.navbar')
+            </header>
+        @endif
 
         {{-- Main Layout --}}
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -41,9 +54,20 @@
             {{-- Top Bar (Desktop) --}}
             <header class="hidden lg:block sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100">
                 <div class="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
-                    <div class="flex items-center gap-4 text-gray-400">
-                        <i class="bi bi-search text-lg"></i>
-                        <span class="text-sm font-medium">Pulsa '/' para buscar...</span>
+                    <div class="flex items-center gap-8">
+                        @if(request()->routeIs('dashboard'))
+                            <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
+                                <div class="w-10 h-10 bg-linear-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform">
+                                    <i class="bi bi-lightning-charge-fill text-lg"></i>
+                                </div>
+                                <span class="text-lg font-black text-gray-900 tracking-tighter uppercase leading-none block">Modo<span class="text-indigo-600">Ahorro</span></span>
+                            </a>
+                        @else
+                            <div class="flex items-center gap-4 text-gray-400">
+                                <i class="bi bi-search text-lg"></i>
+                                <span class="text-sm font-medium">Pulsa '/' para buscar...</span>
+                            </div>
+                        @endif
                     </div>
                     <div class="flex items-center gap-6">
                         @include('layouts.user-dropdown')

@@ -65,8 +65,19 @@ class ThermalProfileService
 
         return [
             'thermal_score' => $score,
-            'energy_label' => $label
+            'energy_label' => $label,
+            'score' => $score,
+            'label' => $label,
+            'color' => $this->getColorFromScore($score)
         ];
+    }
+
+    protected function getColorFromScore($score)
+    {
+        if ($score >= 80) return 'success';
+        if ($score >= 60) return 'info';
+        if ($score >= 40) return 'warning';
+        return 'danger';
     }
 
     protected function getLabelFromScore($score)

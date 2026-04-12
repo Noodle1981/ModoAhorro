@@ -70,9 +70,9 @@
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-2">
-                            @php $gainPercent = ($benchmark->efficiency_gain_factor * 100) . '%'; @endphp
+                            @php $gainPercent = $benchmark->efficiency_gain_factor * 100; @endphp
                             <div class="w-full bg-gray-100 h-1.5 rounded-full overflow-hidden max-w-[80px]">
-                                <div class="bg-indigo-500 h-full" style="width: {{ $gainPercent }}"></div>
+                                <div class="bg-indigo-500 h-full" @style(['width' => $gainPercent . '%'])></div>
                             </div>
                             <span class="text-xs font-black text-gray-700">{{ number_format($benchmark->efficiency_gain_factor * 100, 0) }}%</span>
                         </div>
