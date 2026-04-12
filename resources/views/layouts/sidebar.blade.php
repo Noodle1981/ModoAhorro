@@ -15,20 +15,30 @@
     {{-- Navigation --}}
     <nav class="flex-1 overflow-y-auto px-4 py-8 space-y-8 scrollbar-hide">
         
-        {{-- Section: Principal --}}
+        {{-- Section: Entidades (Direct Link with Header Style) --}}
         <div>
-            <h3 class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Principal</h3>
-            <div class="space-y-1">
-                <x-sidebar-link href="{{ route('dashboard') }}" icon="bi-grid-1x2" active="{{ request()->routeIs('dashboard') }}">
-                    Entidades
-                </x-sidebar-link>
-            </div>
+            <a href="{{ route('dashboard') }}" class="w-full px-4 flex items-center justify-between group/header mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-7 h-7 {{ request()->routeIs('dashboard') ? 'bg-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-indigo-50 text-indigo-600 group-hover/header:bg-indigo-600 group-hover/header:text-white' }} rounded-lg flex items-center justify-center transition-all duration-300">
+                        <i class="bi bi-compass-fill text-xs"></i>
+                    </div>
+                    <h3 class="text-[10px] font-black {{ request()->routeIs('dashboard') ? 'text-gray-900' : 'text-gray-400' }} uppercase tracking-widest group-hover/header:text-gray-900 transition-colors">Entidades</h3>
+                </div>
+            </a>
         </div>
 
         {{-- Section: Gestión Física --}}
-        <div>
-            <h3 class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Gestión Física</h3>
-            <div class="space-y-1">
+        <div x-data="{ open: {{ json_encode(request()->routeIs('thermal.wizard', 'contracts.*', 'entities.invoices.*', 'rooms.*')) }} }">
+            <button @click="open = !open" class="w-full px-4 flex items-center justify-between group/header mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-7 h-7 bg-emerald-50 rounded-lg flex items-center justify-center text-emerald-600 group-hover/header:bg-emerald-600 group-hover/header:text-white transition-all duration-300">
+                        <i class="bi bi-buildings-fill text-xs"></i>
+                    </div>
+                    <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover/header:text-gray-900 transition-colors">Gestión Física</h3>
+                </div>
+                <i class="bi bi-chevron-down text-[10px] text-gray-300 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+            </button>
+            <div class="space-y-1 ml-2 pl-2 border-l border-gray-50" x-show="open" x-transition.opacity>
                 @php $firstEntity = auth()->user()->entities()->first(); @endphp
                 <x-sidebar-link href="{{ $firstEntity ? route('thermal.wizard', $firstEntity->id) : '#' }}" icon="bi-thermometer-sun" active="{{ request()->routeIs('thermal.wizard') }}">
                     Desempeño Energético
@@ -46,9 +56,17 @@
         </div>
 
         {{-- Section: Análisis y Ahorro --}}
-        <div>
-            <h3 class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Análisis y Ahorro</h3>
-            <div class="space-y-1">
+        <div x-data="{ open: {{ json_encode(request()->routeIs('consumption.*', 'usage_adjustments.*', 'grid.optimization')) }} }">
+            <button @click="open = !open" class="w-full px-4 flex items-center justify-between group/header mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-7 h-7 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600 group-hover/header:bg-amber-600 group-hover/header:text-white transition-all duration-300">
+                        <i class="bi bi-bar-chart-fill text-xs"></i>
+                    </div>
+                    <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover/header:text-gray-900 transition-colors">Análisis y Ahorro</h3>
+                </div>
+                <i class="bi bi-chevron-down text-[10px] text-gray-300 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+            </button>
+            <div class="space-y-1 ml-2 pl-2 border-l border-gray-50" x-show="open" x-transition.opacity>
                 <x-sidebar-link href="{{ route('consumption.panel') }}" icon="bi-bar-chart-lines" active="{{ request()->routeIs('consumption.*') }}">
                     Consumo Real
                 </x-sidebar-link>
@@ -62,9 +80,17 @@
         </div>
 
         {{-- Section: Recomendaciones --}}
-        <div>
-            <h3 class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Recomendaciones</h3>
-            <div class="space-y-1">
+        <div x-data="{ open: {{ json_encode(request()->routeIs('entities.budget', 'entities.home.solar_water_heater', 'replacements.*', 'entities.home.standby_analysis', 'maintenance.*', 'entities.home.vacation', 'thermal.result', 'smart_meter.demo')) }} }">
+            <button @click="open = !open" class="w-full px-4 flex items-center justify-between group/header mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-7 h-7 bg-rose-50 rounded-lg flex items-center justify-center text-rose-600 group-hover/header:bg-rose-600 group-hover/header:text-white transition-all duration-300">
+                        <i class="bi bi-magic text-xs"></i>
+                    </div>
+                    <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover/header:text-gray-900 transition-colors">Recomendaciones</h3>
+                </div>
+                <i class="bi bi-chevron-down text-[10px] text-gray-300 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+            </button>
+            <div class="space-y-1 ml-2 pl-2 border-l border-gray-50" x-show="open" x-transition.opacity>
                 <x-sidebar-link href="{{ $firstEntity ? route('entities.budget', $firstEntity->id) : '#' }}" icon="bi-sun" active="{{ request()->routeIs('entities.budget') }}">
                     Paneles Solares
                 </x-sidebar-link>
@@ -94,9 +120,17 @@
 
         @if(auth()->user()->is_super_admin)
             {{-- Section: Admin --}}
-            <div class="pt-4 mt-4 border-t border-gray-50">
-                <h3 class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Sistema</h3>
-                <div class="space-y-1">
+            <div class="pt-4 mt-4 border-t border-gray-50" x-data="{ open: {{ json_encode(request()->routeIs('admin.*', 'efficiency-benchmarks.*')) }} }">
+                <button @click="open = !open" class="w-full px-4 flex items-center justify-between group/header mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-7 h-7 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 group-hover/header:bg-gray-900 group-hover/header:text-white transition-all duration-300">
+                            <i class="bi bi-gear-fill text-xs"></i>
+                        </div>
+                        <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover/header:text-gray-900 transition-colors">Sistema</h3>
+                    </div>
+                    <i class="bi bi-chevron-down text-[10px] text-gray-300 transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                </button>
+                <div class="space-y-1 ml-2 pl-2 border-l border-gray-50" x-show="open" x-transition.opacity>
                     <x-sidebar-link href="{{ route('admin.dashboard') }}" icon="bi-shield-lock" active="{{ request()->routeIs('admin.*') }}">
                         Administración
                     </x-sidebar-link>
