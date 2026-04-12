@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+<div class="min-h-screen bg-linear-to-br from-blue-50 via-white to-cyan-50">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {{-- Result Card --}}
@@ -114,8 +114,8 @@
         @else
             {{-- No Recommendations --}}
             <x-card class="text-center py-12">
-                <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i class="bi bi-check-circle text-4xl text-emerald-600"></i>
+                <div class="bg-linear-to-br from-indigo-500 to-indigo-700 w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg mx-auto mb-6">
+                    <i class="bi bi-check-circle text-2xl text-white"></i>
                 </div>
                 <h3 class="text-xl font-semibold text-gray-900 mb-2">¡Excelente!</h3>
                 <p class="text-gray-500">No tenemos recomendaciones urgentes. Tu casa está muy bien aislada.</p>

@@ -7,7 +7,7 @@
         {{-- Header con Resumen de Factura --}}
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div class="flex items-center gap-4">
-                <div class="bg-gradient-to-br from-indigo-500 to-purple-600 w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                <div class="bg-linear-to-br from-indigo-500 to-purple-600 w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg">
                     <i class="bi bi-sliders text-2xl"></i>
                 </div>
                 <div>

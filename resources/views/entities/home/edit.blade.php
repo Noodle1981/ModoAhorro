@@ -7,7 +7,7 @@
         {{-- Header --}}
         <div class="flex items-center justify-between mb-8">
             <div class="flex items-center gap-4">
-                <div class="bg-gradient-to-br from-amber-500 to-amber-600 w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg">
+                <div class="bg-linear-to-br from-amber-500 to-amber-600 w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg">
                     <i class="bi bi-pencil text-xl"></i>
                 </div>
                 <div>

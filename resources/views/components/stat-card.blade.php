@@ -39,7 +39,7 @@ $gradient = $colors[$color] ?? $colors['emerald'];
         </div>
 
         @if($icon)
-            <div class="bg-gradient-to-br {{ $gradient }} p-3 rounded-xl text-white shadow-lg">
+            <div class="bg-linear-to-br {{ $gradient }} p-3 rounded-xl text-white shadow-lg">
                 <i class="bi {{ $icon }} text-xl"></i>
             </div>
         @endif

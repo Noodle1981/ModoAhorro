@@ -1,7 +1,7 @@
 @extends('layouts.guest')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-emerald-50 flex items-center justify-center py-12 px-4">
+<div class="min-h-screen bg-linear-to-br from-blue-50 via-white to-emerald-50 flex items-center justify-center py-12 px-4">
     <div class="w-full max-w-md">
         {{-- Logo --}}
         <div class="text-center mb-8">
@@ -13,7 +13,7 @@
         {{-- Register Card --}}
         <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
             {{-- Header --}}
-            <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+            <div class="bg-linear-to-r from-blue-500 to-blue-600 px-6 py-4">
                 <h2 class="text-white font-semibold text-lg flex items-center gap-2">
                     <i class="bi bi-person-plus-fill"></i>
                     Crear Cuenta
@@ -35,7 +35,7 @@
                                 <i class="bi bi-person text-gray-400"></i>
                             </div>
                             <input type="text" name="name" id="name" 
-                                class="block w-full pl-10 pr-4 py-3 rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('name') border-red-300 @enderror"
+                                class="block w-full pl-10 pr-4 py-3 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 {{ $errors->has('name') ? 'border-red-300' : 'border-gray-300' }}"
                                 placeholder="Ej: Juan Pérez"
                                 value="{{ old('name') }}"
                                 required autofocus>
@@ -55,7 +55,7 @@
                                 <i class="bi bi-envelope text-gray-400"></i>
                             </div>
                             <input type="email" name="email" id="email" 
-                                class="block w-full pl-10 pr-4 py-3 rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('email') border-red-300 @enderror"
+                                class="block w-full pl-10 pr-4 py-3 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 {{ $errors->has('email') ? 'border-red-300' : 'border-gray-300' }}"
                                 placeholder="nombre@ejemplo.com"
                                 value="{{ old('email') }}"
                                 required>
@@ -75,7 +75,7 @@
                                 <i class="bi bi-lock text-gray-400"></i>
                             </div>
                             <input type="password" name="password" id="password" 
-                                class="block w-full pl-10 pr-4 py-3 rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('password') border-red-300 @enderror"
+                                class="block w-full pl-10 pr-4 py-3 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 {{ $errors->has('password') ? 'border-red-300' : 'border-gray-300' }}"
                                 placeholder="Mínimo 8 caracteres"
                                 required>
                         </div>
@@ -114,7 +114,7 @@
 
                     {{-- Submit --}}
                     <button type="submit" 
-                        class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2">
+                        class="w-full bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2">
                         <i class="bi bi-person-plus"></i>
                         Crear Cuenta
                     </button>

@@ -44,7 +44,7 @@
                         @if($localities->isEmpty())
                             <div class="bg-red-50 border-l-4 border-red-400 p-4">
                                 <div class="flex">
-                                    <div class="flex-shrink-0">
+                                    <div class="shrink-0">
                                         <i class="bi bi-exclamation-triangle text-red-400"></i>
                                     </div>
                                     <div class="ml-3">

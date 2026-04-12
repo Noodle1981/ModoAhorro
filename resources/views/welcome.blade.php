@@ -18,7 +18,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="#" class="flex-shrink-0 flex items-center">
+                    <a href="#" class="shrink-0 flex items-center">
                         <img src="{{ asset('logo.png') }}" alt="Modo Ahorro Logo" class="h-10 w-auto mr-2">
                     </a>
                 </div>

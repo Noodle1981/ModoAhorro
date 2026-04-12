@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 py-8">
+<div class="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-800 py-8">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="mb-8">
@@ -107,7 +107,10 @@
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Distribución de Entidades</h3>
                 <div class="h-64">
-                    <canvas id="entityChart"></canvas>
+                    <canvas id="entityChart" 
+                        data-labels="{{ json_encode(array_keys($analytics['entities']['by_type'])) }}"
+                        data-values="{{ json_encode(array_values($analytics['entities']['by_type'])) }}"
+                    ></canvas>
                 </div>
             </div>
 
@@ -115,7 +118,10 @@
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 lg:col-span-2">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Equipos por Categoría</h3>
                 <div class="h-64">
-                    <canvas id="equipmentChart"></canvas>
+                    <canvas id="equipmentChart"
+                        data-labels="{{ json_encode(array_keys($analytics['equipment']['by_category'])) }}"
+                        data-values="{{ json_encode(array_values($analytics['equipment']['by_category'])) }}"
+                    ></canvas>
                 </div>
             </div>
         </div>
@@ -124,31 +130,35 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Crecimiento (Últimos 12 Meses)</h3>
             <div class="h-80">
-                <canvas id="growthChart"></canvas>
+                <canvas id="growthChart"
+                    data-labels="{{ json_encode($analytics['growth']['labels']) }}"
+                    data-users="{{ json_encode($analytics['growth']['users']) }}"
+                    data-entities="{{ json_encode($analytics['growth']['entities']) }}"
+                ></canvas>
             </div>
         </div>
 
         <!-- Business Metrics -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+            <div class="bg-linear-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
                 <p class="text-sm font-medium opacity-90">Consumo Total</p>
                 <p class="text-3xl font-bold mt-2">{{ number_format($analytics['business']['total_consumption_kwh'], 0) }}</p>
                 <p class="text-sm opacity-75 mt-1">kWh procesados</p>
             </div>
 
-            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+            <div class="bg-linear-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
                 <p class="text-sm font-medium opacity-90">Ahorro Identificado</p>
                 <p class="text-3xl font-bold mt-2">{{ number_format($analytics['business']['total_savings_kwh'], 0) }}</p>
                 <p class="text-sm opacity-75 mt-1">kWh de ahorro</p>
             </div>
 
-            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+            <div class="bg-linear-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
                 <p class="text-sm font-medium opacity-90">Facturas Procesadas</p>
                 <p class="text-3xl font-bold mt-2">{{ number_format($analytics['business']['invoices_processed']) }}</p>
                 <p class="text-sm opacity-75 mt-1">Total en sistema</p>
             </div>
 
-            <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+            <div class="bg-linear-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
                 <p class="text-sm font-medium opacity-90">Recomendaciones</p>
                 <p class="text-3xl font-bold mt-2">{{ number_format($analytics['business']['recommendations_generated']) }}</p>
                 <p class="text-sm opacity-75 mt-1">Generadas</p>
@@ -245,136 +255,142 @@
 
 <script>
     // Entity Distribution Pie Chart
-    const entityCtx = document.getElementById('entityChart').getContext('2d');
-    new Chart(entityCtx, {
-        type: 'doughnut',
-        data: {
-            labels: {!! json_encode(array_keys($analytics['entities']['by_type'])) !!},
-            datasets: [{
-                data: {!! json_encode(array_values($analytics['entities']['by_type'])) !!},
-                backgroundColor: [
-                    'rgba(34, 197, 94, 0.8)',
-                    'rgba(59, 130, 246, 0.8)',
-                    'rgba(168, 85, 247, 0.8)',
-                ],
-                borderColor: [
-                    'rgba(34, 197, 94, 1)',
-                    'rgba(59, 130, 246, 1)',
-                    'rgba(168, 85, 247, 1)',
-                ],
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
-                        padding: 15,
-                        font: { size: 12 }
+    const entityCanvas = document.getElementById('entityChart');
+    if (entityCanvas) {
+        new Chart(entityCanvas.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: JSON.parse(entityCanvas.dataset.labels),
+                datasets: [{
+                    data: JSON.parse(entityCanvas.dataset.values),
+                    backgroundColor: [
+                        'rgba(34, 197, 94, 0.8)',
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(168, 85, 247, 0.8)',
+                    ],
+                    borderColor: [
+                        'rgba(34, 197, 94, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(168, 85, 247, 1)',
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+                            padding: 15,
+                            font: { size: 12 }
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+    }
 
     // Equipment by Category Bar Chart
-    const equipmentCtx = document.getElementById('equipmentChart').getContext('2d');
-    new Chart(equipmentCtx, {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode(array_keys($analytics['equipment']['by_category'])) !!},
-            datasets: [{
-                label: 'Cantidad de Equipos',
-                data: {!! json_encode(array_values($analytics['equipment']['by_category'])) !!},
-                backgroundColor: 'rgba(99, 102, 241, 0.8)',
-                borderColor: 'rgba(99, 102, 241, 1)',
-                borderWidth: 2,
-                borderRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151' },
-                    grid: { color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }
-                },
-                x: {
-                    ticks: { 
-                        color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
-                        maxRotation: 45,
-                        minRotation: 45
-                    },
-                    grid: { display: false }
-                }
+    const equipmentCanvas = document.getElementById('equipmentChart');
+    if (equipmentCanvas) {
+        new Chart(equipmentCanvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: JSON.parse(equipmentCanvas.dataset.labels),
+                datasets: [{
+                    label: 'Cantidad de Equipos',
+                    data: JSON.parse(equipmentCanvas.dataset.values),
+                    backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                    borderColor: 'rgba(99, 102, 241, 1)',
+                    borderWidth: 2,
+                    borderRadius: 6
+                }]
             },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151' },
+                        grid: { color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }
+                    },
+                    x: {
+                        ticks: { 
+                            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+                            maxRotation: 45,
+                            minRotation: 45
+                        },
+                        grid: { display: false }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+    }
 
     // Growth Line Chart
-    const growthCtx = document.getElementById('growthChart').getContext('2d');
-    new Chart(growthCtx, {
-        type: 'line',
-        data: {
-            labels: {!! json_encode($analytics['growth']['labels']) !!},
-            datasets: [
-                {
-                    label: 'Usuarios',
-                    data: {!! json_encode($analytics['growth']['users']) !!},
-                    borderColor: 'rgba(99, 102, 241, 1)',
-                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4
-                },
-                {
-                    label: 'Entidades',
-                    data: {!! json_encode($analytics['growth']['entities']) !!},
-                    borderColor: 'rgba(34, 197, 94, 1)',
-                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151' },
-                    grid: { color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }
-                },
-                x: {
-                    ticks: { color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151' },
-                    grid: { color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }
-                }
+    const growthCanvas = document.getElementById('growthChart');
+    if (growthCanvas) {
+        new Chart(growthCanvas.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: JSON.parse(growthCanvas.dataset.labels),
+                datasets: [
+                    {
+                        label: 'Usuarios',
+                        data: JSON.parse(growthCanvas.dataset.users),
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Entidades',
+                        data: JSON.parse(growthCanvas.dataset.entities),
+                        borderColor: 'rgba(34, 197, 94, 1)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
             },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
-                        usePointStyle: true,
-                        padding: 20
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151' },
+                        grid: { color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }
+                    },
+                    x: {
+                        ticks: { color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151' },
+                        grid: { color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+                            usePointStyle: true,
+                            padding: 20
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+    }
 </script>
 @endsection

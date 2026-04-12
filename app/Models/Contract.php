@@ -9,6 +9,7 @@ class Contract extends Model
     protected $fillable = [
         'entity_id',
         'proveedor_id',
+        'utility_company_id',
         'supply_number',
         'meter_number',
         'client_number',
@@ -27,6 +28,11 @@ class Contract extends Model
     public function entity()
     {
         return $this->belongsTo(Entity::class);
+    }
+
+    public function utilityCompany()
+    {
+        return $this->belongsTo(UtilityCompany::class);
     }
 
 

@@ -12,7 +12,7 @@
     <!-- Styles / Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gradient-to-br from-emerald-50 via-white to-blue-50">
+<body class="bg-linear-to-br from-emerald-50 via-white to-blue-50">
     <!-- Navbar -->
     <nav class="bg-white shadow-sm border-b border-gray-200">
         <div class="container mx-auto px-4 py-4">
@@ -27,7 +27,7 @@
         <div class="max-w-2xl w-full text-center">
             <!-- Error Icon -->
             <div class="mb-8">
-                <div class="inline-flex items-center justify-center w-32 h-32 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full mb-6">
+                <div class="inline-flex items-center justify-center w-32 h-32 bg-linear-to-br from-blue-100 to-blue-200 rounded-full mb-6">
                     <i class="bi bi-tools text-6xl text-blue-600"></i>
                 </div>
             </div>
@@ -44,7 +44,7 @@
             <!-- Action Buttons -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <button onclick="window.location.reload()" 
-                       class="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
+                       class="inline-flex items-center gap-2 bg-linear-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
                     <i class="bi bi-arrow-clockwise"></i>
                     Reintentar
                 </button>

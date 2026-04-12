@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+<div class="min-h-screen bg-linear-to-br from-blue-50 via-white to-cyan-50">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {{-- Header --}}
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl text-white shadow-lg mb-4">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-linear-to-br from-blue-500 to-cyan-600 rounded-2xl text-white shadow-lg mb-4">
                 <i class="bi bi-thermometer-half text-3xl"></i>
             </div>
             <h1 class="text-2xl font-bold text-gray-900">Diagnóstico Térmico</h1>
@@ -204,7 +204,7 @@
 
                     {{-- Submit --}}
                     <div class="text-center pt-6 border-t border-gray-200">
-                        <button type="submit" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all">
+                        <button type="submit" class="inline-flex items-center px-8 py-4 bg-linear-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all">
                             Calcular Diagnóstico
                             <i class="bi bi-arrow-right ml-2"></i>
                         </button>

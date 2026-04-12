@@ -7,7 +7,7 @@
         {{-- Header --}}
         <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
             <div class="flex items-center gap-3">
-                <div class="bg-gradient-to-br {{ $config['tailwind_gradient'] ?? 'from-emerald-500 to-emerald-600' }} w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg">
+                <div class="bg-linear-to-br {{ $config['tailwind_gradient'] ?? 'from-emerald-500 to-emerald-600' }} w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg">
                     <i class="{{ $config['icon'] }} text-xl"></i>
                 </div>
                 <div>
@@ -95,9 +95,8 @@
                                     <form action="{{ route($config['route_prefix'] . '.destroy', $entity->id) }}" method="POST" class="inline">
                                         @csrf
                                         @method('DELETE')
-                                        <x-button variant="ghost" size="xs" type="submit" 
-                                            onclick="return confirm('¿Seguro que deseas eliminar esta {{ strtolower($config['label']) }}?')"
-                                            class="text-red-500 hover:text-red-700 hover:bg-red-50">
+                                        @php $confirmMsg = "¿Eliminar " . $config['label'] . "?"; @endphp
+                                        <x-button variant="ghost" size="xs" type="submit" onclick="return confirm('{{ $confirmMsg }}')" class="text-red-500 hover:text-red-700 hover:bg-red-50">
                                             <i class="bi bi-trash"></i>
                                         </x-button>
                                     </form>

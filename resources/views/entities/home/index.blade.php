@@ -7,7 +7,7 @@
         {{-- Header --}}
         <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
             <div class="flex items-center gap-3">
-                <div class="bg-gradient-to-br {{ $config['tailwind_gradient'] ?? 'from-emerald-500 to-emerald-600' }} w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg">
+                <div class="bg-linear-to-br {{ $config['tailwind_gradient'] ?? 'from-emerald-500 to-emerald-600' }} w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg">
                     <i class="{{ $config['icon'] }} text-xl"></i>
                 </div>
                 <div>

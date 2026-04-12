@@ -3,7 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\{Entity, User, Contract, Invoice, Room, Equipment, EquipmentUsage, EquipmentType, EquipmentCategory, Locality, UtilityCompany};
+use App\Models\{Entity, User, Contract, Invoice, Room, Equipment, EquipmentUsage, EquipmentType, EquipmentCategory, Locality};
+use App\Models\UtilityCompany;
 
 class DatosComercioSeeder extends Seeder
 {

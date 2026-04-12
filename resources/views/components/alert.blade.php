@@ -42,7 +42,7 @@ $config = $types[$type] ?? $types['info'];
 <div {{ $attributes->merge(['class' => "rounded-lg border p-4 {$config['bg']} {$config['border']}"]) }}
      @if($dismissible) x-data="{ show: true }" x-show="show" x-transition @endif>
     <div class="flex items-start gap-3">
-        <i class="bi {{ $config['icon'] }} {{ $config['iconColor'] }} text-lg flex-shrink-0 mt-0.5"></i>
+        <i class="bi {{ $config['icon'] }} {{ $config['iconColor'] }} text-lg shrink-0 mt-0.5"></i>
         
         <div class="flex-1 {{ $config['text'] }}">
             @if($title)

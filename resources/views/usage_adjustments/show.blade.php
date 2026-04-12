@@ -7,7 +7,7 @@
         {{-- Header --}}
         <div class="flex items-center justify-between mb-8">
             <div class="flex items-center gap-4">
-                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg">
+                <div class="bg-linear-to-br from-blue-500 to-indigo-600 w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg">
                     <i class="bi bi-eye text-xl"></i>
                 </div>
                 <div>
@@ -178,18 +178,18 @@
                         $percentCut = max(0, $percentTotal - ($percentGood + $percentExcess));
                     @endphp
                     <div class="h-2 w-full bg-gray-100 flex rounded-b-lg overflow-hidden">
-                        <div class="h-full bg-{{ $stat['color'] }}-500 transition-all duration-500" style="width: {{ $percentGood }}%" title="Consumo Meta"></div>
+                        <div class="h-full bg-{{ $stat['color'] }}-500 transition-all duration-500" <?php echo 'style="width: ' . $percentGood . '%"'; ?> title="Consumo Meta"></div>
                         
                         @if($percentExcess > 0)
-                            <div class="h-full bg-gray-400 relative transition-all duration-500" style="width: {{ $percentExcess }}%" title="Exceso Tolerado ({{ number_format($t3Excess, 1) }} kWh sobre factura)"></div>
+                            <div class="h-full bg-gray-400 relative transition-all duration-500" <?php echo 'style="width: ' . $percentExcess . '%"'; ?> title="Exceso Tolerado ({{ number_format($t3Excess, 1) }} kWh sobre factura)"></div>
                         @endif
 
                         @if(isset($stat['key']) && $stat['key'] === 'ballenas' && $percentCut > 0)
-                            <div class="h-full bg-rose-400 relative transition-all duration-500" style="width: {{ $percentCut }}%" title="Ahorro por Límite de Motor">
+                            <div class="h-full bg-rose-400 relative transition-all duration-500" <?php echo 'style="width: ' . $percentCut . '%"'; ?> title="Ahorro por Límite de Motor">
                                 <div class="absolute inset-0 opacity-40 mix-blend-overlay" style="background-image: repeating-linear-gradient(-45deg, transparent, transparent 4px, currentColor 4px, currentColor 8px); color: white;"></div>
                             </div>
                         @elseif($percentCut > 0)
-                            <div class="h-full bg-{{ $stat['color'] }}-300 opacity-50 transition-all duration-500" style="width: {{ $percentCut }}%"></div>
+                            <div class="h-full bg-{{ $stat['color'] }}-300 opacity-50 transition-all duration-500" <?php echo 'style="width: ' . $percentCut . '%"'; ?>></div>
                         @endif
                     </div>
                 </x-card>
@@ -228,7 +228,7 @@
                         </div>
                     </div>
                     <div class="h-1 w-full bg-gray-100">
-                        <div class="h-1 bg-indigo-500" style="width: {{ $percent }}%"></div>
+                        <div class="h-1 bg-indigo-500" <?php echo 'style="width: ' . $percent . '%"'; ?>></div>
                     </div>
                 </x-card>
             @endforeach

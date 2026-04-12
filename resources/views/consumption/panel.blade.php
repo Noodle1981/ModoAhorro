@@ -2,12 +2,12 @@
 
 @section('content')
 <div class="min-h-screen bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div id="panelData" data-charts="{{ json_encode($chartData) }}" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {{-- Header --}}
         <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
             <div class="flex items-center gap-4">
-                <div class="bg-gradient-to-br from-blue-500 to-blue-600 w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg">
+                <div class="bg-linear-to-br from-blue-500 to-blue-600 w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg">
                     <i class="bi bi-bar-chart-line text-xl"></i>
                 </div>
                 <div>
@@ -125,7 +125,7 @@
                 {{-- Consumption vs Temperature --}}
                 <x-card>
                     <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-red-500 rounded-lg flex items-center justify-center">
+                        <div class="w-10 h-10 bg-linear-to-br from-blue-500 to-red-500 rounded-lg flex items-center justify-center">
                             <i class="bi bi-thermometer-sun text-white"></i>
                         </div>
                         <div>
@@ -139,7 +139,7 @@
                 {{-- Motor v3 Tendencies --}}
                 <x-card>
                     <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <div class="w-10 h-10 bg-linear-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
                             <i class="bi bi-cpu text-white"></i>
                         </div>
                         <div>
@@ -153,7 +153,7 @@
                 {{-- Thermodynamic Composition (Tanks) --}}
                 <x-card>
                     <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 bg-gradient-to-br from-rose-500 to-orange-500 rounded-lg flex items-center justify-center">
+                        <div class="w-10 h-10 bg-linear-to-br from-rose-500 to-orange-500 rounded-lg flex items-center justify-center">
                             <i class="bi bi-layers text-white"></i>
                         </div>
                         <div>
@@ -167,7 +167,7 @@
                 {{-- Extreme Days --}}
                 <x-card>
                     <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-blue-500 rounded-lg flex items-center justify-center">
+                        <div class="w-10 h-10 bg-linear-to-br from-red-500 to-blue-500 rounded-lg flex items-center justify-center">
                             <i class="bi bi-clouds-fill text-white"></i>
                         </div>
                         <div>
@@ -183,7 +183,7 @@
                     {{-- Daily Cost --}}
                     <x-card>
                         <div class="flex items-center gap-3 mb-4">
-                            <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                            <div class="w-10 h-10 bg-linear-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center">
                                 <i class="bi bi-cash-coin text-white"></i>
                             </div>
                             <h3 class="font-semibold text-gray-900">Costo Diario</h3>
@@ -194,7 +194,7 @@
                     {{-- Price per kWh --}}
                     <x-card>
                         <div class="flex items-center gap-3 mb-4">
-                            <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg flex items-center justify-center">
+                            <div class="w-10 h-10 bg-linear-to-br from-amber-500 to-amber-600 rounded-lg flex items-center justify-center">
                                 <i class="bi bi-graph-up-arrow text-white"></i>
                             </div>
                             <h3 class="font-semibold text-gray-900">Precio Energía ($/kWh)</h3>
@@ -206,7 +206,7 @@
                 {{-- Total Consumption --}}
                 <x-card>
                     <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <div class="w-10 h-10 bg-linear-to-br from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center">
                             <i class="bi bi-graph-up text-white"></i>
                         </div>
                         <div>
@@ -225,7 +225,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const chartData = @json($chartData);
+    const chartData = JSON.parse(document.getElementById('panelData').dataset.charts);
     
     const labels = chartData.map(d => d.label);
     const consumptions = chartData.map(d => d.consumption);

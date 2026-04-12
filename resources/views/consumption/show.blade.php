@@ -7,7 +7,7 @@
         {{-- Header --}}
         <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
             <div class="flex items-center gap-4">
-                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg">
+                <div class="bg-linear-to-br from-blue-500 to-indigo-600 w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg">
                     <i class="bi bi-bar-chart-line text-xl"></i>
                 </div>
                 <div>
@@ -33,7 +33,7 @@
             </div>
             
             {{-- Billed Consumption --}}
-            <div class="text-center py-6 mb-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
+            <div class="text-center py-6 mb-6 bg-linear-to-br from-blue-50 to-indigo-50 rounded-xl">
                 <p class="text-sm text-gray-500 uppercase tracking-wide mb-1">Consumo Facturado</p>
                 <p class="text-4xl font-bold text-blue-600">{{ number_format($invoice->total_energy_consumed_kwh, 0) }}</p>
                 <p class="text-gray-500">kWh</p>
@@ -90,7 +90,7 @@
                                     <span class="text-sm text-gray-500">{{ number_format($pctCat, 1) }}%</span>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full" style="width: {{ $pctCat }}%"></div>
+                                    <div class="bg-linear-to-r from-blue-500 to-purple-500 h-2 rounded-full" style="width: {{ $pctCat . '%' }}"></div>
                                 </div>
                             </div>
                             <div class="ml-4 text-right">
