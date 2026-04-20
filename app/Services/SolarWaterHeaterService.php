@@ -22,8 +22,8 @@ class SolarWaterHeaterService
         // Load invoices
         $entity->load(['locality', 'contracts.invoices']);
 
-        // Use override or entity value
-        $peopleCount = $peopleCountOverride ?? $entity->people_count;
+        // Use override or entity value, default to 1 to avoid TypeError
+        $peopleCount = $peopleCountOverride ?? $entity->people_count ?? 1;
 
         // Get climate profile
         $climateProfile = null;

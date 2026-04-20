@@ -62,10 +62,10 @@ const navigation = computed(() => [
         name: 'Recomendaciones',
         color: 'text-energy-solar',
         items: [
-            { name: 'Proyecto Solar', icon: Sun, href: route('recomendaciones.solar-panels') },
+            { name: 'Proyecto Solar', icon: Sun, href: route('recomendaciones.solar') },
             { name: 'Reemplazos', icon: RefreshCw, href: route('recomendaciones.replacements') },
-            { name: 'Consumo Fantasma', icon: Ghost, href: route('recomendaciones.standby-analysis') },
-            { name: 'Salud Térmica', icon: Heart, href: currentEntity.value ? route('gestion.thermal.result', currentEntity.value.id) : '#' },
+            { name: 'Consumo Fantasma', icon: Ghost, href: route('recomendaciones.standby') },
+            { name: 'Salud Térmica', icon: Heart, href: route('recomendaciones.thermal-health') },
             { name: 'Mantenimiento', icon: Wrench, href: route('recomendaciones.maintenance') },
             { name: 'Vacaciones', icon: Palmtree, href: route('recomendaciones.vacation') },
         ]

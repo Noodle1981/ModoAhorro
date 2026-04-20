@@ -69,19 +69,19 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::prefix('analisis')->name('analisis.')->group(function () {
-        Route::get('/consumo-real', fn() => Inertia::render('Placeholder', ['title' => 'Análisis de Consumo Real']))->name('consumption');
-        Route::get('/ajuste-uso', fn() => Inertia::render('Placeholder', ['title' => 'Ajuste de Uso']))->name('usage');
-        Route::get('/optimizacion-horarios', fn() => Inertia::render('Placeholder', ['title' => 'Optimización de Horarios']))->name('grid-optimization');
+        Route::get('/consumo-real', 'App\Http\Controllers\AnalysisController@realConsumption')->name('consumption');
+        Route::get('/ajuste-uso', 'App\Http\Controllers\AnalysisController@usageAdjustment')->name('usage');
+        Route::post('/ajuste-uso/{invoice}/run', 'App\Http\Controllers\AnalysisController@runAdjustment')->name('usage.run');
+        Route::get('/optimizacion-horarios', 'App\Http\Controllers\AnalysisController@gridOptimization')->name('grid-optimization');
     });
 
     Route::prefix('recomendaciones')->name('recomendaciones.')->group(function () {
-        Route::get('/paneles-solares', fn() => Inertia::render('Placeholder', ['title' => 'Proyecto Paneles Solares']))->name('solar-panels');
-        Route::get('/calefones-solares', fn() => Inertia::render('Placeholder', ['title' => 'Calefones Solares']))->name('solar-water-heater');
-        Route::get('/reemplazos', fn() => Inertia::render('Placeholder', ['title' => 'Plan de Reemplazos Eficientes']))->name('replacements');
-        Route::get('/consumo-fantasma', fn() => Inertia::render('Placeholder', ['title' => 'Análisis Consumo Fantasma']))->name('standby-analysis');
-        Route::get('/mantenimiento', fn() => Inertia::render('Placeholder', ['title' => 'Plan de Mantenimiento']))->name('maintenance');
-        Route::get('/vacaciones', fn() => Inertia::render('Placeholder', ['title' => 'Modo Vacaciones']))->name('vacation');
-        Route::get('/medidor-inteligente', fn() => Inertia::render('Placeholder', ['title' => 'Medidor Inteligente (Demo)']))->name('smart-meter');
+        Route::get('/solar', 'App\Http\Controllers\RecommendationController@solar')->name('solar');
+        Route::get('/reemplazos', 'App\Http\Controllers\RecommendationController@replacements')->name('replacements');
+        Route::get('/consumo-fantasma', 'App\Http\Controllers\RecommendationController@standby')->name('standby');
+        Route::get('/salud-termica', 'App\Http\Controllers\RecommendationController@thermalHealth')->name('thermal-health');
+        Route::get('/mantenimiento', 'App\Http\Controllers\RecommendationController@maintenance')->name('maintenance');
+        Route::get('/vacaciones', 'App\Http\Controllers\RecommendationController@vacation')->name('vacation');
     });
 
     Route::prefix('sistema')->name('sistema.')->group(function () {
