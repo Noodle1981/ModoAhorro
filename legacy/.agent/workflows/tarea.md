@@ -1,0 +1,54 @@
+---
+description: Rediseño de link en navbar 
+---
+
+Actualmente tiene esta forma
+Principal
+Dashboard
+Gestión Física
+Contratos
+Infraestructura
+Análisis y Ahorro
+Consumo Real
+Presupuesto
+Optimización Red
+Mantenimiento
+Sistema
+Administración
+Benchmarks
+
+
+yo quiero de esta Principal
+
+Dashboard -  Cambiar por Entidades
+
+
+Gestión Física
+Desempeño Energéticco http://127.0.0.1:8000/entities/3/thermal/wizard
+Contratos http://127.0.0.1:8000/contracts
+Facturas http://127.0.0.1:8000/entities/home/3/invoices
+Infraestructura y Equipos http://127.0.0.1:8000/entities/3/infrastructure
+
+
+Análisis y Ahorro
+Consumo Real http://127.0.0.1:8000/consumption/panel
+Ajuste de Uso http://127.0.0.1:8000/usage-adjustments
+Presupuesto QUITAR
+Optimización Horarios http://127.0.0.1:8000/entities/3/grid-optimization
+Mantenimiento
+
+Recomendaciones 
+Paneles Solares http://127.0.0.1:8000/entities/3/budget
+Calefones Solares http://127.0.0.1:8000/entities/home/3/solar-water-heater
+Reemplazos http://127.0.0.1:8000/entities/home/3/replacements
+Consumo Fantasma http://127.0.0.1:8000/entities/home/3/standby-analysis
+Mantenimiento http://127.0.0.1:8000/entities/3/maintenance
+Vacaciones http://127.0.0.1:8000/entities/home/3/vacation
+Salud Termica http://127.0.0.1:8000/entities/3/thermal/result
+Medidor Inteligente /entities/{entity}/smart-meter-demo
+
+
+Sistema
+Administración
+Benchmarks
+

@@ -23,7 +23,7 @@ class ThermalAdviceEngine
                 'solution' => 'Instalar Burletes Autoadhesivos.',
                 'cost_level' => '$',
                 'impact' => 'Alto',
-                'icon' => 'fas fa-wind',
+                'icon' => 'Wind',
                 'color' => 'danger'
             ];
         }
@@ -36,7 +36,7 @@ class ThermalAdviceEngine
                 'solution' => 'Instalar Cortinas Blackout o un Toldo exterior.',
                 'cost_level' => '$$',
                 'impact' => 'Medio',
-                'icon' => 'fas fa-sun',
+                'icon' => 'Sun',
                 'color' => 'warning'
             ];
         }
@@ -49,7 +49,7 @@ class ThermalAdviceEngine
                 'solution' => 'Aplicar Membrana Líquida Blanca (Reflectiva).',
                 'cost_level' => '$$',
                 'impact' => 'Alto',
-                'icon' => 'fas fa-paint-roller',
+                'icon' => 'Paintbrush',
                 'color' => 'warning'
             ];
         }
@@ -62,7 +62,7 @@ class ThermalAdviceEngine
                 'solution' => 'Cambiar ventanas de dormitorios a Doble Vidrio (DVH).',
                 'cost_level' => '$$$$',
                 'impact' => 'Muy Alto',
-                'icon' => 'fas fa-window-maximize',
+                'icon' => 'Maximize',
                 'color' => 'info'
             ];
         }

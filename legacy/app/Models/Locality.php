@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Locality extends Model
+{
+    protected $fillable = [
+        'province_id',
+        'name',
+        'postal_code',
+        'latitude',
+        'longitude',
+    ];
+
+    public function province()
+    {
+        return $this->belongsTo(Province::class);
+    }
+
+    public function entities()
+    {
+        return $this->hasMany(Entity::class);
+    }
+}

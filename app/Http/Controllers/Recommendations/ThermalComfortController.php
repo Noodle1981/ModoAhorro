@@ -6,6 +6,7 @@ use App\Models\Entity;
 use App\Services\Thermal\ThermalScoreService;
 use App\Services\Thermal\ThermalAdviceEngine;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ThermalComfortController extends Controller
 {
@@ -18,22 +19,37 @@ class ThermalComfortController extends Controller
         $this->adviceEngine = $adviceEngine;
     }
 
-    public function index(Entity $entity)
+    public function index(Request $request, Entity $entity)
     {
-        if ($entity->thermal_profile) {
-            return redirect()->route('thermal.result', $entity);
+        if ($request->user()->cannot('view', $entity)) {
+            abort(403);
         }
-        return redirect()->route('thermal.wizard', $entity);
+
+        if ($entity->thermal_profile) {
+            return redirect()->route('gestion.thermal.result', $entity);
+        }
+        return redirect()->route('gestion.thermal.wizard', $entity);
     }
 
-    public function wizard(Entity $entity)
+    public function wizard(Request $request, Entity $entity)
     {
+        if ($request->user()->cannot('view', $entity)) {
+            abort(403);
+        }
+
         $config = config("entity_types.{$entity->type}", []);
-        return view('thermal.wizard', compact('entity', 'config'));
+        return Inertia::render('Thermal/Wizard', [
+            'entity' => $entity,
+            'config' => $config
+        ]);
     }
 
     public function store(Request $request, Entity $entity)
     {
+        if ($request->user()->cannot('view', $entity)) {
+            abort(403);
+        }
+
         $config = config("entity_types.{$entity->type}", []);
         $validated = $request->validate([
             'roof_type' => 'required|string',
@@ -56,21 +72,31 @@ class ThermalComfortController extends Controller
 
         $entity->update(['thermal_profile' => $profile]);
 
-        return redirect()->route($config['route_prefix'] . '.show', $entity)
+        return redirect()->route('gestion.thermal.result', $entity)
             ->with('success', "Diagnóstico completado. Tu casa es Categoría " . $result['energy_label']);
     }
 
-    public function result(Entity $entity)
+    public function result(Request $request, Entity $entity)
     {
+        if ($request->user()->cannot('view', $entity)) {
+            abort(403);
+        }
+
         $config = config("entity_types.{$entity->type}", []);
         if (!$entity->thermal_profile) {
-            return redirect()->route($config['route_prefix'] . '.thermal.wizard', $entity);
+            return redirect()->route('gestion.thermal.wizard', $entity);
         }
 
         $profile = $entity->thermal_profile;
         $scoreResult = $this->profileService->calculate($profile);
         $recommendations = $this->adviceEngine->generateAdvice($profile, $scoreResult['thermal_score']);
 
-        return view('thermal.result', compact('entity', 'profile', 'scoreResult', 'recommendations', 'config'));
+        return Inertia::render('Thermal/Result', [
+            'entity' => $entity,
+            'profile' => $profile,
+            'scoreResult' => $scoreResult,
+            'recommendations' => $recommendations,
+            'config' => $config
+        ]);
     }
 }

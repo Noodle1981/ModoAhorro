@@ -1,231 +1,58 @@
-# ModoAhorro - Sistema de Gestión Energética
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-Aplicación Laravel para análisis y optimización del consumo energético en hogares, comercios y oficinas.
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
----
+## About Laravel
 
-## 📚 Documentación Completa
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-> **🚀 [Ver ROADMAP MAESTRO](docs/ROADMAP_MAESTRO.md)** - Visión completa del proyecto, fases de desarrollo y hitos  
-> **📖 [Índice de Documentación](docs/README.md)** - Navegación completa de toda la documentación técnica  
-> **🔬 [Auditoría Técnica](docs/AUDITORIA.MD)** - Análisis profundo del motor de cálculo
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
----
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## 🎯 Características Principales
+## Learning Laravel
 
-### Gestión de Entidades
-- Soporte para múltiples tipos: Hogar, Comercio, Oficina
-- Gestión de habitaciones por entidad
-- Sala "Portátiles" creada automáticamente para equipos recargables
-- **Dashboards específicos por tipo de entidad**
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
 
-### Stack Tecnológico Moderno
-- **Frontend**: Tailwind CSS + UI Kit Components + Alpine.js
-- **Componentes Blade Reutilizables**: Card, Button, Badge, Table, Input, Select, Alert, Stat-Card
-- **Backend**: Laravel 12.x con Livewire
-- **Gráficos**: Chart.js con temas Tailwind
+In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-### Equipamiento
-- **39 equipos** de ejemplo en base de datos
-- **8 categorías**: Climatización, Iluminación, Electrodomésticos, Entretenimiento, Cocina, Oficina, **Portátiles**, Otros
-- Gestión por habitación con potencia nominal (W)
-- Equipos portátiles (notebooks, tablets, cargadores) en categoría dedicada
+You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
 
-### Análisis de Consumo
-- **Panel de consumo avanzado** con paginación y gráficos interactivos (Chart.js)
-- **Correlación Climática**: Análisis de consumo vs temperatura y días extremos
-- **KPIs Financieros**: Seguimiento de costo diario y evolución del precio del kWh
-- Desglose por categoría con porcentajes
-- Agrupación por habitación en vistas de ajuste
-- Cálculo automático de kWh basado en potencia y uso
+## Agentic Development
 
-### Ajustes de Uso
-- Configuración de horas/día y días de uso por equipo
-- Soporte para uso diario, semanal y ocasional
-- **Interfaz visual con sliders y selectores de días**
-- Histórico de equipos inactivos preservado en facturas pasadas
-- Visualización de consumo calculado por equipo
-
-### Módulos de Valor Agregado
-- **Confort Térmico**: Autodiagnóstico bioclimático con wizard visual (Orientación, Aislación, Ventana Sur) con recomendaciones personalizadas.
-- **Mantenimiento**: Gestión de tareas (limpieza filtros, etc.) con penalización de consumo por vencimiento.
-- **Solar Térmico**: Calculadora de ahorro para calefones solares vs Gas/Electricidad (Precios actualizados San Juan).
-- **Standby Analysis**: Análisis de consumo fantasma con toggles visuales
-- **Reemplazos**: Catálogo de oportunidades de ahorro con cálculo de ROI
-- **Clima**: Integración con Open-Meteo para visualizar "Días de Calor > 28°C" en facturas.
-
-## 🎨 UI Kit Components
-
-Sistema de componentes Blade reutilizables con Tailwind CSS:
-
-```php
-// Cards
-<x-card hover>Contenido</x-card>
-
-// Buttons
-<x-button variant="primary">Acción</x-button>
-<x-button variant="secondary" size="sm">...</x-button>
-
-// Badges
-<x-badge variant="success" dot>Activo</x-badge>
-
-// Tables
-<x-table hover>...</x-table>
-
-// Inputs
-<x-input name="email" label="Email" icon="envelope" />
-
-// Alerts
-<x-alert type="warning">Mensaje importante</x-alert>
-
-// Stat Cards
-<x-stat-card title="Total" :value="100" icon="bi-graph-up" color="blue" />
-```
-
-## 🚀 Instalación
+Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
 
 ```bash
-# Clonar repositorio
-git clone <repository-url>
-cd ModoAhorroFINAL26
+composer require laravel/boost --dev
 
-# Instalar dependencias
-composer install
-npm install
-
-# Configurar entorno
-cp .env.example .env
-php artisan key:generate
-
-# Migrar y poblar base de datos
-php artisan migrate:fresh --seed
-
-# Iniciar servidor
-php artisan serve
-npm run dev
+php artisan boost:install
 ```
 
-## 📊 Estructura de Base de Datos
+Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
 
-### Modelos Principales
-- **Entity**: Hogares, comercios u oficinas
-- **Room**: Habitaciones/ambientes de cada entidad
-- **Equipment**: Equipos eléctricos con potencia nominal
-- **Invoice**: Facturas de energía con consumo real
-- **EquipmentUsage**: Registro de uso de equipos por período
-- **Contract**: Contratos con proveedores de energía
+## Contributing
 
-### Seeders Incluidos
-- `DatosHogarSeeder`: Casa de prueba completa con 39 equipos
-- `EquipmentCategorySeeder`: 8 categorías (incluye Portátiles)
-- `ProvinceSeeder` / `LocalitySeeder`: Datos geográficos
-- `PlanSeeder`: Planes de suscripción
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-## 🔧 Tecnologías
+## Code of Conduct
 
-- **Backend**: Laravel 12.x + Livewire
-- **Frontend**: Blade Templates + Tailwind CSS + Alpine.js
-- **UI Kit**: Componentes Blade reutilizables (Card, Button, Badge, Table, Input, etc.)
-- **Base de datos**: SQLite (desarrollo) / MySQL (producción)
-- **Build**: Vite
-- **Gráficos**: Chart.js
-- **Análisis**: ConsumptionAnalysisService para cálculos de consumo
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-## 📁 Estructura del Proyecto
+## Security Vulnerabilities
 
-```
-app/
-├── Http/
-│   └── Controllers/
-│       ├── Entity/           # Controladores por tipo de entidad
-│       │   ├── HomeEntityController.php
-│       │   ├── OfficeEntityController.php
-│       │   └── TradeEntityController.php
-│       └── Core/             # Controladores generales
-│
-├── Services/                 # Lógica de negocio
-│   ├── Core/                 # Servicios principales
-│   ├── Climate/              # Integración climática
-│   ├── Recommendations/      # Recomendaciones
-│   ├── Solar/                # Cálculos solares
-│   └── IoT/                  # Preparación IoT
-│
-resources/views/
-├── components/               # UI Kit Components
-│   ├── card.blade.php
-│   ├── button.blade.php
-│   ├── badge.blade.php
-│   ├── table.blade.php
-│   ├── input.blade.php
-│   └── ...
-├── entities/                 # Vistas por tipo
-│   ├── home/
-│   ├── office/
-│   └── trade/
-└── layouts/                  # Layouts principales
-```
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
-## 📱 Rutas Principales
-
-- `/dashboard` - Panel principal
-- `/entities/home/*` - Gestión de hogares
-- `/entities/office/*` - Gestión de oficinas
-- `/entities/trade/*` - Gestión de comercios
-- `/consumption/panel` - Panel de análisis de consumo
-- `/usage-adjustments/{invoice}/edit` - Ajuste de uso por factura
-- `/equipment` - Gestión de equipos por habitación
-
-## 🎨 Características UX
-
-- **Diseño moderno** con Tailwind CSS y gradientes
-- **Componentes reutilizables** para consistencia visual
-- **Interactividad** con Alpine.js (tabs, toggles, sliders)
-- Comparación facturado vs calculado con código de colores
-- Desglose por categoría con gráficos de barras
-- Preservación de histórico de equipos inactivos
-- **Responsive design** para móviles y desktop
-
-## 📝 Roadmap y Próximos Pasos
-
-El proyecto sigue un roadmap estructurado en 5 fases:
-
-### **FASE 0: Estabilización del Motor** (Actual - 2-3 semanas)
-- Refactorización de clasificación de equipos
-- Validación pre-calibración
-- Mejoras en manejo climático
-- Audit trail y logging
-
-### **FASE 1: Optimización y UX** (4 semanas)
-- Preview en tiempo real de ajustes
-- Performance y caché
-- Reportes y exportación
-- Sistema de notificaciones
-
-### **FASE 2: Inteligencia y Automatización** (6 semanas)
-- Machine Learning para patrones
-- Benchmarking inteligente
-- Asistente virtual con IA
-
-### **FASE 3: IoT y Tiempo Real** (8 semanas)
-- Integración con medidores inteligentes
-- Dashboard en vivo
-- Control remoto de equipos
-
-### **FASE 4: Monetización** (6 semanas)
-- Sistema de suscripciones
-- Marketplace de productos
-- Servicios profesionales
-
-**📖 Ver detalles completos en [ROADMAP_MAESTRO.md](docs/ROADMAP_MAESTRO.md)**
-
-## 🐛 Debugging
-
-Los archivos de prueba temporales se limpian automáticamente. Si encuentras alguno:
-```bash
-Remove-Item debug_*.php, test_*.php -ErrorAction SilentlyContinue
-```
-
-## 📄 Licencia
+## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

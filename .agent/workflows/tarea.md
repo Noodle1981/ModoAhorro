@@ -1,26 +1,16 @@
 ---
-description: Rediseño de link en navbar 
+description: Rediseño de link en navbar
 ---
 
-Actualmente tiene esta forma
-Principal
-Dashboard
-Gestión Física
-Contratos
-Infraestructura
-Análisis y Ahorro
-Consumo Real
-Presupuesto
-Optimización Red
-Mantenimiento
-Sistema
-Administración
-Benchmarks
+Trabajar con estas direcciones, revisar en las vistas legacy
 
 
-yo quiero de esta Principal
 
-Dashboard -  Cambiar por Entidades
+D:\ModoAhorro\legacy\resources\views\welcome.blade.php
+
+Dashboard -  Cambiar por Entidades  D:\ModoAhorro\legacy\resources\views\welcome.blade.php
+
+Dentro del perfil, tener un navbar lateral, podemos trabajar en las vistas vacias, pero preparando rutas y demas! 
 
 
 Gestión Física
@@ -51,4 +41,3 @@ Medidor Inteligente /entities/{entity}/smart-meter-demo
 Sistema
 Administración
 Benchmarks
-

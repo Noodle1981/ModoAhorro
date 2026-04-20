@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,22 +16,27 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
+        Schema::disableForeignKeyConstraints();
+        try {
+            $this->call([
                 // 1. Datos base
-            ProvinceSeeder::class,
-            LocalitySeeder::class,
-            PlanSeeder::class,
-            UtilityCompanySeeder::class,
-            EquipmentCategorySeeder::class,
-            EquipmentTypeSeeder::class,
+                ProvinceSeeder::class,
+                LocalitySeeder::class,
+                PlanSeeder::class,
+                UtilityCompanySeeder::class,
+                EquipmentCategorySeeder::class,
+                EquipmentTypeSeeder::class,
 
-            // 2. Datos de entidades (hogar, oficina, comercio)
-            BackupCasa27Seeder::class,
-            DatosOficinaSeeder::class,
-            DatosComercioSeeder::class,
+                // 2. Datos de entidades (hogar, oficina, comercio)
+                BackupCasa27Seeder::class,
+                DatosOficinaSeeder::class,
+                DatosComercioSeeder::class,
 
                 // 3. Usuario de prueba (AL FINAL para asignar entidades)
-            UserSeeder::class,
-        ]);
+                UserSeeder::class,
+            ]);
+        } finally {
+            Schema::enableForeignKeyConstraints();
+        }
     }
 }

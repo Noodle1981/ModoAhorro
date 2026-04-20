@@ -1,8 +1,27 @@
-/* Tailwind CSS */
-@import "tailwindcss";
+@import 'tailwindcss';
 
-/* Bootstrap Icons & FontAwesome (Iconos) */
-@import 'bootstrap-icons/font/bootstrap-icons.css';
-@import '@fortawesome/fontawesome-free/css/all.min.css';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../**/*.vue';
 
-/* Custom Styles if needed */
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Colores Semánticos Energía */
+    --color-energy-success: var(--color-emerald-500);
+    --color-energy-solar: var(--color-teal-600);
+    --color-energy-consumption: var(--color-blue-600);
+    --color-energy-critical: var(--color-rose-500);
+    --color-energy-warning: var(--color-amber-500);
+    --color-energy-surface: var(--color-slate-50);
+}
+
+@layer base {
+    body {
+        @apply bg-energy-surface text-slate-900;
+    }
+}
+

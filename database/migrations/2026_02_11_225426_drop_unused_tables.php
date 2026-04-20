@@ -18,7 +18,7 @@ return new class extends Migration
             // Drop unused tables
             Schema::dropIfExists('device_usages');
             Schema::dropIfExists('devices');
-            Schema::dropIfExists('utility_companies');
+            // Schema::dropIfExists('utility_companies');
         } finally {
             Schema::enableForeignKeyConstraints();
         }
