@@ -57,8 +57,7 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         
-        // Use the same logic as HandleInertiaRequests to get the active entity
-        $entities = $user->entities()->with('locality')->get();
+        $entities = $user->entities()->with('locality.province')->get();
         $currentEntityId = session('active_entity_id');
         $currentEntity = $entities->where('id', $currentEntityId)->first() ?? $entities->first();
 
@@ -66,8 +65,20 @@ class DashboardController extends Controller
             abort(403);
         }
 
+        // Obtener clima actual e histórico para indicadores del Home
+        $weatherService = app(\App\Services\ClimateService::class);
+        $weather = null;
+        $climateProfile = null;
+        
+        if ($currentEntity && $currentEntity->locality) {
+            $weather = $weatherService->getCurrentWeather($currentEntity->locality);
+            $climateProfile = $weatherService->getLocalityClimateProfile($currentEntity->locality);
+        }
+
         return Inertia::render('Dashboard/Home', [
             'currentEntity' => $currentEntity,
+            'currentWeather' => $weather,
+            'climateProfile' => $climateProfile,
         ]);
     }
 }

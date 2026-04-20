@@ -8,6 +8,7 @@ use App\Models\Proveedor;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class ContractController extends Controller
 {
@@ -18,22 +19,36 @@ class ContractController extends Controller
     {
         $user = $request->user();
         
-        // Get user's entities to filter contracts and for the creation dropdown
-        $entities = $user->entities()->get();
-        $entityIds = $entities->pluck('id');
+        $entities = $user->entities()->with('locality')->get();
+        $currentEntityId = session('active_entity_id');
+        $currentEntity = $entities->where('id', $currentEntityId)->first() ?? $entities->first();
+
+        // Si no hay entidades, enviamos vacío
+        if (!$currentEntity) {
+            return Inertia::render('Entities/Contracts/Index', [
+                'contracts' => [],
+                'entities' => [],
+                'proveedores' => [],
+                'active_entity_id' => null
+            ]);
+        }
 
         $contracts = Contract::with(['entity', 'proveedor'])
-            ->whereIn('entity_id', $entityIds)
+            ->whereIn('entity_id', $entities->pluck('id'))
             ->orderBy('is_active', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $proveedores = Proveedor::orderBy('name')->get();
+        // Filtrar proveedores por la provincia de la entidad activa
+        $proveedores = Proveedor::where('province_id', $currentEntity->locality->province_id ?? 0)
+            ->orderBy('name')
+            ->get();
 
         return Inertia::render('Entities/Contracts/Index', [
             'contracts' => $contracts,
             'entities' => $entities,
             'proveedores' => $proveedores,
+            'active_entity_id' => $currentEntity->id
         ]);
     }
 
@@ -46,12 +61,17 @@ class ContractController extends Controller
             'entity_id' => 'required|exists:entities,id',
             'proveedor_id' => 'required|exists:proveedores,id',
             'supply_number' => 'required|string|max:255',
+            'meter_number' => 'nullable|string|max:255',
+            'contract_number' => 'nullable|string|max:255|unique:contracts,contract_number',
             'rate_name' => 'required|string|max:255',
+            'start_date' => 'nullable|date',
             'is_three_phase' => 'required|boolean',
             'contracted_power_kw_p1' => 'required|numeric|min:0',
             'contracted_power_kw_p2' => 'nullable|numeric|min:0',
             'contracted_power_kw_p3' => 'nullable|numeric|min:0',
             'is_active' => 'required|boolean',
+        ], [
+            'contract_number.unique' => 'Este número de contrato ya se encuentra registrado en el sistema.'
         ]);
 
         $entity = Entity::findOrFail($validated['entity_id']);
@@ -80,12 +100,22 @@ class ContractController extends Controller
             'entity_id' => 'required|exists:entities,id',
             'proveedor_id' => 'required|exists:proveedores,id',
             'supply_number' => 'required|string|max:255',
+            'meter_number' => 'nullable|string|max:255',
+            'contract_number' => [
+                'nullable', 
+                'string', 
+                'max:255', 
+                Rule::unique('contracts', 'contract_number')->ignore($contract->id)
+            ],
             'rate_name' => 'required|string|max:255',
+            'start_date' => 'nullable|date',
             'is_three_phase' => 'required|boolean',
             'contracted_power_kw_p1' => 'required|numeric|min:0',
             'contracted_power_kw_p2' => 'nullable|numeric|min:0',
             'contracted_power_kw_p3' => 'nullable|numeric|min:0',
             'is_active' => 'required|boolean',
+        ], [
+            'contract_number.unique' => 'Este número de contrato ya pertenece a otro registro.'
         ]);
 
         // Security check: Ensure user owns the current and target entity

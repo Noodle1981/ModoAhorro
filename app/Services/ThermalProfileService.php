@@ -50,6 +50,14 @@ class ThermalProfileService
             $score -= 5; // Pérdida de calor en invierno en hemisferio sur
         }
 
+        // 4. Orientación de Fachada
+        $orientationImpact = [
+            'norte_sur' => 15, // Ideal: Sol en invierno, sombra en verano
+            'este_oeste' => -10, // Crítico: Mayor recalentamiento
+            'diagonal' => 0,
+        ];
+        $score += $orientationImpact[$profile['orientation'] ?? 'norte_sur'] ?? 0;
+
         $sunImpact = [
             'low' => -5,
             'medium' => 0,

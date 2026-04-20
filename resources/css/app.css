@@ -13,7 +13,7 @@
     /* Colores Semánticos Energía */
     --color-energy-success: var(--color-emerald-500);
     --color-energy-solar: var(--color-teal-600);
-    --color-energy-consumption: var(--color-blue-600);
+    --color-energy-consumption: var(--color-emerald-600);
     --color-energy-critical: var(--color-rose-500);
     --color-energy-warning: var(--color-amber-500);
     --color-energy-surface: var(--color-slate-50);

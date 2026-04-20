@@ -107,10 +107,6 @@ const iconMap = {
                 </div>
             </div>
 
-            <footer class="mt-20 text-center space-y-2">
-                <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest tracking-tighter italic">Nomenclatura Santa de Sistema v3.1</p>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-tighter">Powered by <span class="text-energy-consumption">ModoAhorro Engine</span></p>
-            </footer>
         </main>
     </div>
 </template>

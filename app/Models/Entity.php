@@ -19,17 +19,29 @@ class Entity extends Model
     protected $fillable = [
         'name',
         'type',
+        'usage_type',
         'address_street',
         'address_postal_code',
         'locality_id',
         'description',
         'square_meters',
         'people_count',
+        'construction_year',
+        'has_gas',
+        'has_solar',
+        'has_business_activity',
+        'business_type',
         'thermal_profile',
     ];
 
     protected $casts = [
         'thermal_profile' => 'array',
+        'has_gas' => 'boolean',
+        'has_solar' => 'boolean',
+        'has_business_activity' => 'boolean',
+        'construction_year' => 'integer',
+        'people_count' => 'integer',
+        'square_meters' => 'float',
     ];
 
     public function users()

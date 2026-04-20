@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Contract extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'entity_id',
         'proveedor_id',
@@ -23,6 +25,21 @@ class Contract extends Model
         'start_date',
         'end_date',
         'is_active',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'is_active' => 'boolean',
+        'is_three_phase' => 'boolean',
+        'contracted_power_kw_p1' => 'decimal:3',
+        'contracted_power_kw_p2' => 'decimal:3',
+        'contracted_power_kw_p3' => 'decimal:3',
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     public function entity()

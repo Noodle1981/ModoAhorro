@@ -172,23 +172,5 @@ defineProps({
             </div>
         </section>
 
-        <!-- Footer -->
-        <footer class="bg-slate-900 py-20 text-white">
-            <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-                <div class="flex items-center gap-3 opacity-50">
-                    <Zap :size="24" />
-                    <span class="text-lg font-black tracking-tight">ModoAhorro</span>
-                </div>
-                <div class="flex gap-8 text-xs font-black uppercase tracking-widest text-slate-500">
-                    <a href="#" class="hover:text-white transition-colors">Privacidad</a>
-                    <a href="#" class="hover:text-white transition-colors">Términos</a>
-                    <a href="#" class="hover:text-white transition-colors">Docs</a>
-                </div>
-                <p class="text-xs font-bold text-slate-500 tracking-tight">
-                    Laravel v{{ laravelVersion }} (PHP v{{ phpVersion }}) <br>
-                    &copy; 2026 ModoAhorro. Diseñado con precisión.
-                </p>
-            </div>
-        </footer>
     </div>
 </template>

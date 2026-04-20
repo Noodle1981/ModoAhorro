@@ -45,6 +45,7 @@ Route::middleware(['auth'])->group(function () {
         
         // Módulo Térmico
         Route::prefix('thermal')->name('thermal.')->group(function () {
+            Route::get('/{entity}', 'App\Http\Controllers\Recommendations\ThermalComfortController@index')->name('index');
             Route::get('/wizard/{entity?}', 'App\Http\Controllers\Recommendations\ThermalComfortController@wizard')->name('wizard');
             Route::get('/result/{entity?}', 'App\Http\Controllers\Recommendations\ThermalComfortController@result')->name('result');
             Route::post('/wizard/{entity?}', 'App\Http\Controllers\Recommendations\ThermalComfortController@store')->name('store');
@@ -56,6 +57,10 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/facturas/{invoice}', 'App\Http\Controllers\InvoiceController@destroy')->name('invoices.destroy');
 
         Route::get('/infraestructura', 'App\Http\Controllers\InfrastructureController@index')->name('infrastructure');
+        
+        // Perfil de la Entidad (Mi Casa)
+        Route::get('/entidad/perfil', 'App\Http\Controllers\EntityController@edit')->name('entity.edit');
+        Route::put('/entidad/perfil', 'App\Http\Controllers\EntityController@update')->name('entity.update');
         
         // Rooms
         Route::post('/ambientes', 'App\Http\Controllers\InfrastructureController@storeRoom')->name('rooms.store');

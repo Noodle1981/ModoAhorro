@@ -301,21 +301,15 @@ class ClimateService
             ->where('date', '>=', $oneYearAgo->format('Y-m-d'))
             ->count();
 
-        if ($count < 300) {
-            $fetchResult = $this->fetchHistoricalData($locality, $oneYearAgo, $yesterday);
-            if ($fetchResult['success']) {
-                $this->saveWeatherData($locality, $fetchResult['data']);
+        if ($count < 200) { // Bajamos el umbral para aceptar perfiles parciales si la API es lenta
+            try {
+                $fetchResult = $this->fetchHistoricalData($locality, $oneYearAgo, $yesterday);
+                if ($fetchResult['success']) {
+                    $this->saveWeatherData($locality, $fetchResult['data']);
+                }
+            } catch (\Exception $e) {
+                Log::warning("No se pudo descargar histórica: " . $e->getMessage());
             }
-        }
-
-        $cacheKey = "climate_profile_{$locality->latitude}_{$locality->longitude}";
-
-        if ($count < 300 && isset(self::$cache[$cacheKey])) {
-            unset(self::$cache[$cacheKey]);
-        }
-
-        if (isset(self::$cache[$cacheKey])) {
-            return self::$cache[$cacheKey];
         }
 
         $data = ClimateData::where('latitude', $locality->latitude)
@@ -323,7 +317,9 @@ class ClimateService
             ->where('date', '>=', $oneYearAgo->format('Y-m-d'))
             ->get();
 
-        if ($data->isEmpty()) return [];
+        if ($data->isEmpty()) {
+            return $this->getRegionalFallbackProfile($locality);
+        }
 
         $avgTemp = round($data->avg('temp_avg'), 1);
         $hdd = $data->sum('heating_degree_days');
@@ -336,7 +332,7 @@ class ClimateService
             default     => 'V (Muy Fría)',
         };
 
-        $result = [
+        return [
             'avg_temperature' => $avgTemp,
             'climate_zone' => $zone,
             'avg_temp' => $avgTemp,
@@ -348,10 +344,57 @@ class ClimateService
             'total_days_analyzed' => $data->count(),
             'data_start_date' => $data->min('date'),
             'data_end_date' => $data->max('date'),
+            'is_fallback' => false
+        ];
+    }
+
+    /**
+     * Proporciona un perfil climático estimado por región si falla la API
+     */
+    private function getRegionalFallbackProfile(Locality $locality): array
+    {
+        $province = $locality->province->name ?? '';
+        
+        $presets = [
+            'San Juan' => [
+                'zone' => 'III (Templada)',
+                'temp' => 18.2,
+                'hdd' => 1150,
+                'rad' => 1950,
+            ],
+            'Mendoza' => [
+                'zone' => 'III-IV (Templada/Fría)',
+                'temp' => 16.5,
+                'hdd' => 1380,
+                'rad' => 1820,
+            ],
+            'San Luis' => [
+                'zone' => 'III (Templada)',
+                'temp' => 17.1,
+                'hdd' => 1210,
+                'rad' => 1880,
+            ],
         ];
 
-        self::$cache[$cacheKey] = $result;
-        return $result;
+        $p = $presets[$province] ?? [
+            'zone' => 'No definida',
+            'temp' => 18.0,
+            'hdd' => 1000,
+            'rad' => 1800,
+        ];
+
+        return [
+            'avg_temperature' => $p['temp'],
+            'climate_zone' => $p['zone'],
+            'avg_temp' => $p['temp'],
+            'avg_max_temp' => $p['temp'] + 7,
+            'avg_min_temp' => $p['temp'] - 7,
+            'avg_cloud_cover' => 20,
+            'avg_sunshine_duration' => 8.5,
+            'avg_radiation' => $p['rad'],
+            'total_days_analyzed' => 365,
+            'is_fallback' => true
+        ];
     }
 
     /**
@@ -428,6 +471,47 @@ class ClimateService
             'cold_days_count' => $data['cold'],
             'avg_temp_avg' => $data['avg'],
             'total_days' => 30
+        ];
+    }
+
+    /**
+     * Obtiene el clima actual para una localidad (Tiempo Real)
+     */
+    public function getCurrentWeather(Locality $locality): array
+    {
+        if ($locality->latitude && $locality->longitude) {
+            try {
+                $response = Http::timeout(5)->get('https://api.open-meteo.com/v1/forecast', [
+                    'latitude' => $locality->latitude,
+                    'longitude' => $locality->longitude,
+                    'current_weather' => true,
+                    'timezone' => 'auto',
+                ]);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    return [
+                        'success' => true,
+                        'temp' => $data['current_weather']['temperature'],
+                        'windspeed' => $data['current_weather']['windspeed'],
+                        'condition_code' => $data['current_weather']['weathercode'],
+                        'is_fallback' => false
+                    ];
+                }
+            } catch (\Exception $e) {
+                Log::warning("Fallo API Clima: " . $e->getMessage());
+            }
+        }
+
+        // Fallback estacional si falla la API
+        $stats = $this->getFallbackStats(now());
+        return [
+            'success' => true,
+            'temp' => $stats['avg_temp_avg'],
+            'windspeed' => 12,
+            'condition_code' => 0,
+            'is_fallback' => true,
+            'message' => 'Basado en promedio mensual'
         ];
     }
 }

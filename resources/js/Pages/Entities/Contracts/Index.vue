@@ -13,13 +13,19 @@ import {
     MoreHorizontal,
     X,
     CheckCircle2,
-    Search
+    Search,
+    MapPin,
+    AlertCircle,
+    Cpu,
+    Hash,
+    Calendar
 } from 'lucide-vue-next';
 
 const props = defineProps({
     contracts: Array,
     entities: Array,
     proveedores: Array,
+    active_entity_id: [Number, String],
     flash: Object
 });
 
@@ -28,10 +34,13 @@ const editingContract = ref(null);
 
 const form = useForm({
     id: null,
-    entity_id: '',
+    entity_id: props.active_entity_id || '',
     proveedor_id: '',
     supply_number: '',
+    meter_number: '',
+    contract_number: '',
     rate_name: '',
+    start_date: '',
     is_three_phase: false,
     contracted_power_kw_p1: 0,
     contracted_power_kw_p2: 0,
@@ -39,10 +48,15 @@ const form = useForm({
     is_active: true,
 });
 
+const activeEntity = computed(() => {
+    return props.entities.find(e => e.id === props.active_entity_id);
+});
+
 const openCreateModal = () => {
-    editingContract.ref = null;
+    editingContract.value = null;
     form.reset();
-    form.is_active = props.contracts.length === 0; // Default active if first contract
+    form.entity_id = props.active_entity_id;
+    form.is_active = props.contracts.length === 0;
     showModal.value = true;
 };
 
@@ -51,8 +65,11 @@ const openEditModal = (contract) => {
     form.id = contract.id;
     form.entity_id = contract.entity_id;
     form.proveedor_id = contract.proveedor_id;
-    form.supply_number = contract.supply_number;
-    form.rate_name = contract.rate_name;
+    form.supply_number = contract.supply_number || '';
+    form.meter_number = contract.meter_number || '';
+    form.contract_number = contract.contract_number || '';
+    form.rate_name = contract.rate_name || '';
+    form.start_date = contract.start_date || '';
     form.is_three_phase = !!contract.is_three_phase;
     form.contracted_power_kw_p1 = contract.contracted_power_kw_p1;
     form.contracted_power_kw_p2 = contract.contracted_power_kw_p2 || 0;
@@ -77,6 +94,7 @@ const closeModal = () => {
     showModal.value = false;
     editingContract.value = null;
     form.reset();
+    form.entity_id = props.active_entity_id;
 };
 
 const toggleActive = (contract) => {
@@ -96,6 +114,7 @@ const filteredContracts = computed(() => {
     return props.contracts.filter(c => 
         c.entity.name.toLowerCase().includes(query) || 
         c.supply_number.toLowerCase().includes(query) ||
+        (c.meter_number && c.meter_number.toLowerCase().includes(query)) ||
         c.proveedor.name.toLowerCase().includes(query)
     );
 });
@@ -107,6 +126,12 @@ const stats = computed(() => {
         power: props.contracts.filter(c => c.is_active).reduce((acc, c) => acc + parseFloat(c.contracted_power_kw_p1), 0)
     };
 });
+
+const formatDate = (dateString) => {
+    if (!dateString) return '--/--';
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
+};
 </script>
 
 <template>
@@ -124,7 +149,9 @@ const stats = computed(() => {
                     <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
                         Gestión de <span class="text-energy-consumption">Contratos</span>
                     </h1>
-                    <p class="text-lg text-slate-500 font-medium">Configure sus medidores y suministros para habilitar el análisis de eficiencia.</p>
+                    <p v-if="activeEntity" class="text-lg text-slate-500 font-medium">
+                        Configurando suministros para <span class="text-slate-900 font-black">{{ activeEntity.name }}</span>
+                    </p>
                 </div>
                 
                 <div class="flex items-center gap-4">
@@ -177,7 +204,7 @@ const stats = computed(() => {
                 </div>
             </div>
 
-            <!-- Empty State -->
+            <!-- Contracts Grid -->
             <div v-if="filteredContracts.length === 0" class="bg-white rounded-[48px] p-20 text-center border border-dashed border-slate-200 shadow-inner">
                 <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-8">
                     <FileText :size="40" class="text-slate-200" />
@@ -189,7 +216,6 @@ const stats = computed(() => {
                 </button>
             </div>
 
-            <!-- Contracts Grid -->
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div 
                     v-for="contract in filteredContracts" 
@@ -221,8 +247,12 @@ const stats = computed(() => {
                     <div class="px-8 flex-1 space-y-4">
                         <div class="bg-slate-50/50 rounded-2xl p-4 space-y-3">
                             <div class="flex items-center justify-between">
-                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">N° Suministro</span>
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">N° Suministro / NIU</span>
                                 <span class="text-xs font-mono font-black text-slate-900">{{ contract.supply_number }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Inicio Contrato</span>
+                                <span class="text-[10px] font-bold text-slate-600">{{ formatDate(contract.start_date) }}</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tarifa</span>
@@ -287,23 +317,41 @@ const stats = computed(() => {
                         {{ editingContract ? 'Modo Edición' : 'Nuevo Registro' }}
                     </div>
                     <h2 class="text-3xl font-black text-slate-900 tracking-tighter">Especificaciones Técnicas</h2>
-                    <p class="text-sm text-slate-400 font-medium">Configure los parámetros de red y suministro para el medidor.</p>
+                    <p class="text-sm text-slate-400 font-medium">Configure los parámetros de red para el medidor.</p>
                 </div>
 
-                <form @submit.prevent="submit" class="px-12 py-10 space-y-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <form @submit.prevent="submit" class="px-12 py-10 space-y-8 max-h-[60vh] overflow-y-auto custom-scrollbar overflow-x-hidden">
+                    
+                    <!-- Smart Context Info -->
+                    <div v-if="activeEntity && !editingContract" class="p-4 bg-emerald-50 rounded-3xl border border-emerald-100 flex items-center gap-4 text-emerald-900">
+                        <div class="w-12 h-12 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200">
+                            <Building2 :size="24" />
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none mb-1">Propiedad Seleccionada</p>
+                            <h4 class="text-sm font-black tracking-tight">{{ activeEntity.name }}</h4>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <!-- Entity & Provider -->
                         <div class="space-y-6">
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Propiedad / Entidad</label>
-                                <select v-model="form.entity_id" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all appearance-none">
+                                <div v-if="activeEntity && !editingContract" class="w-full bg-slate-100 border-none rounded-2xl p-4 text-sm font-black text-slate-400 cursor-not-allowed">
+                                    {{ activeEntity.name }}
+                                </div>
+                                <select v-else v-model="form.entity_id" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all appearance-none">
                                     <option value="">Seleccionar entidad...</option>
                                     <option v-for="e in entities" :key="e.id" :value="e.id">{{ e.name }}</option>
                                 </select>
                                 <p v-if="form.errors.entity_id" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.entity_id }}</p>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Distribuidora Energética</label>
+                                <div class="flex items-center justify-between ml-1">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Distribuidora Energética</label>
+                                    <span v-if="activeEntity" class="text-[8px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded uppercase tracking-tighter">Provincial</span>
+                                </div>
                                 <select v-model="form.proveedor_id" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all appearance-none">
                                     <option value="">Seleccionar proveedor...</option>
                                     <option v-for="p in proveedores" :key="p.id" :value="p.id">{{ p.name }}</option>
@@ -312,18 +360,33 @@ const stats = computed(() => {
                             </div>
                         </div>
 
-                        <!-- Codes -->
+                        <!-- ID Fields -->
                         <div class="space-y-6">
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">N° de Suministro (NIU)</label>
-                                <input v-model="form.supply_number" type="text" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all" />
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1"><Hash :size="10" /> N° de Suministro (NIU)</label>
+                                <input v-model="form.supply_number" type="text" placeholder="Ej: 0718220" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all" />
                                 <p v-if="form.errors.supply_number" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.supply_number }}</p>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Categoría de Tarifa</label>
-                                <input v-model="form.rate_name" type="text" placeholder="Ej: T1 Residencial" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all" />
-                                <p v-if="form.errors.rate_name" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.rate_name }}</p>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1"><Cpu :size="10" /> N° de Serie Medidor</label>
+                                <input v-model="form.meter_number" type="text" placeholder="Ej: 9618495" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all" />
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Contract Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                         <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1"><Calendar :size="10" /> Fecha Inicio</label>
+                            <input v-model="form.start_date" type="date" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-black text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all" />
+                        </div>
+                         <div class="space-y-2 md:col-span-1">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ID Contrato</label>
+                            <input v-model="form.contract_number" type="text" placeholder="Ej: 36697" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all" />
+                        </div>
+                         <div class="space-y-2 md:col-span-1">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre Tarifa</label>
+                            <input v-model="form.rate_name" type="text" placeholder="Ej: T1-R1" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all" />
                         </div>
                     </div>
 
@@ -334,8 +397,8 @@ const stats = computed(() => {
                                 <Zap :size="16" />
                                 Potencias Contratadas (kW)
                             </h4>
-                            <label class="flex items-center gap-3 cursor-pointer">
-                                <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">Trifásico</span>
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white transition-colors">Conexión Trifásica</span>
                                 <input type="checkbox" v-model="form.is_three_phase" class="hidden" />
                                 <div :class="['w-10 h-5 rounded-full relative transition-colors', form.is_three_phase ? 'bg-energy-consumption' : 'bg-slate-700']">
                                     <div :class="['absolute top-1 w-3 h-3 bg-white rounded-full transition-all', form.is_three_phase ? 'left-6' : 'left-1']"></div>
@@ -350,16 +413,16 @@ const stats = computed(() => {
                             </div>
                             <div class="space-y-2">
                                 <label class="text-[8px] font-black text-slate-500 uppercase tracking-widest text-center block">Valle (P2)</label>
-                                <input v-model="form.contracted_power_kw_p2" type="number" step="0.1" class="w-full bg-slate-800 border-none rounded-xl p-3 text-center text-sm font-black text-white focus:ring-1 focus:ring-energy-consumption" />
+                                <input v-model="form.contracted_power_kw_p2" :disabled="!form.is_three_phase" type="number" step="0.1" :class="['w-full border-none rounded-xl p-3 text-center text-sm font-black transition-all', form.is_three_phase ? 'bg-slate-800 text-white focus:ring-1 focus:ring-energy-consumption' : 'bg-slate-900 text-slate-700 cursor-not-allowed']" />
                             </div>
                             <div class="space-y-2">
                                 <label class="text-[8px] font-black text-slate-500 uppercase tracking-widest text-center block">Resto (P3)</label>
-                                <input v-model="form.contracted_power_kw_p3" type="number" step="0.1" class="w-full bg-slate-800 border-none rounded-xl p-3 text-center text-sm font-black text-white focus:ring-1 focus:ring-energy-consumption" />
+                                <input v-model="form.contracted_power_kw_p3" :disabled="!form.is_three_phase" type="number" step="0.1" :class="['w-full border-none rounded-xl p-3 text-center text-sm font-black transition-all', form.is_three_phase ? 'bg-slate-800 text-white focus:ring-1 focus:ring-energy-consumption' : 'bg-slate-900 text-slate-700 cursor-not-allowed']" />
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl">
+                    <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-3xl">
                         <input type="checkbox" v-model="form.is_active" class="w-5 h-5 rounded-lg border-slate-200 text-energy-consumption focus:ring-energy-consumption/20" />
                         <span class="text-xs font-bold text-slate-700">Contrato activo actualmente (para proyecciones)</span>
                     </div>
@@ -373,7 +436,7 @@ const stats = computed(() => {
                     >
                         {{ editingContract ? 'Aplicar Cambios' : 'Confirmar Registro' }}
                     </button>
-                    <button @click="closeModal" class="px-8 py-5 rounded-[24px] font-black text-xs uppercase tracking-widest text-slate-400 hover:bg-white transition-all">
+                    <button @click="closeModal" class="px-8 py-5 rounded-[24px] font-black text-xs uppercase tracking-widest text-slate-400 hover:bg-white transition-all text-[10px]">
                         Cancelar
                     </button>
                 </div>

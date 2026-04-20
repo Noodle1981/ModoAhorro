@@ -45,3 +45,6 @@ Tailwind 4: Utiliza la nueva sintaxis de Tailwind 4 (CSS-first configuration si 
 Vue.js: Prioriza Script Setup y Composition API.
 
 Transparencia: Cada vez que generes un gráfico o tabla de datos, incluye una pequeña sección de "Auditoría" o "Info" que explique de dónde viene el cálculo (siguiendo la filosofía de Gemelos Digitales).
+
+
+Regla maxima, si se puede evitar que haga scroll la vista, darle prioridad
