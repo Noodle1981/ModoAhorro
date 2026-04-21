@@ -61,6 +61,7 @@ class InvoiceController extends Controller
             'contract_id' => 'required|exists:contracts,id',
             'invoice_number' => 'required|string|max:255',
             'invoice_date' => 'required|date',
+            'issue_date' => 'nullable|date',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'total_energy_consumed_kwh' => 'required|numeric|min:0',
@@ -70,6 +71,10 @@ class InvoiceController extends Controller
             'taxes' => 'nullable|numeric|min:0',
             'other_charges' => 'nullable|numeric|min:0',
         ]);
+
+        if (empty($validated['issue_date'])) {
+            $validated['issue_date'] = $validated['invoice_date'];
+        }
 
         $contract = Contract::findOrFail($validated['contract_id']);
         
@@ -92,6 +97,7 @@ class InvoiceController extends Controller
             'contract_id' => 'required|exists:contracts,id',
             'invoice_number' => 'required|string|max:255',
             'invoice_date' => 'required|date',
+            'issue_date' => 'nullable|date',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'total_energy_consumed_kwh' => 'required|numeric|min:0',
@@ -101,6 +107,10 @@ class InvoiceController extends Controller
             'taxes' => 'nullable|numeric|min:0',
             'other_charges' => 'nullable|numeric|min:0',
         ]);
+
+        if (empty($validated['issue_date'])) {
+            $validated['issue_date'] = $validated['invoice_date'];
+        }
 
         // Security check
         if ($request->user()->cannot('update', $invoice->contract->entity)) {

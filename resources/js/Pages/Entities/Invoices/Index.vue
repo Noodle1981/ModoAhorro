@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { Head, useForm, router, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
@@ -39,6 +39,7 @@ const form = useForm({
     contract_id: '',
     invoice_number: '',
     invoice_date: '',
+    issue_date: '',
     start_date: '',
     end_date: '',
     total_energy_consumed_kwh: '',
@@ -54,15 +55,47 @@ if (props.contracts.length === 1) {
     form.contract_id = props.contracts[0].id;
 }
 
+// Auto-calculate total amount based on breakdown
+watch(() => [
+    form.cost_for_energy, 
+    form.cost_for_power, 
+    form.taxes, 
+    form.other_charges
+], () => {
+    const total = (parseFloat(form.cost_for_energy) || 0) + 
+                  (parseFloat(form.cost_for_power) || 0) + 
+                  (parseFloat(form.taxes) || 0) + 
+                  (parseFloat(form.other_charges) || 0);
+    
+    // Only update total_amount if the breakdown has values
+    // to avoid overwriting manual total when starting a new carga
+    if (total > 0) {
+        form.total_amount = Number(total.toFixed(2));
+    }
+});
+
 const stats = computed(() => {
-    const totalConsumption = props.invoices.reduce((acc, inv) => acc + parseFloat(inv.total_energy_consumed_kwh), 0);
-    const totalAmount = props.invoices.reduce((acc, inv) => acc + parseFloat(inv.total_amount), 0);
-    const avgAmount = props.invoices.length > 0 ? totalAmount / props.invoices.length : 0;
+    if (props.invoices.length === 0) {
+        return { 
+            avgAmount: 0, 
+            avgConsumption: 0, 
+            maxConsumption: 0, 
+            minConsumption: 0, 
+            count: 0 
+        };
+    }
+    
+    const consumptions = props.invoices.map(inv => parseFloat(inv.total_energy_consumed_kwh) || 0);
+    const amounts = props.invoices.map(inv => parseFloat(inv.total_amount) || 0);
+    
+    const totalConsumption = consumptions.reduce((acc, val) => acc + val, 0);
+    const totalAmount = amounts.reduce((acc, val) => acc + val, 0);
     
     return {
-        totalConsumption,
-        totalAmount,
-        avgAmount,
+        avgAmount: totalAmount / props.invoices.length,
+        avgConsumption: totalConsumption / props.invoices.length,
+        maxConsumption: Math.max(...consumptions),
+        minConsumption: Math.min(...consumptions),
         count: props.invoices.length
     };
 });
@@ -80,6 +113,7 @@ const openEditModal = (invoice) => {
     form.contract_id = invoice.contract_id;
     form.invoice_number = invoice.invoice_number;
     form.invoice_date = invoice.invoice_date;
+    form.issue_date = invoice.issue_date || invoice.invoice_date;
     form.start_date = invoice.start_date;
     form.end_date = invoice.end_date;
     form.total_energy_consumed_kwh = invoice.total_energy_consumed_kwh;
@@ -92,6 +126,10 @@ const openEditModal = (invoice) => {
 };
 
 const submit = () => {
+    // Ensure invoice_date is always synced with issue_date
+    if (!form.invoice_date) form.invoice_date = form.issue_date;
+    if (!form.issue_date) form.issue_date = form.invoice_date;
+
     if (editingInvoice.value) {
         form.put(route('gestion.invoices.update', editingInvoice.value.id), {
             onSuccess: () => closeModal(),
@@ -178,20 +216,20 @@ const filteredInvoices = computed(() => {
             <!-- Stats Bar -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40">
-                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Total Facturado</p>
-                    <h4 class="text-3xl font-black text-slate-900 leading-none">${{ stats.totalAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 }) }}</h4>
-                </div>
-                <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40">
-                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Consumo Acumulado</p>
-                    <h4 class="text-3xl font-black text-slate-900 leading-none">{{ stats.totalConsumption.toLocaleString('es-AR', { maximumFractionDigits: 0 }) }} <span class="text-sm font-bold text-slate-300">kWh</span></h4>
-                </div>
-                <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40">
-                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Promedio Mensual</p>
+                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Gasto Promedio</p>
                     <h4 class="text-3xl font-black text-slate-900 leading-none">${{ stats.avgAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 }) }}</h4>
                 </div>
                 <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40">
-                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Total Registros</p>
-                    <h4 class="text-3xl font-black text-slate-900 leading-none">{{ stats.count }}</h4>
+                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Consumo Promedio</p>
+                    <h4 class="text-3xl font-black text-slate-900 leading-none">{{ stats.avgConsumption.toLocaleString('es-AR', { maximumFractionDigits: 0 }) }} <span class="text-sm font-bold text-slate-300">kWh</span></h4>
+                </div>
+                <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40 border-b-4 border-b-energy-success/30">
+                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Mínimo Facturado</p>
+                    <h4 class="text-3xl font-black text-energy-success leading-none">{{ stats.minConsumption.toLocaleString('es-AR', { maximumFractionDigits: 0 }) }} <span class="text-sm font-bold text-slate-200">kWh</span></h4>
+                </div>
+                <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40 border-b-4 border-b-energy-critical/30">
+                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Máximo Facturado</p>
+                    <h4 class="text-3xl font-black text-energy-critical leading-none">{{ stats.maxConsumption.toLocaleString('es-AR', { maximumFractionDigits: 0 }) }} <span class="text-sm font-bold text-slate-200">kWh</span></h4>
                 </div>
             </div>
 
@@ -324,7 +362,8 @@ const filteredInvoices = computed(() => {
                         <div class="space-y-6">
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Fecha de Emisión</label>
-                                <input v-model="form.invoice_date" type="date" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-success/20 transition-all" />
+                                <input v-model="form.issue_date" type="date" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-success/20 transition-all" />
+                                <p v-if="form.errors.issue_date || form.errors.invoice_date" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.issue_date || form.errors.invoice_date }}</p>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="space-y-2">
@@ -339,27 +378,49 @@ const filteredInvoices = computed(() => {
                         </div>
                     </div>
 
-                    <!-- Main Values -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 bg-slate-900 rounded-[32px] text-white">
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Consumo Total (kWh)</label>
-                            <div class="relative">
-                                <input v-model="form.total_energy_consumed_kwh" type="number" step="0.1" class="w-full bg-slate-800 border-none rounded-2xl pl-6 pr-14 py-5 text-3xl font-black text-white focus:ring-1 focus:ring-energy-success" />
-                                <span class="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-black text-slate-500 uppercase">kWh</span>
+                    <!-- Primary Financial Card -->
+                    <div class="p-8 bg-slate-900 rounded-[32px] text-white space-y-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Total Energía ($)</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-600">$</span>
+                                    <input v-model="form.cost_for_energy" type="number" step="0.01" class="w-full bg-slate-800 border-none rounded-2xl pl-8 pr-4 py-4 text-xl font-black text-white focus:ring-1 focus:ring-energy-success transition-all" />
+                                </div>
                             </div>
-                            <p v-if="form.errors.total_energy_consumed_kwh" class="text-[9px] text-energy-critical font-bold">{{ form.errors.total_energy_consumed_kwh }}</p>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Impuestos ($)</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-600">$</span>
+                                    <input v-model="form.taxes" type="number" step="0.01" class="w-full bg-slate-800 border-none rounded-2xl pl-8 pr-4 py-4 text-xl font-black text-white focus:ring-1 focus:ring-energy-success transition-all" />
+                                </div>
+                            </div>
                         </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Importe Final ($)</label>
-                            <div class="relative">
-                                <span class="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-energy-success">$</span>
-                                <input v-model="form.total_amount" type="number" step="0.1" class="w-full bg-slate-800 border-none rounded-2xl pl-12 pr-6 py-5 text-3xl font-black text-energy-success focus:ring-1 focus:ring-energy-success" />
+                        
+                        <div class="pt-8 border-t border-slate-800">
+                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Importe Final (Total a Pagar)</label>
+                            <div class="relative mt-2">
+                                <span class="absolute left-6 top-1/2 -translate-y-1/2 text-3xl font-black text-energy-success">$</span>
+                                <input v-model="form.total_amount" type="number" step="0.01" class="w-full bg-slate-800 border-none rounded-2xl pl-14 pr-6 py-6 text-4xl font-black text-energy-success focus:ring-1 focus:ring-energy-success transition-all shadow-2xl shadow-energy-success/5" />
                             </div>
-                            <p v-if="form.errors.total_amount" class="text-[9px] text-energy-critical font-bold">{{ form.errors.total_amount }}</p>
+                            <p v-if="form.errors.total_amount" class="text-[9px] text-energy-critical font-bold mt-2">{{ form.errors.total_amount }}</p>
                         </div>
                     </div>
 
-                    <!-- Advanced Breakdown -->
+                    <!-- Consumption Card -->
+                    <div class="p-8 bg-slate-50 rounded-[32px] border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Consumo Total del Período</label>
+                            <p class="text-xs text-slate-400 font-medium ml-1">Valor expresado en kilovatios hora.</p>
+                        </div>
+                        <div class="relative w-full md:w-64">
+                            <input v-model="form.total_energy_consumed_kwh" type="number" step="0.1" class="w-full bg-white border-slate-200 rounded-2xl pl-6 pr-14 py-5 text-3xl font-black text-slate-900 focus:ring-2 focus:ring-energy-success/20 focus:border-energy-success/50 transition-all shadow-sm" />
+                            <span class="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase">kWh</span>
+                        </div>
+                        <p v-if="form.errors.total_energy_consumed_kwh" class="text-[9px] text-energy-critical font-bold">{{ form.errors.total_energy_consumed_kwh }}</p>
+                    </div>
+
+                    <!-- Secondary Charges -->
                     <div class="space-y-6 pt-4 border-t border-slate-50">
                         <button 
                             type="button" 
@@ -368,25 +429,23 @@ const filteredInvoices = computed(() => {
                         >
                             <Plus v-if="!showAdvanced" :size="14" class="group-hover:rotate-90 transition-transform" />
                             <X v-else :size="14" />
-                            {{ showAdvanced ? 'Ocultar Desglose de Gastos' : 'Añadir Desglose de Gastos (Opcional)' }}
+                            {{ showAdvanced ? 'Otros Cargos (Potencia y Cargos Adicionales)' : 'Ocultar Cargos Secundarios' }}
                         </button>
 
-                        <div v-if="showAdvanced" class="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in slide-in-from-top-2">
+                        <div v-if="showAdvanced" class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-2">
                             <div class="space-y-2">
-                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Energía</label>
-                                <input v-model="form.cost_for_energy" type="number" class="w-full bg-slate-50 border-none rounded-xl p-3 text-xs font-bold" />
+                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Costo por Potencia</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-300">$</span>
+                                    <input v-model="form.cost_for_power" type="number" step="0.01" class="w-full bg-slate-50 border-none rounded-xl pl-8 pr-4 py-3 text-sm font-bold text-slate-900 group-focus:ring-2 group-focus:ring-slate-100 transition-all" />
+                                </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Potencia</label>
-                                <input v-model="form.cost_for_power" type="number" class="w-full bg-slate-50 border-none rounded-xl p-3 text-xs font-bold" />
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Impuestos</label>
-                                <input v-model="form.taxes" type="number" class="w-full bg-slate-50 border-none rounded-xl p-3 text-xs font-bold" />
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Otros</label>
-                                <input v-model="form.other_charges" type="number" class="w-full bg-slate-50 border-none rounded-xl p-3 text-xs font-bold" />
+                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Otros Cargos / Ajustes</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-300">$</span>
+                                    <input v-model="form.other_charges" type="number" step="0.01" class="w-full bg-slate-50 border-none rounded-xl pl-8 pr-4 py-3 text-sm font-bold text-slate-900 group-focus:ring-2 group-focus:ring-slate-100 transition-all" />
+                                </div>
                             </div>
                         </div>
                     </div>

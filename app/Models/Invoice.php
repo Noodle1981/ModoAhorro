@@ -34,8 +34,10 @@ class Invoice extends Model
     ];
 
     protected $casts = [
-        'period_start' => 'date',
-        'period_end' => 'date',
+        'invoice_date' => 'date',
+        'issue_date' => 'date',
+        'start_date' => 'date',
+        'end_date' => 'date',
         'is_representative' => 'boolean',
         'usage_locked' => 'boolean',
     ];
