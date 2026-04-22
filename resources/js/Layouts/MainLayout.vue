@@ -36,7 +36,17 @@ const entities = computed(() => auth.value.entities);
 
 const isSidebarOpen = ref(true);
 const isEntityMenuOpen = ref(false);
-const activeCategory = ref('Gestión Física'); // Default category
+const activeCategory = ref('Gestión Física');
+
+// Sincronizar categoría activa con la URL actual
+import { watchEffect } from 'vue';
+watchEffect(() => {
+    const url = page.url;
+    if (url.startsWith('/analisis')) activeCategory.value = 'Análisis y Ahorro';
+    else if (url.startsWith('/recomendaciones')) activeCategory.value = 'Recomendaciones';
+    else if (url.startsWith('/sistema')) activeCategory.value = 'Sistema';
+    else activeCategory.value = 'Gestión Física';
+});
 
 const navigation = computed(() => [
     {
@@ -59,8 +69,8 @@ const navigation = computed(() => [
         color: 'text-energy-success',
         bgColor: 'bg-emerald-500',
         items: [
-            { name: 'Consumo Real', icon: BarChart3, href: route('analisis.consumption') },
             { name: 'Ajuste de Uso', icon: Sliders, href: route('analisis.usage') },
+            { name: 'Consumo Real', icon: BarChart3, href: route('analisis.consumption') },
             { name: 'Optimización Horarios', icon: Clock, href: route('analisis.grid-optimization') },
         ]
     },
@@ -97,6 +107,16 @@ const activeItems = computed(() => {
 const selectCategory = (name) => {
     activeCategory.value = name;
     isSidebarOpen.value = true;
+};
+
+// Función para verificar si un link está activo basado en el path relativo
+const isActive = (href) => {
+    try {
+        const path = new URL(href, window.location.origin).pathname;
+        return page.url === path || page.url.startsWith(path + '/');
+    } catch (e) {
+        return page.url.startsWith(href);
+    }
 };
 </script>
 
@@ -199,19 +219,19 @@ const selectCategory = (name) => {
                         :href="item.href"
                         :class="[
                             'flex items-center justify-between p-4 rounded-2xl group transition-all',
-                            $page.url.startsWith(item.href) ? 'bg-emerald-50/50' : 'hover:bg-slate-50'
+                            isActive(item.href) ? 'bg-emerald-50/50' : 'hover:bg-slate-50'
                         ]"
                     >
                         <div class="flex items-center gap-4">
                             <div :class="[
                                 'p-2 rounded-xl transition-all duration-300',
-                                $page.url.startsWith(item.href) ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 group-hover:text-emerald-600 group-hover:bg-white group-hover:shadow-sm'
+                                isActive(item.href) ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 group-hover:text-emerald-600 group-hover:bg-white group-hover:shadow-sm'
                             ]">
                                 <component :is="item.icon" :size="20" />
                             </div>
-                            <span :class="['text-sm font-bold', $page.url.startsWith(item.href) ? 'text-emerald-600' : 'text-slate-600 group-hover:text-slate-900']">{{ item.name }}</span>
+                            <span :class="['text-sm font-bold', isActive(item.href) ? 'text-emerald-600' : 'text-slate-600 group-hover:text-slate-900']">{{ item.name }}</span>
                         </div>
-                        <ChevronRight :size="16" :class="['transition-all', $page.url.startsWith(item.href) ? 'text-emerald-600' : 'text-slate-300 group-hover:text-slate-500 opacity-0 group-hover:opacity-100']" />
+                        <ChevronRight :size="16" :class="['transition-all', isActive(item.href) ? 'text-emerald-600' : 'text-slate-300 group-hover:text-slate-500 opacity-0 group-hover:opacity-100']" />
                     </Link>
                 </nav>
 

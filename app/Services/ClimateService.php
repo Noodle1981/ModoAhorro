@@ -238,6 +238,29 @@ class ClimateService
     }
 
     /**
+     * Carga datos para un rango de fechas específico y una entidad (vía su localidad)
+     */
+    public function loadDataForDateRange($entity, $startDate, $endDate): array
+    {
+        $locality = $entity->locality ?? null;
+        
+        if (!$locality) {
+            return [
+                'success' => false, 
+                'message' => 'La entidad no tiene localidad asignada',
+                'is_fallback' => true
+            ];
+        }
+
+        // Delegar al motor de obtención de datos (soporta strings o Carbon)
+        return $this->getOrFetchData(
+            $locality, 
+            (string)$startDate, 
+            (string)$endDate
+        );
+    }
+
+    /**
      * Calcula estadísticas climáticas para un período usando datos de la BD
      */
     public function getClimateStats(float $latitude, float $longitude, Carbon $startDate, Carbon $endDate, float $hotThreshold = 24.0, float $coldThreshold = 18.0): array

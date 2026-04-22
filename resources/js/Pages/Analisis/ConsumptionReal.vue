@@ -40,6 +40,7 @@ ChartJS.register(
 const props = defineProps({
     entity: Object,
     categoryBreakdown: Array,
+    tankBreakdown: Array, // Nuevo prop de inteligencia
     history: Array,
     latestInvoice: Object
 });
@@ -203,6 +204,44 @@ const avgMonthlyKwh = computed(() => props.history.length > 0 ? totalRealKwh.val
                         <span class="text-[10px] font-black text-slate-900 uppercase tracking-widest">Optimizar Ahora</span>
                         <ArrowRight :size="16" class="text-energy-consumption" />
                     </Link>
+                </div>
+            </div>
+
+            <!-- Three Tanks Quick View -->
+            <div v-if="tankBreakdown && tankBreakdown.some(t => t.value > 0)" class="bg-white rounded-[48px] border border-slate-100 shadow-2xl shadow-slate-200/30 p-10 space-y-8">
+                <div class="flex items-center justify-between">
+                    <div class="space-y-1">
+                        <h3 class="text-2xl font-black text-slate-800 tracking-tight">Modelo de los <span class="text-energy-solar">3 Tanques</span></h3>
+                        <p class="text-sm text-slate-400 font-medium">Desglose técnico de la naturaleza de tu consumo.</p>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-2xl text-slate-400">
+                        <Info :size="20" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                    <div v-for="tank in tankBreakdown" :key="tank.name" class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ tank.name }}</span>
+                            <span class="text-xs font-black text-slate-900">{{ Math.round(tank.value) }} <span class="text-[8px] text-slate-300">kWh</span></span>
+                        </div>
+                        <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div 
+                                class="h-full rounded-full transition-all duration-1000" 
+                                :style="{ 
+                                    backgroundColor: tank.color, 
+                                    width: (tank.value / tankBreakdown.reduce((acc, t) => acc + t.value, 0) * 100) + '%' 
+                                }"
+                            ></div>
+                        </div>
+                        <p class="text-[10px] text-slate-400 font-medium leading-relaxed">
+                            {{ 
+                                tank.name.includes('Tanque 1') ? 'Consumo inamovible (Refrigeración y Seguridad).' : 
+                                tank.name.includes('Tanque 2') ? 'Consumo variable según el clima exterior.' : 
+                                'Consumo basado en tus hábitos y uso diario.' 
+                            }}
+                        </p>
+                    </div>
                 </div>
             </div>
 

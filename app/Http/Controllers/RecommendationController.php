@@ -14,9 +14,12 @@ use App\Services\VacationService;
 use App\Services\ThermalProfileService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Traits\HasActiveEntity;
 
 class RecommendationController extends Controller
 {
+    use HasActiveEntity;
+
     /**
      * Recomendaciones Solar (Paneles y Termotanques)
      */
@@ -30,7 +33,7 @@ class RecommendationController extends Controller
         $maxConsumption = $invoices->max('total_energy_consumed_kwh') ?? 400;
         $avgConsumption = $invoices->avg('total_energy_consumed_kwh') ?? 300;
 
-        $availableArea = 30; // Debería venir de un campo en entities, default 30m2
+        $availableArea = 30; // Default 30m2
         
         $photovoltaic = $solarPower->calculateSolarCoverage($availableArea, $maxConsumption, $avgConsumption);
         $thermal = $solarWater->calculateWaterHeaterData($entity);
@@ -99,9 +102,10 @@ class RecommendationController extends Controller
      */
     public function maintenance(Request $request, MaintenanceService $service)
     {
-        $entity = $this->getActiveEntity($request)->load('rooms.equipment.type.maintenanceTasks');
+        $entity = $this->getActiveEntity($request);
         if (!$entity) return redirect()->route('dashboard');
 
+        $entity->load('rooms.equipment.type.maintenanceTasks');
         $allTasks = [];
         $equipments = $entity->rooms->flatMap->equipment;
         
@@ -114,7 +118,7 @@ class RecommendationController extends Controller
                     'equipment_name' => $equipment->name,
                     'priority' => (float)str_replace('%', '', $task['impact']) > 10 ? 'Alta' : 'Media',
                     'efficiency_gain' => (float)str_replace('%', '', $task['impact']),
-                    'frequency' => $equipment->type->maintenanceTasks->where('title', $task['task'])->first()->frequency_days . ' días',
+                    'frequency' => ($equipment->type->maintenanceTasks->where('title', $task['task'])->first()->frequency_days ?? 365) . ' días',
                     'due_date' => $task['due_date']
                 ];
             }
@@ -131,9 +135,10 @@ class RecommendationController extends Controller
      */
     public function vacation(Request $request, VacationService $service)
     {
-        $entity = $this->getActiveEntity($request)->load('rooms.equipment.type');
+        $entity = $this->getActiveEntity($request);
         if (!$entity) return redirect()->route('dashboard');
 
+        $entity->load('rooms.equipment.type');
         $result = $service->generateChecklist($entity, 15); // Default 15 días
 
         return Inertia::render('Recomendaciones/Vacations', [
@@ -144,11 +149,5 @@ class RecommendationController extends Controller
                 'total_savings' => $result['total_savings']
             ]
         ]);
-    }
-
-    private function getActiveEntity(Request $request)
-    {
-        $activeEntityId = session('active_entity_id');
-        return $request->user()->entities()->where('entities.id', $activeEntityId)->first();
     }
 }

@@ -12,6 +12,7 @@ class ConsumptionAnalysisService
 {
     protected $usageSuggestionService;
     protected $energyEngine;
+    /** @var ClimateService */
     protected $climateService;
     protected $maintenanceService;
 
@@ -248,25 +249,60 @@ class ConsumptionAnalysisService
 
     public function calibrateInvoiceConsumption(Invoice $invoice): array
     {
-        return DB::transaction(function () use ($invoice) {
-            $climateLoad = $this->climateService->loadDataForInvoice($invoice);
+        return $this->calibrateUnifiedPeriod(collect([$invoice]));
+    }
+
+    /**
+     * Calibra un grupo de facturas (Unificación) de forma integral.
+     */
+    public function calibrateUnifiedPeriod($invoices): array
+    {
+        if ($invoices->isEmpty()) {
+            throw new \Exception("No hay facturas para calibrar.");
+        }
+
+        return DB::transaction(function () use ($invoices) {
+            $representativeInvoice = $invoices->sortBy('installment_number')->first();
+            $entity = $representativeInvoice->contract->entity;
+
+            // 1. Calcular totales del periodo unificado
+            $totalBilledKwh = $invoices->sum('total_energy_consumed_kwh');
+            $startDate = $invoices->min('start_date');
+            $endDate = $invoices->max('end_date');
+
+            // 2. Cargar datos climáticos para el rango completo
+            $climateLoad = $this->climateService->loadDataForDateRange($entity, $startDate, $endDate);
             $isFallback = $climateLoad['is_fallback'] ?? false;
 
-            $usages = $invoice->equipmentUsages()->with(['equipment.category', 'equipment.type'])->get();
+            // 3. Obtener consumos de equipos (Usamos los de la factura representativa como base del inventario)
+            // Si el usuario cargó inventarios diferentes en cada cuota (raro), tomamos los de la representativa.
+            $usages = $representativeInvoice->equipmentUsages()->with(['equipment.category', 'equipment.type'])->get();
             
-            $simulatedEquipments = $usages->map(function($usage) use ($invoice) {
+            $simulatedEquipments = $usages->map(function($usage) use ($representativeInvoice, $startDate, $endDate) {
+                // Creamos un clon temporal de la factura para ajustar el cálculo de días de este uso
+                $tempInvoice = clone $representativeInvoice;
+                $tempInvoice->start_date = $startDate;
+                $tempInvoice->end_date = $endDate;
+
                 $eq = $usage->equipment;
                 $eq->avg_daily_use_hours = $usage->avg_daily_use_hours; 
                 $eq->_usage_id = $usage->id;
-                $eq->_theo_kwh = $this->calculateEquipmentConsumption($usage, $invoice);
+                $eq->_theo_kwh = $this->calculateEquipmentConsumption($usage, $tempInvoice);
                 return $eq;
             });
 
+            // 4. Ejecutar el Motor de Energía con los totales unificados
             $this->energyEngine->setFallbackMode($isFallback);
-            $engineResult = $this->energyEngine->processInvoice($invoice, $simulatedEquipments);
             
-            $logs = $engineResult['logs'] ?? [];
+            // Creamos un objeto proxy para el motor
+            $proxyInvoice = clone $representativeInvoice;
+            $proxyInvoice->total_energy_consumed_kwh = $totalBilledKwh;
+            $proxyInvoice->start_date = $startDate;
+            $proxyInvoice->end_date = $endDate;
+
+            $engineResult = $this->energyEngine->processInvoice($proxyInvoice, $simulatedEquipments);
             
+            // 5. Persistir resultados en los EquipmentUsage de la factura representativa
             EquipmentUsage::withoutEvents(function() use ($simulatedEquipments, $usages) {
                 foreach ($simulatedEquipments as $processedEq) {
                     $usage = $usages->firstWhere('id', $processedEq->_usage_id);
@@ -279,10 +315,15 @@ class ConsumptionAnalysisService
                 }
             });
 
-            $invoice->update([
-                'recommended_kwh' => $engineResult['recommended_total_kwh'] ?? 0,
-                'calibrated_at'   => now()
-            ]);
+            // 6. Marcar TODAS las facturas del grupo como calibradas
+            $recommendedTotalKwh = $engineResult['recommended_total_kwh'] ?? 0;
+            
+            foreach ($invoices as $inv) {
+                $inv->update([
+                    'recommended_kwh' => $recommendedTotalKwh, // El recomendado es el del periodo total
+                    'calibrated_at'   => now()
+                ]);
+            }
 
             return [
                 'usages' => $usages,
@@ -293,7 +334,7 @@ class ConsumptionAnalysisService
                     'theoretical_total' => $engineResult['theoretical_total'] ?? 0,
                     'calibrated_total' => $engineResult['calibrated_total'] ?? 0,
                     'unassigned' => $engineResult['unassigned_remainder'] ?? 0,
-                    'logs' => $logs
+                    'logs' => $engineResult['logs'] ?? []
                 ],
                 'climate_data' => $engineResult['climate_data'] ?? []
             ];
