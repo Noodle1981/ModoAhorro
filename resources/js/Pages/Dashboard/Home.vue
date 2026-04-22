@@ -24,7 +24,8 @@ import {
     Cloud,
     CloudRain,
     CloudLightning,
-    AlertCircle
+    AlertCircle,
+    Building
 } from 'lucide-vue-next';
 
 const props = defineProps({

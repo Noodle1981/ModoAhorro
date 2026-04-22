@@ -87,10 +87,37 @@ const getClimateLimitation = (eqId) => {
     return { isLimited: false };
 };
 
+const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const [year, month, day] = dateString.split('T')[0].split('-');
+    return `${day}/${month}/${year.slice(-2)}`;
+};
+
+// Funciones de ayuda para Heladeras
+const isFridge = (name, typeName) => {
+    const n = (name || '').toLowerCase();
+    const t = (typeName || '').toLowerCase();
+    return n.includes('heladera') || n.includes('freezer') || t.includes('heladera') || t.includes('refrigerador');
+};
+
+const getFridgeLoadFactor = () => {
+    const baseLoadFactor = 0.25;
+    const peopleCount = Math.max(1, Math.min(props.entity?.people_count || 1, 15));
+    const activityFactorPerPerson = 0.015;
+    return baseLoadFactor + (peopleCount * activityFactorPerPerson);
+};
+
 // Cálculo reactivo de kWh por equipo
 const calculateKwh = (eqId) => {
     const data = form.usages[eqId];
     if (!data) return 0;
+    
+    // Buscar el equipo para ver si es heladera
+    let item = null;
+    for (const tank of props.tanks) {
+        item = tank.items.find(i => i.id === eqId);
+        if (item) break;
+    }
     
     const powerKw = data.nominal_power_w / 1000;
     const factor = frequencyFactors[data.usage_frequency] || 0.60;
@@ -103,7 +130,14 @@ const calculateKwh = (eqId) => {
     }
     
     effectiveDays = effectiveDays * factor;
-    return powerKw * data.avg_daily_use_hours * effectiveDays;
+    let consumption = powerKw * data.avg_daily_use_hours * effectiveDays;
+    
+    // ❄️ CÁLCULO ESPECÍFICO PARA HELADERAS (Modelo Avanzado Legacy)
+    if (item && isFridge(item.name, item.type_name)) {
+        consumption *= getFridgeLoadFactor();
+    }
+    
+    return consumption;
 };
 
 // Totales reactivos
@@ -114,7 +148,21 @@ const totalCalculatedKwh = computed(() => {
 const tankTotals = computed(() => {
     return props.tanks.map(tank => {
         const kwh = tank.items.reduce((sum, item) => sum + calculateKwh(item.id), 0);
-        return { ...tank, current_kwh: kwh };
+        
+        // Agrupar items por ambiente
+        const roomsMap = {};
+        tank.items.forEach(item => {
+            const roomName = item.room_name || 'Sin Asignar';
+            if (!roomsMap[roomName]) {
+                roomsMap[roomName] = { name: roomName, items: [], current_kwh: 0 };
+            }
+            roomsMap[roomName].items.push(item);
+            roomsMap[roomName].current_kwh += calculateKwh(item.id);
+        });
+        
+        const rooms = Object.values(roomsMap).sort((a, b) => a.name.localeCompare(b.name));
+        
+        return { ...tank, current_kwh: kwh, rooms };
     });
 });
 
@@ -144,7 +192,7 @@ const getFormula = (eqId) => {
     
     const data = form.usages[eqId];
     const powerKw = item.nominal_power_w / 1000;
-    const factor = getFrequencyFactor(data.usage_frequency);
+    const factor = frequencyFactors[data.usage_frequency] || 0.60;
     
     let effectiveDays = props.period.days;
     const climateLimitation = getClimateLimitation(eqId);
@@ -154,6 +202,12 @@ const getFormula = (eqId) => {
 
     const hours = data.avg_daily_use_hours;
     const freqPct = Math.round(factor * 100);
+
+    // ❄️ Mostrar factor de Heladera en la fórmula si aplica
+    if (isFridge(item.name, item.type_name)) {
+        const loadFactorPct = Math.round(getFridgeLoadFactor() * 100);
+        return `${powerKw}kW × ${hours}h × ${effectiveDays}d × ${loadFactorPct}% (Ciclo Motor)`;
+    }
 
     return `${powerKw}kW × ${hours}h × ${effectiveDays}d × ${freqPct}%`;
 };
@@ -220,9 +274,12 @@ const getTankColor = (key) => {
                 </div>
 
                 <div class="flex items-center gap-4">
-                    <div class="bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm">
+                    <div class="bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col justify-center">
                         <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Periodo Unificado</p>
-                        <p class="text-sm font-bold text-slate-900">{{ period.days }} días de medición</p>
+                        <div class="flex items-end gap-2">
+                            <p class="text-sm font-bold text-slate-900">{{ period.days }} días</p>
+                            <span class="text-[10px] font-medium text-slate-400 mb-0.5">{{ formatDate(period.start) }} al {{ formatDate(period.end) }}</span>
+                        </div>
                     </div>
                     <div class="bg-slate-900 text-white p-4 rounded-[24px] shadow-xl shadow-slate-200/50">
                         <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total Facturado</p>
@@ -271,13 +328,26 @@ const getTankColor = (key) => {
                             </div>
                         </div>
 
-                        <!-- Equipment Grid -->
-                        <div class="grid grid-cols-1 gap-4">
-                            <div 
-                                v-for="item in tank.items" 
-                                :key="item.id"
-                                class="bg-white rounded-[32px] border border-slate-100 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col md:flex-row items-center gap-6"
-                            >
+                        <!-- Rooms Grid -->
+                        <div class="space-y-8">
+                            <div v-for="room in tank.rooms" :key="room.name" class="space-y-4">
+                                <!-- Room Header -->
+                                <div class="flex items-center gap-3 px-2">
+                                    <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-500 rounded-xl">
+                                        <DoorOpen :size="14" />
+                                        <h4 class="text-[10px] font-black uppercase tracking-widest">{{ room.name }}</h4>
+                                    </div>
+                                    <div class="h-px bg-slate-100 flex-1"></div>
+                                    <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-md">{{ Math.round(room.current_kwh) }} kWh</span>
+                                </div>
+                                
+                                <!-- Equipment Grid -->
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div 
+                                        v-for="item in room.items" 
+                                        :key="item.id"
+                                        class="bg-white rounded-[32px] border border-slate-100 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col md:flex-row items-center gap-6"
+                                    >
                                 <!-- Eq Info -->
                                 <div class="md:w-1/3 flex items-center gap-4">
                                     <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 shrink-0">
@@ -366,6 +436,8 @@ const getTankColor = (key) => {
                                         <span class="text-[8px] font-black uppercase tracking-widest">{{ getClimateLimitation(item.id).days }} Días (API)</span>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
                             </div>
                         </div>
                     </div>

@@ -36,19 +36,7 @@ const calculateDays = (start, end) => {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 };
 
-// Global Stats
-const stats = computed(() => {
-    const complete = props.unifications.filter(u => u.is_complete).length;
-    const totalKwh = props.unifications.reduce((acc, u) => acc + (u.real_bimonthly_kwh || u.total_kwh), 0);
-    const totalAmount = props.unifications.reduce((acc, u) => acc + u.total_amount, 0);
-    
-    return {
-        complete,
-        totalCount: props.unifications.length,
-        totalKwh,
-        totalAmount
-    };
-});
+
 </script>
 
 <template>
@@ -69,23 +57,7 @@ const stats = computed(() => {
                     <p class="text-lg text-slate-500 font-medium">Control físico de consumos por medidor (60 días).</p>
                 </div>
 
-                <div class="p-6 bg-slate-900 rounded-[32px] text-white flex items-center gap-6 shadow-2xl shadow-slate-900/20">
-                    <div class="flex flex-col">
-                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-2">Ciclos Completados</span>
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-3xl font-black">{{ stats.complete }}</span>
-                            <span class="text-xs font-bold text-slate-500">de {{ stats.totalCount }}</span>
-                        </div>
-                    </div>
-                    <div class="w-[1px] h-10 bg-slate-800"></div>
-                    <div class="flex flex-col">
-                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-2">Energía Total</span>
-                        <div class="flex items-baseline gap-1">
-                            <span class="text-3xl font-black text-emerald-400">{{ stats.totalKwh.toLocaleString('es-AR', { maximumFractionDigits: 0 }) }}</span>
-                            <span class="text-xs font-bold text-slate-500 uppercase">kWh</span>
-                        </div>
-                    </div>
-                </div>
+
             </div>
 
             <!-- Dashboard Content -->
