@@ -26,13 +26,28 @@ class EquipmentType extends Model
 
     public function isClimate(): bool
     {
-        return $this->is_climatization ?? ($this->category && $this->category->name === 'Climatización');
+        if ($this->is_climatization) return true;
+        
+        $climateCategories = ['Climatización'];
+        return $this->category && in_array($this->category->name, $climateCategories);
     }
 
     public function isBase(): bool
     {
         // Si es 24hs y no es clima, es base (Tanque 1)
-        return !$this->isClimate() && ($this->default_avg_daily_use_hours == 24);
+        if (!$this->isClimate() && $this->default_avg_daily_use_hours == 24) {
+            return true;
+        }
+
+        // Categorías que son inherentemente Base (Tanque 1)
+        $baseCategories = ['Refrigeración', 'Seguridad y Redes'];
+        return $this->category && in_array($this->category->name, $baseCategories);
+    }
+
+    public function isHighIntensity(): bool
+    {
+        $highIntensityCategories = ['Agua Caliente (ACS)', 'Cuidado Personal', 'Lavado y Limpieza'];
+        return $this->category && in_array($this->category->name, $highIntensityCategories);
     }
 
     public function category()

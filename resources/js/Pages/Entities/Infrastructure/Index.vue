@@ -21,7 +21,11 @@ import {
     Tv,
     Lightbulb,
     Microwave,
-    Waves
+    Waves,
+    ShieldCheck,
+    Bath,
+    Sparkles,
+    Settings
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -182,6 +186,11 @@ const getCategoryIcon = (catName) => {
     if (name.includes('cocina')) return Microwave;
     if (name.includes('lavado')) return Waves;
     if (name.includes('entretenimiento')) return Tv;
+    if (name.includes('oficina') || name.includes('informática')) return Monitor;
+    if (name.includes('seguridad') || name.includes('redes')) return ShieldCheck;
+    if (name.includes('agua caliente')) return Bath;
+    if (name.includes('cuidado personal')) return Sparkles;
+    if (name.includes('mantenimiento') || name.includes('bombas')) return Settings;
     return Zap;
 };
 </script>
