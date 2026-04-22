@@ -31,13 +31,16 @@ const props = defineProps({
 });
 
 const showModal = ref(false);
+const showDeleteModal = ref(false);
 const showAdvanced = ref(false);
 const editingInvoice = ref(null);
+const invoiceToDelete = ref(null);
 
 const form = useForm({
     id: null,
     contract_id: '',
     invoice_number: '',
+    tariff: '',
     invoice_date: '',
     issue_date: '',
     start_date: '',
@@ -48,6 +51,9 @@ const form = useForm({
     cost_for_power: 0,
     taxes: 0,
     other_charges: 0,
+    installment_number: 1,
+    total_installments: 2,
+    bimonthly_consumption_kwh: '',
 });
 
 // Setup default contract if only one exists
@@ -100,6 +106,12 @@ const stats = computed(() => {
     };
 });
 
+const toISODate = (dateString) => {
+    if (!dateString) return '';
+    // Split by T to get only the date part and avoid timezone shifting
+    return dateString.split('T')[0];
+};
+
 const openCreateModal = () => {
     editingInvoice.value = null;
     form.reset();
@@ -112,16 +124,20 @@ const openEditModal = (invoice) => {
     form.id = invoice.id;
     form.contract_id = invoice.contract_id;
     form.invoice_number = invoice.invoice_number;
-    form.invoice_date = invoice.invoice_date;
-    form.issue_date = invoice.issue_date || invoice.invoice_date;
-    form.start_date = invoice.start_date;
-    form.end_date = invoice.end_date;
+    form.tariff = invoice.tariff || '';
+    form.invoice_date = toISODate(invoice.invoice_date);
+    form.issue_date = toISODate(invoice.issue_date || invoice.invoice_date);
+    form.start_date = toISODate(invoice.start_date);
+    form.end_date = toISODate(invoice.end_date);
     form.total_energy_consumed_kwh = invoice.total_energy_consumed_kwh;
     form.total_amount = invoice.total_amount;
     form.cost_for_energy = invoice.cost_for_energy || 0;
     form.cost_for_power = invoice.cost_for_power || 0;
     form.taxes = invoice.taxes || 0;
     form.other_charges = invoice.other_charges || 0;
+    form.installment_number = invoice.installment_number || 1;
+    form.total_installments = invoice.total_installments || 2;
+    form.bimonthly_consumption_kwh = invoice.bimonthly_consumption_kwh || '';
     showModal.value = true;
 };
 
@@ -148,19 +164,34 @@ const closeModal = () => {
     form.reset();
 };
 
-const deleteInvoice = (id) => {
-    if (confirm('¿Seguro que deseas eliminar esta factura?')) {
-        router.delete(route('gestion.invoices.destroy', id));
-    }
+const deleteInvoice = (invoice) => {
+    invoiceToDelete.value = invoice;
+    showDeleteModal.value = true;
 };
 
-const formatDate = (date) => {
-    if (!date) return '-';
-    return new Date(date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit' });
+const confirmDelete = () => {
+    if (!invoiceToDelete.value) return;
+    
+    router.delete(route('gestion.invoices.destroy', invoiceToDelete.value.id), {
+        onSuccess: () => {
+            showDeleteModal.value = false;
+            invoiceToDelete.value = null;
+        }
+    });
+};
+
+const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    // Parse as local date by splitting the ISO string
+    const [year, month, day] = dateString.split('T')[0].split('-');
+    return `${day}/${month}/${year.slice(-2)}`;
 };
 
 const calculateDays = (start, end) => {
-    const diffTime = Math.abs(new Date(end) - new Date(start));
+    if (!start || !end) return 0;
+    const s = new Date(start.split('T')[0]);
+    const e = new Date(end.split('T')[0]);
+    const diffTime = Math.abs(e - s);
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 };
 
@@ -280,13 +311,28 @@ const filteredInvoices = computed(() => {
                                     </div>
                                 </td>
                                 <td class="px-8 py-6">
-                                    <div class="flex items-center gap-3">
-                                        <span class="text-sm font-bold text-slate-600">{{ formatDate(invoice.start_date) }}</span>
-                                        <ArrowRight :size="12" class="text-slate-200" />
-                                        <span class="text-sm font-bold text-slate-600">{{ formatDate(invoice.end_date) }}</span>
-                                        <span class="px-2 py-0.5 bg-slate-100 rounded-md text-[9px] font-black text-slate-400 ml-2">
-                                            {{ calculateDays(invoice.start_date, invoice.end_date) }}D
-                                        </span>
+                                    <div class="space-y-1.5">
+                                        <div class="flex items-center gap-2">
+                                            <Calendar :size="12" class="text-slate-300" />
+                                            <div class="flex items-center gap-1.5 text-sm font-bold text-slate-700">
+                                                <span>{{ formatDate(invoice.start_date) }}</span>
+                                                <ArrowRight :size="10" class="text-slate-300" />
+                                                <span>{{ formatDate(invoice.end_date) }}</span>
+                                            </div>
+                                            <span class="px-1.5 py-0.5 bg-slate-900/5 rounded text-[8px] font-black text-slate-500 uppercase tracking-tighter">
+                                                {{ calculateDays(invoice.start_date, invoice.end_date) }} Días
+                                            </span>
+                                        </div>
+                                        <div v-if="invoice.installment_number || invoice.tariff" class="flex items-center gap-3">
+                                            <div v-if="invoice.installment_number" class="flex items-center gap-1">
+                                                <div class="w-1.5 h-1.5 rounded-full bg-energy-success/40"></div>
+                                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Cuota {{ invoice.installment_number }}/{{ invoice.total_installments }}</span>
+                                            </div>
+                                            <div v-if="invoice.tariff" class="flex items-center gap-1">
+                                                <div class="w-1.5 h-1.5 rounded-full bg-slate-200"></div>
+                                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ invoice.tariff }}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </td>
                                 <td class="px-8 py-6 text-center">
@@ -309,7 +355,7 @@ const filteredInvoices = computed(() => {
                                         <button @click="openEditModal(invoice)" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-energy-consumption hover:bg-energy-consumption/5 flex items-center justify-center transition-all">
                                             <Pencil :size="16" />
                                         </button>
-                                        <button @click="deleteInvoice(invoice.id)" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-energy-critical hover:bg-energy-critical/5 flex items-center justify-center transition-all">
+                                        <button @click="deleteInvoice(invoice)" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-energy-critical hover:bg-energy-critical/5 flex items-center justify-center transition-all">
                                             <Trash2 :size="16" />
                                         </button>
                                     </div>
@@ -351,10 +397,17 @@ const filteredInvoices = computed(() => {
                                 </select>
                                 <p v-if="form.errors.contract_id" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.contract_id }}</p>
                             </div>
-                            <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">N° de Factura</label>
-                                <input v-model="form.invoice_number" type="text" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-success/20 transition-all" />
-                                <p v-if="form.errors.invoice_number" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.invoice_number }}</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">N° de Factura</label>
+                                    <input v-model="form.invoice_number" type="text" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-success/20 transition-all" />
+                                    <p v-if="form.errors.invoice_number" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.invoice_number }}</p>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tarifa</label>
+                                    <input v-model="form.tariff" type="text" placeholder="Ej: T1R2" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-success/20 transition-all uppercase" />
+                                    <p v-if="form.errors.tariff" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.tariff }}</p>
+                                </div>
                             </div>
                         </div>
 
@@ -420,6 +473,35 @@ const filteredInvoices = computed(() => {
                         <p v-if="form.errors.total_energy_consumed_kwh" class="text-[9px] text-energy-critical font-bold">{{ form.errors.total_energy_consumed_kwh }}</p>
                     </div>
 
+                    <!-- Bimonthly Info (Argentina Specific) -->
+                    <div class="p-8 bg-slate-50/50 rounded-[32px] border border-dashed border-slate-200">
+                        <div class="flex items-center gap-2 mb-6">
+                            <Calendar :size="16" class="text-slate-400" />
+                            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Modalidad Cuotas / Bimestre</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">N° Cuota</label>
+                                <select v-model="form.installment_number" class="w-full bg-white border-slate-100 rounded-xl p-3 text-sm font-bold text-slate-900 focus:ring-2 transition-all">
+                                    <option :value="1">Cuota 1</option>
+                                    <option :value="2">Cuota 2</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Total Cuotas</label>
+                                <input v-model="form.total_installments" type="number" disabled class="w-full bg-slate-50 border-slate-100 rounded-xl p-3 text-sm font-bold text-slate-400 cursor-not-allowed" />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Consumo Bimestre Real</label>
+                                <div class="relative">
+                                    <input v-model="form.bimonthly_consumption_kwh" type="number" step="0.1" placeholder="Consumo total" class="w-full bg-white border-slate-100 rounded-xl pl-3 pr-10 py-3 text-sm font-bold text-slate-900 group-focus:ring-2 transition-all" />
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-300">kWh</span>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-[9px] text-slate-400 font-medium mt-4 italic">* Complete si su factura es mensual pero la medición es bimestral (Ej: Edesur/Edenor).</p>
+                    </div>
+
                     <!-- Secondary Charges -->
                     <div class="space-y-6 pt-4 border-t border-slate-50">
                         <button 
@@ -462,6 +544,54 @@ const filteredInvoices = computed(() => {
                     <button @click="closeModal" class="px-8 py-5 rounded-[24px] font-black text-xs uppercase tracking-widest text-slate-400 hover:bg-white transition-all">
                         Cancelar
                     </button>
+                </div>
+            </div>
+        </div>
+        <!-- Delete Confirmation Modal -->
+        <div v-if="showDeleteModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300" @click="showDeleteModal = false"></div>
+            
+            <div class="relative bg-white rounded-[40px] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-100">
+                <div class="p-12 text-center">
+                    <div class="mb-8 flex justify-center">
+                        <div class="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center relative">
+                            <AlertTriangle :size="48" class="text-energy-critical relative z-10" />
+                            <div class="absolute inset-0 bg-red-200 rounded-full animate-ping opacity-20"></div>
+                        </div>
+                    </div>
+                    
+                    <h2 class="text-2xl font-black text-slate-900 mb-4">¿Eliminar esta factura?</h2>
+                    <p class="text-slate-400 font-medium mb-8">Esta acción no se puede deshacer. Los datos de consumo asociados se borrarán permanentemente del sistema.</p>
+                    
+                    <div v-if="invoiceToDelete" class="bg-slate-50 rounded-3xl p-6 mb-8 text-left border border-slate-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Factura N°</span>
+                            <span class="text-xs font-bold text-slate-900">{{ invoiceToDelete.invoice_number }}</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Periodo</span>
+                            <span class="text-xs font-bold text-slate-900">{{ formatDate(invoiceToDelete.start_date) }} - {{ formatDate(invoiceToDelete.end_date) }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Importe Total</span>
+                            <span class="text-xs font-black text-energy-critical">${{ parseFloat(invoiceToDelete.total_amount).toLocaleString('es-AR') }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col gap-4">
+                        <button 
+                            @click="confirmDelete"
+                            class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-energy-critical transition-all shadow-xl shadow-red-200/20"
+                        >
+                            Eliminar Permanentemente
+                        </button>
+                        <button 
+                            @click="showDeleteModal = false"
+                            class="w-full py-5 rounded-3xl font-black text-xs uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all"
+                        >
+                            Mantener Registro
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -26,7 +26,7 @@ class EnergyEngineService
      */
     public function processInvoice(Invoice $invoice, Collection $equipments): array
     {
-        $totalBillKwh = $invoice->total_energy_consumed_kwh ?? $invoice->consumption_kwh ?? 0;
+        $totalBillKwh = $invoice->bimonthly_consumption_kwh ?? $invoice->total_energy_consumed_kwh ?? $invoice->consumption_kwh ?? 0;
         $daysInPeriod = $invoice->days_in_period; 
         $logs = [];
 

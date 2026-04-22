@@ -49,6 +49,7 @@ const navigation = computed(() => [
             { name: 'Perfil de Mi Casa', icon: Home, href: route('gestion.entity.edit') },
             { name: 'Contratos', icon: FileText, href: route('gestion.contracts') },
             { name: 'Facturas', icon: Briefcase, href: route('gestion.invoices') },
+            { name: 'Unificaciones', icon: RefreshCw, href: route('gestion.unifications') },
             { name: 'Infraestructura', icon: Building, href: route('gestion.infrastructure') },
         ]
     },

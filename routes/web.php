@@ -55,6 +55,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/facturas', 'App\Http\Controllers\InvoiceController@store')->name('invoices.store');
         Route::put('/facturas/{invoice}', 'App\Http\Controllers\InvoiceController@update')->name('invoices.update');
         Route::delete('/facturas/{invoice}', 'App\Http\Controllers\InvoiceController@destroy')->name('invoices.destroy');
+        Route::get('/unificaciones', 'App\Http\Controllers\UnificationController@index')->name('unifications');
 
         Route::get('/infraestructura', 'App\Http\Controllers\InfrastructureController@index')->name('infrastructure');
         

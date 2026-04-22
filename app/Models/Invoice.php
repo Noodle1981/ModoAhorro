@@ -9,6 +9,7 @@ class Invoice extends Model
     protected $fillable = [
         'contract_id',
         'invoice_number',
+        'tariff',
         'invoice_date',
         'issue_date',
         'start_date',
@@ -26,7 +27,9 @@ class Invoice extends Model
         'taxes',
         'other_charges',
         'total_amount',
-        'total_energy_injected_kwh',
+        'bimonthly_consumption_kwh',
+        'installment_number',
+        'total_installments',
         'is_representative',
         'anomaly_reason',
         'usage_locked',

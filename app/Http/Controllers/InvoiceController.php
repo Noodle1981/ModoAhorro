@@ -60,6 +60,7 @@ class InvoiceController extends Controller
         $validated = $request->validate([
             'contract_id' => 'required|exists:contracts,id',
             'invoice_number' => 'required|string|max:255',
+            'tariff' => 'nullable|string|max:50',
             'invoice_date' => 'required|date',
             'issue_date' => 'nullable|date',
             'start_date' => 'required|date',
@@ -70,6 +71,9 @@ class InvoiceController extends Controller
             'cost_for_power' => 'nullable|numeric|min:0',
             'taxes' => 'nullable|numeric|min:0',
             'other_charges' => 'nullable|numeric|min:0',
+            'installment_number' => 'nullable|integer|min:1',
+            'total_installments' => 'nullable|integer|min:1',
+            'bimonthly_consumption_kwh' => 'nullable|numeric|min:0',
         ]);
 
         if (empty($validated['issue_date'])) {
@@ -96,6 +100,7 @@ class InvoiceController extends Controller
         $validated = $request->validate([
             'contract_id' => 'required|exists:contracts,id',
             'invoice_number' => 'required|string|max:255',
+            'tariff' => 'nullable|string|max:50',
             'invoice_date' => 'required|date',
             'issue_date' => 'nullable|date',
             'start_date' => 'required|date',
@@ -106,6 +111,9 @@ class InvoiceController extends Controller
             'cost_for_power' => 'nullable|numeric|min:0',
             'taxes' => 'nullable|numeric|min:0',
             'other_charges' => 'nullable|numeric|min:0',
+            'installment_number' => 'nullable|integer|min:1',
+            'total_installments' => 'nullable|integer|min:1',
+            'bimonthly_consumption_kwh' => 'nullable|numeric|min:0',
         ]);
 
         if (empty($validated['issue_date'])) {
