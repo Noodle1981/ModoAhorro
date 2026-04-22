@@ -80,13 +80,17 @@ const filteredTypes = computed(() => {
 // Room Actions
 const openRoomCreate = () => {
     editingRoom.value = null;
-    roomForm.reset();
-    roomForm.entity_id = props.entity.id;
+    // Limpieza manual agresiva para evitar persistencia de estados
+    roomForm.id = null;
+    roomForm.name = '';
+    roomForm.description = '';
+    roomForm.clearErrors();
     showRoomModal.value = true;
 };
 
 const openRoomEdit = (room) => {
     editingRoom.value = room;
+    roomForm.clearErrors();
     roomForm.id = room.id;
     roomForm.entity_id = room.entity_id;
     roomForm.name = room.name;
@@ -103,8 +107,13 @@ const submitRoom = () => {
         });
     } else {
         roomForm.post(route('gestion.rooms.store'), {
-            onSuccess: () => {
+            onSuccess: (page) => {
                 showRoomModal.value = false;
+                // Auto-seleccionar el ambiente más reciente (el último creado)
+                if (props.rooms.length > 0) {
+                    const lastRoom = props.rooms[props.rooms.length - 1];
+                    selectedRoomId.value = lastRoom.id;
+                }
             }
         });
     }
@@ -119,8 +128,17 @@ const deleteRoom = (room) => {
 // Equipment Actions
 const openEqCreate = () => {
     editingEquipment.value = null;
-    eqForm.reset();
+    eqForm.id = null;
+    eqForm.category_id = '';
+    eqForm.type_id = '';
+    eqForm.name = '';
+    eqForm.nominal_power_w = '';
+    eqForm.avg_daily_use_hours = '';
+    eqForm.is_standby = false;
+    eqForm.cantidad = 1;
+    eqForm.is_active = true;
     eqForm.room_id = selectedRoomId.value;
+    eqForm.clearErrors();
     showEquipmentModal.value = true;
 };
 
@@ -187,70 +205,72 @@ const getCategoryIcon = (catName) => {
                 </div>
             </div>
 
-            <div class="flex flex-col lg:flex-row gap-8 items-start">
+            <div class="flex flex-col lg:flex-row gap-6 items-start">
                 
-                <!-- Sidebar: Rooms -->
-                <aside class="w-full lg:w-80 shrink-0 space-y-4">
-                    <div class="bg-white rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
-                        <div class="p-6 border-b border-slate-50 flex items-center justify-between">
+                <!-- Sidebar: Rooms (Sticky & Compact) -->
+                <aside class="w-full lg:w-72 shrink-0 space-y-4 sticky top-6">
+                    <div class="bg-white rounded-[24px] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
+                        <div class="p-4 border-b border-slate-50 flex items-center justify-between">
                             <h3 class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Ambientes</h3>
-                            <button @click="openRoomCreate" class="w-8 h-8 rounded-lg bg-energy-solar/10 text-energy-solar flex items-center justify-center hover:bg-energy-solar hover:text-white transition-all">
-                                <Plus :size="16" />
+                            <button @click="openRoomCreate" class="w-7 h-7 rounded-lg bg-energy-solar/10 text-energy-solar flex items-center justify-center hover:bg-energy-solar hover:text-white transition-all">
+                                <Plus :size="14" />
                             </button>
                         </div>
-                        <div class="p-2 space-y-1 max-h-[500px] overflow-y-auto">
+                        <div class="p-2 space-y-1 max-h-[calc(100vh-450px)] overflow-y-auto custom-scrollbar">
                             <button 
                                 v-for="room in rooms" 
                                 :key="room.id"
                                 @click="selectedRoomId = room.id"
                                 :class="[
-                                    'w-full flex items-center justify-between p-4 rounded-2xl transition-all group',
+                                    'w-full flex items-center justify-between p-3 rounded-xl transition-all group',
                                     selectedRoomId === room.id ? 'bg-slate-900 text-white shadow-lg' : 'hover:bg-slate-50 text-slate-600'
                                 ]"
                             >
                                 <div class="flex items-center gap-3">
-                                    <div :class="['w-2 h-2 rounded-full', selectedRoomId === room.id ? 'bg-energy-solar' : 'bg-slate-200']"></div>
-                                    <span class="text-sm font-bold">{{ room.name }}</span>
+                                    <div :class="['w-1.5 h-1.5 rounded-full', selectedRoomId === room.id ? 'bg-energy-solar' : 'bg-slate-200']"></div>
+                                    <span class="text-xs font-bold leading-none">{{ room.name }}</span>
                                 </div>
-                                <span :class="['text-[10px] font-black px-2 py-0.5 rounded-md', selectedRoomId === room.id ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-400']">
+                                <span :class="['text-[9px] font-black px-1.5 py-0.5 rounded-md', selectedRoomId === room.id ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-400']">
                                     {{ room.equipment_count }}
                                 </span>
                             </button>
                         </div>
                     </div>
-
-                    <!-- Room Info Card -->
-                    <div v-if="selectedRoom" class="bg-indigo-900 rounded-[32px] p-8 text-white space-y-4 relative overflow-hidden">
-                        <div class="absolute -right-4 -bottom-4 opacity-10">
-                            <Building2 :size="120" />
+ 
+                    <!-- Compact Room Info Card -->
+                    <div v-if="selectedRoom" class="bg-indigo-900 rounded-[24px] p-6 text-white space-y-3 relative overflow-hidden group">
+                        <div class="absolute -right-2 -bottom-2 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                            <Building2 :size="100" />
                         </div>
-                        <div class="relative z-10 space-y-4">
+                        <div class="relative z-10 space-y-3">
                             <div class="flex items-center justify-between">
-                                <h4 class="text-lg font-black tracking-tight">{{ selectedRoom.name }}</h4>
-                                <button @click="openRoomEdit(selectedRoom)" class="text-white/40 hover:text-white transition-colors">
-                                    <Pencil :size="14" />
-                                </button>
+                                <h4 class="text-sm font-black tracking-tight">{{ selectedRoom.name }}</h4>
+                                <div class="flex items-center gap-2">
+                                    <button @click="openRoomEdit(selectedRoom)" class="text-white/30 hover:text-white transition-colors" title="Editar ambiente">
+                                        <Pencil :size="12" />
+                                    </button>
+                                    <button @click="deleteRoom(selectedRoom)" class="text-white/20 hover:text-rose-400 transition-colors" title="Eliminar ambiente">
+                                        <Trash2 :size="12" />
+                                    </button>
+                                </div>
                             </div>
-                            <p class="text-xs text-indigo-200/70 font-medium leading-relaxed">{{ selectedRoom.description || 'Sin descripción adicional.' }}</p>
-                            <button @click="deleteRoom(selectedRoom)" class="text-[9px] font-black uppercase tracking-widest text-rose-400/60 hover:text-rose-400 transition-colors">
-                                Eliminar Ambiente
-                            </button>
+                            <p class="text-[10px] text-indigo-100/60 font-medium leading-relaxed" :title="selectedRoom.description">{{ selectedRoom.description || 'Sin descripción.' }}</p>
                         </div>
                     </div>
                 </aside>
-
+ 
                 <!-- Main Grid: Equipment -->
-                <main class="flex-1 space-y-6">
-                    <div v-if="selectedRoom" class="space-y-8">
+                <main class="flex-1 min-w-0">
+                    <div v-if="selectedRoom" class="space-y-6">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-2xl bg-white border border-slate-100 shadow-md flex items-center justify-center text-energy-solar">
-                                    <LayoutGrid :size="24" />
+                                <div class="w-10 h-10 rounded-xl bg-white border border-slate-100 shadow-md flex items-center justify-center text-energy-solar">
+                                    <LayoutGrid :size="18" />
                                 </div>
-                                <h2 class="text-2xl font-black text-slate-900 tracking-tight">Equipos en {{ selectedRoom.name }}</h2>
+                                <h2 class="text-xl font-black text-slate-900 tracking-tight">Equipos <span class="text-slate-300 font-medium ml-1">({{ selectedRoom.equipment_count }})</span></h2>
                             </div>
-                            <button @click="openEqCreate" class="bg-slate-900 text-white px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-energy-solar transition-all shadow-xl shadow-slate-200">
-                                <Plus :size="14" class="inline mr-2" stroke-width="3" /> Añadir Equipo
+                            <button @click="openEqCreate" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-energy-solar transition-all shadow-xl shadow-slate-200">
+                                <Plus :size="12" class="inline mr-1" stroke-width="3" /> Añadir Equipo
                             </button>
                         </div>
 
