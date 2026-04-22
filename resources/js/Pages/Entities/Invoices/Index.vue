@@ -35,6 +35,7 @@ const showDeleteModal = ref(false);
 const showAdvanced = ref(false);
 const editingInvoice = ref(null);
 const invoiceToDelete = ref(null);
+const isGuidedInstallment2 = ref(false);
 
 const form = useForm({
     id: null,
@@ -114,6 +115,7 @@ const toISODate = (dateString) => {
 
 const openCreateModal = () => {
     editingInvoice.value = null;
+    isGuidedInstallment2.value = false;
     form.reset();
     if (props.contracts.length === 1) form.contract_id = props.contracts[0].id;
     showModal.value = true;
@@ -121,6 +123,7 @@ const openCreateModal = () => {
 
 const openEditModal = (invoice) => {
     editingInvoice.value = invoice;
+    isGuidedInstallment2.value = false;
     form.id = invoice.id;
     form.contract_id = invoice.contract_id;
     form.invoice_number = invoice.invoice_number;
@@ -142,9 +145,32 @@ const openEditModal = (invoice) => {
 };
 
 const submit = () => {
+    // Clear previous errors
+    form.clearErrors();
+
     // Ensure invoice_date is always synced with issue_date
     if (!form.invoice_date) form.invoice_date = form.issue_date;
     if (!form.issue_date) form.issue_date = form.invoice_date;
+
+    // Frontend validations
+    const start = form.start_date ? new Date(form.start_date) : null;
+    const end = form.end_date ? new Date(form.end_date) : null;
+    const issue = form.issue_date ? new Date(form.issue_date) : null;
+
+    if (issue && end && issue < end) {
+        form.setError('issue_date', 'La fecha de emisión debe ser posterior al cierre del período.');
+        return;
+    }
+
+    if (issue && start && (issue.getFullYear() - start.getFullYear() > 1)) {
+        form.setError('issue_date', 'El año de la factura no puede ser más de un año posterior al período de consumo.');
+        return;
+    }
+
+    if (issue && start && issue < start) {
+        form.setError('issue_date', 'La fecha de emisión no puede ser anterior al inicio del período.');
+        return;
+    }
 
     if (editingInvoice.value) {
         form.put(route('gestion.invoices.update', editingInvoice.value.id), {
@@ -204,6 +230,39 @@ const filteredInvoices = computed(() => {
         formatDate(inv.start_date).includes(query)
     );
 });
+
+const hasPartner = (invoice) => {
+    if (invoice.installment_number !== 1) return true;
+    return props.invoices.some(inv => 
+        inv.contract_id === invoice.contract_id &&
+        inv.start_date === invoice.start_date &&
+        inv.end_date === invoice.end_date &&
+        inv.installment_number === 2
+    );
+};
+
+const openCreateInstallment2Modal = (invoice) => {
+    editingInvoice.value = null;
+    isGuidedInstallment2.value = true;
+    form.reset();
+    form.contract_id = invoice.contract_id;
+    form.tariff = invoice.tariff || '';
+    form.start_date = toISODate(invoice.start_date);
+    form.end_date = toISODate(invoice.end_date);
+    form.installment_number = 2;
+    form.total_installments = 2;
+    form.bimonthly_consumption_kwh = invoice.bimonthly_consumption_kwh || '';
+    
+    // Ensure these are empty for the new entry
+    form.invoice_number = '';
+    form.issue_date = '';
+    form.total_energy_consumed_kwh = '';
+    form.total_amount = '';
+    form.cost_for_energy = 0;
+    form.taxes = 0;
+    
+    showModal.value = true;
+};
 </script>
 
 <template>
@@ -351,13 +410,24 @@ const filteredInvoices = computed(() => {
                                     </div>
                                 </td>
                                 <td class="px-8 py-6 text-right">
-                                    <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                                        <button @click="openEditModal(invoice)" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-energy-consumption hover:bg-energy-consumption/5 flex items-center justify-center transition-all">
-                                            <Pencil :size="16" />
+                                    <div class="flex items-center justify-end gap-2">
+                                        <button 
+                                            v-if="invoice.installment_number === 1 && !hasPartner(invoice)"
+                                            @click="openCreateInstallment2Modal(invoice)"
+                                            class="h-10 px-4 rounded-xl bg-energy-success/10 text-energy-success hover:bg-energy-success hover:text-white flex items-center gap-2 transition-all text-[10px] font-black uppercase tracking-widest"
+                                            title="Cargar Cuota 2 para este periodo"
+                                        >
+                                            <Plus :size="14" stroke-width="3" />
+                                            Cargar Cuota 2
                                         </button>
-                                        <button @click="deleteInvoice(invoice)" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-energy-critical hover:bg-energy-critical/5 flex items-center justify-center transition-all">
-                                            <Trash2 :size="16" />
-                                        </button>
+                                        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                            <button @click="openEditModal(invoice)" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-energy-consumption hover:bg-energy-consumption/5 flex items-center justify-center transition-all">
+                                                <Pencil :size="16" />
+                                            </button>
+                                            <button @click="deleteInvoice(invoice)" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-energy-critical hover:bg-energy-critical/5 flex items-center justify-center transition-all">
+                                                <Trash2 :size="16" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -482,7 +552,11 @@ const filteredInvoices = computed(() => {
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div class="space-y-2">
                                 <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">N° Cuota</label>
-                                <select v-model="form.installment_number" class="w-full bg-white border-slate-100 rounded-xl p-3 text-sm font-bold text-slate-900 focus:ring-2 transition-all">
+                                <select 
+                                    v-model="form.installment_number" 
+                                    :disabled="!editingInvoice"
+                                    class="w-full bg-white border-slate-100 rounded-xl p-3 text-sm font-bold text-slate-900 focus:ring-2 transition-all disabled:opacity-60 disabled:bg-slate-50"
+                                >
                                     <option :value="1">Cuota 1</option>
                                     <option :value="2">Cuota 2</option>
                                 </select>

@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Gestión_Física;
 
 use App\Models\User;
 use App\Models\Entity;
@@ -211,5 +211,49 @@ class ContractManagementTest extends TestCase
         $response->assertRedirect();
         $this->assertFalse($contract1->fresh()->is_active);
         $this->assertTrue($contract2->fresh()->is_active);
+    }
+
+    public function test_user_can_update_contract()
+    {
+        $user = User::factory()->create();
+        $entity = $this->createEntityForUser($user);
+        $provider = Proveedor::factory()->create(['province_id' => $this->provinceSJ->id]);
+        $contract = Contract::factory()->create(['entity_id' => $entity->id]);
+
+        $updateData = [
+            'entity_id' => $entity->id,
+            'proveedor_id' => $provider->id,
+            'supply_number' => 'NIU-UPDATED',
+            'contract_number' => 'CONT-UPDATED',
+            'rate_name' => 'T1-R2',
+            'is_three_phase' => false,
+            'contracted_power_kw_p1' => 7.5,
+            'is_active' => true,
+        ];
+
+        $response = $this->actingAs($user)
+            ->withSession(['active_entity_id' => $entity->id])
+            ->put(route('gestion.contracts.update', $contract->id), $updateData);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('contracts', [
+            'id' => $contract->id,
+            'supply_number' => 'NIU-UPDATED',
+            'rate_name' => 'T1-R2'
+        ]);
+    }
+
+    public function test_user_can_delete_contract()
+    {
+        $user = User::factory()->create();
+        $entity = $this->createEntityForUser($user);
+        $contract = Contract::factory()->create(['entity_id' => $entity->id]);
+
+        $response = $this->actingAs($user)
+            ->withSession(['active_entity_id' => $entity->id])
+            ->delete(route('gestion.contracts.destroy', $contract->id));
+
+        $response->assertRedirect();
+        $this->assertDatabaseMissing('contracts', ['id' => $contract->id]);
     }
 }

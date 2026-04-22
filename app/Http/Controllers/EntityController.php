@@ -75,25 +75,36 @@ class EntityController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $oldHasBusiness = $entity->has_business_activity;
         $entity->update($validated);
 
-        // Lógica de Uso Mixto: Inyectar ambiente de negocio específico
-        if ($entity->has_business_activity && !$oldHasBusiness) {
-            $name = match($entity->business_type) {
-                'almacen' => 'Almacén / Depósito',
-                'taller' => 'Taller / Producción',
-                'venta' => 'Local de Venta / Atención',
+        // Lógica de Uso Mixto (Hogar + Negocio): Estado Deseado
+        $identifier = 'Ambiente autogenerado para soporte de actividad económica en el hogar.';
+        $businessRoom = $entity->rooms()->where('description', 'like', '%autogenerado%')->first();
+
+        if ($entity->has_business_activity) {
+            $intendedName = match($entity->business_type) {
+                'almacen' => 'Almacén',
+                'taller' => 'Taller',
+                'venta' => 'Local / Venta',
                 default => 'Espacio de Trabajo / Negocio'
             };
 
-            $exists = $entity->rooms()->where('name', 'like', "%{$name}%")->exists();
-            
-            if (!$exists) {
+            if ($businessRoom) {
+                // Sincronizar nombre si ya existe
+                if ($businessRoom->name !== $intendedName) {
+                    $businessRoom->update(['name' => $intendedName]);
+                }
+            } else {
+                // Crear si no existe
                 $entity->rooms()->create([
-                    'name' => $name,
-                    'description' => 'Ambiente autogenerado para soporte de actividad económica en el hogar.'
+                    'name' => $intendedName,
+                    'description' => $identifier
                 ]);
+            }
+        } else {
+            // Si está inactivo, eliminar cualquier rastro
+            if ($businessRoom) {
+                $businessRoom->delete();
             }
         }
 

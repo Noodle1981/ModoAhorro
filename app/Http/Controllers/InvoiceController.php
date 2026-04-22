@@ -62,7 +62,7 @@ class InvoiceController extends Controller
             'invoice_number' => 'required|string|max:255',
             'tariff' => 'nullable|string|max:50',
             'invoice_date' => 'required|date',
-            'issue_date' => 'nullable|date',
+            'issue_date' => 'nullable|date|after:start_date',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'total_energy_consumed_kwh' => 'required|numeric|min:0',
@@ -75,6 +75,20 @@ class InvoiceController extends Controller
             'total_installments' => 'nullable|integer|min:1',
             'bimonthly_consumption_kwh' => 'nullable|numeric|min:0',
         ]);
+
+        // Custom validation logic for energy invoices
+        $issue_date = \Carbon\Carbon::parse($validated['issue_date'] ?? $validated['invoice_date']);
+        $end_date = \Carbon\Carbon::parse($validated['end_date']);
+        $start_date = \Carbon\Carbon::parse($validated['start_date']);
+
+        if ($issue_date->lt($end_date)) {
+            return redirect()->back()->withErrors(['issue_date' => 'La fecha de emisión debe ser posterior al cierre del período.']);
+        }
+
+        if ($issue_date->year - $start_date->year > 1) {
+            return redirect()->back()->withErrors(['issue_date' => 'El año de la factura no puede ser más de un año posterior al período de consumo.']);
+        }
+
 
         if (empty($validated['issue_date'])) {
             $validated['issue_date'] = $validated['invoice_date'];
@@ -102,7 +116,7 @@ class InvoiceController extends Controller
             'invoice_number' => 'required|string|max:255',
             'tariff' => 'nullable|string|max:50',
             'invoice_date' => 'required|date',
-            'issue_date' => 'nullable|date',
+            'issue_date' => 'nullable|date|after:start_date',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'total_energy_consumed_kwh' => 'required|numeric|min:0',
@@ -115,6 +129,20 @@ class InvoiceController extends Controller
             'total_installments' => 'nullable|integer|min:1',
             'bimonthly_consumption_kwh' => 'nullable|numeric|min:0',
         ]);
+
+        // Custom validation logic for energy invoices
+        $issue_date = \Carbon\Carbon::parse($validated['issue_date'] ?? $validated['invoice_date']);
+        $end_date = \Carbon\Carbon::parse($validated['end_date']);
+        $start_date = \Carbon\Carbon::parse($validated['start_date']);
+
+        if ($issue_date->lt($end_date)) {
+            return redirect()->back()->withErrors(['issue_date' => 'La fecha de emisión debe ser posterior al cierre del período.']);
+        }
+
+        if ($issue_date->year - $start_date->year > 1) {
+            return redirect()->back()->withErrors(['issue_date' => 'El año de la factura no puede ser más de un año posterior al período de consumo.']);
+        }
+
 
         if (empty($validated['issue_date'])) {
             $validated['issue_date'] = $validated['invoice_date'];
