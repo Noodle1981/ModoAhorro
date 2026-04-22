@@ -140,8 +140,14 @@ class Casa27Seeder extends Seeder
                 // Buscar categoría por nombre para evitar IDs estáticos
                 $category = EquipmentCategory::where('name', $eq['cat'])->first();
                 
+                // Determinar el nombre del tipo (Taxonomía)
+                $typeName = $eq['type'] ?? $eq['name'];
+                if ($eq['cat'] === 'Iluminación') {
+                    $typeName = 'Foco Estandar';
+                }
+
                 // Buscar o Crear el Tipo de Equipo
-                $type = EquipmentType::updateOrCreate(['name' => $eq['name']], [
+                $type = EquipmentType::updateOrCreate(['name' => $typeName], [
                     'category_id' => $category->id,
                     'default_power_watts' => $eq['watts'],
                     'default_avg_daily_use_hours' => $eq['hours'],

@@ -131,7 +131,9 @@ class EnergyEngineService
                 $tank2Consumption += $periodKwh;
 
                 if ($this->isFallbackMode) {
-                    $eq->audit_logs[] = "⚠️ Datos de proximidad (API Offline)";
+                    $currentLogs = $eq->audit_logs ?? [];
+                    $currentLogs[] = "⚠️ Datos de proximidad (API Offline)";
+                    $eq->audit_logs = $currentLogs;
                 }
             }
         }

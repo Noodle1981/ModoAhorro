@@ -38,7 +38,7 @@ const calculateDays = (start, end) => {
 
 // Global Stats
 const stats = computed(() => {
-    const complete = props.unifications.filter(u => u.status === 'complete').length;
+    const complete = props.unifications.filter(u => u.is_complete).length;
     const totalKwh = props.unifications.reduce((acc, u) => acc + (u.real_bimonthly_kwh || u.total_kwh), 0);
     const totalAmount = props.unifications.reduce((acc, u) => acc + u.total_amount, 0);
     
@@ -143,7 +143,7 @@ const stats = computed(() => {
                                         <span class="text-sm font-black text-slate-300 uppercase">kWh</span>
                                     </div>
                                 </div>
-                                <div v-if="period.status === 'complete'" class="w-20 h-20 rounded-full bg-emerald-50 flex flex-col items-center justify-center text-emerald-600 border border-emerald-100">
+                                <div v-if="period.is_complete" class="w-20 h-20 rounded-full bg-emerald-50 flex flex-col items-center justify-center text-emerald-600 border border-emerald-100">
                                     <CheckCircle2 :size="24" />
                                     <span class="text-[8px] font-black uppercase mt-1">Completo</span>
                                 </div>
@@ -187,11 +187,11 @@ const stats = computed(() => {
                                     <div class="mt-4 h-2 w-full bg-slate-200 rounded-full overflow-hidden">
                                         <div 
                                             class="h-full bg-emerald-500 rounded-full transition-all duration-1000" 
-                                            :style="{ width: (period.status === 'complete' ? '100' : '50') + '%' }"
+                                            :style="{ width: (period.is_complete ? '100' : '50') + '%' }"
                                         ></div>
                                     </div>
                                     <p class="text-[9px] text-slate-400 font-medium italic mt-2">
-                                        {{ period.status === 'complete' ? 'Ciclo físico cerrado correctamente.' : 'Esperando carga de la segunda cuota para cerrar ciclo.' }}
+                                        {{ period.is_complete ? 'Ciclo físico cerrado correctamente.' : 'Esperando carga de la segunda cuota para cerrar ciclo.' }}
                                     </p>
                                 </div>
                             </div>

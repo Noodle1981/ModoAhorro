@@ -52,7 +52,7 @@ class AnalysisController extends Controller
                 ->join('equipment', 'equipment_usages.equipment_id', '=', 'equipment.id')
                 ->join('equipment_categories', 'equipment.category_id', '=', 'equipment_categories.id')
                 ->where('equipment_usages.invoice_id', $latestInvoice->id)
-                ->select('equipment_categories.name', DB::raw('SUM(COALESCE(kwh_reconciled, total_energy_consumed_kwh, 0)) as total_kwh'))
+                ->select('equipment_categories.name', DB::raw('SUM(COALESCE(kwh_reconciled, consumption_kwh, 0)) as total_kwh'))
                 ->groupBy('equipment_categories.name')
                 ->get();
             
@@ -66,7 +66,7 @@ class AnalysisController extends Controller
             // 1.2 Tank Data (New!)
             $tankData = DB::table('equipment_usages')
                 ->where('invoice_id', $latestInvoice->id)
-                ->select('tank_assignment', DB::raw('SUM(COALESCE(kwh_reconciled, 0)) as total_kwh'))
+                ->select('tank_assignment', DB::raw('SUM(COALESCE(kwh_reconciled, consumption_kwh, 0)) as total_kwh'))
                 ->groupBy('tank_assignment')
                 ->get();
 
@@ -189,11 +189,20 @@ class AnalysisController extends Controller
                     'usage' => $usage,
                     'is_validated' => $equipment->is_validated ?? false,
                     'is_standby' => $equipment->is_standby ?? false,
+                    'category_name' => $equipment->category->name ?? '',
+                    'type_name' => $equipment->type->name ?? '',
                 ];
 
                 $tanks[$tier]['items'][] = $item;
             }
         }
+
+        $periodTotalKwh = $allInvoices->sum('total_energy_consumed_kwh');
+        $realBimonthlyKwh = $allInvoices->max('bimonthly_consumption_kwh') ?: $periodTotalKwh;
+
+        $climateService = app(\App\Services\ClimateService::class);
+        // Usar loadDataForDateRange asegura que los datos se bajen de la API si no existen en la BD
+        $climateData = $climateService->loadDataForDateRange($entity, $startDate, $endDate);
 
         return Inertia::render('Analisis/UsageAdjustmentDetail', [
             'entity' => $entity,
@@ -203,7 +212,10 @@ class AnalysisController extends Controller
             'period' => [
                 'start' => $startDate,
                 'end' => $endDate,
-                'days' => Carbon::parse($startDate)->diffInDays(Carbon::parse($endDate))
+                'days' => Carbon::parse($startDate)->diffInDays(Carbon::parse($endDate)),
+                'total_kwh' => $realBimonthlyKwh,
+                'cooling_days' => $climateData['cooling_days'] ?? 0,
+                'heating_days' => $climateData['heating_days'] ?? 0,
             ]
         ]);
     }

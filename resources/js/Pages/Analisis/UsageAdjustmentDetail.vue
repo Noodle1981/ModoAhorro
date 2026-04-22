@@ -40,7 +40,8 @@ const form = useForm({
                 avg_daily_use_hours: item.usage.avg_daily_use_hours || 0,
                 usage_frequency: item.usage.usage_frequency || 'diario',
                 is_standby: item.usage.is_standby || false,
-                nominal_power_w: item.nominal_power_w
+                nominal_power_w: item.nominal_power_w,
+                use_minutes: (item.usage.avg_daily_use_hours < 1 && item.usage.avg_daily_use_hours > 0)
             };
         });
         return acc;
@@ -60,6 +61,32 @@ const frequencyFactors = {
     'nunca': 0.0
 };
 
+// Lógica para saber si un equipo está limitado por la API Climática
+const getClimateLimitation = (eqId) => {
+    let eqItem = null;
+    for (const tank of props.tanks) {
+        eqItem = tank.items.find(i => i.id === eqId);
+        if (eqItem) break;
+    }
+
+    if (eqItem && eqItem.category_name === 'Climatización') {
+        const name = eqItem.type_name.toLowerCase();
+        const isCooling = name.includes('aire') || name.includes('ventilador') || name.includes('split');
+        
+        const climateDays = isCooling ? props.period.cooling_days : props.period.heating_days;
+        
+        // Si hay menos días de clima extremo que días en el periodo, la API está limitando
+        if (climateDays !== undefined && climateDays >= 0 && climateDays < props.period.days) {
+            return {
+                isLimited: true,
+                type: isCooling ? 'Refrigeración' : 'Calefacción',
+                days: climateDays
+            };
+        }
+    }
+    return { isLimited: false };
+};
+
 // Cálculo reactivo de kWh por equipo
 const calculateKwh = (eqId) => {
     const data = form.usages[eqId];
@@ -67,8 +94,15 @@ const calculateKwh = (eqId) => {
     
     const powerKw = data.nominal_power_w / 1000;
     const factor = frequencyFactors[data.usage_frequency] || 0.60;
-    const effectiveDays = props.period.days * factor;
     
+    let effectiveDays = props.period.days;
+    const climateLimitation = getClimateLimitation(eqId);
+    
+    if (climateLimitation.isLimited) {
+        effectiveDays = climateLimitation.days;
+    }
+    
+    effectiveDays = effectiveDays * factor;
     return powerKw * data.avg_daily_use_hours * effectiveDays;
 };
 
@@ -85,9 +119,28 @@ const tankTotals = computed(() => {
 });
 
 const diffPercentage = computed(() => {
-    const invoiced = props.invoice.total_energy_consumed_kwh || 1;
+    const invoiced = props.period.total_kwh || 1;
     return ((totalCalculatedKwh.value - invoiced) / invoiced) * 100;
 });
+
+// Helpers para el modo minutos
+const getDisplayTime = (eqId) => {
+    const usage = form.usages[eqId];
+    if (usage.use_minutes) {
+        const mins = Math.round(usage.avg_daily_use_hours * 60);
+        return `${mins} min`;
+    }
+    return `${usage.avg_daily_use_hours} h`;
+};
+
+const handleMinuteSlider = (event, eqId) => {
+    const usage = form.usages[eqId];
+    if (usage.use_minutes) {
+        usage.avg_daily_use_hours = parseFloat((event.target.value / 60).toFixed(3));
+    } else {
+        usage.avg_daily_use_hours = parseFloat(event.target.value);
+    }
+};
 
 const submit = () => {
     form.post(route('analisis.usage.save'), {
@@ -138,7 +191,7 @@ const getTankColor = (key) => {
                     </div>
                     <div class="bg-slate-900 text-white p-4 rounded-[24px] shadow-xl shadow-slate-200/50">
                         <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total Facturado</p>
-                        <p class="text-xl font-black">{{ Math.round(invoice.total_energy_consumed_kwh) }}<span class="text-xs ml-1 opacity-50">kWh</span></p>
+                        <p class="text-xl font-black">{{ Math.round(period.total_kwh) }}<span class="text-xs ml-1 opacity-50">kWh</span></p>
                     </div>
                 </div>
             </div>
@@ -151,7 +204,7 @@ const getTankColor = (key) => {
                 <div class="space-y-1">
                     <h4 class="text-xl font-black text-amber-900 tracking-tight leading-none mb-1">Periodo Bimestral Incompleto</h4>
                     <p class="text-sm text-amber-700 font-medium leading-relaxed">
-                        Faltan cuotas por cargar para completar este periodo de medición físico. Los kWh facturados ({{ Math.round(invoice.total_energy_consumed_kwh) }} kWh) representan solo una parte del total real. Puedes configurar el uso ahora, pero el diagnóstico final será más preciso cuando cargues el bimestre completo.
+                        Faltan cuotas por cargar para completar este periodo de medición físico. Los kWh facturados ({{ Math.round(period.total_kwh) }} kWh) representan solo una parte del total real. Puedes configurar el uso ahora, pero el diagnóstico final será más preciso cuando cargues el bimestre completo.
                     </p>
                 </div>
                 <div class="md:ml-auto">
@@ -212,16 +265,37 @@ const getTankColor = (key) => {
                                 <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                                     <div class="space-y-3">
                                         <div class="flex justify-between items-center px-1">
-                                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Horas de Uso/Día</label>
-                                            <span class="text-sm font-black text-slate-900 bg-slate-50 px-2 rounded-md">{{ form.usages[item.id].avg_daily_use_hours }}h</span>
+                                            <div class="flex flex-col">
+                                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Uso/Día</label>
+                                                <button 
+                                                    @click="form.usages[item.id].use_minutes = !form.usages[item.id].use_minutes"
+                                                    class="text-[8px] font-bold text-sky-500 uppercase flex items-center gap-1 hover:text-sky-700 transition-colors"
+                                                >
+                                                    <Clock :size="8" /> {{ form.usages[item.id].use_minutes ? 'Pasar a Horas' : 'Ajustar Minutos' }}
+                                                </button>
+                                            </div>
+                                            <span class="text-sm font-black text-slate-900 bg-slate-50 px-2 rounded-md">{{ getDisplayTime(item.id) }}</span>
                                         </div>
+                                        
+                                        <!-- Slider dinámico (Horas o Minutos) -->
                                         <input 
+                                            v-if="!form.usages[item.id].use_minutes"
                                             type="range" 
                                             v-model.number="form.usages[item.id].avg_daily_use_hours" 
                                             min="0" 
                                             max="24" 
                                             step="0.5"
                                             class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-slate-900" 
+                                        />
+                                        <input 
+                                            v-else
+                                            type="range" 
+                                            :value="Math.round(form.usages[item.id].avg_daily_use_hours * 60)" 
+                                            @input="handleMinuteSlider($event, item.id)"
+                                            min="0" 
+                                            max="60" 
+                                            step="1"
+                                            class="w-full h-1.5 bg-sky-100 rounded-lg appearance-none cursor-pointer accent-sky-500" 
                                         />
                                     </div>
                                     <div class="space-y-3">
@@ -245,6 +319,12 @@ const getTankColor = (key) => {
                                 <div class="md:w-32 text-right shrink-0">
                                     <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Calculado</p>
                                     <p class="text-lg font-black text-slate-900">{{ calculateKwh(item.id).toFixed(1) }} <span class="text-[10px] font-normal text-slate-400">kWh</span></p>
+                                    
+                                    <!-- Climate API Badge -->
+                                    <div v-if="getClimateLimitation(item.id).isLimited" class="mt-2 inline-flex items-center gap-1 bg-sky-50 text-sky-600 px-2 py-1 rounded-md border border-sky-100" title="Ajustado por API Climática">
+                                        <ThermometerSun :size="10" />
+                                        <span class="text-[8px] font-black uppercase tracking-widest">{{ getClimateLimitation(item.id).days }} Días (API)</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -277,13 +357,38 @@ const getTankColor = (key) => {
                             </div>
 
                             <!-- Progress comparison -->
-                            <div class="h-4 bg-slate-100 rounded-full overflow-hidden flex">
-                                <div class="h-full bg-slate-900 transition-all duration-500" :style="{ width: Math.min(100, (totalCalculatedKwh / invoice.total_energy_consumed_kwh) * 100) + '%' }"></div>
+                            <div class="space-y-3">
+                                <div class="flex justify-between text-[9px] font-bold uppercase tracking-tighter text-slate-400 px-1">
+                                    <span>Calculado</span>
+                                    <span>Facturado ({{ Math.round(period.total_kwh) }})</span>
+                                </div>
+                                <div class="relative h-5 bg-slate-100 rounded-full p-1 border border-slate-200/50 group">
+                                    <!-- Target Line (100% Facturado) -->
+                                    <div class="absolute top-0 bottom-0 left-[100%] w-0.5 bg-slate-300 z-10 flex flex-col items-center">
+                                        <div class="w-2 h-2 bg-slate-300 rounded-full -mt-1 shadow-sm"></div>
+                                    </div>
+                                    
+                                    <!-- Progress Fill -->
+                                    <div 
+                                        class="h-full rounded-full transition-all duration-1000 ease-out shadow-inner flex items-center justify-end px-2" 
+                                        :class="[
+                                            Math.abs(diffPercentage) < 5 ? 'bg-energy-success' : 
+                                            (totalCalculatedKwh > period.total_kwh ? 'bg-rose-500' : 'bg-slate-900')
+                                        ]"
+                                        :style="{ width: Math.min(100, (totalCalculatedKwh / period.total_kwh) * 100) + '%' }"
+                                    >
+                                        <span v-if="totalCalculatedKwh > 0 && (totalCalculatedKwh / period.total_kwh) > 0.2" class="text-[8px] font-black text-white leading-none">
+                                            {{ Math.round((totalCalculatedKwh / period.total_kwh) * 100) }}%
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Alert if gap is too big -->
+                                <p v-if="Math.abs(diffPercentage) > 20" class="text-[10px] text-amber-600 font-bold italic leading-relaxed flex items-start gap-2 bg-amber-50 p-4 rounded-2xl border border-amber-100">
+                                    <AlertCircle :size="14" class="shrink-0" />
+                                    Nota: Hay una diferencia importante ({{ Math.round(diffPercentage) }}%) entre lo declarado y lo facturado.
+                                </p>
                             </div>
-                            <p v-if="Math.abs(diffPercentage) > 20" class="text-[10px] text-amber-600 font-bold italic leading-relaxed flex items-start gap-2 bg-amber-50 p-4 rounded-2xl border border-amber-100">
-                                <AlertCircle :size="14" class="shrink-0" />
-                                Nota: Hay una diferencia importante ({{ Math.round(diffPercentage) }}%) entre lo declarado y lo facturado.
-                            </p>
                         </div>
 
                         <!-- Notes -->
