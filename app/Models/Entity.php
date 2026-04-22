@@ -8,6 +8,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Entity extends Model
 {
     use HasFactory;
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::created(function ($entity) {
+            $entity->rooms()->createMany([
+                ['name' => 'Portables'],
+                ['name' => 'Eventos / Tareas Extras'],
+            ]);
+        });
+    }
+
     public function invoices()
     {
         return $this->hasManyThrough(Invoice::class, Contract::class, 'entity_id', 'contract_id');

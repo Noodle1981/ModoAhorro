@@ -123,6 +123,41 @@ const diffPercentage = computed(() => {
     return ((totalCalculatedKwh.value - invoiced) / invoiced) * 100;
 });
 
+const roomTotals = computed(() => {
+    const rooms = {};
+    props.tanks.forEach(tank => {
+        tank.items.forEach(item => {
+            if (!rooms[item.room_name]) {
+                rooms[item.room_name] = { name: item.room_name, kwh: 0, count: 0 };
+            }
+            rooms[item.room_name].kwh += calculateKwh(item.id);
+            rooms[item.room_name].count++;
+        });
+    });
+    return Object.values(rooms).sort((a, b) => b.kwh - a.kwh);
+});
+
+// Helper para mostrar la fórmula de cálculo
+const getFormula = (eqId) => {
+    const item = props.tanks.flatMap(t => t.items).find(i => i.id == eqId);
+    if (!item) return '';
+    
+    const data = form.usages[eqId];
+    const powerKw = item.nominal_power_w / 1000;
+    const factor = getFrequencyFactor(data.usage_frequency);
+    
+    let effectiveDays = props.period.days;
+    const climateLimitation = getClimateLimitation(eqId);
+    if (climateLimitation.isLimited) {
+        effectiveDays = climateLimitation.days;
+    }
+
+    const hours = data.avg_daily_use_hours;
+    const freqPct = Math.round(factor * 100);
+
+    return `${powerKw}kW × ${hours}h × ${effectiveDays}d × ${freqPct}%`;
+};
+
 // Helpers para el modo minutos
 const getDisplayTime = (eqId) => {
     const usage = form.usages[eqId];
@@ -316,10 +351,15 @@ const getTankColor = (key) => {
                                 </div>
 
                                 <!-- Result -->
-                                <div class="md:w-32 text-right shrink-0">
+                                <div class="md:w-48 text-right shrink-0">
                                     <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Calculado</p>
-                                    <p class="text-lg font-black text-slate-900">{{ calculateKwh(item.id).toFixed(1) }} <span class="text-[10px] font-normal text-slate-400">kWh</span></p>
+                                    <p class="text-2xl font-black text-slate-900 leading-none mb-1">{{ calculateKwh(item.id).toFixed(1) }} <span class="text-[10px] font-normal text-slate-400">kWh</span></p>
                                     
+                                    <!-- Live Formula -->
+                                    <p class="text-[9px] font-bold text-slate-400 font-mono tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {{ getFormula(item.id) }}
+                                    </p>
+
                                     <!-- Climate API Badge -->
                                     <div v-if="getClimateLimitation(item.id).isLimited" class="mt-2 inline-flex items-center gap-1 bg-sky-50 text-sky-600 px-2 py-1 rounded-md border border-sky-100" title="Ajustado por API Climática">
                                         <ThermometerSun :size="10" />
@@ -355,29 +395,29 @@ const getTankColor = (key) => {
                                     </span>
                                 </div>
                             </div>
-
+                            
                             <!-- Progress comparison -->
-                            <div class="space-y-3">
+                            <div class="space-y-4">
                                 <div class="flex justify-between text-[9px] font-bold uppercase tracking-tighter text-slate-400 px-1">
                                     <span>Calculado</span>
                                     <span>Facturado ({{ Math.round(period.total_kwh) }})</span>
                                 </div>
-                                <div class="relative h-5 bg-slate-100 rounded-full p-1 border border-slate-200/50 group">
+                                <div class="relative h-6 bg-slate-100 rounded-full p-1 border border-slate-200 shadow-inner group">
                                     <!-- Target Line (100% Facturado) -->
                                     <div class="absolute top-0 bottom-0 left-[100%] w-0.5 bg-slate-300 z-10 flex flex-col items-center">
-                                        <div class="w-2 h-2 bg-slate-300 rounded-full -mt-1 shadow-sm"></div>
+                                        <div class="w-2 h-2 bg-slate-400 rounded-full -mt-1 shadow-sm"></div>
                                     </div>
                                     
                                     <!-- Progress Fill -->
                                     <div 
-                                        class="h-full rounded-full transition-all duration-1000 ease-out shadow-inner flex items-center justify-end px-2" 
+                                        class="h-full rounded-full transition-all duration-1000 ease-out shadow-lg flex items-center justify-end px-2" 
                                         :class="[
                                             Math.abs(diffPercentage) < 5 ? 'bg-energy-success' : 
                                             (totalCalculatedKwh > period.total_kwh ? 'bg-rose-500' : 'bg-slate-900')
                                         ]"
                                         :style="{ width: Math.min(100, (totalCalculatedKwh / period.total_kwh) * 100) + '%' }"
                                     >
-                                        <span v-if="totalCalculatedKwh > 0 && (totalCalculatedKwh / period.total_kwh) > 0.2" class="text-[8px] font-black text-white leading-none">
+                                        <span v-if="totalCalculatedKwh > 0 && (totalCalculatedKwh / period.total_kwh) > 0.15" class="text-[9px] font-black text-white leading-none">
                                             {{ Math.round((totalCalculatedKwh / period.total_kwh) * 100) }}%
                                         </span>
                                     </div>
@@ -386,8 +426,46 @@ const getTankColor = (key) => {
                                 <!-- Alert if gap is too big -->
                                 <p v-if="Math.abs(diffPercentage) > 20" class="text-[10px] text-amber-600 font-bold italic leading-relaxed flex items-start gap-2 bg-amber-50 p-4 rounded-2xl border border-amber-100">
                                     <AlertCircle :size="14" class="shrink-0" />
-                                    Nota: Hay una diferencia importante ({{ Math.round(diffPercentage) }}%) entre lo declarado y lo facturado.
+                                    Nota: Diferencia importante ({{ Math.round(diffPercentage) }}%) detectada. Revisa los hábitos.
                                 </p>
+                            </div>
+
+                            <!-- Tank Breakdown Metrics -->
+                            <div class="pt-6 border-t border-slate-50 space-y-4">
+                                <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest px-1">Desglose por Tanques</p>
+                                <div v-for="tank in tankTotals" :key="tank.key" class="space-y-2">
+                                    <div class="flex justify-between items-end">
+                                        <span class="text-[10px] font-bold text-slate-600">{{ tank.label }}</span>
+                                        <span class="text-[10px] font-black text-slate-900">{{ Math.round(tank.current_kwh) }} kWh</span>
+                                    </div>
+                                    <div class="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden">
+                                        <div 
+                                            class="h-full transition-all duration-500"
+                                            :class="[
+                                                tank.key === 1 ? 'bg-rose-400' :
+                                                tank.key === 2 ? 'bg-sky-400' : 'bg-indigo-400'
+                                            ]"
+                                            :style="{ width: (totalCalculatedKwh > 0 ? (tank.current_kwh / totalCalculatedKwh) * 100 : 0) + '%' }"
+                                        ></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Room Breakdown Metrics -->
+                            <div class="pt-6 border-t border-slate-50 space-y-4">
+                                <div class="flex items-center justify-between px-1">
+                                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Peso por Ambiente</p>
+                                    <span class="text-[8px] font-black text-slate-400">{{ roomTotals.length }} Ambientes</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div v-for="room in roomTotals.slice(0, 4)" :key="room.name" class="bg-slate-50 p-3 rounded-2xl space-y-1">
+                                        <p class="text-[9px] font-black text-slate-400 truncate uppercase">{{ room.name }}</p>
+                                        <p class="text-xs font-black text-slate-900">{{ Math.round(room.kwh) }} <span class="text-[8px] font-normal text-slate-400">kWh</span></p>
+                                        <div class="h-1 w-full bg-slate-200 rounded-full overflow-hidden mt-1">
+                                            <div class="h-full bg-energy-solar" :style="{ width: (totalCalculatedKwh > 0 ? (room.kwh / totalCalculatedKwh) * 100 : 0) + '%' }"></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

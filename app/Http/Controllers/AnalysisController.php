@@ -235,6 +235,7 @@ class AnalysisController extends Controller
         
         DB::transaction(function() use ($request, $invoice) {
             foreach ($request->usages as $eqId => $data) {
+                // 1. Guardar uso específico para este periodo (Factura)
                 EquipmentUsage::updateOrCreate(
                     ['invoice_id' => $invoice->id, 'equipment_id' => $eqId],
                     [
@@ -243,6 +244,16 @@ class AnalysisController extends Controller
                         'is_standby' => $data['is_standby'] ?? false,
                     ]
                 );
+
+                // 2. [MEJORA] Actualizar la "ficha técnica" global del equipo (Aprendizaje de hábitos)
+                $equipment = \App\Models\Equipment::find($eqId);
+                if ($equipment) {
+                    $equipment->update([
+                        'avg_daily_use_hours' => $data['avg_daily_use_hours'],
+                        'usage_frequency' => $data['usage_frequency'],
+                        'is_standby' => $data['is_standby'] ?? false,
+                    ]);
+                }
             }
 
             // Si se solicita cerrar, ejecutamos el motor

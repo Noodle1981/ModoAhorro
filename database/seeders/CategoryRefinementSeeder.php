@@ -27,6 +27,7 @@ class CategoryRefinementSeeder extends Seeder
             'Seguridad y Redes' => 'Modems, Routers, Alarmas, Cámaras de vigilancia.',
             'Salud y Cuidado Personal' => 'Secadores de pelo, Afeitadoras, Equipos de salud.',
             'Mantenimiento y Bombas' => 'Bombas de agua, riego, filtrado de piscina, herramientas.',
+            'Cargadores' => 'Cargadores de dispositivos portátiles (Celulares, Notebooks, Tablets).',
             'Otros' => 'Equipos de uso general no clasificados.',
         ];
 
@@ -50,6 +51,7 @@ class CategoryRefinementSeeder extends Seeder
             'Informática y Oficina' => ['pc', 'monitor', 'notebook', 'impresora', 'scanner', 'servidor'],
             'Entretenimiento y Multimedia' => ['tv', 'cine', 'audio', 'consola', 'playstation', 'xbox', 'parlante'],
             'Climatización' => ['aire', 'split', 'estufa', 'caloventor', 'ventilador', 'panel'],
+            'Cargadores' => ['cargador', 'fuente', 'usb', 'transformador'],
         ];
 
         $types = EquipmentType::all();
