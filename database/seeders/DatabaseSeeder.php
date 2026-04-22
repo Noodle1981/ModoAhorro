@@ -24,16 +24,12 @@ class DatabaseSeeder extends Seeder
                 LocalitySeeder::class,
                 PlanSeeder::class,
                 UtilityCompanySeeder::class,
-                EquipmentCategorySeeder::class,
-                EquipmentTypeSeeder::class,
+                
+                // 2. Maestría de Categorías y Tipos (NUEVO)
+                CategoryRefinementSeeder::class,
 
-                // 2. Datos de entidades (hogar, oficina, comercio)
-                BackupCasa27Seeder::class,
-                DatosOficinaSeeder::class,
-                DatosComercioSeeder::class,
-
-                // 3. Usuario de prueba (AL FINAL para asignar entidades)
-                UserSeeder::class,
+                // 3. Escenarios de prueba (Hogar Casa 27)
+                Casa27Seeder::class,
             ]);
         } finally {
             Schema::enableForeignKeyConstraints();

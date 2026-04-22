@@ -9,28 +9,17 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 
+use App\Traits\HasActiveEntity;
+
 class InvoiceController extends Controller
 {
+    use HasActiveEntity;
     /**
      * Display a listing of the invoices for the active entity.
      */
     public function index(Request $request)
     {
-        $user = $request->user();
-        $activeEntityId = session('active_entity_id');
-        
-        // If no active entity in session, get the first one available for the user
-        $entity = null;
-        if ($activeEntityId) {
-            $entity = $user->entities()->where('entities.id', $activeEntityId)->first();
-        }
-        
-        if (!$entity) {
-            $entity = $user->entities()->first();
-            if ($entity) {
-                session(['active_entity_id' => $entity->id]);
-            }
-        }
+        $entity = $this->getActiveEntity($request);
 
         if (!$entity) {
             return redirect()->route('dashboard')->with('error', 'Debes crear una entidad antes de gestionar facturas.');
@@ -55,45 +44,9 @@ class InvoiceController extends Controller
     /**
      * Store a newly created invoice in storage.
      */
-    public function store(Request $request)
+    public function store(\App\Http\Requests\SaveInvoiceRequest $request)
     {
-        $validated = $request->validate([
-            'contract_id' => 'required|exists:contracts,id',
-            'invoice_number' => 'required|string|max:255',
-            'tariff' => 'nullable|string|max:50',
-            'invoice_date' => 'required|date',
-            'issue_date' => 'nullable|date|after:start_date',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'total_energy_consumed_kwh' => 'required|numeric|min:0',
-            'total_amount' => 'required|numeric|min:0',
-            'cost_for_energy' => 'nullable|numeric|min:0',
-            'cost_for_power' => 'nullable|numeric|min:0',
-            'taxes' => 'nullable|numeric|min:0',
-            'other_charges' => 'nullable|numeric|min:0',
-            'installment_number' => 'nullable|integer|min:1',
-            'total_installments' => 'nullable|integer|min:1',
-            'bimonthly_consumption_kwh' => 'nullable|numeric|min:0',
-        ]);
-
-        // Custom validation logic for energy invoices
-        $issue_date = \Carbon\Carbon::parse($validated['issue_date'] ?? $validated['invoice_date']);
-        $end_date = \Carbon\Carbon::parse($validated['end_date']);
-        $start_date = \Carbon\Carbon::parse($validated['start_date']);
-
-        if ($issue_date->lt($end_date)) {
-            return redirect()->back()->withErrors(['issue_date' => 'La fecha de emisión debe ser posterior al cierre del período.']);
-        }
-
-        if ($issue_date->year - $start_date->year > 1) {
-            return redirect()->back()->withErrors(['issue_date' => 'El año de la factura no puede ser más de un año posterior al período de consumo.']);
-        }
-
-
-        if (empty($validated['issue_date'])) {
-            $validated['issue_date'] = $validated['invoice_date'];
-        }
-
+        $validated = $request->validated();
         $contract = Contract::findOrFail($validated['contract_id']);
         
         // Security check: Ensure user owns the entity associated with the contract
@@ -101,7 +54,7 @@ class InvoiceController extends Controller
             abort(403);
         }
 
-        Invoice::create($validated);
+        Invoice::create($request->all()); // Los datos ya fueron preparados por el Request
 
         return redirect()->back()->with('success', 'Factura cargada correctamente.');
     }
@@ -109,51 +62,14 @@ class InvoiceController extends Controller
     /**
      * Update the specified invoice in storage.
      */
-    public function update(Request $request, Invoice $invoice)
+    public function update(\App\Http\Requests\SaveInvoiceRequest $request, Invoice $invoice)
     {
-        $validated = $request->validate([
-            'contract_id' => 'required|exists:contracts,id',
-            'invoice_number' => 'required|string|max:255',
-            'tariff' => 'nullable|string|max:50',
-            'invoice_date' => 'required|date',
-            'issue_date' => 'nullable|date|after:start_date',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'total_energy_consumed_kwh' => 'required|numeric|min:0',
-            'total_amount' => 'required|numeric|min:0',
-            'cost_for_energy' => 'nullable|numeric|min:0',
-            'cost_for_power' => 'nullable|numeric|min:0',
-            'taxes' => 'nullable|numeric|min:0',
-            'other_charges' => 'nullable|numeric|min:0',
-            'installment_number' => 'nullable|integer|min:1',
-            'total_installments' => 'nullable|integer|min:1',
-            'bimonthly_consumption_kwh' => 'nullable|numeric|min:0',
-        ]);
-
-        // Custom validation logic for energy invoices
-        $issue_date = \Carbon\Carbon::parse($validated['issue_date'] ?? $validated['invoice_date']);
-        $end_date = \Carbon\Carbon::parse($validated['end_date']);
-        $start_date = \Carbon\Carbon::parse($validated['start_date']);
-
-        if ($issue_date->lt($end_date)) {
-            return redirect()->back()->withErrors(['issue_date' => 'La fecha de emisión debe ser posterior al cierre del período.']);
-        }
-
-        if ($issue_date->year - $start_date->year > 1) {
-            return redirect()->back()->withErrors(['issue_date' => 'El año de la factura no puede ser más de un año posterior al período de consumo.']);
-        }
-
-
-        if (empty($validated['issue_date'])) {
-            $validated['issue_date'] = $validated['invoice_date'];
-        }
-
         // Security check
         if ($request->user()->cannot('update', $invoice->contract->entity)) {
             abort(403);
         }
 
-        $invoice->update($validated);
+        $invoice->update($request->all());
 
         return redirect()->back()->with('success', 'Factura actualizada correctamente.');
     }

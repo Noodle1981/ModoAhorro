@@ -11,33 +11,25 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 
+use App\Traits\HasActiveEntity;
+ 
 class InfrastructureController extends Controller
 {
+    use HasActiveEntity;
+
     /**
      * Display a listing of rooms and equipment for the active entity.
      */
     public function index(Request $request)
     {
-        $user = $request->user();
-        $activeEntityId = session('active_entity_id');
-        
-        $entity = null;
-        if ($activeEntityId) {
-            $entity = $user->entities()->where('entities.id', $activeEntityId)->first();
-        }
-        
-        if (!$entity) {
-            $entity = $user->entities()->first();
-            if ($entity) {
-                session(['active_entity_id' => $entity->id]);
-            }
-        }
-
+        $entity = $this->getActiveEntity($request);
+ 
         if (!$entity) {
             return redirect()->route('dashboard')->with('error', 'Debes crear una entidad antes de gestionar su infraestructura.');
         }
 
         $rooms = Room::where('entity_id', $entity->id)
+            ->with(['equipment.category', 'equipment.type'])
             ->withCount('equipment')
             ->get();
 
