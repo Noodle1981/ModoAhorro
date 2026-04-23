@@ -34,76 +34,182 @@ class AnalysisController extends Controller
         $entity = $this->getActiveEntity($request);
         if (!$entity) return redirect()->route('dashboard');
 
-        // 1. Desglose por Categoría (basado en la última factura calibrada o teórica si no hay)
-        $latestInvoice = Invoice::whereHas('contract', function($q) use ($entity) {
-            $q->where('entity_id', $entity->id);
-        })->orderBy('end_date', 'desc')->first();
+        $availablePeriods = $this->getUnifiedPeriods($entity);
+        $currentPeriod = $availablePeriods->firstWhere('id', $request->input('period_id')) ?? $availablePeriods->first();
 
-        $categoryBreakdown = [];
-        $tankBreakdown = [
-            ['name' => 'Tanque 1 (Base)', 'value' => 0, 'color' => '#0f172a'], // Slate 900
-            ['name' => 'Tanque 2 (Clima)', 'value' => 0, 'color' => '#06b6d4'], // Cyan
-            ['name' => 'Tanque 3 (Elasticidad)', 'value' => 0, 'color' => '#f59e0b'], // Amber
+        $analytics = $this->getPeriodAnalytics($entity, $currentPeriod);
+
+        return Inertia::render('Analisis/ConsumptionReal', array_merge([
+            'entity' => $entity,
+            'availableInvoices' => $availablePeriods,
+            'latestInvoice' => $currentPeriod,
+            'history' => $this->getTwelveMonthHistory($entity),
+        ], $analytics));
+    }
+
+    /**
+     * Obtiene todos los datos analíticos de un periodo específico
+     */
+    private function getPeriodAnalytics(Entity $entity, $period)
+    {
+        if (!$period) return [
+            'categoryBreakdown' => [], 'roomBreakdown' => [], 'topConsumers' => [],
+            'tankBreakdown' => [], 'equipmentDetails' => [], 'auditLogs' => [],
+            'climateStats' => null, 'validation' => null, 'suggestions' => [], 'totalPotencia' => 0
         ];
 
-        if ($latestInvoice) {
-            // 1.1 Category Data
-            $categoryData = DB::table('equipment_usages')
-                ->join('equipment', 'equipment_usages.equipment_id', '=', 'equipment.id')
-                ->join('equipment_categories', 'equipment.category_id', '=', 'equipment_categories.id')
-                ->where('equipment_usages.invoice_id', $latestInvoice->id)
-                ->select('equipment_categories.name', DB::raw('SUM(COALESCE(kwh_reconciled, consumption_kwh, 0)) as total_kwh'))
-                ->groupBy('equipment_categories.name')
-                ->get();
-            
-            foreach ($categoryData as $data) {
-                $categoryBreakdown[] = [
-                    'name' => $data->name,
-                    'value' => (float)$data->total_kwh
-                ];
-            }
+        $invoiceIds = collect($period['invoices'])->pluck('id');
 
-            // 1.2 Tank Data (New!)
-            $tankData = DB::table('equipment_usages')
-                ->where('invoice_id', $latestInvoice->id)
-                ->select('tank_assignment', DB::raw('SUM(COALESCE(kwh_reconciled, consumption_kwh, 0)) as total_kwh'))
-                ->groupBy('tank_assignment')
-                ->get();
+        // 1. Desgloses (Categoría y Ambiente) en una sola pasada de ser posible, o consultas optimizadas
+        $categoryBreakdown = DB::table('equipment_usages')
+            ->join('equipment', 'equipment_usages.equipment_id', '=', 'equipment.id')
+            ->join('equipment_categories', 'equipment.category_id', '=', 'equipment_categories.id')
+            ->whereIn('invoice_id', $invoiceIds)
+            ->select('equipment_categories.name', DB::raw('SUM(COALESCE(kwh_reconciled, consumption_kwh, 0)) as value'))
+            ->groupBy('equipment_categories.name')
+            ->get()->toArray();
 
-            foreach ($tankData as $data) {
-                $idx = (int)$data->tank_assignment - 1;
-                if (isset($tankBreakdown[$idx])) {
-                    $tankBreakdown[$idx]['value'] = (float)$data->total_kwh;
-                }
-            }
-        }
+        $roomBreakdown = DB::table('equipment_usages')
+            ->join('equipment', 'equipment_usages.equipment_id', '=', 'equipment.id')
+            ->join('rooms', 'equipment.room_id', '=', 'rooms.id')
+            ->whereIn('invoice_id', $invoiceIds)
+            ->select('rooms.name', DB::raw('SUM(COALESCE(kwh_reconciled, consumption_kwh, 0)) as value'))
+            ->groupBy('rooms.name')
+            ->orderBy('value', 'desc')
+            ->get()->toArray();
 
-        // 2. Histórico de 12 Meses
-        $history = [];
-        $twelveMonthsAgo = Carbon::now()->subMonths(12);
-        
-        $invoicesData = Invoice::whereHas('contract', function($q) use ($entity) {
-            $q->where('entity_id', $entity->id);
-        })
-        ->where('end_date', '>=', $twelveMonthsAgo)
-        ->orderBy('end_date', 'asc')
-        ->get();
+        // 2. Detalle de Equipos (Eager Loading)
+        $usages = EquipmentUsage::with(['equipment.room', 'equipment.category'])
+            ->whereIn('invoice_id', $invoiceIds)
+            ->get()
+            ->groupBy('equipment_id');
 
-        foreach ($invoicesData as $inv) {
-            $history[] = [
-                'period' => Carbon::parse($inv->end_date)->format('M y'),
-                'real' => (float)$inv->total_energy_consumed_kwh,
-                'theoretical' => (float)($inv->recommended_kwh ?? 0)
+        $equipmentDetails = [];
+        foreach ($usages as $eqId => $group) {
+            $first = $group->first();
+            $equipmentDetails[] = [
+                'id' => $eqId,
+                'equipment_name' => $first->equipment->name ?? 'Desconocido',
+                'category_name' => $first->equipment->category->name ?? 'General',
+                'room_name' => $first->equipment->room->name ?? '-',
+                'nominal_power_w' => $first->equipment->nominal_power_w ?? 0,
+                'consumption_kwh' => (float)$group->sum(fn($u) => $u->kwh_reconciled ?? $u->consumption_kwh ?? 0),
+                'tank_assignment' => (int)$first->tank_assignment,
             ];
         }
 
-        return Inertia::render('Analisis/ConsumptionReal', [
-            'entity' => $entity,
+        // 3. Tanques (Desde el periodo)
+        $tankColors = [1 => '#0f172a', 2 => '#06b6d4', 3 => '#f59e0b'];
+        $tankNames = [1 => 'Tanque 1 (Base)', 2 => 'Tanque 2 (Clima)', 3 => 'Tanque 3 (Elasticidad)'];
+        $tankBreakdown = [];
+        foreach ($period['tanks'] ?? [] as $num => $val) {
+            $tankBreakdown[] = ['name' => $tankNames[$num], 'value' => (float)$val, 'color' => $tankColors[$num]];
+        }
+
+        // 4. Clima y Validación
+        $climateData = app(\App\Services\ClimateService::class)->loadDataForDateRange($entity, $period['start_date'], $period['end_date']);
+        $totalCalculatedKwh = collect($equipmentDetails)->sum('consumption_kwh');
+        $mockInvoice = (object)['total_energy_consumed_kwh' => $period['total_kwh']];
+        $validationService = new \App\Services\Core\ValidationService();
+
+        return [
             'categoryBreakdown' => $categoryBreakdown,
+            'roomBreakdown' => $roomBreakdown,
+            'equipmentDetails' => $equipmentDetails,
+            'topConsumers' => collect($equipmentDetails)->sortByDesc('consumption_kwh')->take(10)->values()->toArray(),
             'tankBreakdown' => $tankBreakdown,
-            'history' => $history,
-            'latestInvoice' => $latestInvoice
+            'auditLogs' => $usages->flatten()->first(fn($u) => !empty($u->audit_logs))->audit_logs ?? [],
+            'climateStats' => $climateData ? ['heating_days' => $climateData['heating_days'] ?? 0, 'cooling_days' => $climateData['cooling_days'] ?? 0] : null,
+            'validation' => $validationService->calculateDeviation($mockInvoice, $totalCalculatedKwh),
+            'suggestions' => $validationService->getSuggestions($mockInvoice, $totalCalculatedKwh),
+            'totalPotencia' => collect($equipmentDetails)->sum('nominal_power_w'),
+        ];
+    }
+
+    /**
+     * Obtiene el histórico de 12 meses
+     */
+    private function getTwelveMonthHistory(Entity $entity)
+    {
+        $twelveMonthsAgo = Carbon::now()->subMonths(12);
+        return Invoice::whereHas('contract', fn($q) => $q->where('entity_id', $entity->id))
+            ->where('end_date', '>=', $twelveMonthsAgo)
+            ->orderBy('end_date', 'asc')
+            ->get()
+            ->map(fn($inv) => [
+                'period' => Carbon::parse($inv->end_date)->format('M y'),
+                'real' => (float)$inv->total_energy_consumed_kwh,
+                'theoretical' => (float)($inv->recommended_kwh ?? 0)
+            ])->toArray();
+    }
+
+    /**
+     * Análisis de Evolución en el Tiempo
+     */
+    public function timeAnalysis(Request $request)
+    {
+        $entity = $this->getActiveEntity($request);
+        if (!$entity) return redirect()->route('dashboard');
+
+        $periods = $this->getUnifiedPeriods($entity)->sortBy('start_date')->values();
+        $evolutionData = $this->getTimeEvolutionData($entity, $periods);
+
+        return Inertia::render('Analisis/TimeAnalysis', [
+            'entity' => $entity,
+            'periods' => $periods,
+            'evolution' => $evolutionData
         ]);
+    }
+
+    /**
+     * Procesa la evolución temporal de múltiples periodos
+     */
+    private function getTimeEvolutionData(Entity $entity, $periods)
+    {
+        if ($periods->isEmpty()) return [];
+
+        $evolution = [];
+        $climateService = app(\App\Services\ClimateService::class);
+
+        foreach ($periods as $period) {
+            $invoiceIds = collect($period['invoices'])->pluck('id');
+            
+            // 1. Cálculos de Motor (Teórico)
+            $theoreticalKwh = DB::table('equipment_usages')
+                ->whereIn('invoice_id', $invoiceIds)
+                ->sum(DB::raw('COALESCE(kwh_reconciled, consumption_kwh, 0)'));
+
+            // 2. Clima
+            $climate = $climateService->loadDataForDateRange($entity, $period['start_date'], $period['end_date']);
+            
+            // 3. Costos
+            $days = Carbon::parse($period['start_date'])->diffInDays(Carbon::parse($period['end_date'])) + 1;
+            $dailyCost = $days > 0 ? $period['total_amount'] / $days : 0;
+            $costPerKwh = $period['total_kwh'] > 0 ? $period['total_amount'] / $period['total_kwh'] : 0;
+
+            $evolution[] = [
+                'label' => Carbon::parse($period['end_date'])->locale('es')->translatedFormat('M y'),
+                'billed' => (float)$period['total_kwh'],
+                'theoretical' => (float)$theoreticalKwh,
+                'recommended' => (float)($period['recommended_kwh'] ?? 0),
+                'tanks' => [
+                    't1' => (float)($period['tanks'][1] ?? 0),
+                    't2' => (float)($period['tanks'][2] ?? 0),
+                    't3' => (float)($period['tanks'][3] ?? 0),
+                ],
+                'climate' => [
+                    'avg_temp' => (float)($climate['avg_temp'] ?? 0),
+                    'hot_days' => (int)($climate['heating_days'] ?? 0), // En el legacy usan heating_days para calor
+                    'cold_days' => (int)($climate['cooling_days'] ?? 0),
+                ],
+                'costs' => [
+                    'daily' => (float)$dailyCost,
+                    'per_kwh' => (float)$costPerKwh
+                ]
+            ];
+        }
+
+        return $evolution;
     }
 
     /**

@@ -9,9 +9,9 @@ class ValidationService
     /**
      * Calcula la desviación entre consumo calculado y facturado
      */
-    public function calculateDeviation(Invoice $invoice, float $calculatedConsumption): array
+    public function calculateDeviation($invoice, float $calculatedConsumption): array
     {
-        $billed = $invoice->total_energy_consumed_kwh ?? 0;
+        $billed = is_object($invoice) ? ($invoice->total_energy_consumed_kwh ?? 0) : ($invoice['total_energy_consumed_kwh'] ?? 0);
         $deviation = abs($calculatedConsumption - $billed);
         $deviationPercent = $billed > 0 ? ($deviation / $billed) * 100 : 0;
         
@@ -39,10 +39,11 @@ class ValidationService
     /**
      * Genera sugerencias de ajuste
      */
-    public function getSuggestions(Invoice $invoice, float $calculatedConsumption): array
+    public function getSuggestions($invoice, float $calculatedConsumption): array
     {
         $suggestions = [];
-        $diff = ($invoice->total_energy_consumed_kwh ?? 0) - $calculatedConsumption;
+        $billed = is_object($invoice) ? ($invoice->total_energy_consumed_kwh ?? 0) : ($invoice['total_energy_consumed_kwh'] ?? 0);
+        $diff = $billed - $calculatedConsumption;
         
         // Si el calculado es mucho MENOR que el facturado (falta consumo)
         if ($diff > 50) {

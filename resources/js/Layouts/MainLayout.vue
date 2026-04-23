@@ -42,7 +42,7 @@ const activeCategory = ref('Gestión Física');
 import { watchEffect } from 'vue';
 watchEffect(() => {
     const url = page.url;
-    if (url.startsWith('/analisis')) activeCategory.value = 'Análisis y Ahorro';
+    if (url.startsWith('/analisis')) activeCategory.value = 'Análisis';
     else if (url.startsWith('/recomendaciones')) activeCategory.value = 'Recomendaciones';
     else if (url.startsWith('/sistema')) activeCategory.value = 'Sistema';
     else activeCategory.value = 'Gestión Física';
@@ -64,14 +64,14 @@ const navigation = computed(() => [
         ]
     },
     {
-        name: 'Análisis y Ahorro',
+        name: 'Análisis',
         icon: BarChart3,
         color: 'text-energy-success',
         bgColor: 'bg-emerald-500',
         items: [
             { name: 'Ajuste de Uso', icon: Sliders, href: route('analisis.usage') },
             { name: 'Consumo Real', icon: BarChart3, href: route('analisis.consumption') },
-            { name: 'Optimización Horarios', icon: Clock, href: route('analisis.grid-optimization') },
+            { name: 'Evolución Temporal', icon: Activity, href: route('analisis.time') },
         ]
     },
     {
@@ -86,6 +86,7 @@ const navigation = computed(() => [
             { name: 'Salud Térmica', icon: Heart, href: route('recomendaciones.thermal-health') },
             { name: 'Mantenimiento', icon: Wrench, href: route('recomendaciones.maintenance') },
             { name: 'Vacaciones', icon: Palmtree, href: route('recomendaciones.vacation') },
+            { name: 'Optimización Horarios', icon: Clock, href: route('analisis.grid-optimization') },
         ]
     },
     {

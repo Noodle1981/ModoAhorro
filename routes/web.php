@@ -76,6 +76,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('analisis')->name('analisis.')->group(function () {
         Route::get('/consumo-real', 'App\Http\Controllers\AnalysisController@realConsumption')->name('consumption');
+        Route::get('/tiempo', 'App\Http\Controllers\AnalysisController@timeAnalysis')->name('time');
         Route::get('/ajuste-uso', 'App\Http\Controllers\AnalysisController@usageAdjustment')->name('usage');
         Route::get('/ajuste-uso/detalle/{contract}/{start_date}/{end_date}', 'App\Http\Controllers\AnalysisController@usageAdjustmentDetail')->name('usage.detail');
         Route::post('/ajuste-uso/guardar-detalle', 'App\Http\Controllers\AnalysisController@saveUsageAdjustment')->name('usage.save');
