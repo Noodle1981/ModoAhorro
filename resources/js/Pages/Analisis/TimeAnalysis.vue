@@ -236,6 +236,22 @@ const stackedOptions = {
                     </h1>
                     <p class="text-lg text-slate-500 font-medium">Visualización de tendencias y evolución de eficiencia energética.</p>
                 </div>
+
+                <div class="flex items-center gap-6">
+                    <Link :href="route('analisis.equipment-cost')" class="inline-flex items-center gap-3 px-8 py-4 bg-emerald-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-95">
+                        <DollarSign :size="16" />
+                        Auditoría de Costos
+                    </Link>
+                    <div class="flex items-center gap-4">
+                        <div class="text-right">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ciclos Analizados</p>
+                            <p class="text-2xl font-black text-slate-900">{{ periods.length }}</p>
+                        </div>
+                        <div class="w-12 h-12 bg-white rounded-2xl border border-slate-100 shadow-xl flex items-center justify-center text-indigo-500">
+                            <Activity :size="24" />
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Dashboard Grid -->

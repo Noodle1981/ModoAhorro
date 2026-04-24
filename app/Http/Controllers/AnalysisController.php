@@ -213,6 +213,52 @@ class AnalysisController extends Controller
     }
 
     /**
+     * Análisis de Coste por Equipo
+     */
+    public function equipmentCost(Request $request)
+    {
+        $entity = $this->getActiveEntity($request);
+        if (!$entity) return redirect()->route('dashboard');
+
+        $periods = $this->getUnifiedPeriods($entity)->sortByDesc('start_date')->values();
+        $selectedPeriodId = $request->get('period_id', $periods->first()['id'] ?? null);
+        $selectedPeriod = $periods->firstWhere('id', $selectedPeriodId);
+
+        $equipmentData = [];
+        $pricePerKwh = 0;
+
+        if ($selectedPeriod) {
+            $pricePerKwh = $selectedPeriod['total_kwh'] > 0 ? $selectedPeriod['total_amount'] / $selectedPeriod['total_kwh'] : 0;
+            
+            $invoiceIds = collect($selectedPeriod['invoices'])->pluck('id');
+            $usages = \App\Models\EquipmentUsage::whereIn('invoice_id', $invoiceIds)
+                ->with(['equipment.room', 'equipment.category'])
+                ->get();
+
+            $equipmentData = $usages->map(function($usage) use ($pricePerKwh) {
+                $kwh = $usage->kwh_reconciled ?? $usage->consumption_kwh;
+                return [
+                    'id' => $usage->equipment->id,
+                    'name' => $usage->equipment->name,
+                    'room' => $usage->equipment->room->name ?? 'Sin área',
+                    'category' => $usage->equipment->category->name ?? 'Sin categoría',
+                    'kwh' => (float)$kwh,
+                    'cost' => (float)($kwh * $pricePerKwh),
+                    'hours' => $usage->daily_hours,
+                ];
+            })->sortByDesc('cost')->values();
+        }
+
+        return Inertia::render('Analisis/EquipmentCost', [
+            'entity' => $entity,
+            'periods' => $periods,
+            'selectedPeriodId' => $selectedPeriodId,
+            'equipmentData' => $equipmentData,
+            'pricePerKwh' => $pricePerKwh
+        ]);
+    }
+
+    /**
      * Gestión de Ajuste de Uso (Calibración)
      */
     public function usageAdjustment(Request $request)

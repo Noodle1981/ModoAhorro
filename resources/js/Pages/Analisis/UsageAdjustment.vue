@@ -43,15 +43,15 @@ const runCalibration = (unification) => {
 };
 
 const getStatusClass = (unification) => {
-    if (unification.is_calibrated) return 'bg-energy-success/10 text-energy-success border-energy-success/20';
-    if (unification.has_usages_saved) return 'bg-energy-solar/10 text-energy-solar border-energy-solar/20';
-    return 'bg-slate-100 text-slate-400 border-slate-200';
+    if (unification.is_calibrated) return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
+    if (unification.has_usages_saved) return 'bg-sky-500/10 text-sky-600 border-sky-500/20';
+    return 'bg-amber-500/10 text-amber-600 border-amber-500/20';
 };
 
 const getStatusText = (unification) => {
-    if (unification.is_calibrated) return 'Cerrado';
-    if (unification.has_usages_saved) return 'Realizado';
-    return 'No Realizado';
+    if (unification.is_calibrated) return 'Calibrado';
+    if (unification.has_usages_saved) return 'Configurado';
+    return 'Pendiente';
 };
 
 const formatDateRange = (start, end) => {
@@ -87,7 +87,7 @@ const filteredUnifications = computed(() => {
                         Calibración Física
                     </div>
                     <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Ajuste <span class="text-energy-solar">de Uso</span>
+                        Ajuste <span class="text-energy-solar">de Ciclos</span>
                     </h1>
                     <p class="text-xl text-slate-500 font-medium">Sincroniza tu Gemelo Digital con tus periodos unificados de consumo.</p>
                 </div>
@@ -146,9 +146,23 @@ const filteredUnifications = computed(() => {
                                 <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-2">Energía Periodo</p>
                                 <p class="text-xl font-black text-slate-900">{{ Math.round(period.total_kwh) }}<span class="text-xs ml-1 text-slate-400">kWh</span></p>
                             </div>
-                            <div v-if="period.recommended_kwh">
+                            <div v-if="period.has_usages_saved">
                                 <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-2">Base Teórica</p>
-                                <p class="text-xl font-black text-slate-700">{{ Math.round(period.recommended_kwh) }}<span class="text-xs ml-1 text-slate-400">kWh</span></p>
+                                <div class="flex items-center gap-2">
+                                    <p class="text-xl font-black text-slate-700">{{ Math.round(period.theoretical_kwh) }}<span class="text-xs ml-1 text-slate-400">kWh</span></p>
+                                    <span :class="[
+                                        'px-2 py-0.5 rounded-lg text-[9px] font-black',
+                                        Math.abs((period.theoretical_kwh - period.total_kwh) / period.total_kwh) > 0.1 
+                                            ? 'bg-rose-500 text-white' 
+                                            : 'bg-emerald-500 text-white'
+                                    ]">
+                                        {{ (period.theoretical_kwh > period.total_kwh ? '+' : '') }}{{ Math.round(((period.theoretical_kwh - period.total_kwh) / period.total_kwh) * 100) }}%
+                                    </span>
+                                </div>
+                            </div>
+                            <div v-else-if="period.recommended_kwh">
+                                <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-2">Ref. Anterior</p>
+                                <p class="text-xl font-black text-slate-500">{{ Math.round(period.recommended_kwh) }}<span class="text-xs ml-1 text-slate-400">kWh</span></p>
                             </div>
                             
                             <template v-if="period.has_usages_saved">
@@ -181,11 +195,14 @@ const filteredUnifications = computed(() => {
                                 :class="[
                                     'flex-1 lg:flex-none px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-200/50 text-center',
                                     period.is_calibrated 
-                                        ? 'bg-slate-50 text-slate-400 hover:bg-slate-900 hover:text-white' 
-                                        : (period.is_complete ? 'bg-slate-900 text-white hover:bg-energy-solar shadow-energy-solar/20' : 'bg-slate-50 text-slate-200 cursor-not-allowed pointer-events-none')
+                                        ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20' 
+                                        : (period.has_usages_saved 
+                                            ? 'bg-sky-600 text-white hover:bg-sky-700 shadow-sky-600/20' 
+                                            : (period.is_complete ? 'bg-amber-500 text-white hover:bg-amber-600 shadow-amber-500/20' : 'bg-slate-50 text-slate-200 cursor-not-allowed pointer-events-none')
+                                          )
                                 ]"
                             >
-                                {{ period.is_calibrated ? 'Ajustar Sintonía' : 'Configurar Uso' }}
+                                {{ period.is_calibrated ? 'Ajustar Sintonía' : (period.has_usages_saved ? 'Revisar Ajuste' : 'Configurar Ajuste') }}
                             </Link>
                         </div>
                     </div>

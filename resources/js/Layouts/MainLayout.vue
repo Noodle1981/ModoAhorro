@@ -25,7 +25,8 @@ import {
     TrendingUp,
     ChevronDown,
     Home,
-    Thermometer
+    Thermometer,
+    DollarSign
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 
@@ -69,8 +70,9 @@ const navigation = computed(() => [
         color: 'text-energy-success',
         bgColor: 'bg-emerald-500',
         items: [
-            { name: 'Ajuste de Uso', icon: Sliders, href: route('analisis.usage') },
+            { name: 'Ajuste de Ciclos', icon: Sliders, href: route('analisis.usage') },
             { name: 'Consumo Real', icon: BarChart3, href: route('analisis.consumption') },
+            { name: 'Impacto por Equipo', icon: DollarSign, href: route('analisis.equipment-cost') },
             { name: 'Evolución Temporal', icon: Activity, href: route('analisis.time') },
         ]
     },

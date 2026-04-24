@@ -203,6 +203,11 @@ const avgMonthlyKwh = computed(() => props.history.length > 0 ? totalRealKwh.val
                         </select>
                     </div>
                 </div>
+
+                <Link :href="route('analisis.equipment-cost', { period_id: latestInvoice?.id })" class="inline-flex items-center gap-3 px-8 py-4 bg-emerald-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-95">
+                    <DollarSign :size="16" />
+                    Impacto por Equipo
+                </Link>
             </div>
 
             <!-- Intelligence Row -->
