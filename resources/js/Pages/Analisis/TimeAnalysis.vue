@@ -34,9 +34,9 @@ ChartJS.register(
 );
 
 const props = defineProps({
-    entity: Object,
-    periods: Array,
-    evolution: Array
+    entity: { type: Object, required: true },
+    periods: { type: Array, default: () => [] },
+    evolution: { type: Array, default: () => [] }
 });
 
 // 1. Chart: Engine Efficiency (Billed vs Theoretical vs Recommended)

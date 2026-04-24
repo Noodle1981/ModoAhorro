@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
     Settings2, 
@@ -63,15 +63,19 @@ const formatDateRange = (start, end) => {
 
 const searchQuery = ref('');
 
+/*
 const filteredUnifications = computed(() => {
     if (!searchQuery.value) return props.unifications;
     const q = searchQuery.value.toLowerCase();
-    return props.unifications.filter(p => 
-        formatDateRange(p.start_date, p.end_date).toLowerCase().includes(q) ||
-        (p.contract_name && p.contract_name.toLowerCase().includes(q)) ||
-        getStatusText(p).toLowerCase().includes(q)
-    );
+    return props.unifications.filter(p => {
+        const range = formatDateRange(p.start_date, p.end_date).toLowerCase();
+        const name = (p.contract_name || '').toLowerCase();
+        const status = getStatusText(p).toLowerCase();
+        return range.includes(q) || name.includes(q) || status.includes(q);
+    });
 });
+*/
+const filteredUnifications = computed(() => props.unifications);
 </script>
 
 <template>
