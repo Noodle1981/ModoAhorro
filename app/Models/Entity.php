@@ -44,6 +44,9 @@ class Entity extends Model
         'has_solar',
         'has_business_activity',
         'business_type',
+        'opens_at',
+        'closes_at',
+        'operating_days',
         'thermal_profile',
     ];
 
@@ -55,6 +58,7 @@ class Entity extends Model
         'construction_year' => 'integer',
         'people_count' => 'integer',
         'square_meters' => 'float',
+        'operating_days' => 'array',
     ];
 
     public function users()
