@@ -77,6 +77,7 @@ const eqForm = useForm({
     serial_number: '',
     energy_label: '',
     is_standby: false,
+    is_inverter: false,
     cantidad: 1,
     is_active: true
 });
@@ -150,6 +151,7 @@ const openEqCreate = () => {
     eqForm.serial_number = '';
     eqForm.energy_label = '';
     eqForm.is_standby = false;
+    eqForm.is_inverter = false;
     eqForm.cantidad = 1;
     eqForm.is_active = true;
     eqForm.room_id = selectedRoomId.value;
@@ -172,6 +174,7 @@ const openEqEdit = (eq) => {
     eqForm.serial_number = eq.serial_number || '';
     eqForm.energy_label = eq.energy_label || '';
     eqForm.is_standby = !!eq.is_standby;
+    eqForm.is_inverter = !!eq.is_inverter;
     eqForm.is_active = !!eq.is_active;
     showEquipmentModal.value = true;
 };
@@ -319,8 +322,13 @@ const getCategoryIcon = (catName) => {
                                             <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest">{{ eq.type?.name }}</p>
                                         </div>
                                     </div>
-                                    <div v-if="eq.is_standby" class="p-1.5 bg-amber-50 text-amber-500 rounded-lg" title="Consumo Vampiro (Standby)">
-                                        <Zap :size="14" />
+                                    <div class="flex items-center gap-2">
+                                        <div v-if="eq.is_inverter" class="p-1.5 bg-emerald-50 text-emerald-500 rounded-lg border border-emerald-100" title="Tecnología Inverter">
+                                            <Sparkles :size="14" />
+                                        </div>
+                                        <div v-if="eq.is_standby" class="p-1.5 bg-amber-50 text-amber-500 rounded-lg border border-amber-100" title="Consumo Vampiro (Standby)">
+                                            <Zap :size="14" />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -467,7 +475,7 @@ const getCategoryIcon = (catName) => {
                         <div class="space-y-6">
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Eficiencia Energética</label>
-                                <select v-model="eqForm.energy_label" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all appearance-none">
+                                <select v-model="eqForm.energy_label" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all appearance-none" translate="no">
                                     <option value="">Seleccionar...</option>
                                     <option value="A+++">A+++</option>
                                     <option value="A++">A++</option>
@@ -501,6 +509,17 @@ const getCategoryIcon = (catName) => {
                                     </div>
                                 </label>
                                 
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <div class="text-right">
+                                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-energy-success">¿Inverter?</p>
+                                        <p class="text-[8px] font-medium text-slate-600">Eficiencia Pro</p>
+                                    </div>
+                                    <input type="checkbox" v-model="eqForm.is_inverter" class="hidden" />
+                                    <div :class="['w-10 h-5 rounded-full relative transition-colors', eqForm.is_inverter ? 'bg-energy-success' : 'bg-slate-700']">
+                                        <div :class="['absolute top-1 w-3 h-3 bg-white rounded-full transition-all', eqForm.is_inverter ? 'left-6' : 'left-1']"></div>
+                                    </div>
+                                </label>
+
                                 <label class="flex items-center gap-3 cursor-pointer group">
                                     <div class="text-right">
                                         <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-amber-400">¿Vampiro?</p>

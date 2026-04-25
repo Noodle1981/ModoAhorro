@@ -46,8 +46,15 @@ class ConsumptionAnalysisService
         // ⚡ AJUSTE POR ETIQUETA DE EFICIENCIA (A, B, C...)
         $labelCoefficient = 1.0;
         if ($usage->equipment->energy_label) {
-            $coeff = \App\Models\EnergyLabelCoefficient::where('category_id', $equipmentType->category_id)
-                ->where('label', $usage->equipment->energy_label)
+            $coeff = \App\Models\EnergyLabelCoefficient::where('label', $usage->equipment->energy_label)
+                ->where(function($q) use ($equipmentType) {
+                    $q->where('equipment_type_id', $equipmentType->id)
+                      ->orWhere(function($sq) use ($equipmentType) {
+                          $sq->whereNull('equipment_type_id')
+                             ->where('category_id', $equipmentType->category_id);
+                      });
+                })
+                ->orderByRaw('equipment_type_id IS NULL ASC') // Prioritize specific type
                 ->first();
             if ($coeff) {
                 $labelCoefficient = $coeff->coefficient;
@@ -55,7 +62,14 @@ class ConsumptionAnalysisService
         }
         
         $powerKw = ($usage->equipment->nominal_power_w ?? $equipmentType->default_power_watts ?? 0) / 1000;
-        $powerKw *= $labelCoefficient; // Escalar potencia por eficiencia
+        
+        // ⚡ AJUSTE POR TECNOLOGÍA INVERTER
+        $inverterMultiplier = 1.0;
+        if ($usage->equipment->is_inverter) {
+            $inverterMultiplier = 0.85; // 15% ahorro extra sobre la etiqueta base
+        }
+
+        $powerKw *= ($labelCoefficient * $inverterMultiplier); // Escalar potencia por eficiencia y tecnología
 
         // ❄️ CÁLCULO ESPECÍFICO PARA HELADERAS (Modelo Avanzado)
         if ($this->isFridge($usage)) {
@@ -225,7 +239,14 @@ class ConsumptionAnalysisService
         }
 
         $powerKw = ($usage->equipment->nominal_power_watts ?? $usage->equipment->type->default_power_watts ?? 0) / 1000;
-        $powerKw *= $labelCoefficient; // Escalar potencia teórica por etiqueta
+        
+        // ⚡ AJUSTE POR TECNOLOGÍA INVERTER
+        $inverterMultiplier = 1.0;
+        if ($usage->equipment->is_inverter) {
+            $inverterMultiplier = 0.85;
+        }
+
+        $powerKw *= ($labelCoefficient * $inverterMultiplier); // Escalar potencia teórica por etiqueta y tecnología
         
         $daysInPeriod = $usage->use_days_in_period;
         if (empty($daysInPeriod)) {

@@ -35,10 +35,22 @@ class EnergyLabelSeeder extends Seeder
             if ($cat) {
                 foreach ($labels as $label => $coeff) {
                     EnergyLabelCoefficient::updateOrCreate(
-                        ['category_id' => $cat->id, 'label' => $label],
+                        ['category_id' => $cat->id, 'label' => $label, 'equipment_type_id' => null],
                         ['coefficient' => $coeff]
                     );
                 }
+            }
+        }
+
+        // --- EXCEPCIÓN ESPECÍFICA: AIRE DE VENTANA ---
+        $typeVentana = \App\Models\EquipmentType::where('name', 'Aire de Ventana')->first();
+        if ($typeVentana && $catClima) {
+            $ventanaMatrix = ['A+++' => 0.75, 'A++' => 0.85, 'A+' => 0.95, 'A' => 1.00, 'B' => 1.15, 'C' => 1.30, 'D' => 1.65];
+            foreach ($ventanaMatrix as $label => $coeff) {
+                EnergyLabelCoefficient::updateOrCreate(
+                    ['category_id' => $catClima->id, 'label' => $label, 'equipment_type_id' => $typeVentana->id],
+                    ['coefficient' => $coeff]
+                );
             }
         }
     }

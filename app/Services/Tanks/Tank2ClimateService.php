@@ -100,7 +100,25 @@ class Tank2ClimateService
                     $hours = $eq->avg_daily_use_hours ?? $eq->use_time_hours ?? $opContext['daily_hours'];
                     $activeDays = ($eq->use_time_hours == 24) ? $opContext['total_days'] : $opContext['work_days'];
 
-                    $dailyKwh = ($equipmentType->default_power_watts * $hours * $finalLoadFactor * $roomSizeFactor) / 1000;
+                    // ⚡ AJUSTE POR ETIQUETA Y TECNOLOGÍA
+                    $labelCoeff = 1.0;
+                    if ($eq->energy_label) {
+                        $labelCoeff = \App\Models\EnergyLabelCoefficient::where('label', $eq->energy_label)
+                            ->where(function($q) use ($equipmentType) {
+                                $q->where('equipment_type_id', $equipmentType->id)
+                                  ->orWhere(function($sq) use ($equipmentType) {
+                                      $sq->whereNull('equipment_type_id')
+                                         ->where('category_id', $equipmentType->category_id);
+                                  });
+                            })
+                            ->orderByRaw('equipment_type_id IS NULL ASC')
+                            ->first()?->coefficient ?? 1.0;
+                    }
+                    $inverterCoeff = $eq->is_inverter ? 0.85 : 1.0;
+
+                    $effectivePower = ($eq->nominal_power_w ?? $equipmentType->default_power_watts) * $labelCoeff * $inverterCoeff;
+
+                    $dailyKwh = ($effectivePower * $hours * $finalLoadFactor * $roomSizeFactor) / 1000;
                     $periodKwh = $dailyKwh * $activeDays;
                     
                     $wasteKwh = $periodKwh * ($equipmentType->thermal_efficiency_penalty / 100);
