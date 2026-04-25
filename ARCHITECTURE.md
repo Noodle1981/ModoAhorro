@@ -30,9 +30,10 @@ Gestiona la integración con APIs meteorológicas (Visual Crossing).
 4. **Sintonía Fina**: El usuario ajusta las desviaciones. Aquí se decide si un cambio de hábito se vuelve permanente (`has_defined_pattern`).
 
 ## 4. Metodología de Análisis (Tanques)
-- **Tanque 1 (Base/Crítica)**: Equipos 24hs o esenciales. Consumo inelástico.
+- **Tanque 0 (Certeza Matemática)**: Equipos con altísimo determinismo (Vampiros, Routers). Se restan primero.
+- **Tanque 1 (Base/Crítica)**: Equipos esenciales pero con leve variabilidad.
 - **Tanque 2 (Climatización)**: Equipos sensibles al exterior. Consumo dinámico.
-- **Tanque 3 (Elasticidad/Variable)**: Equipos de uso manual o discrecional. Aquí reside el mayor potencial de ahorro conductual.
+- **Tanque 3 (Elasticidad/Variable)**: Equipos de uso manual o discrecional.
 
 ## 5. Principios de Diseño
 - **Estética**: Diseño oscuro, glassmorphism, micro-animaciones (Wow factor).

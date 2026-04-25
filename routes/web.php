@@ -6,6 +6,9 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
     if (Auth::check()) {
+        if (Auth::user()->is_super_admin) {
+            return redirect()->route('sistema.admin');
+        }
         return redirect()->route('dashboard');
     }
     return Inertia::render('Welcome', [
@@ -95,7 +98,9 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::prefix('sistema')->name('sistema.')->group(function () {
-        Route::get('/administracion', fn() => Inertia::render('Placeholder', ['title' => 'Administración del Sistema']))->name('admin');
-        Route::get('/benchmarks', fn() => Inertia::render('Placeholder', ['title' => 'Benchmarks de Eficiencia']))->name('benchmarks');
+        Route::get('/administracion', 'App\Http\Controllers\AdminController@index')->name('admin');
+        Route::get('/catalogo', 'App\Http\Controllers\AdminController@equipmentTypes')->name('catalogue');
+        Route::get('/eficiencia', 'App\Http\Controllers\AdminController@efficiencyLabels')->name('efficiency');
+        Route::get('/benchmarks', 'App\Http\Controllers\AdminController@benchmarks')->name('benchmarks');
     });
 });

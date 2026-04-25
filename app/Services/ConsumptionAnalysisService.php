@@ -39,12 +39,23 @@ class ConsumptionAnalysisService
      */
     public function calculateEquipmentConsumption(EquipmentUsage $usage, Invoice $invoice): float
     {
-        // 1. Potencia Nominal (Convertida a kW)
-        $powerKw = ($usage->equipment->nominal_power_w ?? 0) / 1000;
-        
         // 2. Factor de Uso Real
         $equipmentType = $usage->equipment->type;
         $realUsageFactor = $equipmentType->load_factor ?? 1.0;
+
+        // ⚡ AJUSTE POR ETIQUETA DE EFICIENCIA (A, B, C...)
+        $labelCoefficient = 1.0;
+        if ($usage->equipment->energy_label) {
+            $coeff = \App\Models\EnergyLabelCoefficient::where('category_id', $equipmentType->category_id)
+                ->where('label', $usage->equipment->energy_label)
+                ->first();
+            if ($coeff) {
+                $labelCoefficient = $coeff->coefficient;
+            }
+        }
+        
+        $powerKw = ($usage->equipment->nominal_power_w ?? $equipmentType->default_power_watts ?? 0) / 1000;
+        $powerKw *= $labelCoefficient; // Escalar potencia por eficiencia
 
         // ❄️ CÁLCULO ESPECÍFICO PARA HELADERAS (Modelo Avanzado)
         if ($this->isFridge($usage)) {
@@ -95,13 +106,21 @@ class ConsumptionAnalysisService
             return round($consumption, 4);
         }
         
-        // 4. Cálculo para uso Puntual
-        $usageCount = $usage->usage_count ?? 0;
-        $avgUseDuration = $usage->avg_use_duration ?? 0;
-        $consumption = $powerKw * $avgUseDuration * $usageCount * $realUsageFactor;
-        
-        $maintenancePenalty = $this->maintenanceService->getPenaltyFactor($usage->equipment);
-        $consumption *= $maintenancePenalty;
+        // 5. Cálculo Proporcional a Personas (Modelo Determinista)
+        if ($equipmentType->usage_unit === 'people_proportional') {
+            $peopleCount = $invoice->contract->entity->people_count ?? 1;
+            $daysInPeriod = $usage->use_days_in_period;
+            
+            if (empty($daysInPeriod)) {
+                $totalDays = Carbon::parse($invoice->start_date)->diffInDays(Carbon::parse($invoice->end_date));
+                $daysInPeriod = max(1, $totalDays);
+            }
+            
+            // Fórmula: Coeficiente Social * Personas * Días
+            $consumption = $equipmentType->social_coefficient * $peopleCount * $daysInPeriod;
+            
+            return round($consumption, 4);
+        }
 
         return round($consumption, 4);
     }
@@ -194,7 +213,19 @@ class ConsumptionAnalysisService
 
     private function calculateFridgeConsumption(EquipmentUsage $usage, Invoice $invoice): float
     {
-        $powerKw = ($usage->equipment->nominal_power_w ?? 0) / 1000;
+        // ⚡ AJUSTE POR ETIQUETA DE EFICIENCIA (A, B, C...)
+        $labelCoefficient = 1.0;
+        if ($usage->equipment->energy_label) {
+            $coeff = \App\Models\EnergyLabelCoefficient::where('category_id', $usage->equipment->type->category_id)
+                ->where('label', $usage->equipment->energy_label)
+                ->first();
+            if ($coeff) {
+                $labelCoefficient = $coeff->coefficient;
+            }
+        }
+
+        $powerKw = ($usage->equipment->nominal_power_watts ?? $usage->equipment->type->default_power_watts ?? 0) / 1000;
+        $powerKw *= $labelCoefficient; // Escalar potencia teórica por etiqueta
         
         $daysInPeriod = $usage->use_days_in_period;
         if (empty($daysInPeriod)) {
@@ -333,6 +364,7 @@ class ConsumptionAnalysisService
             return [
                 'usages' => $usages,
                 'summary' => [
+                    'tank_0' => $engineResult['tank_0_certainty'] ?? 0,
                     'tank_1' => $engineResult['tank_1_base'] ?? 0,
                     'tank_2' => $engineResult['tank_2_climate'] ?? 0,
                     'tank_3' => $engineResult['tank_3_elasticity'] ?? 0,

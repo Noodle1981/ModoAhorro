@@ -22,17 +22,18 @@ Este documento registra la evolución arquitectónica de **ModoAhorro** hacia un
 - **`thermal_efficiency_penalty`**: Factor de corrección para equipos con diseño ineficiente (ej: Aires Portátiles).
 - **`default_tank`**: Lógica de pre-asignación automática a los tanques de análisis (1: Base, 2: Clima, 3: Elasticidad).
 
-## 4. Lógica del Motor de Cálculo v3 (Propuesta)
+## 4. Lógica del Motor de Cálculo v3 (Evolución)
+- **Tanque 0 (Certeza)**: Implementado para equipos con `determinism_score >= 0.9`. Estos consumos se restan del total de la factura antes de la distribución de tanques.
+- **Modelos Deterministas**: Se ha implementado la unidad de uso `people_proportional` que utiliza un `social_coefficient` basado en la población de la entidad.
 - **Aprendizaje Selectivo**: El motor solo "aprende" hábitos de equipos con patrón congelado.
 - **Diferenciación de Tanques**: 
-  - Los equipos con `is_thermal_sensitive` se reconcilian contra la temperatura exterior.
-  - Los equipos con `default_tank = 1` se consideran inamovibles (consumo de fondo).
-- **Cálculo de ROI**: Utilizando `base_efficiency_ratio`, el sistema puede calcular cuánto ahorraría el usuario si reemplaza un activo (ej: Portátil -> Split Inverter).
+  - Los equipos con `is_thermal_sensitive` se reconcilian contra la temperatura exterior (Tanque 2).
+  - Los equipos con `default_tank = 1` se consideran inamovibles (Tanque 1).
 
 ## 5. Próximos Pasos
+- [ ] Implementar la interfaz de usuario para la carga de "Ciclos" (Lavarropas).
 - [ ] Implementar la curva de carga variable para equipos Inverter.
 - [ ] Crear el "Analizador de Capacidad" (comparar frigorías vs metros cuadrados de la habitación).
-- [ ] Automatizar el reporte de "Fuga Energética" en equipos de Patrón Fijo.
 
 ---
 **Estado del Proyecto**: Fase de Recolección de Datos Técnicos y Calibración de Activos.

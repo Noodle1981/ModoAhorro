@@ -14,6 +14,11 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+        
+        if ($user->is_super_admin) {
+            return redirect()->route('sistema.admin');
+        }
+
         $plan = $user->currentPlan();
         
         // Get all entity type configurations

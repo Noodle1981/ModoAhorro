@@ -25,7 +25,8 @@ import {
     ShieldCheck,
     Bath,
     Sparkles,
-    Settings
+    Settings,
+    Lock
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -233,6 +234,27 @@ const getCategoryIcon = (catName) => {
                 
                 <!-- Sidebar: Rooms (Sticky & Compact) -->
                 <aside class="w-full lg:w-72 shrink-0 space-y-4 sticky top-6">
+                    <!-- Compact Room Info Card (NOW UP) -->
+                    <div v-if="selectedRoom" class="bg-indigo-900 rounded-[24px] p-6 text-white space-y-3 relative overflow-hidden group shadow-xl shadow-indigo-200">
+                        <div class="absolute -right-2 -bottom-2 opacity-5 group-hover:scale-110 transition-transform duration-700">
+                            <Building2 :size="100" />
+                        </div>
+                        <div class="relative z-10 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-sm font-black tracking-tight">{{ selectedRoom.name }}</h4>
+                                <div class="flex items-center gap-2">
+                                    <button @click="openRoomEdit(selectedRoom)" class="text-white/30 hover:text-white transition-colors" title="Editar ambiente">
+                                        <Pencil :size="12" />
+                                    </button>
+                                    <button @click="deleteRoom(selectedRoom)" class="text-white/20 hover:text-rose-400 transition-colors" title="Eliminar ambiente">
+                                        <Trash2 :size="12" />
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="text-[10px] text-indigo-100/60 font-medium leading-relaxed" :title="selectedRoom.description">{{ selectedRoom.description || 'Sin descripción.' }}</p>
+                        </div>
+                    </div>
+
                     <div class="bg-white rounded-[24px] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
                         <div class="p-4 border-b border-slate-50 flex items-center justify-between">
                             <h3 class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Ambientes</h3>
@@ -258,27 +280,6 @@ const getCategoryIcon = (catName) => {
                                     {{ room.equipment_count }}
                                 </span>
                             </button>
-                        </div>
-                    </div>
- 
-                    <!-- Compact Room Info Card -->
-                    <div v-if="selectedRoom" class="bg-indigo-900 rounded-[24px] p-6 text-white space-y-3 relative overflow-hidden group">
-                        <div class="absolute -right-2 -bottom-2 opacity-5 group-hover:scale-110 transition-transform duration-700">
-                            <Building2 :size="100" />
-                        </div>
-                        <div class="relative z-10 space-y-3">
-                            <div class="flex items-center justify-between">
-                                <h4 class="text-sm font-black tracking-tight">{{ selectedRoom.name }}</h4>
-                                <div class="flex items-center gap-2">
-                                    <button @click="openRoomEdit(selectedRoom)" class="text-white/30 hover:text-white transition-colors" title="Editar ambiente">
-                                        <Pencil :size="12" />
-                                    </button>
-                                    <button @click="deleteRoom(selectedRoom)" class="text-white/20 hover:text-rose-400 transition-colors" title="Eliminar ambiente">
-                                        <Trash2 :size="12" />
-                                    </button>
-                                </div>
-                            </div>
-                            <p class="text-[10px] text-indigo-100/60 font-medium leading-relaxed" :title="selectedRoom.description">{{ selectedRoom.description || 'Sin descripción.' }}</p>
                         </div>
                     </div>
                 </aside>

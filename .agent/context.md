@@ -4,10 +4,11 @@
 **ModoAhorro** es un sistema de gestión energética de vanguardia (SaaS) que evoluciona de una simple auditoría a un modelo de **Gemelo Digital**. Su objetivo es permitir que usuarios finales y empresas comprendan su consumo eléctrico mediante leyes físicas, no solo estadísticas.
 
 ### El Motor v3 (Cerebro del Sistema)
-El corazón de la aplicación es el motor de calibración basado en la **Metodología de los 3 Tanques**:
-1. **Tanque 1 (Base/Crítica)**: Consumo constante e inelástico (Heladeras, Servidores, Seguridad).
-2. **Tanque 2 (Climatización)**: Consumo sensible a la termodinámica exterior (Aires, Calefacción). Depende de datos HDD/CDD.
-3. **Tanque 3 (Elasticidad/Variable)**: Consumo discrecional y conductual (Iluminación manual, PC Gamer, Electrodomésticos menores).
+El corazón de la aplicación es el motor de calibración basado en la **Metodología de los 4 Tanques**:
+0. **Tanque 0 (Certeza)**: Consumo con error <5% (Vampiros, Routers, Deterministas).
+1. **Tanque 1 (Base/Crítica)**: Consumo constante e inelástico (Heladeras, Seguridad).
+2. **Tanque 2 (Climatización)**: Consumo sensible a la termodinámica exterior.
+3. **Tanque 3 (Elasticidad/Variable)**: Consumo discrecional y conductual.
 
 ## 2. Stack Tecnológico Actual (Actualizado)
 - **Backend**: Laravel 11 (PHP 8.2+).

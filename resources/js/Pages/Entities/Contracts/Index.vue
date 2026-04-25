@@ -138,7 +138,7 @@ const formatDate = (dateString) => {
     <MainLayout>
         <Head title="Gestión de Contratos" />
 
-        <div class="max-w-7xl mx-auto space-y-10">
+        <div class="max-w-7xl mx-auto space-y-8">
             <!-- Top Header & Search -->
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div class="space-y-4">
@@ -175,31 +175,31 @@ const formatDate = (dateString) => {
 
             <!-- Stats Bar -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40 flex items-center gap-6">
-                    <div class="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400">
-                        <FileText :size="28" />
+                <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/40 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
+                        <FileText :size="20" />
                     </div>
                     <div>
-                        <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Total Registrados</p>
-                        <h4 class="text-3xl font-black text-slate-900 leading-none">{{ stats.total }}</h4>
+                        <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-0.5">Total Registrados</p>
+                        <h4 class="text-2xl font-black text-slate-900 leading-none">{{ stats.total }}</h4>
                     </div>
                 </div>
-                <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40 flex items-center gap-6">
-                    <div class="w-16 h-16 rounded-2xl bg-energy-success/10 flex items-center justify-center text-energy-success">
-                        <Activity :size="28" />
+                <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/40 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-energy-success/10 flex items-center justify-center text-energy-success">
+                        <Activity :size="20" />
                     </div>
                     <div>
-                        <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Suministros Activos</p>
-                        <h4 class="text-3xl font-black text-slate-900 leading-none">{{ stats.active }}</h4>
+                        <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-0.5">Suministros Activos</p>
+                        <h4 class="text-2xl font-black text-slate-900 leading-none">{{ stats.active }}</h4>
                     </div>
                 </div>
-                <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40 flex items-center gap-6">
-                    <div class="w-16 h-16 rounded-2xl bg-energy-consumption/10 flex items-center justify-center text-energy-consumption">
-                        <Zap :size="28" />
+                <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/40 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-energy-consumption/10 flex items-center justify-center text-energy-consumption">
+                        <Zap :size="20" />
                     </div>
                     <div>
-                        <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Potencia Total (P1)</p>
-                        <h4 class="text-3xl font-black text-slate-900 leading-none">{{ stats.power.toFixed(1) }} <span class="text-sm font-bold text-slate-300">kW</span></h4>
+                        <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-0.5">Potencia Total (P1)</p>
+                        <h4 class="text-2xl font-black text-slate-900 leading-none">{{ stats.power.toFixed(1) }} <span class="text-xs font-bold text-slate-300">kW</span></h4>
                     </div>
                 </div>
             </div>
@@ -220,22 +220,22 @@ const formatDate = (dateString) => {
                 <div 
                     v-for="contract in filteredContracts" 
                     :key="contract.id"
-                    class="group bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/30 hover:shadow-2xl hover:shadow-slate-300 transition-all overflow-hidden relative flex flex-col"
+                    class="group bg-white rounded-[32px] border border-slate-100 shadow-lg shadow-slate-200/30 hover:shadow-2xl transition-all overflow-hidden relative flex flex-col"
                 >
                     <!-- Status Header -->
-                    <div class="p-8 pb-4 flex items-center justify-between">
+                    <div class="p-6 pb-2 flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100">
-                                <Building2 :size="20" />
+                            <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100">
+                                <Building2 :size="18" />
                             </div>
                             <div>
-                                <h4 class="font-black text-slate-900 leading-tight">{{ contract.entity.name }}</h4>
-                                <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest">{{ contract.proveedor.name }}</p>
+                                <h4 class="font-black text-slate-900 leading-tight text-sm">{{ contract.entity.name }}</h4>
+                                <p class="text-[8px] font-black text-slate-300 uppercase tracking-widest">{{ contract.proveedor.name }}</p>
                             </div>
                         </div>
                         <button 
                             @click="toggleActive(contract)"
-                            :class="['px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest transition-all', 
+                            :class="['px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all', 
                                 contract.is_active ? 'bg-energy-success/10 text-energy-success border border-energy-success/20' : 'bg-slate-50 text-slate-300 border border-slate-100'
                             ]"
                         >
@@ -243,56 +243,46 @@ const formatDate = (dateString) => {
                         </button>
                     </div>
 
-                    <!-- Tech Details -->
-                    <div class="px-8 flex-1 space-y-4">
-                        <div class="bg-slate-50/50 rounded-2xl p-4 space-y-3">
-                            <div class="flex items-center justify-between">
-                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">N° Suministro / NIU</span>
-                                <span class="text-xs font-mono font-black text-slate-900">{{ contract.supply_number }}</span>
+                    <!-- Tech Details Grid -->
+                    <div class="p-6 space-y-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-slate-50/50 rounded-xl p-3">
+                                <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">NIU / Suministro</p>
+                                <p class="text-[10px] font-mono font-black text-slate-900 truncate">{{ contract.supply_number }}</p>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Inicio Contrato</span>
-                                <span class="text-[10px] font-bold text-slate-600">{{ formatDate(contract.start_date) }}</span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tarifa</span>
-                                <span class="text-xs font-bold text-slate-600">{{ contract.rate_name }}</span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tecnología</span>
-                                <span class="text-[9px] font-black px-2 py-0.5 bg-white text-slate-500 rounded-md border border-slate-100">
-                                    {{ contract.is_three_phase ? 'Trifásico' : 'Monofásico' }}
-                                </span>
+                            <div class="bg-slate-50/50 rounded-xl p-3">
+                                <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1">Tarifa</p>
+                                <p class="text-[10px] font-bold text-slate-600">{{ contract.rate_name }}</p>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-3 gap-3">
-                            <div class="text-center p-3 rounded-2xl bg-white border border-slate-100 border-b-2 border-b-energy-consumption/30">
-                                <p class="text-[8px] font-black text-slate-300 uppercase mb-1">P1</p>
-                                <p class="text-sm font-black text-slate-900">{{ parseFloat(contract.contracted_power_kw_p1).toFixed(1) }}<span class="text-[9px] ml-0.5">kW</span></p>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="text-center p-2 rounded-xl bg-white border border-slate-100 border-b-2 border-b-energy-consumption/30">
+                                <p class="text-[7px] font-black text-slate-300 uppercase">P1</p>
+                                <p class="text-xs font-black text-slate-900">{{ parseFloat(contract.contracted_power_kw_p1).toFixed(1) }}</p>
                             </div>
-                            <div class="text-center p-3 rounded-2xl bg-white border border-slate-100">
-                                <p class="text-[8px] font-black text-slate-300 uppercase mb-1">P2</p>
-                                <p class="text-sm font-black text-slate-900">{{ parseFloat(contract.contracted_power_kw_p2 || 0).toFixed(1) }}</p>
+                            <div class="text-center p-2 rounded-xl bg-white border border-slate-100">
+                                <p class="text-[7px] font-black text-slate-300 uppercase">P2</p>
+                                <p class="text-xs font-black text-slate-900">{{ parseFloat(contract.contracted_power_kw_p2 || 0).toFixed(1) }}</p>
                             </div>
-                            <div class="text-center p-3 rounded-2xl bg-white border border-slate-100 text-slate-300">
-                                <p class="text-[8px] font-black text-slate-300 uppercase mb-1">P3</p>
-                                <p class="text-sm font-black">{{ parseFloat(contract.contracted_power_kw_p3 || 0).toFixed(1) }}</p>
+                            <div class="text-center p-2 rounded-xl bg-white border border-slate-100 text-slate-300">
+                                <p class="text-[7px] font-black text-slate-300 uppercase">P3</p>
+                                <p class="text-xs font-black">{{ parseFloat(contract.contracted_power_kw_p3 || 0).toFixed(1) }}</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Actions -->
-                    <div class="p-8 pt-4 mt-auto flex gap-3">
+                    <div class="px-6 pb-6 mt-auto flex gap-2">
                         <button 
                             @click="openEditModal(contract)"
-                            class="flex-1 bg-slate-50 hover:bg-energy-consumption/5 text-slate-400 hover:text-energy-consumption py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-slate-50 hover:border-energy-consumption/20"
+                            class="flex-1 bg-slate-900 text-white py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all hover:bg-energy-consumption"
                         >
-                            <Pencil :size="14" class="inline mr-1" /> Editar
+                            Editar
                         </button>
                         <button 
                             @click="deleteContract(contract)"
-                            class="w-12 bg-slate-50 hover:bg-energy-critical/5 text-slate-300 hover:text-energy-critical py-3 rounded-xl transition-all border border-slate-50 hover:border-energy-critical/20"
+                            class="w-10 bg-slate-50 text-slate-300 hover:text-energy-critical py-2.5 rounded-xl transition-all border border-slate-100"
                         >
                             <Trash2 :size="14" class="mx-auto" />
                         </button>

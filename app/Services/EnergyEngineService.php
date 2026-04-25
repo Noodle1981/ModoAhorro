@@ -11,13 +11,27 @@ class EnergyEngineService
 {
     protected $climateService;
     protected $thermalService;
-    protected $lastClimateDays = []; // Store the last calculated climate days
+    protected $tank0;
+    protected $tank1;
+    protected $tank2;
+    protected $tank3;
+    protected $lastClimateDays = [];
     protected $isFallbackMode = false;
 
-    public function __construct(ClimateService $climateService, ThermalProfileService $thermalService)
-    {
+    public function __construct(
+        ClimateService $climateService, 
+        ThermalProfileService $thermalService,
+        \App\Services\Tanks\Tank0CertaintyService $tank0,
+        \App\Services\Tanks\Tank1BaseService $tank1,
+        \App\Services\Tanks\Tank2ClimateService $tank2,
+        \App\Services\Tanks\Tank3ElasticityService $tank3
+    ) {
         $this->climateService = $climateService;
         $this->thermalService = $thermalService;
+        $this->tank0 = $tank0;
+        $this->tank1 = $tank1;
+        $this->tank2 = $tank2;
+        $this->tank3 = $tank3;
     }
 
     /**
@@ -28,183 +42,56 @@ class EnergyEngineService
     {
         $entity = $invoice->contract->entity;
         $totalBillKwh = $invoice->bimonthly_consumption_kwh ?? $invoice->total_energy_consumed_kwh ?? $invoice->consumption_kwh ?? 0;
-        $daysInPeriod = $invoice->days_in_period; 
         $logs = [];
 
-        // CONTEXTO OPERATIVO (Oficinas/Comercios vs Hogares)
+        // 1. CONTEXTO OPERATIVO
         $opContext = $this->calculateOperationalContext($entity, $invoice->start_date, $invoice->end_date);
-        $logs[] = "[Contexto] Entidad: {$entity->type}. Horas/Día: " . number_format($opContext['daily_hours'], 1) . ". Días laborables: {$opContext['work_days']}/{$opContext['total_days']}";
+        $logs[] = "[Contexto] Entidad: {$entity->type}. Días: {$opContext['total_days']}. Bolsa Inicial: " . number_format($totalBillKwh, 1) . " kWh";
 
-        // --- TANQUE 1: BASE INMUTABLE ---
-        $tank1Consumption = 0;
-        $tank1Equipments = $equipments->filter(function ($eq) {
-            return $eq->type->consumption_logic === 'BASE_LOAD' || 
-                   $eq->type->isBase() || 
-                   ($eq->use_time_hours == 24 && !$eq->type->isClimate());
-        });
+        $remainingKwh = $totalBillKwh;
 
-        foreach ($tank1Equipments as $eq) {
-            if (isset($eq->_theo_kwh)) {
-                $periodKwh = $eq->_theo_kwh;
-            } else {
-                // Si el equipo es 24h pero la oficina cierra, hay un conflicto.
-                // Respetamos la definición del equipo si es explícitamente 24h, 
-                // pero si es base genérica, sigue el horario de la oficina.
-                $hoursPerDay = ($eq->use_time_hours == 24) ? 24 : $opContext['daily_hours'];
-                $activeDays = ($eq->use_time_hours == 24) ? $opContext['total_days'] : $opContext['work_days'];
-                
-                $dailyKwh = ($eq->type->default_power_watts * $hoursPerDay * $eq->type->load_factor) / 1000;
-                $periodKwh = $dailyKwh * $activeDays;
-            }
-            
-            $eq->calculated_consumption_kwh = $periodKwh;
-            $eq->tank_assignment = 1;
-            $eq->audit_logs = ["Fijado en " . number_format($periodKwh, 1) . " kWh (Base Crítica)"];
-            $tank1Consumption += $periodKwh;
-            $logs[] = "[Tanque 1] {$eq->name}: " . number_format($periodKwh, 1) . " kWh" . ($activeDays < $opContext['total_days'] ? " (Días: $activeDays)" : "");
+        // --- PASO 0: TANQUE 0 (CERTEZA) ---
+        $resT0 = $this->tank0->process($equipments, $remainingKwh);
+        $logs = array_merge($logs, $resT0['logs']);
+
+        // --- PASO 1: TANQUE 1 (BASE INMUTABLE) ---
+        $resT1 = $this->tank1->process($equipments, $remainingKwh, $opContext);
+        $logs = array_merge($logs, $resT1['logs']);
+
+        // ⚠️ DETECCIÓN TEMPRANA DE ANOMALÍAS (NotebookLM Suggestion)
+        if ($remainingKwh < -0.5) { 
+            $logs[] = "❌ [ANOMALÍA] El consumo base declarado (" . number_format($totalBillKwh - $remainingKwh, 1) . " kWh) supera el total de la factura.";
         }
 
-        // Remanente post-Tanque 1
-        $remainingKwh = max(0, $totalBillKwh - $tank1Consumption);
+        // --- PASO 2: TANQUE 2 (CLIMATIZACIÓN) ---
+        $resT2 = $this->tank2->process($equipments, $remainingKwh, $opContext, $invoice, $this->isFallbackMode);
+        $logs = array_merge($logs, $resT2['logs']);
+        $this->lastClimateDays = $resT2['climate_data'] ?? [];
 
-        // --- TANQUE 2: CLIMATIZACIÓN ---
-        $tank2Consumption = 0;
-        $tank2Equipments = $equipments->filter(function ($eq) {
-                return in_array($eq->type->consumption_logic, ['CLIMATE_DEPENDENT', 'CLIMATE_INEFFICIENT']) || 
-                       $eq->type->isClimate();
-        });
+        // --- PASO 3: TANQUE 3 (ELASTICIDAD/VARIABLE) ---
+        $resT3 = $this->tank3->process($equipments, $remainingKwh, $opContext);
+        $logs = array_merge($logs, $resT3['logs']);
 
-        // Datos climáticos
-        $locality = $entity->locality;
-        $climateStats = $this->climateService->getDegreeDaysForLocality(
-            $locality, 
-            $invoice->start_date, 
-            $invoice->end_date
-        );
+        // --- CÁLCULO FINAL ---
+        $totalTheoretical = $resT0['consumption'] + $resT1['consumption'] + $resT2['consumption'] + ($resT3['processed_count'] > 0 ? $remainingKwh : 0);
+        $totalAssigned = $resT0['consumption'] + $resT1['consumption'] + $resT2['consumption'] + $resT3['consumption'];
         
-        $this->lastClimateDays = $climateStats;
-        
-        if ($tank2Equipments->isNotEmpty()) {
-            $thermalMultiplier = $this->thermalService->calculateMultiplier($entity);
-
-            foreach ($tank2Equipments as $eq) {
-                if (isset($eq->_theo_kwh)) {
-                    $periodKwh = $eq->_theo_kwh;
-                    $eq->audit_logs = [number_format($periodKwh, 1) . " kWh (Ajuste Térmico)"];
-                } else {
-                    $name = strtolower($eq->type->name);
-                    $isCooling = str_contains($name, 'aire') || str_contains($name, 'ventilador') || str_contains($name, 'split');
-                    $degreeDays = $isCooling ? ($climateStats['cooling_days'] ?? 0) : ($climateStats['heating_days'] ?? 0);
-                    
-                    if ($degreeDays <= 0) {
-                         $periodKwh = 0;
-                         $eq->audit_logs = ["0 kWh (Sin Grados-Día activos)"];
-                    } else {
-                        $avgDegreeDays = $degreeDays / $opContext['total_days'];
-                        $climateMainFactor = min(1.0, ($avgDegreeDays / 5.0)); 
-                        $finalLoadFactor = min(1.0, $eq->type->load_factor * $climateMainFactor * $thermalMultiplier);
-                        
-                        // Si no especificó horas, usa las de la oficina
-                        $hours = $eq->avg_daily_use_hours ?? $eq->use_time_hours ?? $opContext['daily_hours'];
-                        $activeDays = ($eq->use_time_hours == 24) ? $opContext['total_days'] : $opContext['work_days'];
-
-                        $dailyKwh = ($eq->type->default_power_watts * $hours * $finalLoadFactor) / 1000;
-                        $periodKwh = $dailyKwh * $activeDays;
-                        
-                        $eq->audit_logs = [number_format($periodKwh, 1) . " kWh (Load: " . number_format($finalLoadFactor, 2) . ")"];
-                    }
-                }
-
-                $eq->calculated_consumption_kwh = $periodKwh;
-                $eq->tank_assignment = 2;
-                $tank2Consumption += $periodKwh;
-                if ($this->isFallbackMode) {
-                    $currentLogs = $eq->audit_logs ?? [];
-                    $currentLogs[] = "⚠️ Datos de proximidad (API Offline)";
-                    $eq->audit_logs = $currentLogs;
-                }
-                $logs[] = "[Tanque 2] {$eq->name}: " . number_format($periodKwh, 1) . " kWh";
-            }
-        }
-
-        // --- TANQUE 3: ELASTICIDAD ---
-        $tank3Consumption = 0;
-        $tank3Equipments = $equipments->filter(function ($eq) {
-            return $eq->tank_assignment === null;
-        });
-
-        $t3TheoreticalTotal = 0;
-        foreach ($tank3Equipments as $eq) {
-            if (isset($eq->_theo_kwh)) {
-                $eq->theo_kwh = $eq->_theo_kwh;
-            } else {
-                $hours = $eq->avg_daily_use_hours ?? $eq->use_time_hours ?? $opContext['daily_hours'];
-                $activeDays = ($eq->use_time_hours == 24) ? $opContext['total_days'] : $opContext['work_days'];
-                
-                $loadFactor = $eq->type->load_factor ?? 1.0;
-                $dailyKwh = (($eq->type->default_power_watts ?? 0) * $hours * $loadFactor) / 1000;
-                $eq->theo_kwh = $dailyKwh * $activeDays;
-            }
-            $t3TheoreticalTotal += $eq->theo_kwh;
-        }
-
-        $totalTheoretical = $tank1Consumption + $tank2Consumption + $t3TheoreticalTotal;
         $recommendedTotalKwh = $totalTheoretical;
-        $isDynamic = ($totalBillKwh > 0);
-
-        if ($isDynamic) {
+        if ($totalBillKwh > 0) {
             $recommendedTotalKwh = max($totalBillKwh, min($totalBillKwh * 1.30, $totalTheoretical));
         }
-        
-        $idealT3 = max(0, $recommendedTotalKwh - $tank1Consumption - $tank2Consumption);
 
-        if ($tank3Equipments->isNotEmpty()) {
-            if ($idealT3 > 0) {
-                $intensityMap = ['Bajo' => 1, 'Medio' => 2, 'Alto' => 3, 'Excesivo' => 5, 'Critico' => 5];
-                $totalPoints = 0;
-                foreach ($tank3Equipments as $eq) {
-                    $intensityStr = ucfirst(strtolower($eq->type->intensity ?? 'Medio'));
-                    $points = $intensityMap[$intensityStr] ?? 2;
-                    $powerWeight = sqrt((float)($eq->type->default_power_watts ?? 1)); 
-                    $eq->elasticity_points = $points * $powerWeight;
-                    $totalPoints += $eq->elasticity_points;
-                }
-
-                if ($totalPoints > 0) {
-                    foreach ($tank3Equipments as $eq) {
-                        $share = $eq->elasticity_points / $totalPoints;
-                        $periodKwh = $idealT3 * $share;
-                        $eq->calculated_consumption_kwh = $periodKwh;
-                        $eq->tank_assignment = 3;
-                        $tank3Consumption += $periodKwh;
-                        
-                        $percentChange = $eq->theo_kwh > 0 ? (($periodKwh - $eq->theo_kwh) / $eq->theo_kwh * 100) : 0;
-                        $actionSign = $percentChange >= 0 ? "+" : "";
-                        $eq->audit_logs = [number_format($periodKwh, 1) . " kWh (Teórico: ".number_format($eq->theo_kwh, 1).", Ajuste: {$actionSign}".number_format($percentChange, 1)."%)"];
-                    }
-                    $logs[] = "[Tanque 3] Objetivo de " . number_format($idealT3, 1) . " kWh alcanzado.";
-                }
-            } else {
-                foreach ($tank3Equipments as $eq) {
-                    $eq->calculated_consumption_kwh = 0;
-                    $eq->tank_assignment = 3;
-                    $eq->audit_logs = ["Anulado (0 kWh). Consumo rígido superado."];
-                }
-                $logs[] = "[Tanque 3] Anulado.";
-            }
-        }
-        // --- Cálculo Final ---
-        $totalAssigned = $tank1Consumption + $tank2Consumption + $tank3Consumption;
         $invoice->update(['recommended_kwh' => $recommendedTotalKwh]);
 
         return [
             'total_bill' => $totalBillKwh,
             'theoretical_total' => $totalTheoretical,
             'calibrated_total' => $totalAssigned,
-            'recommended_total_kwh' => $recommendedTotalKwh, // Devolvemos el recomendado para que el servicio lo guarde
-            'tank_1_base' => $tank1Consumption,
-            'tank_2_climate' => $tank2Consumption,
-            'tank_3_elasticity' => $tank3Consumption,
+            'recommended_total_kwh' => $recommendedTotalKwh,
+            'tank_0_certainty' => $resT0['consumption'],
+            'tank_1_base' => $resT1['consumption'],
+            'tank_2_climate' => $resT2['consumption'],
+            'tank_3_elasticity' => $resT3['consumption'],
             'unassigned_remainder' => $totalBillKwh - $totalAssigned,
             'equipments_processed' => $equipments->count(),
             'logs' => $logs,

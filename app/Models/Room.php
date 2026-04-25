@@ -15,7 +15,15 @@ class Room extends Model
     protected $fillable = [
         'entity_id',
         'name',
+        'square_meters',
         'description',
+        'is_estimated',
+        'room_template',
+    ];
+
+    protected $casts = [
+        'square_meters' => 'float',
+        'is_estimated' => 'boolean',
     ];
 
     public function entity()

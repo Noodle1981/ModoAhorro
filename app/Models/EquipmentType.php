@@ -15,6 +15,8 @@ class EquipmentType extends Model
         'load_factor', 'efficiency', 'intensity', 'is_climatization',
         'default_tank', 'is_thermal_sensitive', 'base_efficiency_ratio', 'thermal_efficiency_penalty',
         'consumption_logic', 'is_inverter_capable',
+        'usage_unit', 'determinism_score', 'social_coefficient',
+        'min_watts', 'max_watts',
     ];
 
     protected $casts = [
@@ -25,6 +27,10 @@ class EquipmentType extends Model
         'default_tank' => 'integer',
         'base_efficiency_ratio' => 'float',
         'thermal_efficiency_penalty' => 'float',
+        'determinism_score' => 'float',
+        'social_coefficient' => 'float',
+        'min_watts' => 'integer',
+        'max_watts' => 'integer',
     ];
 
     public function isClimate(): bool
