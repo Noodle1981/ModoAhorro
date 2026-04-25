@@ -1,152 +1,156 @@
-Nombre del hogar Casa 27
-Tipo Hogar
-Calle Carlos Gardel Casa 27 B° Enoe Bravo
-Código Postal 
-Localidad Capital
-Descripcion Casa de prueba
-Medros cuadrados 450
-Cantida de personas 4
+# INFORMACIÓN GENERAL DEL HOGAR
+Nombre del hogar: Casa 27
+Tipo: Hogar
+Calle: Calle Carlos Gardel Casa 27 B° Enoe Bravo
+Código Postal: 5300
+Localidad: Capital
+Descripción: Mi Hogar de Prueba - Gestión Física Optimizada
+Metros cuadrados: 450
+Cantidad de personas: 4
+Uso: Residencial
+Gas: No
+Solar: No
 
-
-N° de SUMINISTRO 07182202700
-Empresa Distribuidora Naturgy
-N° de Serie del Medidor 9618495
+# DETALLES DEL CONTRATO
+N° de SUMINISTRO: 07182202700
+Empresa Distribuidora: Naturgy (ID: 2)
+N° de Serie del Medidor: 9618495
 Identificador de Contrato: 36697
-Nombre de Tarifa T1-R1
+Nombre de Tarifa: T1-R1
 
+# HISTORIAL DE FACTURAS (Últimas registradas)
 
+Factura N°: 140937991 (Cuota 2/2)
+Fecha Emisión: 27/02/2026
+Periodo: 12/11/2025 al 15/01/2026
+Consumo: 503 kWh
+Total Energía: $58.631,43
+Impuestos: $25.952,16
+Total: $84.583,59
+Estado: Pagada
+Tarifa: T1-R3
 
+Factura N°: 14068867 (Cuota 1/2)
+Fecha Emisión: 28/01/2026
+Periodo: 12/11/2025 al 15/01/2026
+Consumo: 504 kWh
+Total Energía: $58.772,97
+Impuestos: $25.241,47
+Total: $84.014,44
+Estado: Pagada
+Tarifa: T1-R3
 
-factura 1
-ID 1
-Numero de Factura 137756868
-Fecha de Emision 28/03/2025
-Periodo de Consumo
-15/01/2025 a 20/03/2025
-Consumo Facturado
-624.00 kWh
-Total Energía 67876.86
-impuestos 28078.31
-Total 95955.17
+Factura N°: 140232616 (Cuota 2/2)
+Fecha Emisión: 23/12/2025
+Periodo: 08/09/2025 al 11/11/2025
+Consumo: 132 kWh
+Total Energía: $15.494,76
+Impuestos: $5.917,70
+Total: $21.412,46
+Estado: Pagada
 
-factura 2
+Factura N°: 140021493 (Cuota 1/2)
+Fecha Emisión: 27/11/2025
+Periodo: 08/09/2025 al 11/11/2025
+Consumo: 133 kWh
+Total Energía: $15.575,77
+Impuestos: $5.680,47
+Total: $21.256,24
+Estado: Pagada
 
-ID 2
-Numero de Factura 138579184
-Fecha de Emision 25/06/2025
-Periodo de Consumo
-21/03/2025 a 15/05/2025
-Consumo Facturado
-123.00 kWh
-Total Energía 13784.62
-impuestos 4743.40
-Total 18528.02
+Factura N°: 139674278 (Cuota 2/2)
+Fecha Emisión: 23/10/2025
+Periodo: 16/07/2025 al 07/09/2025
+Consumo: 78 kWh
+Total Energía: $8.293,53
+Impuestos: $2.484,72
+Total: $10.778,25
+Estado: Pagada
 
-factura 3
+# INVENTARIO DE EQUIPOS POR AMBIENTE
 
-ID 3
-Numero de Factura 139151993
-Fecha de Emision 27/08/2025
-Periodo de Consumo
-14/05/2025 a 15/07/2025
-Consumo Facturado
-83.00 kWh
-Total Energía 8503.49
-impuestos 2452.22
-Total 10955.71
+## Cocina / Comedor
+- Aire Grande: 2500 W | Uso: 0 hs (Manual) | Standby: No
+- Ventilador de Techo: 40 W | Uso: 0 hs (Manual) | Standby: No
+- Microondas: 1000 W | Uso: 0.17 hs | Standby: No
+- Tubo Led Cocina: 10 W | Uso: 8 hs | Standby: No
+- Foco Ventilador (x3): 10 W | Uso: 0.33 hs | Standby: No
 
-factura 4
+## Living
+- TV Grande: 120 W | Uso: 6 hs | Standby: No
+- Foco Living: 5 W | Uso: 0.17 hs | Standby: No
+- Router Wifi: 5 W | Uso: 24 hs | Standby: No
+- Ventilador de Techo Living: 40 W | Uso: 0 hs | Standby: No
 
-ID 4
-Numero de Factura 139459979
-Fecha de Emision 26/09/2025
-Periodo de Consumo
-16/07/2025 a 07/09/2025
-Consumo Facturado
-78.00 kWh
-Total Energía 8293.53
-impuestos 8293.53
-Total 10778.25
+## Habitación Hermanos
+- PC Gamer: 150 W | Uso: 8 hs | Standby: No
+- Monitor PC PHILLPS: 40 W | Uso: 8 hs | Standby: No
+- Aire Portatil: 1400 W | Uso: 0 hs | Standby: No
+- Ventilador de Techo: 40 W | Uso: 0 hs | Standby: No
+- Mesita de Luz: 9 W | Uso: 4 hs | Standby: No
 
+## Habitación Mamá
+- Ventilador de Techo: 60 W | Uso: 0 hs | Standby: No
+- Foco Ventilador: 5 W | Uso: 0 hs | Standby: No
+- Foco Mesita de Luz: 5 W | Uso: 0 hs | Standby: No
 
+## Habitación Papa
+- Ventilador de Techo: 60 W | Uso: 0 hs | Standby: No
+- TV Chico: 85 W | Uso: 4 hs | Standby: No
+- Foco Ventilador: 40 W | Uso: 0 hs | Standby: No
+- Foco Mesita de Luz: 40 W | Uso: 0 hs | Standby: No
 
+## Baño
+- Foco Baño: 10 W | Uso: 0 hs | Standby: No
+- Secador de Pelo: 1000 W | Uso: 0 hs | Standby: No
+- Maquina de Afeitar: 12 W | Uso: 0 hs | Standby: No
 
+## Fondo
+- Foco Led Grande: 12 W | Uso: 0 hs | Standby: No
 
+## Garage
+- Heladera: 150 W | Uso: 8 hs | Standby: No
+- Lavarropa: 2500 W | Uso: 0 hs | Standby: No
+- Focos Garage (x2): 5 W | Uso: 0 hs | Standby: No
 
+## Otros / Portátiles
+- Celular (x3): 15 W | Uso: 4 hs | Standby: No
+- Frente / Vereda (Foco): 5 W | Uso: 0 hs | Standby: No
+- Hall (Foco): 5 W | Uso: 0 hs | Standby: No
 
-entities Hogar
+# CATÁLOGO DE DISPOSITIVOS (Categorías y Tipos)
 
-Nombre Casa 27
-Tipo Hogar
-Calle Carlos Gardel Casa 27 B° Enoe Bravo
-Código Postal 
-Localidad Capital
-Descripcion Casa de prueba 
-Medros cuadrados 450
-Cantidad de personas 4
+## Climatización
+- Aire Grande (Defecto: 2500W, 8hs)
+- Ventilador de Techo (Defecto: 60W, 5hs)
+- Aire Portatil (Defecto: 1400W, 4hs)
 
-rooms
-Cocina / Comedor
-Living
-Habitación Mamá
-Habitación Papa
-Habitación Hermanos
-Baño
-Fondo
-Garage
-Hall
-Frente / Vereda
-Lavadero
+## Refrigeración
+- Heladera (Defecto: 150W, 24hs)
 
+## Cocina y Preparación
+- Microondas (Defecto: 1000W, 0.2hs)
 
-Equipo	Categoría	Habitación	Potencia (W)	
-Aire Grande	Climatización	Cocina / Comedor	2500	
-Ventilador de Techo	Climatización	Cocina / Comedor	60	
-Microondas	Cocina	Cocina / Comedor	1000	
-Focos Ventilador	Iluminación	Cocina / Comedor	5	
-Focos Ventilador	Iluminación	Cocina / Comedor	5	
-Focos Ventilador	Iluminación	Cocina / Comedor	5
-Tubo Led Cocina	Iluminación	Cocina / Comedor	5
+## Lavado y Limpieza
+- Lavarropa (Defecto: 2500W, 1hs)
 
+## Iluminación
+- Foco Estandar (Defecto: 5W, 4hs)
 
+## Entretenimiento y Multimedia
+- TV Grande (Defecto: 120W, 4hs)
 
-Ventilador de Techo	Climatización	Living	60
-TV Grande	Entretenimiento	Living	120
-Foco Living	Iluminación	Living	5
-Router Wifi	Oficina	Living	20
+## Informática y Oficina
+- PC Gamer (Defecto: 600W, 5hs)
+- Monitor PC (Defecto: 500W, 5hs)
 
-Ventilador de Techo	Climatización	Habitación Mamá	60
-Foco Ventilador	Iluminación	Habitación Mamá	5
-Foco Mesita de Luz	Iluminación	Habitación Mamá	5
+## Seguridad y Redes
+- Router Wifi (Defecto: 20W, 24hs)
 
-Ventilador de Techo	Climatización	Habitación Papa	60
-Foco Ventilador	Iluminación	Habitación Papa	40
-Foco Mesita de Luz	Iluminación	Habitación Papa	40
-TV Chico	Entretenimiento	Habitación Papa	85
+## Salud y Cuidado Personal
+- Secador de Pelo (Defecto: 1000W, 0.1hs)
 
-PC Gamer	Oficina	Habitación Hermanos	600
-Monitor PC	Oficina	Habitación Hermanos	50
-Monitor PC	Oficina	Habitación Hermanos	50
-Ventilador de Techo	Climatización	Habitación Hermanos	60
-Foco Ventilador de Techo	Iluminación	Habitación Hermanos	5
-Mesita de Luz	Iluminación	Habitación Hermanos	5
-Aire Portatil	Climatización	Habitación Hermanos	1400
-
-Foco Baño	Iluminación	Baño	
-Secador de Pelo	Otros	Baño	1000
-Maquina de Afeitar	Otros	Baño	12
-
-Foco Led Grande	Iluminación	Fondo	12
-
-Focos Garage	Iluminación	Garage	5
-Focos Garage	Iluminación	Garage	5
-Heladera	Electrodomésticos	Garage	150
-Lavarropa	Electrodomésticos	Garage	2500
-
-Foco	Iluminación	Hall	5
-Foco	Iluminación	Frente / Vereda	5
-
-Cargadores de Celular	Oficina	Portátiles	5	
-Cargadores de Celular	Oficina	Portátiles	5	
-Cargadores de Celular	Oficina	Portátiles	5
-Noteebok	Oficina	Portátiles	65
+## Cargadores
+- Cargador Celular (Defecto: 15W, 3hs, Standby: 0.5W)
+- Cargador Notebook (Defecto: 65W, 6hs, Standby: 1W)
+- Cargador Tablet (Defecto: 20W, 4hs, Standby: 0.5W)

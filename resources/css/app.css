@@ -20,8 +20,8 @@
 }
 
 @layer base {
-    body {
-        @apply bg-energy-surface text-slate-900;
+    html, body {
+        @apply bg-energy-surface text-slate-900 overflow-hidden h-full;
     }
 }
 

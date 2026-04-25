@@ -225,7 +225,7 @@ const getCategoryIcon = (catName) => {
                                 <Plus :size="14" />
                             </button>
                         </div>
-                        <div class="p-2 space-y-1 max-h-[calc(100vh-450px)] overflow-y-auto custom-scrollbar">
+                        <div class="p-2 space-y-1">
                             <button 
                                 v-for="room in rooms" 
                                 :key="room.id"
