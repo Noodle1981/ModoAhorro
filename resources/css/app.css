@@ -21,7 +21,7 @@
 
 @layer base {
     html, body {
-        @apply bg-energy-surface text-slate-900 overflow-hidden h-full;
+        @apply bg-energy-surface text-slate-900 overflow-x-hidden min-h-screen;
     }
 }
 

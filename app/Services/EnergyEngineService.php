@@ -38,7 +38,9 @@ class EnergyEngineService
         // --- TANQUE 1: BASE INMUTABLE ---
         $tank1Consumption = 0;
         $tank1Equipments = $equipments->filter(function ($eq) {
-            return $eq->type->isBase() || ($eq->use_time_hours == 24 && !$eq->type->isClimate());
+            return $eq->type->consumption_logic === 'BASE_LOAD' || 
+                   $eq->type->isBase() || 
+                   ($eq->use_time_hours == 24 && !$eq->type->isClimate());
         });
 
         foreach ($tank1Equipments as $eq) {
@@ -68,7 +70,8 @@ class EnergyEngineService
         // --- TANQUE 2: CLIMATIZACIÓN ---
         $tank2Consumption = 0;
         $tank2Equipments = $equipments->filter(function ($eq) {
-                return $eq->type->isClimate();
+                return in_array($eq->type->consumption_logic, ['CLIMATE_DEPENDENT', 'CLIMATE_INEFFICIENT']) || 
+                       $eq->type->isClimate();
         });
 
         // Datos climáticos

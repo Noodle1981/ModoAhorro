@@ -1,0 +1,14 @@
+id,name,created_at,updated_at,description
+1,Climatización,"2026-04-22 14:24:58","2026-04-22 14:24:58","Control de temperatura ambiente (Aire, Estufas, Ventiladores)."
+2,Refrigeración,"2026-04-22 14:24:58","2026-04-22 14:24:58","Conservación de alimentos 24hs (Heladeras, Freezers, Cavas)."
+3,"Agua Caliente (ACS)","2026-04-22 14:24:58","2026-04-22 14:24:58","Producción de agua caliente sanitaria (Termotanques, Calderas)."
+4,"Cocina y Preparación","2026-04-22 14:24:58","2026-04-22 14:24:58","Equipos para cocción y preparación de alimentos."
+5,"Lavado y Limpieza","2026-04-22 14:24:58","2026-04-22 14:24:58","Tratamiento de ropa y vajilla (Lavarropas, Lavavajillas, Secarropas)."
+6,Iluminación,"2026-04-22 14:24:58","2026-04-22 14:24:58","Todo tipo de luminarias (LED, Incandescentes, Tubos)."
+7,"Entretenimiento y Multimedia","2026-04-22 14:24:58","2026-04-22 14:24:58","TV, Consolas, Audio, Home Theatre."
+8,"Informática y Oficina","2026-04-22 14:24:58","2026-04-22 14:24:58","PCs, Monitores, Impresoras, Notebooks."
+9,"Seguridad y Redes","2026-04-22 14:24:58","2026-04-22 14:24:58","Modems, Routers, Alarmas, Cámaras de vigilancia."
+10,"Salud y Cuidado Personal","2026-04-22 14:24:58","2026-04-22 14:24:58","Secadores de pelo, Afeitadoras, Equipos de salud."
+11,"Mantenimiento y Bombas","2026-04-22 14:24:58","2026-04-22 14:24:58","Bombas de agua, riego, filtrado de piscina, herramientas."
+12,Otros,"2026-04-22 14:24:58","2026-04-22 14:24:58","Equipos de uso general no clasificados."
+13,Cargadores,"2026-04-22 18:42:16","2026-04-22 18:42:16",

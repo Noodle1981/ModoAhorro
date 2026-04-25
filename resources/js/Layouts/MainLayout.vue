@@ -83,11 +83,10 @@ const navigation = computed(() => [
         bgColor: 'bg-amber-500',
         items: [
             { name: 'Proyecto Solar', icon: Sun, href: route('recomendaciones.solar') },
-            { name: 'Reemplazos', icon: RefreshCw, href: route('recomendaciones.replacements') },
+            { name: 'Reemplazos Eficientes', icon: RefreshCw, href: route('recomendaciones.replacements') },
+            { name: 'Análisis de Ciclos', icon: RefreshCw, href: '#' }, // Futuro
+            { name: 'Modelos Deterministas', icon: Heart, href: '#' }, // Futuro
             { name: 'Consumo Fantasma', icon: Ghost, href: route('recomendaciones.standby') },
-            { name: 'Salud Térmica', icon: Heart, href: route('recomendaciones.thermal-health') },
-            { name: 'Mantenimiento', icon: Wrench, href: route('recomendaciones.maintenance') },
-            { name: 'Vacaciones', icon: Palmtree, href: route('recomendaciones.vacation') },
             { name: 'Optimización Horarios', icon: Clock, href: route('analisis.grid-optimization') },
         ]
     },
@@ -124,7 +123,7 @@ const isActive = (href) => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-energy-surface flex overflow-hidden">
+    <div class="min-h-screen bg-energy-surface flex overflow-x-hidden">
         <!-- Level 1: Slim Sidebar (Central Icons) -->
         <aside class="w-20 bg-slate-900 flex flex-col items-center py-6 z-[60] border-r border-white/5">
             <!-- Brand Logo -->

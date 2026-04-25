@@ -40,6 +40,7 @@ const form = useForm({
                 avg_daily_use_hours: item.usage.avg_daily_use_hours || 0,
                 usage_frequency: item.usage.usage_frequency || 'diario',
                 is_standby: item.usage.is_standby || false,
+                has_defined_pattern: item.has_defined_pattern || false,
                 nominal_power_w: item.nominal_power_w,
                 use_minutes: (item.usage.avg_daily_use_hours < 1 && item.usage.avg_daily_use_hours > 0)
             };
@@ -356,11 +357,29 @@ const getTankColor = (key) => {
                                     </div>
                                     <div class="min-w-0">
                                         <h4 class="font-black text-slate-900 truncate tracking-tight">{{ item.name }}</h4>
+                                        <p v-if="item.brand || item.model" class="text-[9px] font-bold text-energy-solar uppercase truncate">
+                                            {{ item.brand }} {{ item.model }}
+                                        </p>
                                         <p class="text-[10px] text-slate-400 font-bold uppercase flex items-center gap-1">
                                             <DoorOpen :size="10" /> {{ item.room_name }}
                                         </p>
                                         <div class="flex items-center gap-2 mt-2">
                                             <span class="text-[9px] font-black px-2 py-0.5 bg-slate-50 border border-slate-100 rounded-full text-slate-500">{{ item.nominal_power_w }}W</span>
+                                            
+                                            <!-- Toggle Patrón Fijo -->
+                                            <button 
+                                                @click="form.usages[item.id].has_defined_pattern = !form.usages[item.id].has_defined_pattern"
+                                                :class="[
+                                                    'text-[9px] font-black px-2 py-0.5 rounded-full border flex items-center gap-1 transition-all',
+                                                    form.usages[item.id].has_defined_pattern 
+                                                        ? 'bg-sky-50 text-sky-500 border-sky-100' 
+                                                        : 'bg-slate-50 text-slate-300 border-slate-100'
+                                                ]"
+                                                :title="form.usages[item.id].has_defined_pattern ? 'Descongelar patrón' : 'Congelar este patrón de uso'"
+                                            >
+                                                <Lock :size="8" /> {{ form.usages[item.id].has_defined_pattern ? 'PATRÓN FIJO' : 'USO VARIABLE' }}
+                                            </button>
+
                                             <span v-if="item.is_validated" class="text-[9px] font-black px-2 py-0.5 bg-energy-success/10 text-energy-success rounded-full">VALIDADO</span>
                                         </div>
                                     </div>

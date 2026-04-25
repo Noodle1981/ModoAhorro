@@ -1,101 +1,33 @@
-# ModoAhorro - Contexto del Proyecto
+# ModoAhorro - Contexto Maestro del Proyecto
 
-## Resumen
-**ModoAhorro** es un sistema SaaS de gestión energética inteligente para hogares y pequeñas empresas. Permite auditar, simular y optimizar el consumo eléctrico mediante diagnósticos automáticos, recomendaciones de eficiencia y proyecciones de ahorro con energías renovables.
+## 1. Visión y Propósito
+**ModoAhorro** es un sistema de gestión energética de vanguardia (SaaS) que evoluciona de una simple auditoría a un modelo de **Gemelo Digital**. Su objetivo es permitir que usuarios finales y empresas comprendan su consumo eléctrico mediante leyes físicas, no solo estadísticas.
 
-El sistema evoluciona desde una herramienta de auditoría pasiva hacia gestión activa con IoT y gemelos digitales.
+### El Motor v3 (Cerebro del Sistema)
+El corazón de la aplicación es el motor de calibración basado en la **Metodología de los 3 Tanques**:
+1. **Tanque 1 (Base/Crítica)**: Consumo constante e inelástico (Heladeras, Servidores, Seguridad).
+2. **Tanque 2 (Climatización)**: Consumo sensible a la termodinámica exterior (Aires, Calefacción). Depende de datos HDD/CDD.
+3. **Tanque 3 (Elasticidad/Variable)**: Consumo discrecional y conductual (Iluminación manual, PC Gamer, Electrodomésticos menores).
 
-## Stack Tecnológico
-- **Backend**: Laravel 10/11, PHP 8.2+
-- **Frontend**: Blade Templates + Bootstrap 5 + Chart.js
-- **Base de datos**: SQLite (desarrollo) / MySQL (producción)
-- **Patrón**: MVC con capa de Services (`App\Services\`)
+## 2. Stack Tecnológico Actual (Actualizado)
+- **Backend**: Laravel 11 (PHP 8.2+).
+- **Arquitectura**: Clean Architecture con Capa de Servicios (`ClimateService`, `ConsumptionAnalysisService`).
+- **Frontend**: Vue.js 3 (Composition API) + Inertia.js (Monolito Moderno).
+- **Estilos**: Tailwind CSS v4 con enfoque en **Estética Premium** (Dark mode, Glassmorphism).
+- **Base de Datos**: SQLite para desarrollo, MariaDB para producción.
 
-## Servicios Principales
+## 3. Reglas de Negocio Críticas
+- **Protección de Patrones (Antinoise)**: El sistema permite "congelar" el uso de equipos constantes (`has_defined_pattern`). El motor de ajuste bimensual debe respetar estos valores para evitar "ruido" en los hábitos globales.
+- **Inteligencia de Activos**: Los equipos no son solo nombres; tienen atributos de física térmica (`is_thermal_sensitive`, `base_efficiency_ratio`, `is_inverter`).
+- **Validación por Capacidad**: Comparación de potencia/frigorías vs metros cuadrados de la habitación.
 
-### Motor Energético v3 (Núcleo)
-| Servicio | Propósito |
-|----------|-----------|
-| `EnergyEngineService` | **Motor principal**: Distribuye consumo en 3 tanques virtuales (Base/Clima/Elasticidad) |
-| `ClimateService` | Integración con Open-Meteo API, cálculo de Grados-Día (HDD/CDD) |
-| `ThermalProfileService` | Evaluación de eficiencia térmica del hogar (A-E), multiplicadores para Tanque 2 |
-| `ConsumptionAnalysisService` | Orquestador de análisis de consumo, integra Motor v3 y genera reportes |
+## 4. Estándares de Código y UI
+- **Vue**: Siempre usar `<script setup>`.
+- **UI/UX**: Prioridad absoluta a la visualización clara de datos. Si una vista puede evitar el scroll, se prefiere. Uso de Lucide Icons.
+- **Inertia**: Las actualizaciones de datos deben ser fluidas, usando `router.reload` o `useForm` de forma eficiente.
+- **Auditoría**: Cada cálculo presentado al usuario debe ser explicable. "No más cajas negras".
 
-### Módulos Especializados
-| Servicio | Propósito |
-|----------|-----------|
-| `SolarPowerService` | Calculadora de viabilidad fotovoltaica |
-| `SolarWaterHeaterService` | Análisis de termotanques solares |
-| `VacationService` | Detección de anomalías y checklists de viaje |
-| `GridOptimizerService` | Arbitraje de tarifas (Peak Shifting) |
-| `ReplacementService` | Recomendaciones de equipos eficientes |
-| `MaintenanceService` | Seguimiento de mantenimiento de equipos |
-| `StandbyAnalysisService` | Análisis de consumo fantasma (vampiro) |
-
-## Estado Actual (Febrero 2026)
-
-**Motor Energético v3 - COMPLETADO:**
-- ✅ Sistema de 3 Tanques (Base 24/7, Clima, Elasticidad)
-- ✅ Integración con Open-Meteo para datos climáticos reales
-- ✅ Wizard Térmico para calificación de hogares (A-E)
-- ✅ Dashboard de Auditoría (`/admin/audit/dashboard`)
-- ✅ Sistema de Audit Logs en `equipment_usages`
-- ✅ Tests unitarios (`ClimateServiceTest`, `EnergyEngineTest`)
-
-**Módulos Funcionales:**
-- Gestión de entidades, habitaciones, equipos
-- Gestión de facturas y contratos
-- Panel de consumo (calculado vs facturado)
-- Módulo de vacaciones
-- Análisis solar (paneles + termotanque)
-- Optimización de red (tarifas horarias)
-
-**Limpieza Técnica Reciente:**
-- Eliminadas tablas obsoletas: `devices`, `device_usages`, `utility_companies`
-- Eliminados modelos: `Device.php`, `UtilityCompany.php`, `ConsumptionCalibrator.php`
-- Consolidación de proveedores en modelo `Contract`
-- Unificación de cálculos climáticos (base 18°C/24°C)
-
-## Convenciones
-
-### Código
-- **Naming DB**: snake_case (`equipment_usages`, `created_at`)
-- **Naming PHP**: camelCase para métodos, PascalCase para clases
-- **Services**: Un servicio por módulo, no mezclar lógicas
-
-### Git
-```
-feat: nueva funcionalidad
-fix: corrección de bug
-refactor: mejora de código
-docs: documentación
-test: tests
-```
-
-### Testing
-```bash
-php artisan test                    # Suite completa
-php artisan test:anomaly            # Lógica de anomalías
-php artisan test:grid-optimization  # Optimización de red
-php artisan test:climate            # APIs climáticas
-```
-
-## Documentación Clave
-- [MANUAL_INTEGRAL.md](../docs/MANUAL_INTEGRAL.md) - Manual técnico completo
-- [ROADMAP.md](../ROADMAP.md) - Sprints y estado del proyecto
-- [docs/modules/](../docs/modules/) - Documentación de cada módulo
-- [docs/logic/](../docs/logic/) - Lógica de cálculos
-
-## Instalación Rápida
-```bash
-composer install
-npm install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate --seed
-php artisan serve
-npm run dev  # En otra terminal
-```
-
----
-*Archivo de contexto para compartir entre IAs y desarrolladores*
+## 5. Directorios Clave
+- `app/Services`: Lógica central del motor.
+- `resources/js/Pages`: Vistas Vue (Inertia).
+- `tablas/`: Directorio de exportación CSV para análisis externo (NotebookLM).

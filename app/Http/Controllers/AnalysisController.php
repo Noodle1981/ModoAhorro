@@ -221,7 +221,7 @@ class AnalysisController extends Controller
         if (!$entity) return redirect()->route('dashboard');
 
         $periods = $this->getUnifiedPeriods($entity)->sortByDesc('start_date')->values();
-        $selectedPeriodId = $request->get('period_id', $periods->first()['id'] ?? null);
+        $selectedPeriodId = $request->input('period_id', $periods->first()['id'] ?? null);
         $selectedPeriod = $periods->firstWhere('id', $selectedPeriodId);
 
         $equipmentData = [];
@@ -325,7 +325,7 @@ class AnalysisController extends Controller
             foreach ($room->equipment as $equipment) {
                 $usage = $usages[$equipment->id] ?? [
                     'equipment_id' => $equipment->id,
-                    'avg_daily_use_hours' => $equipment->avg_daily_use_hours,
+                    'avg_daily_use_hours' => $equipment->has_defined_pattern ? $equipment->avg_daily_use_hours : 0,
                     'usage_frequency' => $equipment->usage_frequency ?? 'diario',
                     'is_standby' => $equipment->is_standby,
                 ];
@@ -336,10 +336,13 @@ class AnalysisController extends Controller
                 $item = [
                     'id' => $equipment->id,
                     'name' => $equipment->name,
+                    'brand' => $equipment->brand,
+                    'model' => $equipment->model,
                     'room_name' => $room->name,
                     'nominal_power_w' => $equipment->nominal_power_w,
                     'usage' => $usage,
                     'is_validated' => $equipment->is_validated ?? false,
+                    'has_defined_pattern' => $equipment->has_defined_pattern,
                     'is_standby' => $equipment->is_standby ?? false,
                     'category_name' => $equipment->category->name ?? '',
                     'type_name' => $equipment->type->name ?? '',
@@ -397,14 +400,23 @@ class AnalysisController extends Controller
                     ]
                 );
 
-                // 2. [MEJORA] Actualizar la "ficha técnica" global del equipo (Aprendizaje de hábitos)
+                // 2. [MEJORA] Actualizar la "ficha técnica" global del equipo (Aprendizaje selectivo)
                 $equipment = \App\Models\Equipment::find($eqId);
                 if ($equipment) {
-                    $equipment->update([
-                        'avg_daily_use_hours' => $data['avg_daily_use_hours'],
-                        'usage_frequency' => $data['usage_frequency'],
-                        'is_standby' => $data['is_standby'] ?? false,
-                    ]);
+                    $isFrozen = $data['has_defined_pattern'] ?? false;
+                    
+                    // Solo actualizamos hábitos si el patrón está definido/congelado
+                    if ($isFrozen) {
+                        $equipment->update([
+                            'has_defined_pattern' => true,
+                            'avg_daily_use_hours' => $data['avg_daily_use_hours'],
+                            'usage_frequency' => $data['usage_frequency'],
+                            'is_standby' => $data['is_standby'] ?? false,
+                        ]);
+                    } else {
+                        // Si se descongela, actualizamos solo el flag
+                        $equipment->update(['has_defined_pattern' => false]);
+                    }
                 }
             }
 

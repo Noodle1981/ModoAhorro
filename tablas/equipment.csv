@@ -1,0 +1,5 @@
+id,name,room_id,category_id,type_id,nominal_power_w,is_standby,avg_daily_use_hours,use_days_per_week,is_active,created_at,updated_at,installed_at,removed_at,acquisition_year,energy_label,is_inverter,capacity,capacity_unit,usage_frequency,is_validated,intensity,has_defined_pattern,brand,model,serial_number,extra_attributes
+1,"Aire Living (Split)",2,1,1,1400,0,8,,1,"2026-04-25 20:25:35","2026-04-25 20:25:35",,,,A+++,1,4500,frigorias,,0,,1,Samsung,"Digital Inverter 4500",,
+2,"Aire Portatil Verano",12,1,10,1800,0,4,,1,"2026-04-25 20:25:35","2026-04-25 20:25:35",,,,C,0,3000,frigorias,,0,,0,Surrey,"Mobile Cool",,
+3,"Heladera Inverter",2,2,13,150,0,24,,1,"2026-04-25 20:25:35","2026-04-25 20:25:35",,,,,1,,,,0,,1,LG,"Linear Compressor",,
+4,"PC Master Race",12,8,8,600,0,6,,1,"2026-04-25 20:25:35","2026-04-25 20:25:35",,,,,0,,,,0,,0,Custom,,,

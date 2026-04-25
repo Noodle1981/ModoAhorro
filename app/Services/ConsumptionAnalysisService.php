@@ -79,6 +79,11 @@ class ConsumptionAnalysisService
             $maintenancePenalty = $this->maintenanceService->getPenaltyFactor($usage->equipment);
             $consumption *= $maintenancePenalty;
 
+            // 🌡️ AJUSTE POR INEFICIENCIA DE DISEÑO (Aire Portátil, etc)
+            if ($equipmentType->thermal_efficiency_penalty > 0) {
+                $consumption *= (1 + ($equipmentType->thermal_efficiency_penalty / 100));
+            }
+
             // 🧛 CÁLCULO DE CONSUMO VAMPIRO (STANDBY)
             if ($usage->equipment->is_standby) {
                 $standbyHoursPerDay = max(0, 24 - $hoursPerDay);

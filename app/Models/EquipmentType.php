@@ -10,18 +10,21 @@ class EquipmentType extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'category_id',
-        'name',
-        'default_power_watts',
-        'default_avg_daily_use_hours',
-        'default_standby_power_w',
-        'standby_power',
-        'is_shiftable',
-        'process_type',
-        'load_factor',
-        'efficiency',
-        'intensity',
-        'is_climatization',
+        'category_id', 'name', 'default_power_watts', 'default_avg_daily_use_hours',
+        'default_standby_power_w', 'standby_power', 'is_shiftable', 'process_type',
+        'load_factor', 'efficiency', 'intensity', 'is_climatization',
+        'default_tank', 'is_thermal_sensitive', 'base_efficiency_ratio', 'thermal_efficiency_penalty',
+        'consumption_logic', 'is_inverter_capable',
+    ];
+
+    protected $casts = [
+        'is_climatization' => 'boolean',
+        'is_inverter_capable' => 'boolean',
+        'is_thermal_sensitive' => 'boolean',
+        'is_shiftable' => 'boolean',
+        'default_tank' => 'integer',
+        'base_efficiency_ratio' => 'float',
+        'thermal_efficiency_penalty' => 'float',
     ];
 
     public function isClimate(): bool

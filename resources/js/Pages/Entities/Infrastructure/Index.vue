@@ -70,6 +70,11 @@ const eqForm = useForm({
     name: '',
     nominal_power_w: '',
     avg_daily_use_hours: '',
+    has_defined_pattern: false,
+    brand: '',
+    model: '',
+    serial_number: '',
+    energy_label: '',
     is_standby: false,
     cantidad: 1,
     is_active: true
@@ -138,6 +143,11 @@ const openEqCreate = () => {
     eqForm.name = '';
     eqForm.nominal_power_w = '';
     eqForm.avg_daily_use_hours = '';
+    eqForm.has_defined_pattern = false;
+    eqForm.brand = '';
+    eqForm.model = '';
+    eqForm.serial_number = '';
+    eqForm.energy_label = '';
     eqForm.is_standby = false;
     eqForm.cantidad = 1;
     eqForm.is_active = true;
@@ -155,6 +165,11 @@ const openEqEdit = (eq) => {
     eqForm.name = eq.name;
     eqForm.nominal_power_w = eq.nominal_power_w;
     eqForm.avg_daily_use_hours = eq.avg_daily_use_hours;
+    eqForm.has_defined_pattern = !!eq.has_defined_pattern;
+    eqForm.brand = eq.brand || '';
+    eqForm.model = eq.model || '';
+    eqForm.serial_number = eq.serial_number || '';
+    eqForm.energy_label = eq.energy_label || '';
     eqForm.is_standby = !!eq.is_standby;
     eqForm.is_active = !!eq.is_active;
     showEquipmentModal.value = true;
@@ -297,6 +312,9 @@ const getCategoryIcon = (catName) => {
                                         </div>
                                         <div>
                                             <h5 class="font-black text-slate-900 leading-tight">{{ eq.name }}</h5>
+                                            <p v-if="eq.brand || eq.model" class="text-[9px] font-bold text-energy-solar uppercase tracking-wide">
+                                                {{ eq.brand }} {{ eq.model }}
+                                            </p>
                                             <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest">{{ eq.type?.name }}</p>
                                         </div>
                                     </div>
@@ -306,13 +324,16 @@ const getCategoryIcon = (catName) => {
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div class="bg-slate-50/50 p-3 rounded-xl">
+                                    <div class="bg-slate-50/50 p-3 rounded-xl border border-slate-100/50">
                                         <p class="text-[8px] font-black text-slate-300 uppercase mb-1">Potencia</p>
-                                        <p class="text-sm font-black text-slate-700">{{ eq.nominal_power_w }}<span class="text-[9px] ml-0.5">W</span></p>
+                                        <p class="text-sm font-black text-slate-700">{{ eq.nominal_power_w }}<span class="text-[9px] ml-0.5 font-bold">W</span></p>
                                     </div>
-                                    <div class="bg-slate-50/50 p-3 rounded-xl">
+                                    <div class="bg-slate-50/50 p-3 rounded-xl border border-slate-100/50 relative overflow-hidden">
                                         <p class="text-[8px] font-black text-slate-300 uppercase mb-1">Uso Diario</p>
-                                        <p class="text-sm font-black text-slate-700">{{ eq.avg_daily_use_hours }}<span class="text-[9px] ml-0.5">HS</span></p>
+                                        <p class="text-sm font-black text-slate-700">{{ eq.avg_daily_use_hours }}<span class="text-[9px] ml-0.5 font-bold">HS</span></p>
+                                        <div v-if="eq.has_defined_pattern" class="absolute top-1 right-1 text-sky-500" title="Patrón Congelado">
+                                            <Lock :size="8" />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -396,7 +417,7 @@ const getCategoryIcon = (catName) => {
 
                 <form @submit.prevent="submitEq" class="px-12 py-10 space-y-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- Category & Type -->
+                        <!-- Left Column: Category & Name -->
                         <div class="space-y-6">
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Categoría</label>
@@ -414,15 +435,48 @@ const getCategoryIcon = (catName) => {
                             </div>
                         </div>
 
-                        <!-- Name & Quantity -->
+                        <!-- Right Column: Identity -->
                         <div class="space-y-6">
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre / Alias</label>
                                 <input v-model="eqForm.name" type="text" placeholder="Ej: Aire Living, Heladera Cocina..." class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all" />
                             </div>
                             <div v-if="!editingEquipment" class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cantidad de equipos idénticos</label>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Cantidad</label>
                                 <input v-model="eqForm.cantidad" type="number" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Asset Details -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-6">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Marca</label>
+                                <input v-model="eqForm.brand" type="text" placeholder="Ej: Samsung, Philips..." class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all" />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Modelo / N° Serie</label>
+                                <div class="flex gap-2">
+                                    <input v-model="eqForm.model" type="text" placeholder="Modelo" class="flex-1 bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all" />
+                                    <input v-model="eqForm.serial_number" type="text" placeholder="S/N" class="w-1/3 bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Eficiencia Energética</label>
+                                <select v-model="eqForm.energy_label" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all appearance-none">
+                                    <option value="">Seleccionar...</option>
+                                    <option value="A+++">A+++</option>
+                                    <option value="A++">A++</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A">A</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="D">D</option>
+                                    <option value="E">E</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -434,16 +488,29 @@ const getCategoryIcon = (catName) => {
                                 <Zap :size="16" />
                                 Parámetros de Consumo
                             </h4>
-                            <label class="flex items-center gap-3 cursor-pointer">
-                                <div class="text-right">
-                                    <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">¿Vampiro?</p>
-                                    <p class="text-[8px] font-medium text-slate-600">Consume apagado</p>
-                                </div>
-                                <input type="checkbox" v-model="eqForm.is_standby" class="hidden" />
-                                <div :class="['w-10 h-5 rounded-full relative transition-colors', eqForm.is_standby ? 'bg-amber-400' : 'bg-slate-700']">
-                                    <div :class="['absolute top-1 w-3 h-3 bg-white rounded-full transition-all', eqForm.is_standby ? 'left-6' : 'left-1']"></div>
-                                </div>
-                            </label>
+                            <div class="flex items-center gap-6">
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <div class="text-right">
+                                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-energy-solar">Freezar Patrón</p>
+                                        <p class="text-[8px] font-medium text-slate-600">Uso constante</p>
+                                    </div>
+                                    <input type="checkbox" v-model="eqForm.has_defined_pattern" class="hidden" />
+                                    <div :class="['w-10 h-5 rounded-full relative transition-colors', eqForm.has_defined_pattern ? 'bg-sky-500' : 'bg-slate-700']">
+                                        <div :class="['absolute top-1 w-3 h-3 bg-white rounded-full transition-all', eqForm.has_defined_pattern ? 'left-6' : 'left-1']"></div>
+                                    </div>
+                                </label>
+                                
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <div class="text-right">
+                                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-amber-400">¿Vampiro?</p>
+                                        <p class="text-[8px] font-medium text-slate-600">Standby activo</p>
+                                    </div>
+                                    <input type="checkbox" v-model="eqForm.is_standby" class="hidden" />
+                                    <div :class="['w-10 h-5 rounded-full relative transition-colors', eqForm.is_standby ? 'bg-amber-400' : 'bg-slate-700']">
+                                        <div :class="['absolute top-1 w-3 h-3 bg-white rounded-full transition-all', eqForm.is_standby ? 'left-6' : 'left-1']"></div>
+                                    </div>
+                                </label>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-8">
