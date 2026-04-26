@@ -7,13 +7,14 @@ use App\Models\EquipmentCategory;
 use App\Models\EnergyLabelCoefficient;
 use App\Models\EquipmentBenchmark;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class AdminController extends Controller
 {
     private function checkAdmin()
     {
-        if (!auth()->user() || !auth()->user()->is_super_admin) {
+        if (!Auth::user() || !Auth::user()->is_super_admin) {
             abort(403, 'No tienes permisos de administrador.');
         }
     }

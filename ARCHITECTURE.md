@@ -11,7 +11,7 @@
 
 ### A. ConsumptionAnalysisService
 Es el cerebro del sistema. Realiza la distribución de kWh facturados entre los equipos registrados.
-- **Lógica de Tanques**: Divide el consumo en 3 capas (T1: Base, T2: Clima, T3: Variable).
+- **Lógica de Tanques**: Divide el consumo en 4 capas (T1: Certeza Matemática, T2: Base Inmutable, T3: Sensibilidad Climática, T4: Hábitos y Elasticidad).
 - **Proporcionalidad**: Si el total calculado no coincide con la factura, aplica factores de corrección ponderados.
 
 ### B. ClimateService
@@ -22,6 +22,7 @@ Gestiona la integración con APIs meteorológicas (Visual Crossing).
 ### C. Sistema de Activos (New)
 - **Selective Learning**: El sistema diferencia entre "Inventario" (datos físicos) y "Hábitos" (datos de uso).
 - **Patrones Congelados**: Permite que el motor de sintonía fina ignore o proteja ciertos equipos del ruido estadístico.
+- **Normalización de Activos**: Los tipos de equipo son genéricos. La variabilidad tecnológica (Inverter, Ineficiente) se maneja mediante atributos y flags de comportamiento.
 
 ## 3. Flujo de Datos
 1. **Entidad/Infraestructura**: Se define el espacio físico y el inventario técnico (Potencia, Inverter, Capacidad).
@@ -30,10 +31,10 @@ Gestiona la integración con APIs meteorológicas (Visual Crossing).
 4. **Sintonía Fina**: El usuario ajusta las desviaciones. Aquí se decide si un cambio de hábito se vuelve permanente (`has_defined_pattern`).
 
 ## 4. Metodología de Análisis (Tanques)
-- **Tanque 0 (Certeza Matemática)**: Equipos con altísimo determinismo (Vampiros, Routers). Se restan primero.
-- **Tanque 1 (Base/Crítica)**: Equipos esenciales pero con leve variabilidad.
-- **Tanque 2 (Climatización)**: Equipos sensibles al exterior. Consumo dinámico.
-- **Tanque 3 (Elasticidad/Variable)**: Equipos de uso manual o discrecional.
+- **Tanque 1 (Certeza Matemática)**: Equipos con altísimo determinismo (Vampiros, Routers). Se restan primero de la bolsa.
+- **Tanque 2 (Base/Crítica)**: Equipos esenciales (Heladeras) pero con variabilidad por eficiencia interna.
+- **Tanque 3 (Climatización)**: Equipos sensibles al exterior (Aires, Estufas). Consumo dinámico.
+- **Tanque 4 (Elasticidad/Variable)**: Equipos de uso manual o discrecional (Luz, Lavado). Absorbe el remanente.
 
 ## 5. Principios de Diseño
 - **Estética**: Diseño oscuro, glassmorphism, micro-animaciones (Wow factor).

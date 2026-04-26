@@ -114,7 +114,7 @@ class Tank2ClimateService
                             ->orderByRaw('equipment_type_id IS NULL ASC')
                             ->first()?->coefficient ?? 1.0;
                     }
-                    $inverterCoeff = $eq->is_inverter ? 0.85 : 1.0;
+                    $inverterCoeff = $eq->is_inverter ? 0.70 : 1.0;
 
                     $effectivePower = ($eq->nominal_power_w ?? $equipmentType->default_power_watts) * $labelCoeff * $inverterCoeff;
 
@@ -130,7 +130,7 @@ class Tank2ClimateService
             }
 
             $eq->calculated_consumption_kwh = $periodKwh;
-            $eq->tank_assignment = 2;
+            $eq->tank_assignment = 3;
             $tankConsumption += $periodKwh;
             
             if ($isFallbackMode) {
@@ -139,7 +139,7 @@ class Tank2ClimateService
                 $eq->audit_logs = $currentLogs;
             }
             
-            $logs[] = "[Tanque 2] {$eq->name}: " . number_format($periodKwh, 1) . " kWh";
+            $logs[] = "[Tanque 3] {$eq->name}: " . number_format($periodKwh, 1) . " kWh";
         }
 
         // NO restamos del remanente aquí de la misma forma que T0/T1 si queremos que T3 absorba el error,

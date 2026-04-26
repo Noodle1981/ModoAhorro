@@ -20,8 +20,7 @@ class EquipmentTypeSeederV3 extends Seeder
 
         $types = [
             // [name, min, max, default, logic, unit, det, penalty, social, cat_id]
-            ['Aire Split (On/Off)', 900, 3500, 2500, 'CLIMATE_DEPENDENT', 'hours', 0.4, 0.0, 0, $catClima->id],
-            ['Aire Split Inverter', 300, 2500, 1800, 'CLIMATE_DEPENDENT', 'hours', 0.3, -0.2, 0, $catClima->id],
+            ['Aire Split', 300, 3500, 2500, 'CLIMATE_DEPENDENT', 'hours', 0.4, 0.0, 0, $catClima->id],
             ['Aire de Ventana', 800, 2500, 1500, 'CLIMATE_DEPENDENT', 'hours', 0.4, 0.20, 0, $catClima->id],
             ['Aire Portátil', 1200, 4000, 2200, 'CLIMATE_INEFFICIENT', 'hours', 0.2, 0.4, 0, $catClima->id],
             ['Heladera c/Freezer', 80, 450, 150, 'BASE_LOAD', 'hours', 0.6, 0.1, 0, $catLineaBlanca->id],

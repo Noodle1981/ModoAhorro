@@ -28,7 +28,7 @@ Jerarquía de Datos (Main Content):
 
 KPIs (Top): Tarjetas con co2_footprint_kg, costo estimado y kWh totales.
 
-Visualización Core: Implementar el "Motor v3" mediante el Gráfico de los 3 Tanques (Base, Clima, Elasticidad).
+Visualización Core: Implementar el "Motor v3" mediante el Gráfico de los 4 Tanques (Certeza, Base, Clima, Variable).
 
 Acciones: Listado de recomendaciones basadas en efficiency_benchmarks.
 

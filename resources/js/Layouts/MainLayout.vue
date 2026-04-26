@@ -130,9 +130,16 @@ const isActive = (href) => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-energy-surface flex overflow-x-hidden">
+    <div class="min-h-screen bg-energy-surface flex overflow-hidden relative">
+        <!-- Backdrop for mobile sidebar -->
+        <div 
+            v-if="isSidebarOpen" 
+            @click="isSidebarOpen = false" 
+            class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80] lg:hidden animate-in fade-in duration-300"
+        ></div>
+
         <!-- Level 1: Slim Sidebar (Central Icons) -->
-        <aside class="w-20 bg-slate-900 flex flex-col items-center py-6 z-[60] border-r border-white/5">
+        <aside class="hidden lg:flex w-20 bg-slate-900 flex flex-col items-center py-6 z-[90] border-r border-white/5 shrink-0">
             <!-- Brand Logo -->
             <Link :href="route('dashboard')" class="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-900/50 mb-10 hover:scale-105 transition-transform">
                 <Zap :size="24" stroke-width="3" />
@@ -177,7 +184,7 @@ const isActive = (href) => {
         <!-- Level 2: Expanded Menu Panel -->
         <aside 
             v-if="isSidebarOpen"
-            class="w-72 bg-white border-r border-slate-200 z-50 flex flex-col transition-all duration-300 transform"
+            class="fixed inset-y-0 left-0 lg:relative w-72 bg-white border-r border-slate-200 z-[100] flex flex-col transition-all duration-300 transform shadow-2xl lg:shadow-none shrink-0"
         >
             <div class="h-full flex flex-col">
                 <!-- Header of category -->
@@ -256,11 +263,11 @@ const isActive = (href) => {
             </div>
         </aside>
 
-        <!-- Sidebar Toggle (When collapsed) -->
+        <!-- Sidebar Toggle (When collapsed - Only Desktop) -->
         <button 
             v-if="!isSidebarOpen"
             @click="isSidebarOpen = true"
-            class="fixed left-20 top-1/2 -translate-y-1/2 w-8 h-12 bg-white border border-slate-200 border-l-0 rounded-r-xl flex items-center justify-center text-slate-400 hover:text-emerald-600 shadow-sm z-40 transition-all"
+            class="hidden lg:flex fixed left-20 top-1/2 -translate-y-1/2 w-8 h-12 bg-white border border-slate-200 border-l-0 rounded-r-xl items-center justify-center text-slate-400 hover:text-emerald-600 shadow-sm z-40 transition-all"
         >
             <ChevronRight :size="16" />
         </button>
@@ -268,17 +275,24 @@ const isActive = (href) => {
         <!-- Main Content -->
         <main class="flex-1 min-w-0 flex flex-col h-screen overflow-hidden">
             <!-- Header (Mobile Toggle) -->
-            <header class="lg:hidden p-4 bg-white border-b border-slate-200 flex items-center justify-between z-[40]">
-                <button @click="isSidebarOpen = !isSidebarOpen" class="p-2 text-slate-600">
+            <header class="lg:hidden p-4 bg-white border-b border-slate-200 flex items-center justify-between z-[40] shrink-0">
+                <button @click="isSidebarOpen = !isSidebarOpen" class="p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
                     <Menu v-if="!isSidebarOpen" :size="24" />
                     <X v-else :size="24" />
                 </button>
-                <div class="text-lg font-black text-slate-900">ModoAhorro</div>
-                <div class="w-10 h-10"></div>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white">
+                        <Zap :size="16" stroke-width="3" />
+                    </div>
+                    <span class="font-black text-slate-900 tracking-tighter">ModoAhorro</span>
+                </div>
+                <div class="w-10 h-10 flex items-center justify-center">
+                    <User :size="20" class="text-slate-400" />
+                </div>
             </header>
 
             <!-- Scrollable Page Content -->
-            <div class="flex-1 overflow-y-auto p-6 lg:p-12 relative">
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 relative">
                 <!-- Content Slot -->
                 <slot />
             </div>

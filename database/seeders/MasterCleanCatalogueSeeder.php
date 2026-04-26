@@ -53,8 +53,7 @@ class MasterCleanCatalogueSeeder extends Seeder
             ['Servidor / Rack IT', 150, 2000, 400, 'BASE_LOAD', 'hours', 0.98, 0, 0, 'T1'],
 
             // TANQUE 2 (Clima / Agua Caliente)
-            ['Aire Split Inverter', 300, 2500, 1200, 'CLIMATE_DEPENDENT', 'hours', 0.3, -0.25, 0, 'T2'],
-            ['Aire Split (On/Off)', 900, 3500, 2200, 'CLIMATE_DEPENDENT', 'hours', 0.4, 0, 0, 'T2'],
+            ['Aire Split', 300, 3500, 1500, 'CLIMATE_DEPENDENT', 'hours', 0.4, 0, 0, 'T2'],
             ['Aire de Ventana', 800, 2500, 1500, 'CLIMATE_DEPENDENT', 'hours', 0.4, 0.20, 0, 'T2'],
             ['Aire Portátil', 1200, 4000, 2200, 'CLIMATE_INEFFICIENT', 'hours', 0.2, 0.45, 0, 'T2'],
             ['Estufa Eléctrica / Panel', 500, 2000, 1000, 'CLIMATE_DEPENDENT', 'hours', 0.6, 0, 0, 'T2'],

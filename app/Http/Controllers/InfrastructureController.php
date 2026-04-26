@@ -110,10 +110,18 @@ class InfrastructureController extends Controller
             'type_id' => 'required|exists:equipment_types,id',
             'name' => 'required|string|max:255',
             'nominal_power_w' => 'required|numeric|min:0',
-            'avg_daily_use_hours' => 'required|numeric|min:0|max:24',
+            'avg_daily_use_hours' => 'nullable|numeric|min:0|max:24',
             'is_standby' => 'required|boolean',
-            'cantidad' => 'integer|min:1', // Para creación por lote como en el legacy
+            'is_inverter' => 'nullable|boolean',
+            'brand' => 'nullable|string|max:255',
+            'model' => 'nullable|string|max:255',
+            'serial_number' => 'nullable|string|max:255',
+            'energy_label' => 'nullable|string|max:10',
+            'cantidad' => 'integer|min:1', 
         ]);
+
+        $validated['avg_daily_use_hours'] = $validated['avg_daily_use_hours'] ?? 0;
+        $validated['is_inverter'] = $validated['is_inverter'] ?? false;
 
         $room = Room::findOrFail($validated['room_id']);
         if ($request->user()->cannot('update', $room->entity)) {
@@ -146,10 +154,18 @@ class InfrastructureController extends Controller
             'type_id' => 'required|exists:equipment_types,id',
             'name' => 'required|string|max:255',
             'nominal_power_w' => 'required|numeric|min:0',
-            'avg_daily_use_hours' => 'required|numeric|min:0|max:24',
+            'avg_daily_use_hours' => 'nullable|numeric|min:0|max:24',
             'is_standby' => 'required|boolean',
+            'is_inverter' => 'nullable|boolean',
+            'brand' => 'nullable|string|max:255',
+            'model' => 'nullable|string|max:255',
+            'serial_number' => 'nullable|string|max:255',
+            'energy_label' => 'nullable|string|max:10',
             'is_active' => 'required|boolean',
         ]);
+
+        $validated['avg_daily_use_hours'] = $validated['avg_daily_use_hours'] ?? $equipment->avg_daily_use_hours;
+        $validated['is_inverter'] = $validated['is_inverter'] ?? false;
 
         if ($request->user()->cannot('update', $equipment->room->entity)) {
             abort(403);

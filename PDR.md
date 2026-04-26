@@ -20,15 +20,17 @@ Este documento registra la evolución arquitectónica de **ModoAhorro** hacia un
 - **`is_thermal_sensitive`**: Identifica equipos cuya carga depende de `climate_data` (HDD/CDD).
 - **`base_efficiency_ratio`**: Definición teórica de COP/EER para benchmarks.
 - **`thermal_efficiency_penalty`**: Factor de corrección para equipos con diseño ineficiente (ej: Aires Portátiles).
-- **`default_tank`**: Lógica de pre-asignación automática a los tanques de análisis (1: Base, 2: Clima, 3: Elasticidad).
-
+- **`default_tank`**: Lógica de pre-asignación automática a los tanques de análisis (1: Certeza, 2: Base, 3: Clima, 4: Variable).
+- **Simplificación de Catálogo**: Se eliminaron tipos duplicados por tecnología (ej: Aire Inverter). Ahora se utiliza un tipo genérico y el flag `is_inverter` en el equipo para ajustar la eficiencia física.
+ 
 ## 4. Lógica del Motor de Cálculo v3 (Evolución)
-- **Tanque 0 (Certeza)**: Implementado para equipos con `determinism_score >= 0.9`. Estos consumos se restan del total de la factura antes de la distribución de tanques.
-- **Modelos Deterministas**: Se ha implementado la unidad de uso `people_proportional` que utiliza un `social_coefficient` basado en la población de la entidad.
+- **Metodología de 4 Tanques (Refactorización 1-Indexed)**: Se ha migrado la lógica de 0-3 a 1-4 para mejorar la legibilidad y corregir errores de agregación en reportes.
+- **Tanque 1 (Certeza Matemática)**: Equipos con altísimo determinismo (Vampiros, Routers). Se restan primero de la bolsa.
+- **Tanque 2 (Base/Crítica)**: Equipos esenciales (Heladeras) pero con variabilidad por eficiencia interna.
+- **Tanque 3 (Climatización)**: Equipos sensibles al exterior (Aires, Estufas). Consumo dinámico.
+- **Tanque 4 (Elasticidad/Variable)**: Equipos de uso manual o discrecional (Luz, Lavado). Absorbe el remanente.
 - **Aprendizaje Selectivo**: El motor solo "aprende" hábitos de equipos con patrón congelado.
-- **Diferenciación de Tanques**: 
-  - Los equipos con `is_thermal_sensitive` se reconcilian contra la temperatura exterior (Tanque 2).
-  - Los equipos con `default_tank = 1` se consideran inamovibles (Tanque 1).
+- **Corrección de Agregación**: Se resolvió un bug en `GroupsInvoices` donde el Tanque 1 (Certeza) era omitido en los resúmenes bimensuales.
 
 ## 5. Próximos Pasos
 - [ ] Implementar la interfaz de usuario para la carga de "Ciclos" (Lavarropas).

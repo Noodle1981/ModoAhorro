@@ -39,7 +39,7 @@ trait GroupsInvoices
                 $any_calibrated = $group->some(fn($inv) => !is_null($inv->calibrated_at));
 
                 // Compute tanks and check if usages are saved
-                $tanks = [1 => 0, 2 => 0, 3 => 0];
+                $tanks = [1 => 0, 2 => 0, 3 => 0, 4 => 0];
                 $has_usages = false;
 
                 foreach ($group as $inv) {

@@ -23,13 +23,13 @@ class Tank0CertaintyService
         foreach ($targetEquipments as $eq) {
             $periodKwh = $eq->_theo_kwh ?? 0;
             $eq->calculated_consumption_kwh = $periodKwh;
-            $eq->tank_assignment = 0;
-            $eq->audit_logs = ["Fijado en " . number_format($periodKwh, 1) . " kWh (Tanque 0 - Certeza)"];
+            $eq->tank_assignment = 1;
+            $eq->audit_logs = ["Fijado en " . number_format($periodKwh, 1) . " kWh (Tanque 1 - Certeza)"];
             
             $tankConsumption += $periodKwh;
             $remainingKwh -= $periodKwh;
             
-            $logs[] = "[Tanque 0] {$eq->name}: " . number_format($periodKwh, 1) . " kWh";
+            $logs[] = "[Tanque 1] {$eq->name}: " . number_format($periodKwh, 1) . " kWh";
         }
 
         return [

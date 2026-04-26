@@ -6112,3 +6112,7 @@ Stack trace:
 #6 D:/ModoAhorro/scratch_dump_catalogue.php(9): Illuminate/Database/Eloquent/Builder->get()
 #7 {main}
 "} 
+[2026-04-26 19:52:40] local.ERROR: Maximum execution time of 30 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 30 seconds exceeded at phar://C:/Program Files/Herd/resources/app.asar.unpacked/resources/valet/dump.phar/vendor/composer/ClassLoader.php:429)
+[stacktrace]
+#0 {main}
+"} 

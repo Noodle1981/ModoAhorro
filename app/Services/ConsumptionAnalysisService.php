@@ -136,7 +136,7 @@ class ConsumptionAnalysisService
             return round($consumption, 4);
         }
 
-        return round($consumption, 4);
+        return 0.0;
     }
     
     /**
@@ -385,10 +385,10 @@ class ConsumptionAnalysisService
             return [
                 'usages' => $usages,
                 'summary' => [
-                    'tank_0' => $engineResult['tank_0_certainty'] ?? 0,
-                    'tank_1' => $engineResult['tank_1_base'] ?? 0,
-                    'tank_2' => $engineResult['tank_2_climate'] ?? 0,
-                    'tank_3' => $engineResult['tank_3_elasticity'] ?? 0,
+                    'tank_1' => $engineResult['tank_1_certainty'] ?? 0,
+                    'tank_2' => $engineResult['tank_2_base'] ?? 0,
+                    'tank_3' => $engineResult['tank_3_climate'] ?? 0,
+                    'tank_4' => $engineResult['tank_4_elasticity'] ?? 0,
                     'theoretical_total' => $engineResult['theoretical_total'] ?? 0,
                     'calibrated_total' => $engineResult['calibrated_total'] ?? 0,
                     'unassigned' => $engineResult['unassigned_remainder'] ?? 0,

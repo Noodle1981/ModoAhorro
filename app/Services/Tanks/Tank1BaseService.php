@@ -34,13 +34,13 @@ class Tank1BaseService
             }
             
             $eq->calculated_consumption_kwh = $periodKwh;
-            $eq->tank_assignment = 1;
+            $eq->tank_assignment = 2;
             $eq->audit_logs = ["Fijado en " . number_format($periodKwh, 1) . " kWh (Base Crítica)"];
             
             $tankConsumption += $periodKwh;
             $remainingKwh -= $periodKwh;
             
-            $logs[] = "[Tanque 1] {$eq->name}: " . number_format($periodKwh, 1) . " kWh";
+            $logs[] = "[Tanque 2] {$eq->name}: " . number_format($periodKwh, 1) . " kWh";
         }
 
         return [

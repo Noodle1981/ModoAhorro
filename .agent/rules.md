@@ -24,4 +24,9 @@
 ## 4. Interacción con el Agente (Yo)
 - **Planificación**: Antes de cambios grandes, siempre lee `PDR.md` y `ARCHITECTURE.md`.
 - **Validación**: Verifica siempre que los cambios no rompan la lógica de los "Tanques" de consumo.
-- **Transparencia**: Al terminar una tarea, actualiza `PDR.md` si hubo cambios en la arquitectura.
+- **Transparencia**: Al terminar una tarea, actualiza `PDR.md`, `ARCHITECTURE.md` y las tablas (D:\ModoAhorro\tablas) si hubo cambios en cada una de ellas para actualizar el notebookLM.
+
+## 5. Roles
+- **IA notebookLM** eres el **Director de Proyecto** (Arquitecto).
+- **IA Antigravity** eres el **Desarrollador Senior** (Ejecutor).
+- **Yo** soy soy el **Amigos y QA** (Usuario final).

@@ -99,11 +99,18 @@ class AnalysisController extends Controller
         }
 
         // 3. Tanques (Desde el periodo)
-        $tankColors = [1 => '#0f172a', 2 => '#06b6d4', 3 => '#f59e0b'];
-        $tankNames = [1 => 'Tanque 1 (Base)', 2 => 'Tanque 2 (Clima)', 3 => 'Tanque 3 (Elasticidad)'];
+        $tankColors = [1 => '#1e293b', 2 => '#0f172a', 3 => '#06b6d4', 4 => '#f59e0b'];
+        $tankNames = [
+            1 => 'Tanque 1 (Certeza)', 
+            2 => 'Tanque 2 (Base)', 
+            3 => 'Tanque 3 (Clima)', 
+            4 => 'Tanque 4 (Variable)'
+        ];
         $tankBreakdown = [];
         foreach ($period['tanks'] ?? [] as $num => $val) {
-            $tankBreakdown[] = ['name' => $tankNames[$num], 'value' => (float)$val, 'color' => $tankColors[$num]];
+            if (isset($tankNames[$num])) {
+                $tankBreakdown[] = ['name' => $tankNames[$num], 'value' => (float)$val, 'color' => $tankColors[$num]];
+            }
         }
 
         // 4. Clima y Validación
@@ -196,6 +203,7 @@ class AnalysisController extends Controller
                     't1' => (float)($period['tanks'][1] ?? 0),
                     't2' => (float)($period['tanks'][2] ?? 0),
                     't3' => (float)($period['tanks'][3] ?? 0),
+                    't4' => (float)($period['tanks'][4] ?? 0),
                 ],
                 'climate' => [
                     'avg_temp' => (float)($climate['avg_temp'] ?? 0),
@@ -316,9 +324,10 @@ class AnalysisController extends Controller
 
         // Agrupar por Tiers (Tanques)
         $tanks = [
-            'base_critica' => ['label' => 'Tanque 1: Base Crítica', 'key' => 1, 'items' => []],
-            'climatizacion' => ['label' => 'Tanque 2: Climatización', 'key' => 2, 'items' => []],
-            'uso_variable' => ['label' => 'Tanque 3: Uso Variable', 'key' => 3, 'items' => []],
+            'certeza' => ['label' => 'Tanque 1: Certeza Matemática', 'key' => 1, 'items' => []],
+            'base_critica' => ['label' => 'Tanque 2: Base Crítica', 'key' => 2, 'items' => []],
+            'climatizacion' => ['label' => 'Tanque 3: Climatización', 'key' => 3, 'items' => []],
+            'uso_variable' => ['label' => 'Tanque 4: Uso Variable', 'key' => 4, 'items' => []],
         ];
 
         foreach ($rooms as $room) {
@@ -440,6 +449,10 @@ class AnalysisController extends Controller
      */
     private function getEquipmentTier($equipment)
     {
+        if ($equipment->type && $equipment->type->determinism_score >= 0.9) {
+            return 'certeza';
+        }
+
         if ($equipment->category && str_contains(strtolower($equipment->category->name), 'climat')) {
             return 'climatizacion';
         }

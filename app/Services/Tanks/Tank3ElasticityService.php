@@ -57,22 +57,22 @@ class Tank3ElasticityService
                     $share = $eq->elasticity_points / $totalPoints;
                     $periodKwh = $remainingKwh * $share;
                     $eq->calculated_consumption_kwh = $periodKwh;
-                    $eq->tank_assignment = 3;
+                    $eq->tank_assignment = 4;
                     $tankConsumption += $periodKwh;
                     
                     $percentChange = $eq->theo_kwh > 0 ? (($periodKwh - $eq->theo_kwh) / $eq->theo_kwh * 100) : 0;
                     $actionSign = $percentChange >= 0 ? "+" : "";
                     $eq->audit_logs = [number_format($periodKwh, 1) . " kWh (Teórico: ".number_format($eq->theo_kwh, 1).", Ajuste: {$actionSign}".number_format($percentChange, 1)."%)"];
                 }
-                $logs[] = "[Tanque 3] Distribuido remanente de " . number_format($remainingKwh, 1) . " kWh.";
+                $logs[] = "[Tanque 4] Distribuido remanente de " . number_format($remainingKwh, 1) . " kWh.";
             }
         } else {
             foreach ($targetEquipments as $eq) {
                 $eq->calculated_consumption_kwh = 0;
-                $eq->tank_assignment = 3;
+                $eq->tank_assignment = 4;
                 $eq->audit_logs = ["Anulado (0 kWh). Sin remanente en la bolsa."];
             }
-            $logs[] = "[Tanque 3] Anulado por falta de remanente.";
+            $logs[] = "[Tanque 4] Anulado por falta de remanente.";
         }
 
         return [

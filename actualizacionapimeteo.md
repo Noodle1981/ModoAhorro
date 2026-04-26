@@ -1,91 +1,11 @@
-# Propuesta de Refactorización: Carga Asíncrona de la API Climática
+Especificación Técnica: 
+Motor de Cálculo V3 (Modo Ahorro)
+El sistema evoluciona de un cálculo estático a un proceso de sintonía fina basado en la validación del usuario y una cascada de 4 Tanques de consumo.
 
-## El Problema Actual
-Actualmente, la obtención de datos climáticos se realiza de forma **síncrona** dentro de `AnalysisController.php` al cargar la vista de Sintonía Fina (`UsageAdjustmentDetail.vue`). Si la base de datos local no tiene el registro histórico para las fechas solicitadas, el controlador hace una petición HTTP a OpenMeteo.
-Esto provoca que el hilo de ejecución de PHP se bloquee hasta recibir respuesta, lo que el usuario percibe como un "congelamiento" de la pantalla al hacer clic en "Configurar Uso" antes de que la página logre navegar.
+1. El Nuevo Workflow (Flujo de Datos)El cálculo no es automático al cargar la factura; requiere un paso intermedio de validación:Carga de Factura: El usuario ingresa los kWh reales del período.Pantalla de Sintonía Fina (Ajuste): El usuario revisa sus equipos y confirma dos cosas:Horas de uso: ¿Cuánto tiempo usé cada equipo en este período?Flag has_defined_pattern: El usuario marca si ese equipo tuvo un "comportamiento fijo" que el motor no debe tocar (ej. luces de seguridad, rutina de afeitado).Trigger de Cálculo: Al presionar "Calcular/Ajustar", se dispara el ConsumptionAnalysisService.
 
-## La Solución: API Frontend + Backend Desacoplado
-Mover la responsabilidad de la carga climática al frontend mediante una petición AJAX (Inertia/Axios) una vez que la pantalla de Sintonía Fina ya ha cargado. 
+2. Lógica de los 4 Tanques (Cascada de Descuento)Una vez disparado el servicio, el motor toma la Bolsa Total de kWh de la factura y los distribuye en este orden estricto:Tanque 1: Certeza Matemática (Patrones Fijos)Criterio: Equipos con has_defined_pattern = true O equipos críticos 24/7 (Routers, Cámaras).Lógica: Se calcula Potencia * Horas_Usuario.Comportamiento: Es intocable. El motor resta este valor de la bolsa y no aplica factores de corrección. Si el usuario dice que gastó eso, el motor lo acepta como verdad absoluta.Tanque 2: Base Inmutable (Ciclos Automáticos)Criterio: Equipos con consumption_logic = BASE_LOAD (Heladeras, Freezers).Lógica: Funcionan por ciclos de termostato (normalmente calculados sobre 24hs con un factor de carga del 25-30%).Comportamiento: Se resta segundo. Varía según la eficiencia del equipo pero es independiente de la voluntad del usuario.Tanque 3: Sensibilidad Climática (Tanque Clima)Criterio: Equipos de categoría "Climatización" o con is_thermal_sensitive = true (Aires Acondicionados, Estufas).Lógica: Usa los Grados-Día (HDD/CDD) del período.Comportamiento: Si el clima fue extremo, este tanque crece. El motor ajusta las horas declaradas por el usuario basándose en la severidad térmica externa.Tanque 4: Elasticidad y Hábitos (Tanque Variables)Criterio: Todo lo que NO tenga patrón fijo (has_defined_pattern = false) y no sea crítico (TVs, Microondas, Plancha, Lavarropas).Lógica: Absorbe el Remanente de la Factura.Comportamiento: Aquí es donde el motor realiza el ajuste final. Si la suma de T1+T2+T3 no llega al total de la factura, el excedente se prorratea entre estos equipos según su peso relativo.
 
-### Pasos de Implementación Futura
+3. Resumen de Implementación para la IAAtributo / CondiciónUbicación en TanqueLógica de Procesamientohas_defined_pattern == trueT1 (Certeza)Se resta primero. Valor protegido.consumption_logic == BASE_LOADT2 (Base)Cálculo 24hs (ciclos automáticos).category == ClimatizaciónT3 (Clima)Ajustado por Grados-Día (HDD/CDD).has_defined_pattern == falseT4 (Variables)Absorbe el error/remanente de la factura.
 
-#### 1. Crear un Nuevo Controlador para la API Climática
-Crear `app/Http/Controllers/Api/ClimateController.php`.
-```php
-namespace App\Http\Controllers\Api;
-
-use App\Http\Controllers\Controller;
-use App\Services\ClimateService;
-use App\Models\Entity;
-use Illuminate\Http\Request;
-
-class ClimateController extends Controller
-{
-    public function fetch(Request $request)
-    {
-        $request->validate([
-            'entity_id' => 'required|exists:entities,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-        ]);
-
-        $entity = Entity::find($request->entity_id);
-        $climateService = app(ClimateService::class);
-        
-        // Esto bajará de la BD o consultará a OpenMeteo
-        $data = $climateService->loadDataForDateRange($entity, $request->start_date, $request->end_date);
-        
-        return response()->json($data);
-    }
-}
-```
-
-#### 2. Registrar la Ruta de la API
-En `routes/web.php` o `routes/api.php`:
-```php
-Route::get('/api/climate/fetch', [\App\Http\Controllers\Api\ClimateController::class, 'fetch'])->name('api.climate.fetch');
-```
-
-#### 3. Limpiar `AnalysisController.php`
-Remover la llamada a `ClimateService` de `AnalysisController@usageAdjustmentDetail`. Enviar por defecto los datos climáticos en `0` a la vista de Vue para que inicie la renderización instantáneamente.
-
-#### 4. Actualizar `UsageAdjustmentDetail.vue`
-En el componente Vue, al montarse (`onMounted`), hacer la petición para obtener los datos climáticos.
-Mientras carga, mostrar un *Badge* o estado visual de *"Cargando datos climáticos..."*.
-
-```vue
-<script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
-
-const isLoadingClimate = ref(true);
-const climateData = ref({ cooling_days: 0, heating_days: 0 });
-
-onMounted(async () => {
-    try {
-        const response = await axios.get(route('api.climate.fetch'), {
-            params: {
-                entity_id: props.entity.id,
-                start_date: props.period.start,
-                end_date: props.period.end
-            }
-        });
-        
-        climateData.value = response.data;
-        
-        // Actualizar el objeto props o inyectar a calculateKwh
-        props.period.cooling_days = climateData.value.cooling_days;
-        props.period.heating_days = climateData.value.heating_days;
-        
-    } catch (error) {
-        console.error("Error cargando clima:", error);
-    } finally {
-        isLoadingClimate.value = false;
-    }
-});
-</script>
-```
-
-#### 5. Mejoras de UI (Spinner/Skeleton)
-- Deshabilitar el botón de "Guardar" mientras `isLoadingClimate` sea `true`.
-- Mostrar un icono de recarga girando al lado del badge *"Calculado"* en los equipos de Climatización hasta que llegue la data.
+4. Notas Adicionales para el DesarrolladorStandby: No entra en la suma de los tanques para no ensuciar la conciliación. Se calcula por separado solo para la sección de "Recomendaciones de Ahorro".Diagnóstico: Si después de calcular T1, T2 y T3 el remanente para T4 es negativo o absurdamente alto, el sistema dispara una alerta: "Tus consumos fijos y climáticos no coinciden con la factura real".Este esquema asegura que el usuario experto tenga el control (T1), el entorno físico sea respetado (T2/T3) y el motor tenga un lugar donde "acomodar" las diferencias del mundo real (T4).
