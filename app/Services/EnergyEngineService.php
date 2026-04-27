@@ -50,12 +50,31 @@ class EnergyEngineService
 
         $remainingKwh = $totalBillKwh;
 
+        // --- PASO PREVIO: CONSUMO STANDBY (VAMPIRO) ---
+        $standbyKwh = 0;
+        foreach ($equipments->where('is_standby', true) as $eq) {
+            $stbyPower = $eq->type->default_standby_power_w ?? 0;
+            $hoursActive = $eq->avg_daily_use_hours ?? 0;
+            $hoursStandby = max(0, 24 - $hoursActive);
+            $dailyStbyKwh = ($stbyPower * $hoursStandby) / 1000;
+            $periodStbyKwh = $dailyStbyKwh * $opContext['total_days'];
+            
+            $eq->calculated_consumption_kwh = $periodStbyKwh;
+            $eq->tank_assignment = 0; // Tanque especial 0 para Standby
+            $eq->audit_logs = ["Consumo Vampiro (Standby) estimado en " . number_format($periodStbyKwh, 1) . " kWh"];
+            $standbyKwh += $periodStbyKwh;
+            $remainingKwh -= $periodStbyKwh;
+        }
+        if ($standbyKwh > 0) {
+            $logs[] = "[🧛 Standby] Consumo parásito total: " . number_format($standbyKwh, 1) . " kWh. (Restado de la bolsa)";
+        }
+
         // --- PASO 0: TANQUE 0 (CERTEZA) ---
-        $resT0 = $this->tank0->process($equipments, $remainingKwh);
+        $resT0 = $this->tank0->process($equipments->where('is_standby', false), $remainingKwh);
         $logs = array_merge($logs, $resT0['logs']);
 
         // --- PASO 1: TANQUE 1 (BASE INMUTABLE) ---
-        $resT1 = $this->tank1->process($equipments, $remainingKwh, $opContext);
+        $resT1 = $this->tank1->process($equipments->where('is_standby', false), $remainingKwh, $opContext);
         $logs = array_merge($logs, $resT1['logs']);
 
         // ⚠️ DETECCIÓN TEMPRANA DE ANOMALÍAS (NotebookLM Suggestion)
@@ -64,12 +83,12 @@ class EnergyEngineService
         }
 
         // --- PASO 2: TANQUE 2 (CLIMATIZACIÓN) ---
-        $resT2 = $this->tank2->process($equipments, $remainingKwh, $opContext, $invoice, $this->isFallbackMode);
+        $resT2 = $this->tank2->process($equipments->where('is_standby', false), $remainingKwh, $opContext, $invoice, $this->isFallbackMode);
         $logs = array_merge($logs, $resT2['logs']);
         $this->lastClimateDays = $resT2['climate_data'] ?? [];
 
         // --- PASO 3: TANQUE 3 (ELASTICIDAD/VARIABLE) ---
-        $resT3 = $this->tank3->process($equipments, $remainingKwh, $opContext);
+        $resT3 = $this->tank3->process($equipments->where('is_standby', false), $remainingKwh, $opContext);
         $logs = array_merge($logs, $resT3['logs']);
 
         // --- CÁLCULO FINAL ---

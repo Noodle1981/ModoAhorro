@@ -95,12 +95,13 @@ class EnergyEngineTest extends TestCase
 
         $room = Room::factory()->create(['entity_id' => $this->entity->id]);
 
-        // 1. Heladera (Refrigeración) -> Should be Tank 1
+        // 1. Heladera (Refrigeración) -> Should be Tank 2
         $catRef = EquipmentCategory::where('name', 'Refrigeración')->first();
         $typeRef = EquipmentType::factory()->create([
             'category_id' => $catRef->id, 
             'name' => 'Heladera con Freezer', 
             'default_power_watts' => 150,
+            'consumption_logic' => 'BASE_LOAD',
             'is_climatization' => false
         ]);
         $eqRef = Equipment::create([
@@ -113,11 +114,13 @@ class EnergyEngineTest extends TestCase
             'is_active' => true
         ]);
 
-        // 2. Aire Acondicionado (Climatización) -> Should be Tank 2
+        // 2. Aire Acondicionado (Climatización) -> Should be Tank 3
         $catCli = EquipmentCategory::where('name', 'Climatización')->first();
         $typeCli = EquipmentType::factory()->create([
             'category_id' => $catCli->id, 
             'name' => 'Aire Split', 
+            'consumption_logic' => 'CLIMATE_DEPENDENT',
+            'is_thermal_sensitive' => true,
             'is_climatization' => true
         ]);
         $eqCli = Equipment::create([
@@ -130,11 +133,12 @@ class EnergyEngineTest extends TestCase
             'is_active' => true
         ]);
 
-        // 3. Lavarropas (Lavado y Limpieza) -> Should be Tank 3
+        // 3. Lavarropas (Lavado y Limpieza) -> Should be Tank 4
         $catLav = EquipmentCategory::where('name', 'Lavado y Limpieza')->first();
         $typeLav = EquipmentType::factory()->create([
             'category_id' => $catLav->id, 
             'name' => 'Lavarropas Automático',
+            'consumption_logic' => 'CONSTANT_ELASTIC',
             'is_climatization' => false
         ]);
         $eqLav = Equipment::create([
@@ -156,8 +160,8 @@ class EnergyEngineTest extends TestCase
         $processedCli = $equipments->where('name', 'Aire Living')->first();
         $processedLav = $equipments->where('name', 'Mi Lavarropas')->first();
 
-        $this->assertEquals(1, $processedRef->tank_assignment, 'La heladera debería ser Tanque 1');
-        $this->assertEquals(2, $processedCli->tank_assignment, 'El aire debería ser Tanque 2');
-        $this->assertEquals(3, $processedLav->tank_assignment, 'El lavarropas debería ser Tanque 3');
+        $this->assertEquals(2, $processedRef->tank_assignment, 'La heladera debería ser Tanque 2 (Base Inmutable)');
+        $this->assertEquals(3, $processedCli->tank_assignment, 'El aire debería ser Tanque 3 (Sensibilidad Climática)');
+        $this->assertEquals(4, $processedLav->tank_assignment, 'El lavarropas debería ser Tanque 4 (Elasticidad y Hábitos)');
     }
 }

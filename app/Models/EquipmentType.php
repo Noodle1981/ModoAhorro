@@ -41,6 +41,16 @@ class EquipmentType extends Model
         return $this->category && in_array($this->category->name, $climateCategories);
     }
 
+    public function isSeasonalHabit(): bool
+    {
+        return $this->consumption_logic === 'SEASONAL_HABIT';
+    }
+
+    public function isBaseThermalLoss(): bool
+    {
+        return $this->consumption_logic === 'BASE_THERMAL_LOSS';
+    }
+
     public function isBase(): bool
     {
         // Si es 24hs y no es clima, es base (Tanque 1)

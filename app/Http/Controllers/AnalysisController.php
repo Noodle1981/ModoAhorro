@@ -447,21 +447,24 @@ class AnalysisController extends Controller
     /**
      * Lógica legacy de clasificación por Tiers
      */
-    private function getEquipmentTier($equipment)
+    private function getEquipmentTier($equipment): string
     {
-        if ($equipment->type && $equipment->type->determinism_score >= 0.9) {
+        // T1: Certeza Matemática (Patrón congelado por el usuario O score muy alto)
+        if ($equipment->has_defined_pattern || ($equipment->type && $equipment->type->determinism_score >= 0.9)) {
             return 'certeza';
         }
 
-        if ($equipment->category && str_contains(strtolower($equipment->category->name), 'climat')) {
-            return 'climatizacion';
-        }
-
-        $hours = $equipment->avg_daily_use_hours;
-        if ($hours >= 23) {
+        // T2: Base Inmutable (Ciclos automáticos)
+        if ($equipment->type && $equipment->type->consumption_logic === 'BASE_LOAD') {
             return 'base_critica';
         }
 
+        // T3: Sensibilidad Climática (Excepto SEASONAL_HABIT que va a T4)
+        if ($equipment->type && $equipment->type->is_thermal_sensitive && $equipment->type->consumption_logic !== 'SEASONAL_HABIT') {
+            return 'climatizacion';
+        }
+
+        // T4: Todo lo demás (Elasticidad y Hábitos)
         return 'uso_variable';
     }
 

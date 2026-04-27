@@ -28,10 +28,11 @@ class Tank2ClimateService
         $entity = $invoice->contract->entity;
 
         $targetEquipments = $equipments->filter(function ($eq) {
-            return $eq->tank_assignment === null && (
-                   in_array($eq->type->consumption_logic, ['CLIMATE_DEPENDENT', 'CLIMATE_INEFFICIENT']) || 
-                   $eq->type->isClimate()
-            );
+            // T3: Sensibilidad Climática
+            // Solo equipos térmicos que NO sean de hábito estacional (ventiladores)
+            return $eq->tank_assignment === null && 
+                   $eq->type?->is_thermal_sensitive && 
+                   $eq->type?->consumption_logic !== 'SEASONAL_HABIT';
         });
 
         if ($targetEquipments->isEmpty()) {
@@ -120,16 +121,24 @@ class Tank2ClimateService
 
                     $dailyKwh = ($effectivePower * $hours * $finalLoadFactor * $roomSizeFactor) / 1000;
                     $periodKwh = $dailyKwh * $activeDays;
-                    
-                    $wasteKwh = $periodKwh * ($equipmentType->thermal_efficiency_penalty / 100);
-                    $eq->audit_logs = [
-                        number_format($periodKwh, 1) . " kWh (Load: " . number_format($finalLoadFactor, 2) . ")",
-                        "Desperdicio estructural: " . number_format($wasteKwh, 1) . " kWh"
-                    ];
+
+                    // --- SPLIT 70/30 para BASE_THERMAL_LOSS (Termotanques) ---
+                    if ($equipmentType->consumption_logic === 'BASE_THERMAL_LOSS') {
+                        $periodKwh = $periodKwh * 0.30;
+                        $currentLogs = $eq->audit_logs ?? [];
+                        $currentLogs[] = "Asignado 30% como Sensibilidad Climática (" . number_format($periodKwh, 1) . " kWh)";
+                        $eq->audit_logs = $currentLogs;
+                    } else {
+                        $wasteKwh = $periodKwh * ($equipmentType->thermal_efficiency_penalty / 100);
+                        $eq->audit_logs = [
+                            number_format($periodKwh, 1) . " kWh (Load: " . number_format($finalLoadFactor, 2) . ")",
+                            "Desperdicio estructural: " . number_format($wasteKwh, 1) . " kWh"
+                        ];
+                    }
                 }
             }
 
-            $eq->calculated_consumption_kwh = $periodKwh;
+            $eq->calculated_consumption_kwh = ($eq->calculated_consumption_kwh ?? 0) + $periodKwh;
             $eq->tank_assignment = 3;
             $tankConsumption += $periodKwh;
             

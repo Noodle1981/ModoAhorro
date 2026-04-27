@@ -17,7 +17,10 @@ class Tank0CertaintyService
         $logs = [];
 
         $targetEquipments = $equipments->filter(function ($eq) {
-            return $eq->type->determinism_score >= 0.9;
+            // T1: Certeza Matemática
+            // Equipos que el usuario "congeló" con un patrón fijo O tienen un determinismo altísimo (>0.9)
+            return $eq->has_defined_pattern === true 
+                || ($eq->type && $eq->type->determinism_score >= 0.9);
         });
 
         foreach ($targetEquipments as $eq) {

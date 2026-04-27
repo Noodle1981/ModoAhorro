@@ -16,7 +16,9 @@ class Tank3ElasticityService
         $logs = [];
 
         $targetEquipments = $equipments->filter(function ($eq) {
-            return $eq->tank_assignment === null;
+            // T4: Elasticidad y Hábitos
+            // Todo lo que sobró y NO sea un consumo puramente de Standby (se calcula aparte)
+            return $eq->tank_assignment === null && ($eq->is_standby === false || $eq->is_standby === null);
         });
 
         if ($targetEquipments->isEmpty()) {
@@ -32,9 +34,18 @@ class Tank3ElasticityService
                 $hours = $eq->avg_daily_use_hours ?? $eq->use_time_hours ?? $opContext['daily_hours'];
                 $activeDays = ($eq->use_time_hours == 24) ? $opContext['total_days'] : $opContext['work_days'];
                 
-                $loadFactor = $eq->type->load_factor ?? 1.0;
-                $dailyKwh = (($eq->type->default_power_watts ?? 0) * $hours * $loadFactor) / 1000;
-                $eq->theo_kwh = $dailyKwh * $activeDays;
+                // --- LÓGICA SEASONAL_HABIT (Ventiladores) ---
+                $isSeasonal = $eq->type?->consumption_logic === 'SEASONAL_HABIT';
+                $coolingDays = $opContext['cooling_days'] ?? 0;
+                
+                if ($isSeasonal && $coolingDays <= 0) {
+                    $eq->theo_kwh = 0;
+                    $eq->audit_logs = ["Anulado (0 kWh). Fuera de temporada estacional."];
+                } else {
+                    $loadFactor = $eq->type->load_factor ?? 1.0;
+                    $dailyKwh = (($eq->type->default_power_watts ?? 0) * $hours * $loadFactor) / 1000;
+                    $eq->theo_kwh = $dailyKwh * $activeDays;
+                }
             }
             $totalTheoreticalT3 += $eq->theo_kwh;
         }
