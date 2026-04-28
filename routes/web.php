@@ -83,8 +83,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/coste-equipo', 'App\Http\Controllers\AnalysisController@equipmentCost')->name('equipment-cost');
         Route::get('/ajuste-uso', 'App\Http\Controllers\AnalysisController@usageAdjustment')->name('usage');
         Route::get('/ajuste-uso/detalle/{contract}/{start_date}/{end_date}', 'App\Http\Controllers\AnalysisController@usageAdjustmentDetail')->name('usage.detail');
-        Route::post('/ajuste-uso/guardar-detalle', 'App\Http\Controllers\AnalysisController@saveUsageAdjustment')->name('usage.save');
-        Route::post('/ajuste-uso/run', 'App\Http\Controllers\AnalysisController@runAdjustment')->name('usage.run');
+        Route::post('/ajuste-uso/guardar-detalle', 'App\Http\Controllers\AnalysisController@saveContextOnly')->name('usage.save');
+        Route::post('/ajuste-uso/sintonizar', 'App\Http\Controllers\AnalysisController@calibrateAndShowResults')->name('usage.calibrate');
+        Route::get('/ajuste-uso/{invoice}/resultados', 'App\Http\Controllers\AnalysisController@showEngineResults')->name('usage.results');
         Route::get('/optimizacion-horarios', 'App\Http\Controllers\AnalysisController@gridOptimization')->name('grid-optimization');
     });
 

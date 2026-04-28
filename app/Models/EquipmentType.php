@@ -16,7 +16,7 @@ class EquipmentType extends Model
         'default_tank', 'is_thermal_sensitive', 'base_efficiency_ratio', 'thermal_efficiency_penalty',
         'consumption_logic', 'is_inverter_capable',
         'usage_unit', 'determinism_score', 'social_coefficient',
-        'min_watts', 'max_watts',
+        'min_watts', 'max_watts', 'energy_per_cycle',
     ];
 
     protected $casts = [
@@ -31,6 +31,7 @@ class EquipmentType extends Model
         'social_coefficient' => 'float',
         'min_watts' => 'integer',
         'max_watts' => 'integer',
+        'energy_per_cycle' => 'float',
     ];
 
     public function isClimate(): bool

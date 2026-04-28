@@ -76,8 +76,9 @@ class ConsumptionAnalysisService
             return $this->calculateFridgeConsumption($usage, $invoice);
         }
         
-        // 3. Cálculo para Frecuencia Diaria/Semanal
-        if ($usage->avg_daily_use_hours > 0 || in_array($usage->usage_frequency, ['diario', 'diariamente', 'semanal']) || empty($usage->usage_frequency)) {
+        // 3. Cálculo para Frecuencia Diaria/Semanal (Solo si es por horas)
+        $isSpecialized = in_array($equipmentType->usage_unit, ['cycles', 'people_proportional']);
+        if (!$isSpecialized && ($usage->avg_daily_use_hours > 0 || in_array($usage->usage_frequency, ['diario', 'diariamente', 'semanal']) || empty($usage->usage_frequency))) {
             $hoursPerDay = $usage->avg_daily_use_hours ?? 0;
             $daysInPeriod = $usage->use_days_in_period;
             
@@ -116,10 +117,34 @@ class ConsumptionAnalysisService
                 $standbyConsumption = $standbyPowerKw * $standbyHoursPerDay * $daysInPeriod;
                 $consumption += $standbyConsumption;
             }
-            
             return round($consumption, 4);
         }
-        
+
+        // 4. Cálculo por Ciclos (Lavarropas, Cafeteras, etc.)
+        if ($equipmentType->usage_unit === 'cycles') {
+            $energyPerCycle = $equipmentType->energy_per_cycle;
+            
+            // Fallback si no hay energy_per_cycle: Potencia x 1 hora (estimación genérica)
+            if (is_null($energyPerCycle)) {
+                $energyPerCycle = $powerKw * 1.0; 
+            }
+
+            $cycles = $usage->cycles_per_period ?? 0;
+            
+            // Si no hay ciclos definidos, estimar por frecuencia (ej: 3 veces por semana)
+            if ($cycles <= 0) {
+                $daysInPeriod = $usage->use_days_in_period;
+                if (empty($daysInPeriod)) {
+                    $totalDays = Carbon::parse($invoice->start_date)->diffInDays(Carbon::parse($invoice->end_date));
+                    $daysInPeriod = max(1, $totalDays);
+                }
+                $cycles = $this->getDaysByFrequency($usage->usage_frequency, $daysInPeriod);
+            }
+
+            $consumption = $energyPerCycle * $cycles * ($labelCoefficient * $inverterMultiplier);
+            return round($consumption, 4);
+        }
+
         // 5. Cálculo Proporcional a Personas (Modelo Determinista)
         if ($equipmentType->usage_unit === 'people_proportional') {
             $peopleCount = $invoice->contract->entity->people_count ?? 1;
@@ -382,19 +407,72 @@ class ConsumptionAnalysisService
                 ]);
             }
 
+            // 7. Construir la estructura de tanques esperada por EngineResults.vue
+            $tankLabels = [
+                1 => ['label' => 'Certeza Matemática', 'description' => 'Equipos con patrón de uso fijo y verificado. Alta precisión.'],
+                2 => ['label' => 'Base Crítica',        'description' => 'Consumo mínimo vital: heladeras, bombas, iluminación de emergencia.'],
+                3 => ['label' => 'Climatización',       'description' => 'Impacto termodinámico del clima local sobre el periodo facturado.'],
+                4 => ['label' => 'Uso Variable',        'description' => 'Hábitos, elasticidad y equipos de uso esporádico. Absorbe el remanente.'],
+            ];
+
+            // Agrupar equipos procesados por su tank_assignment
+            $groupedByTank = $usages->groupBy(function($u) {
+                return $u->tank_assignment >= 1 ? $u->tank_assignment : 4;
+            });
+
+            $tanks = [];
+            foreach ([1, 2, 3, 4] as $tankKey) {
+                $rawKwh = match($tankKey) {
+                    1 => $engineResult['tank_1_certainty'] ?? 0,
+                    2 => $engineResult['tank_2_base'] ?? 0,
+                    3 => $engineResult['tank_3_climate'] ?? 0,
+                    4 => $engineResult['tank_4_elasticity'] ?? 0,
+                };
+
+                $topItems = ($groupedByTank[$tankKey] ?? collect())
+                    ->sortByDesc('kwh_reconciled')
+                    ->take(5)
+                    ->map(fn($u) => [
+                        'name' => $u->equipment->name ?? 'Equipo',
+                        'kwh'  => round($u->kwh_reconciled ?? 0, 2),
+                    ])
+                    ->values()
+                    ->toArray();
+
+                $tanks[] = array_merge($tankLabels[$tankKey], [
+                    'key'       => $tankKey,
+                    'total_kwh' => round($rawKwh, 2),
+                    'top_items' => $topItems,
+                ]);
+            }
+
+            $invoicedKwh    = $totalBilledKwh;
+            $declaredKwh    = $engineResult['theoretical_total'] ?? $totalBilledKwh;
+            $assignedTotal  = $engineResult['calibrated_total'] ?? 0;
+            $unassigned     = round($invoicedKwh - $assignedTotal, 2);
+
             return [
-                'usages' => $usages,
+                // — Estructura para EngineResults.vue —
+                'invoiced_kwh'    => round($invoicedKwh, 2),
+                'declared_kwh'    => round($declaredKwh, 2),
+                'adjustment_kwh'  => round($invoicedKwh - $declaredKwh, 2),
+                'tanks'           => $tanks,
+                'unassigned_remainder' => $unassigned,
+                'logs'            => $engineResult['logs'] ?? [],
+
+                // — Estructura legacy (para otros callers que usen 'summary') —
                 'summary' => [
                     'tank_1' => $engineResult['tank_1_certainty'] ?? 0,
                     'tank_2' => $engineResult['tank_2_base'] ?? 0,
                     'tank_3' => $engineResult['tank_3_climate'] ?? 0,
                     'tank_4' => $engineResult['tank_4_elasticity'] ?? 0,
                     'theoretical_total' => $engineResult['theoretical_total'] ?? 0,
-                    'calibrated_total' => $engineResult['calibrated_total'] ?? 0,
-                    'unassigned' => $engineResult['unassigned_remainder'] ?? 0,
-                    'logs' => $engineResult['logs'] ?? []
+                    'calibrated_total'  => $engineResult['calibrated_total'] ?? 0,
+                    'unassigned'        => $unassigned,
+                    'logs'              => $engineResult['logs'] ?? [],
                 ],
-                'climate_data' => $engineResult['climate_data'] ?? []
+                'climate_data' => $engineResult['climate_data'] ?? [],
+                'usages'       => $usages,
             ];
         });
     }

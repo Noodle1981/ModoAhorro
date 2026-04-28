@@ -52,30 +52,77 @@ class Tank3ElasticityService
 
         // 2. Distribuir el remanente (si hay)
         if ($remainingKwh > 0) {
-            $intensityMap = ['Bajo' => 1, 'Medio' => 2, 'Alto' => 3, 'Excesivo' => 5, 'Critico' => 5];
-            $totalPoints = 0;
+            $currentRemaining = $remainingKwh;
             
-            foreach ($targetEquipments as $eq) {
-                $intensityStr = ucfirst(strtolower($eq->type->intensity ?? 'Medio'));
-                $points = $intensityMap[$intensityStr] ?? 2;
-                $powerWeight = sqrt((float)($eq->type->default_power_watts ?? 1)); 
-                $eq->elasticity_points = $points * $powerWeight;
-                $totalPoints += $eq->elasticity_points;
+            // --- PASO A: DEDUCCIÓN POR DETERMINISMO SOCIAL (Gente x Coeficiente) ---
+            $peopleCount = $opContext['people_count'] ?? 1;
+            foreach ($targetEquipments->where('type.usage_unit', 'people_proportional') as $eq) {
+                $socialKwh = ($eq->type->social_coefficient ?? 0) * $peopleCount * $opContext['total_days'];
+                if ($socialKwh > 0 && $currentRemaining > 0) {
+                    $assigned = min($socialKwh, $currentRemaining);
+                    $eq->calculated_consumption_kwh = $assigned;
+                    $eq->tank_assignment = 4;
+                    $eq->audit_logs = ["Deducción Social: " . number_format($assigned, 1) . " kWh sugeridos para $peopleCount personas."];
+                    $tankConsumption += $assigned;
+                    $currentRemaining -= $assigned;
+                }
             }
 
-            if ($totalPoints > 0) {
-                foreach ($targetEquipments as $eq) {
-                    $share = $eq->elasticity_points / $totalPoints;
-                    $periodKwh = $remainingKwh * $share;
-                    $eq->calculated_consumption_kwh = $periodKwh;
-                    $eq->tank_assignment = 4;
-                    $tankConsumption += $periodKwh;
+            // --- PASO B: DEDUCCIÓN POR CICLOS (Línea Blanca) ---
+            foreach ($targetEquipments->where('type.usage_unit', 'cycles')->where('tank_assignment', null) as $eq) {
+                $energyPerCycle = $eq->type->energy_per_cycle;
+                if ($energyPerCycle > 0 && $currentRemaining > 0) {
+                    // Si el usuario ya declaró ciclos, respetarlos. Si no, proponer basados en el remanente.
+                    $cyclesUsed = $eq->cycles_per_period ?? 0;
+                    if ($cyclesUsed <= 0) {
+                        // Proponer ciclos según el remanente, pero con un tope razonable (ej: max 2 por día)
+                        $maxCycles = $opContext['total_days'] * 2;
+                        $deducedCycles = min($maxCycles, floor($currentRemaining / $energyPerCycle));
+                        $assigned = $deducedCycles * $energyPerCycle;
+                        $eq->audit_logs = ["Deducción por Ciclos: " . number_format($assigned, 1) . " kWh (~$deducedCycles ciclos de ".number_format($energyPerCycle,1)." kWh)"];
+                        $eq->cycles_per_period = $deducedCycles; // Sugerencia para el prompt
+                    } else {
+                        $assigned = min($cyclesUsed * $energyPerCycle, $currentRemaining);
+                        $eq->audit_logs = ["Uso por Ciclos: " . number_format($assigned, 1) . " kWh ($cyclesUsed ciclos declarados)"];
+                    }
                     
-                    $percentChange = $eq->theo_kwh > 0 ? (($periodKwh - $eq->theo_kwh) / $eq->theo_kwh * 100) : 0;
-                    $actionSign = $percentChange >= 0 ? "+" : "";
-                    $eq->audit_logs = [number_format($periodKwh, 1) . " kWh (Teórico: ".number_format($eq->theo_kwh, 1).", Ajuste: {$actionSign}".number_format($percentChange, 1)."%)"];
+                    $eq->calculated_consumption_kwh = $assigned;
+                    $eq->tank_assignment = 4;
+                    $tankConsumption += $assigned;
+                    $currentRemaining -= $assigned;
                 }
-                $logs[] = "[Tanque 4] Distribuido remanente de " . number_format($remainingKwh, 1) . " kWh.";
+            }
+
+            // --- PASO C: DISTRIBUCIÓN DEL RESIDUO FINAL (Iluminación, TV, otros elásticos) ---
+            $elasticResidue = $targetEquipments->where('tank_assignment', null);
+            if ($elasticResidue->isNotEmpty() && $currentRemaining > 0) {
+                $intensityMap = ['Bajo' => 1, 'Medio' => 2, 'Alto' => 3, 'Excesivo' => 5, 'Critico' => 5];
+                $totalPoints = 0;
+                
+                foreach ($elasticResidue as $eq) {
+                    $intensityStr = ucfirst(strtolower($eq->type->intensity ?? 'Medio'));
+                    $points = $intensityMap[$intensityStr] ?? 2;
+                    $powerWeight = sqrt((float)($eq->type->default_power_watts ?? 1)); 
+                    $eq->elasticity_points = $points * $powerWeight;
+                    $totalPoints += $eq->elasticity_points;
+                }
+
+                if ($totalPoints > 0) {
+                    foreach ($elasticResidue as $eq) {
+                        $share = $eq->elasticity_points / $totalPoints;
+                        $periodKwh = $currentRemaining * $share;
+                        $eq->calculated_consumption_kwh = $periodKwh;
+                        $eq->tank_assignment = 4;
+                        $tankConsumption += $periodKwh;
+                        
+                        $percentChange = $eq->theo_kwh > 0 ? (($periodKwh - $eq->theo_kwh) / $eq->theo_kwh * 100) : 0;
+                        $actionSign = $percentChange >= 0 ? "+" : "";
+                        $eq->audit_logs = [number_format($periodKwh, 1) . " kWh (Residuo Elástico. Ajuste: {$actionSign}".number_format($percentChange, 1)."%)"];
+                    }
+                    $logs[] = "[Tanque 4] Distribuido remanente final de " . number_format($currentRemaining, 1) . " kWh.";
+                }
+            } else if ($currentRemaining > 0) {
+                $logs[] = "[Tanque 4] Quedaron " . number_format($currentRemaining, 1) . " kWh sin asignar por falta de equipos elásticos.";
             }
         } else {
             foreach ($targetEquipments as $eq) {

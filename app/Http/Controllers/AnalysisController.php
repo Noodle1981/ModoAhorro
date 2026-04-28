@@ -355,6 +355,11 @@ class AnalysisController extends Controller
                     'is_standby' => $equipment->is_standby ?? false,
                     'category_name' => $equipment->category->name ?? '',
                     'type_name' => $equipment->type->name ?? '',
+                    'usage_unit' => $equipment->type->usage_unit ?? 'hours',
+                    'energy_per_cycle' => $equipment->type->energy_per_cycle,
+                    'social_coefficient' => $equipment->type->social_coefficient ?? 0,
+                    'cycles_per_period' => ($usage instanceof \App\Models\EquipmentUsage) ? $usage->cycles_per_period : ($usage['cycles_per_period'] ?? null),
+                    'cycle_suggestion' => null, // Opcional: calcular basado en remanente previo
                 ];
 
                 $tanks[$tier]['items'][] = $item;
@@ -385,14 +390,13 @@ class AnalysisController extends Controller
     }
 
     /**
-     * Guardar el ajuste de sintonía fina
+     * Guardar el ajuste de sintonía fina (Solo contexto, sin motor)
      */
-    public function saveUsageAdjustment(Request $request)
+    public function saveContextOnly(Request $request)
     {
         $request->validate([
             'invoice_id' => 'required|exists:invoices,id',
             'usages' => 'required|array',
-            'lock_period' => 'boolean'
         ]);
 
         $invoice = Invoice::findOrFail($request->invoice_id);
@@ -403,47 +407,103 @@ class AnalysisController extends Controller
                 EquipmentUsage::updateOrCreate(
                     ['invoice_id' => $invoice->id, 'equipment_id' => $eqId],
                     [
-                        'avg_daily_use_hours' => $data['avg_daily_use_hours'],
-                        'usage_frequency' => $data['usage_frequency'],
+                        'avg_daily_use_hours' => $data['avg_daily_use_hours'] ?? null,
+                        'usage_frequency' => $data['usage_frequency'] ?? 'diario',
+                        'cycles_per_period' => $data['cycles_per_period'] ?? null,
                         'is_standby' => $data['is_standby'] ?? false,
                     ]
                 );
 
-                // 2. [MEJORA] Actualizar la "ficha técnica" global del equipo (Aprendizaje selectivo)
+                // 2. Actualizar la ficha técnica del equipo
                 $equipment = \App\Models\Equipment::find($eqId);
                 if ($equipment) {
                     $isFrozen = $data['has_defined_pattern'] ?? false;
+                    $equipment->update(['has_defined_pattern' => $isFrozen]);
                     
-                    // Solo actualizamos hábitos si el patrón está definido/congelado
                     if ($isFrozen) {
                         $equipment->update([
-                            'has_defined_pattern' => true,
-                            'avg_daily_use_hours' => $data['avg_daily_use_hours'],
-                            'usage_frequency' => $data['usage_frequency'],
+                            'avg_daily_use_hours' => $data['avg_daily_use_hours'] ?? null,
+                            'usage_frequency' => $data['usage_frequency'] ?? 'diario',
                             'is_standby' => $data['is_standby'] ?? false,
                         ]);
-                    } else {
-                        // Si se descongela, actualizamos solo el flag
-                        $equipment->update(['has_defined_pattern' => false]);
                     }
                 }
             }
+        });
 
-            // Si se solicita cerrar, ejecutamos el motor
-            if ($request->lock_period) {
-                // Buscamos todas las facturas hermanas para la calibración unificada
-                $invoices = Invoice::where('contract_id', $invoice->contract_id)
-                    ->where('start_date', $invoice->start_date)
-                    ->where('end_date', $invoice->end_date)
-                    ->get();
-                
-                $this->analysisService->calibrateUnifiedPeriod($invoices);
+        return redirect()->back()->with('success', 'Contexto guardado correctamente. Sintoniza el motor cuando estés listo.');
+    }
+
+    /**
+     * Guardar contexto, ejecutar motor y mostrar resultados
+     */
+    public function calibrateAndShowResults(Request $request)
+    {
+        $request->validate([
+            'invoice_id' => 'required|exists:invoices,id',
+            'usages' => 'required|array',
+        ]);
+
+        $invoice = Invoice::findOrFail($request->invoice_id);
+        
+        DB::transaction(function() use ($request, $invoice) {
+            foreach ($request->usages as $eqId => $data) {
+                EquipmentUsage::updateOrCreate(
+                    ['invoice_id' => $invoice->id, 'equipment_id' => $eqId],
+                    [
+                        'avg_daily_use_hours' => $data['avg_daily_use_hours'] ?? null,
+                        'usage_frequency' => $data['usage_frequency'] ?? 'diario',
+                        'cycles_per_period' => $data['cycles_per_period'] ?? null,
+                        'is_standby' => $data['is_standby'] ?? false,
+                    ]
+                );
             }
         });
 
-        return redirect()->route('analisis.usage')->with('success', 'Ajustes guardados correctamente.');
+        // Ejecutar calibración sobre el periodo unificado
+        $invoices = Invoice::where('contract_id', $invoice->contract_id)
+            ->where('start_date', $invoice->start_date)
+            ->where('end_date', $invoice->end_date)
+            ->get();
+
+        try {
+            $result = $this->analysisService->calibrateUnifiedPeriod($invoices);
+            
+            return redirect()->route('analisis.usage.results', ['invoice' => $invoice->id])
+                           ->with('engine_result', $result);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error en el motor de cálculo: ' . $e->getMessage());
+        }
     }
 
+    /**
+     * Mostrar vista de resultados del motor (Solo lectura)
+     */
+    public function showEngineResults(Request $request, Invoice $invoice)
+    {
+        $entity = $this->getActiveEntity($request);
+        $engineResult = session('engine_result');
+
+        if (!$engineResult) {
+            return redirect()->route('analisis.usage.detail', [
+                'contract' => $invoice->contract_id,
+                'start_date' => $invoice->start_date,
+                'end_date' => $invoice->end_date
+            ])->with('warning', 'Ejecuta la sintonía para ver los resultados.');
+        }
+
+        return Inertia::render('Analisis/EngineResults', [
+            'entity' => $entity,
+            'invoice' => $invoice,
+            'engine' => $engineResult,
+            'period' => [
+                'start_date' => $invoice->start_date,
+                'end_date' => $invoice->end_date,
+                'days' => \Carbon\Carbon::parse($invoice->start_date)->diffInDays(\Carbon\Carbon::parse($invoice->end_date)),
+                'invoice_id' => $invoice->id,
+            ]
+        ]);
+    }
     /**
      * Lógica legacy de clasificación por Tiers
      */
@@ -468,42 +528,10 @@ class AnalysisController extends Controller
         return 'uso_variable';
     }
 
-    /**
-     * Ejecutar el motor de calibración para un periodo unificado
-     */
-    public function runAdjustment(Request $request)
+    private function getTopItemsForTank(array $items): array
     {
-        $request->validate([
-            'contract_id' => 'required|exists:contracts,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-        ]);
-
-        $entity = $this->getActiveEntity($request);
-        
-        // Cargar todas las facturas del periodo unificado
-        $invoices = Invoice::where('contract_id', $request->contract_id)
-            ->where('start_date', $request->start_date)
-            ->where('end_date', $request->end_date)
-            ->get();
-
-        if ($invoices->isEmpty()) {
-            return redirect()->back()->with('error', 'No se encontraron facturas para el periodo seleccionado.');
-        }
-
-        // Seguridad: Verificar que el usuario sea dueño del contrato
-        if ($request->user()->cannot('update', $entity)) {
-            abort(403);
-        }
-
-        try {
-            // Ejecutar la calibración unificada
-            $result = $this->analysisService->calibrateUnifiedPeriod($invoices);
-            
-            return redirect()->back()->with('success', 'Calibración del periodo completa. El Gemelo Digital se ha sincronizado.');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error en el motor de cálculo: ' . $e->getMessage());
-        }
+        usort($items, fn($a, $b) => ($b['kwh'] ?? 0) <=> ($a['kwh'] ?? 0));
+        return array_slice($items, 0, 5);
     }
 
     /**

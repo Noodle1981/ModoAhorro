@@ -156,8 +156,9 @@ class EnergyEngineService
 
         return [
             'daily_hours' => $dailyHours,
-            'work_days' => $workDays,
-            'total_days' => $totalDays,
+            'work_days'   => $workDays,
+            'total_days'  => $totalDays,
+            'people_count' => $entity->people_count ?? 1,
         ];
     }
 

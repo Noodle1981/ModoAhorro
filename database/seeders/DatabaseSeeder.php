@@ -2,34 +2,32 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
+    use \Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         Schema::disableForeignKeyConstraints();
         try {
             $this->call([
-                // 1. Datos base
+                // 1. Datos geográficos y de plataforma
                 ProvinceSeeder::class,
                 LocalitySeeder::class,
                 PlanSeeder::class,
                 UtilityCompanySeeder::class,
-                
-                // 2. Maestría de Categorías y Tipos (NUEVO)
-                CategoryRefinementSeeder::class,
 
-                // 3. Escenarios de prueba (Hogar Casa 27)
+                // 2. Catálogo maestro (categorías visuales + tipos de equipo + etiquetas)
+                MasterCleanCatalogueSeeder::class,
+
+                // 3. Infraestructura de Casa 27 (usuario, entidad, contrato, facturas)
                 Casa27Seeder::class,
+
+                // 4. Equipos físicos de Casa 27 por ambiente
+                Casa27EquipmentSeeder::class,
             ]);
         } finally {
             Schema::enableForeignKeyConstraints();

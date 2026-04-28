@@ -1,8 +1,13 @@
 id,name,created_at,updated_at,description
-1,"0. Conectividad y Seguridad (T0)","2026-04-25 23:31:34","2026-04-25 23:31:34",
-2,"1. Refrigeración y Servidores (T1)","2026-04-25 23:31:34","2026-04-25 23:31:34",
-3,"2. Climatización y Agua (T2)","2026-04-25 23:31:34","2026-04-25 23:31:34",
-4,"3. Línea Blanca y Limpieza (T3)","2026-04-25 23:31:34","2026-04-25 23:31:34",
-5,"4. Informática y Ocio (T3)","2026-04-25 23:31:34","2026-04-25 23:31:34",
-6,"5. Cocina y Pequeños (T3)","2026-04-25 23:31:34","2026-04-25 23:31:34",
-7,"6. Iluminación y Otros (T3)","2026-04-25 23:31:34","2026-04-25 23:31:34",
+1,"Climatización y Ambiente","2026-04-27 23:47:36","2026-04-27 23:47:36","Aires, estufas, ventiladores y todo lo que modifica la temperatura o mueve el aire."
+2,Refrigeración,"2026-04-27 23:47:36","2026-04-27 23:47:36","Conservación de alimentos 24hs: heladeras, freezers, cavas de vino."
+3,"Agua y Bombeo","2026-04-27 23:47:36","2026-04-27 23:47:36","Producción de agua caliente sanitaria y sistemas hídricos: termotanques, bombas, riego."
+4,"Cocina y Preparación","2026-04-27 23:47:36","2026-04-27 23:47:36","Equipos para cocinar y preparar alimentos y bebidas."
+5,"Lavado y Limpieza","2026-04-27 23:47:36","2026-04-27 23:47:36","Tratamiento de ropa y vajilla: lavarropas, secarropas, lavavajillas."
+6,Iluminación,"2026-04-27 23:47:36","2026-04-27 23:47:36","Todo tipo de luminarias: LED, incandescentes, tubos, tiras."
+7,"Entretenimiento y Multimedia","2026-04-27 23:47:36","2026-04-27 23:47:36","TVs, consolas, audio, home theatre."
+8,"Informática y Oficina","2026-04-27 23:47:36","2026-04-27 23:47:36","PCs, notebooks, monitores, impresoras, servidores."
+9,"Conectividad y Seguridad","2026-04-27 23:47:36","2026-04-27 23:47:36","Routers, cámaras, alarmas, sistemas 24/7 de baja potencia."
+10,"Salud y Cuidado Personal","2026-04-27 23:47:36","2026-04-27 23:47:36","Secadores de pelo, afeitadoras, nebulizadores, equipos de salud."
+11,"Mantenimiento y Bombas","2026-04-27 23:47:36","2026-04-27 23:47:36","Bombas de riego, filtrado de piscina, herramientas eléctricas."
+12,Cargadores,"2026-04-27 23:47:36","2026-04-27 23:47:36","Cargadores de celulares, tablets, notebooks y dispositivos portátiles."
