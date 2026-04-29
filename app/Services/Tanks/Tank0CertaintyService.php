@@ -17,17 +17,18 @@ class Tank0CertaintyService
         $logs = [];
 
         $targetEquipments = $equipments->filter(function ($eq) {
-            // T1: Certeza Matemática
-            // Equipos que el usuario "congeló" con un patrón fijo O tienen un determinismo altísimo (>0.9)
+            // Solo equipos que el USUARIO marcó como Patrón Fijo
+            // Y que NO son ni Críticos (-> Tank1) ni de Climatización (-> Tank2)
             return $eq->has_defined_pattern === true 
-                || ($eq->type && $eq->type->determinism_score >= 0.9);
+                && !$this->isCritical($eq)
+                && !($eq->type?->is_thermal_sensitive);
         });
 
         foreach ($targetEquipments as $eq) {
             $periodKwh = $eq->_theo_kwh ?? 0;
             $eq->calculated_consumption_kwh = $periodKwh;
             $eq->tank_assignment = 1;
-            $eq->audit_logs = ["Fijado en " . number_format($periodKwh, 1) . " kWh (Tanque 1 - Certeza)"];
+            $eq->audit_logs = ["Fijado en " . number_format($periodKwh, 1) . " kWh (Tanque 1 - Certeza (Patrón Fijo declarado))"];
             
             $tankConsumption += $periodKwh;
             $remainingKwh -= $periodKwh;
@@ -40,5 +41,15 @@ class Tank0CertaintyService
             'logs' => $logs,
             'processed_count' => $targetEquipments->count()
         ];
+    }
+
+    private function isCritical(Equipment $eq): bool
+    {
+        // Crítico = 24hs continuas Y todos los días.
+        $hours = $eq->avg_daily_use_hours ?? 0;
+        $frequency = $eq->usage_frequency ?? 'diario';
+        $isDailyOrAlways = in_array($frequency, ['diario', 'diariamente']);
+
+        return $hours >= 23.5 && $isDailyOrAlways;
     }
 }

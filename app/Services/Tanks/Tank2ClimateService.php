@@ -28,11 +28,12 @@ class Tank2ClimateService
         $entity = $invoice->contract->entity;
 
         $targetEquipments = $equipments->filter(function ($eq) {
-            // T3: Sensibilidad Climática
-            // Solo equipos térmicos que NO sean de hábito estacional (ventiladores)
-            return $eq->tank_assignment === null && 
-                   $eq->type?->is_thermal_sensitive && 
-                   $eq->type?->consumption_logic !== 'SEASONAL_HABIT';
+            // Tank Climático: Entra cualquier equipo de categoría Climatización.
+            // El usuario NO necesita marcar Patrón Fijo: la categoría es la llave.
+            // Incluye ventiladores (SEASONAL_HABIT): el motor climático los limita
+            // a los días con condición estacional activa.
+            return $eq->tank_assignment === null
+                && $eq->type?->is_thermal_sensitive === true;
         });
 
         if ($targetEquipments->isEmpty()) {

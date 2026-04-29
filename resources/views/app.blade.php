@@ -12,6 +12,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
         <!-- Scripts -->
+        <script>console.log('Rendering app.blade.php (Inertia Root)');</script>
         @routes
         @vite(['resources/js/app.js', 'resources/css/app.css'])
         @inertiaHead

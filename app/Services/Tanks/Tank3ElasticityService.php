@@ -117,7 +117,7 @@ class Tank3ElasticityService
                         
                         $percentChange = $eq->theo_kwh > 0 ? (($periodKwh - $eq->theo_kwh) / $eq->theo_kwh * 100) : 0;
                         $actionSign = $percentChange >= 0 ? "+" : "";
-                        $eq->audit_logs = [number_format($periodKwh, 1) . " kWh (Residuo Elástico. Ajuste: {$actionSign}".number_format($percentChange, 1)."%)"];
+                        $eq->audit_logs = [number_format($periodKwh, 1) . " kWh (Uso Variable - Sin Patrón Fijo. Ajuste: {$actionSign}".number_format($percentChange, 1)."%)"];
                     }
                     $logs[] = "[Tanque 4] Distribuido remanente final de " . number_format($currentRemaining, 1) . " kWh.";
                 }

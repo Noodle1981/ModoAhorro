@@ -16,11 +16,12 @@ class Tank1BaseService
         $logs = [];
 
         $targetEquipments = $equipments->filter(function ($eq) {
-            return $eq->tank_assignment === null && (
-                   $eq->type?->consumption_logic === 'BASE_LOAD' || 
-                   ($eq->type && $eq->type->default_avg_daily_use_hours == 24 && !$eq->type->isClimate()) ||
-                   ($eq->avg_daily_use_hours == 24 && !$eq->type?->isClimate())
-            );
+            // Tank Crítico: Entra cualquier equipo que funcione 24hs
+            // o pertenezca a categorías inamovibles (Refrigeración, Conectividad).
+            // El usuario NO necesita marcar Patrón Fijo: es un criterio técnico.
+            // La categoría determina el algoritmo de cálculo dentro del tanque.
+            return $eq->tank_assignment === null
+                && $this->isCritical($eq);
         });
 
         foreach ($targetEquipments as $eq) {
@@ -40,7 +41,7 @@ class Tank1BaseService
                 $eq->tank_assignment = null; // No lo bloqueamos, T3 debe procesar el resto
             } else {
                 $eq->tank_assignment = 2;
-                $eq->audit_logs = ["Fijado en " . number_format($periodKwh, 1) . " kWh (Base Crítica)"];
+                $eq->audit_logs = ["Fijado en " . number_format($periodKwh, 1) . " kWh (Tank Crítico (Fijo + 24h ó Refrigeración/Conectividad))"];
             }
             
             $tankConsumption += $periodKwh;
@@ -55,5 +56,17 @@ class Tank1BaseService
             'logs' => $logs,
             'processed_count' => $targetEquipments->count()
         ];
+    }
+
+    private function isCritical(Equipment $eq): bool
+    {
+        // Crítico = 24hs continuas Y todos los días (diario).
+        // Un servidor que se apaga los fines de semana tiene 24h
+        // pero NO es diario: va a Certeza (si es Patrón Fijo) o Variable.
+        $hours = $eq->avg_daily_use_hours ?? 0;
+        $frequency = $eq->usage_frequency ?? 'diario';
+        $isDailyOrAlways = in_array($frequency, ['diario', 'diariamente']);
+
+        return $hours >= 23.5 && $isDailyOrAlways;
     }
 }

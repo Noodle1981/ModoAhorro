@@ -97,7 +97,7 @@ class MasterCleanCatalogueSeeder extends Seeder
 
             // --- SALUD Y CUIDADO PERSONAL ---
             ['Secador de Pelo',          1000,2200, 1000, 'CONSTANT_ELASTIC',   'hours',              0.30,  0,     0,    'SALUD',     false, false, null],
-            ['Máquina de Afeitar',       5,   25,   12,   'CONSTANT_ELASTIC',   'cycles',             0.40,  0,     0,    'SALUD',     false, false, 0.005],
+            ['Máquina de Afeitar',       5,   25,   12,   'CONSTANT_ELASTIC',   'hours',              0.40,  0,     0,    'SALUD',     false, false, null],
             ['Plancha de Ropa',          1000,2200, 1500, 'CONSTANT_ELASTIC',   'hours',              0.40,  0,     0,    'SALUD',     false, false, null],
 
             // --- CARGADORES ---

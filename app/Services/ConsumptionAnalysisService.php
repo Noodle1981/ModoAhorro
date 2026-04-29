@@ -155,8 +155,9 @@ class ConsumptionAnalysisService
                 $daysInPeriod = max(1, $totalDays);
             }
             
-            // Fórmula: Coeficiente Social * Personas * Días
-            $consumption = $equipmentType->social_coefficient * $peopleCount * $daysInPeriod;
+            // Fórmula: Coeficiente Social * Personas * Días * Factor de Frecuencia
+            $frequencyFactor = $this->getFrequencyFactor($usage->usage_frequency);
+            $consumption = $equipmentType->social_coefficient * $peopleCount * $daysInPeriod * $frequencyFactor;
             
             return round($consumption, 4);
         }
@@ -542,17 +543,22 @@ class ConsumptionAnalysisService
         ];
     }
 
-    private function getDaysByFrequency($frequency, $totalDays)
+    private function getFrequencyFactor($frequency): float
     {
-        $factor = match($frequency) {
+        return match($frequency) {
+            'diario', 'diariamente' => 1.0,
             'casi_frecuentemente' => 0.85,
             'frecuentemente' => 0.60,
             'ocasionalmente' => 0.30,
             'raramente' => 0.10,
             'nunca' => 0.0,
-            default => 0.60
+            default => 1.0
         };
-        
+    }
+
+    private function getDaysByFrequency($frequency, $totalDays)
+    {
+        $factor = $this->getFrequencyFactor($frequency);
         return floor($totalDays * $factor);
     }
 }

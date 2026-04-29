@@ -104,7 +104,9 @@ class ClimateService
     {
         $url = 'https://archive-api.open-meteo.com/v1/archive';
         
-        $response = \Illuminate\Support\Facades\Http::timeout(30)->get($url, [
+        $response = \Illuminate\Support\Facades\Http::timeout(30)
+            ->when(app()->environment('local'), fn($h) => $h->withoutVerifying())
+            ->get($url, [
             'latitude' => $locality->latitude,
             'longitude' => $locality->longitude,
             'start_date' => $startDate->format('Y-m-d'),
@@ -504,7 +506,9 @@ class ClimateService
     {
         if ($locality->latitude && $locality->longitude) {
             try {
-                $response = Http::timeout(5)->get('https://api.open-meteo.com/v1/forecast', [
+                $response = Http::timeout(5)
+                    ->when(app()->environment('local'), fn($h) => $h->withoutVerifying())
+                    ->get('https://api.open-meteo.com/v1/forecast', [
                     'latitude' => $locality->latitude,
                     'longitude' => $locality->longitude,
                     'current_weather' => true,

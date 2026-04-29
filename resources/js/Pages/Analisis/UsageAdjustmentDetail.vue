@@ -52,7 +52,9 @@ const form = useForm({
                 avg_daily_use_hours: item.usage.avg_daily_use_hours || 0,
                 usage_frequency: item.usage.usage_frequency || 'diario',
                 is_standby: item.usage.is_standby || false,
-                has_defined_pattern: item.has_defined_pattern || false,
+                // Lee del uso guardado. Si nunca se guardó → false (USO VARIABLE).
+                // El usuario decide manualmente cuáles son Patrón Fijo.
+                has_defined_pattern: item.usage.has_defined_pattern ?? false,
                 nominal_power_w: item.nominal_power_w,
                 use_minutes: (item.usage.avg_daily_use_hours < 1 && item.usage.avg_daily_use_hours > 0),
                 cycles_per_period: item.cycles_per_period ?? 0,
@@ -128,10 +130,11 @@ const calculateKwh = (eqId) => {
         return energyPerCycle * (data.cycles_per_period || 0);
     }
 
-    // 2. CÁLCULO POR PROPORCIÓN SOCIAL (Solo visual, el motor lo hace real)
+    // 2. CÁLCULO POR PROPORCIÓN SOCIAL (Actualizado: Ajustable por frecuencia)
     if (item.usage_unit === 'people_proportional') {
         const peopleCount = props.entity?.people_count || 1;
-        return (item.social_coefficient || 0) * peopleCount * props.period.days;
+        const factor = frequencyFactors[data.usage_frequency] ?? 1.0;
+        return (item.social_coefficient || 0) * peopleCount * props.period.days * factor;
     }
 
     // 3. CÁLCULO POR HORAS (DEFAULT)
@@ -155,14 +158,65 @@ const calculateKwh = (eqId) => {
     return consumption;
 };
 
-// Totales reactivos
+// --- NUEVA LÓGICA DE AGRUPACIÓN PLANA (FASE 1) ---
+
+// 1. Todos los equipos en una sola lista plana
+const allItemsFlat = computed(() => {
+    const all = [];
+    props.tanks.forEach(tank => {
+        tank.items.forEach(item => {
+            all.push({
+                ...item,
+                tank_key: tank.key,
+                tank_label: tank.label
+            });
+        });
+    });
+    return all;
+});
+
+// 2. Mapa reactivo de kWh por item — trackea cambios en form.usages
+// IMPORTANTE: este computed es la fuente de verdad reactiva.
+// calculateKwh() es una función normal, no un computed; Vue no la trackea
+// cuando se llama directamente desde el template. Al wrappearla acá,
+// todos los accesos a form.usages quedan bajo el tracking del computed.
+const kwhMap = computed(() => {
+    const map = {};
+    // Accedemos a todos los valores del form para que Vue registre
+    // la dependencia en cada propiedad relevante
+    Object.entries(form.usages).forEach(([id]) => {
+        map[id] = calculateKwh(Number(id));
+    });
+    return map;
+});
+
+// 3. Agrupación por Ambiente (Room) — usa kwhMap para ser reactiva
+const roomsFlat = computed(() => {
+    const roomsMap = {};
+    allItemsFlat.value.forEach(item => {
+        const roomName = item.room_name || 'Sin Asignar';
+        if (!roomsMap[roomName]) {
+            roomsMap[roomName] = { 
+                name: roomName, 
+                items: [], 
+                current_kwh: 0 
+            };
+        }
+        roomsMap[roomName].items.push(item);
+        roomsMap[roomName].current_kwh += (kwhMap.value[item.id] || 0);
+    });
+    
+    return Object.values(roomsMap).sort((a, b) => a.name.localeCompare(b.name));
+});
+
+// Totales reactivos — usan kwhMap
 const totalCalculatedKwh = computed(() => {
-    return Object.keys(form.usages).reduce((sum, id) => sum + calculateKwh(id), 0);
+    return Object.values(kwhMap.value).reduce((sum, v) => sum + v, 0);
 });
 
 const tankTotals = computed(() => {
     return props.tanks.map(tank => {
-        const kwh = tank.items.reduce((sum, item) => sum + calculateKwh(item.id), 0);
+        const kwh = tank.items.reduce((sum, item) => sum + (kwhMap.value[item.id] || 0), 0);
         
         const roomsMap = {};
         tank.items.forEach(item => {
@@ -171,7 +225,7 @@ const tankTotals = computed(() => {
                 roomsMap[roomName] = { name: roomName, items: [], current_kwh: 0 };
             }
             roomsMap[roomName].items.push(item);
-            roomsMap[roomName].current_kwh += calculateKwh(item.id);
+            roomsMap[roomName].current_kwh += (kwhMap.value[item.id] || 0);
         });
         
         const rooms = Object.values(roomsMap).sort((a, b) => a.name.localeCompare(b.name));
@@ -213,8 +267,10 @@ const getFormula = (eqId) => {
 
     if (item.usage_unit === 'people_proportional') {
         const peopleCount = props.entity?.people_count || 1;
+        const factor = frequencyFactors[data.usage_frequency] ?? 1.0;
         const total = calculateKwh(eqId);
-        return `${item.social_coefficient} coeff × ${peopleCount} pers × ${props.period.days}d = ${total.toFixed(1)} kWh`;
+        const freqPct = Math.round(factor * 100);
+        return `${item.social_coefficient} coeff × ${peopleCount} pers × ${props.period.days}d × ${freqPct}% (Frecuencia) = ${total.toFixed(1)} kWh`;
     }
 
     const powerKw = item.nominal_power_w / 1000;
@@ -356,183 +412,206 @@ const getTankColor = (key) => {
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 
-                <!-- Main Controls Area -->
+                <!-- Main Controls Area (Fase 1: Ajuste Libre por Ambientes) -->
                 <div class="lg:col-span-8 space-y-12">
-                    <div v-for="tank in tankTotals" :key="tank.key" class="space-y-6">
-                        <!-- Tank Header -->
+                    
+                    <div class="bg-sky-50 border border-sky-100 rounded-[32px] p-6 flex items-center gap-4 mb-8">
+                        <Info :size="20" class="text-sky-500 shrink-0" />
+                        <p class="text-sm font-medium text-sky-900 leading-tight">
+                            Ajusta el uso real de cada equipo. La clasificación por <strong>Tanques</strong> se calculará automáticamente al presionar <strong>Sintonizar Motor</strong>.
+                        </p>
+                    </div>
+
+                    <div v-for="room in roomsFlat" :key="room.name" class="space-y-6">
+                        <!-- Room Header -->
                         <div class="flex items-center justify-between border-b border-slate-100 pb-4">
                             <div class="flex items-center gap-4">
-                                <div :class="['w-12 h-12 rounded-2xl flex items-center justify-center border', getTankColor(tank.key)]">
-                                    <component :is="getTankIcon(tank.key)" :size="24" />
+                                <div class="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white">
+                                    <DoorOpen :size="24" />
                                 </div>
                                 <div>
-                                    <h3 class="text-xl font-black text-slate-900 tracking-tight">{{ tank.label }}</h3>
-                                    <p class="text-xs text-slate-400 font-medium">{{ tank.items.length }} equipos detectados</p>
+                                    <h3 class="text-xl font-black text-slate-900 tracking-tight">{{ room.name }}</h3>
+                                    <p class="text-xs text-slate-400 font-medium">{{ room.items.length }} equipos en este ambiente</p>
                                 </div>
                             </div>
                             <div class="text-right">
-                                <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Subtotal</p>
-                                <p class="text-2xl font-black text-slate-900">{{ Math.round(tank.current_kwh) }}<span class="text-xs ml-1 text-slate-400">kWh</span></p>
+                                <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Subtotal Ambiente</p>
+                                <p class="text-2xl font-black text-slate-900">{{ Math.round(room.current_kwh) }}<span class="text-xs ml-1 text-slate-400">kWh</span></p>
                             </div>
                         </div>
 
-                        <!-- Rooms Grid -->
-                        <div class="space-y-8">
-                            <div v-for="room in tank.rooms" :key="room.name" class="space-y-4">
-                                <!-- Room Header -->
-                                <div class="flex items-center gap-3 px-2">
-                                    <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 text-slate-500 rounded-xl">
-                                        <DoorOpen :size="14" />
-                                        <h4 class="text-[10px] font-black uppercase tracking-widest">{{ room.name }}</h4>
+                        <!-- Equipment Grid -->
+                        <div class="grid grid-cols-1 gap-4">
+                            <div 
+                                v-for="item in room.items" 
+                                :key="item.id"
+                                class="bg-white rounded-[32px] border border-slate-100 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col md:flex-row items-start gap-8 group"
+                                :class="{'opacity-50 grayscale-[0.5]': form.usages[item.id].usage_frequency === 'nunca'}"
+                            >
+                                <!-- Eq Info -->
+                                <div class="md:w-1/4 flex items-start gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 shrink-0 mt-1">
+                                        <Zap :size="20" v-if="!item.is_standby" />
+                                        <Activity :size="20" v-else class="text-rose-400" />
                                     </div>
-                                    <div class="h-px bg-slate-100 flex-1"></div>
-                                    <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-md">{{ Math.round(room.current_kwh) }} kWh</span>
+                                    <div class="min-w-0 flex-1">
+                                        <h4 class="font-black text-slate-900 tracking-tight text-base leading-tight break-words">{{ item.name }}</h4>
+                                        <p v-if="item.brand || item.model" class="text-[9px] font-bold text-energy-solar uppercase truncate mt-1">
+                                            {{ item.brand }} {{ item.model }}
+                                        </p>
+                                        
+                                        <div class="flex items-center gap-2 mt-2">
+                                            <span class="text-[9px] font-black px-2 py-0.5 bg-slate-50 border border-slate-100 rounded-full text-slate-500">
+                                                {{ item.usage_unit === 'people_proportional' ? 'AUTO' : item.nominal_power_w + 'W' }}
+                                            </span>
+                                            
+                                            <button 
+                                                v-if="item.usage_unit !== 'people_proportional'"
+                                                type="button"
+                                                @click="form.usages[item.id].has_defined_pattern = !form.usages[item.id].has_defined_pattern"
+                                                :class="[
+                                                    'text-[9px] font-black px-2 py-0.5 rounded-full border flex items-center gap-1 transition-all',
+                                                    form.usages[item.id].has_defined_pattern 
+                                                        ? 'bg-sky-50 text-sky-500 border-sky-100' 
+                                                        : 'bg-slate-50 text-slate-300 border-slate-100'
+                                                ]"
+                                            >
+                                                <Lock :size="8" /> {{ form.usages[item.id].has_defined_pattern ? 'PATRÓN FIJO' : 'USO VARIABLE' }}
+                                            </button>
+
+                                            <span v-else class="text-[9px] font-black px-2 py-0.5 bg-amber-50 text-amber-600 border border-amber-100 rounded-full flex items-center gap-1">
+                                                <Activity :size="8" /> AUTOMÁTICO
+                                            </span>
+
+                                            <span v-if="item.is_validated" class="text-[9px] font-black px-2 py-0.5 bg-energy-success/10 text-energy-success rounded-full">VALIDADO</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                      <!-- Equipment Grid -->
-                                 <div class="grid grid-cols-1 gap-4">
-                                     <div 
-                                         v-for="item in room.items" 
-                                         :key="item.id"
-                                         class="bg-white rounded-[32px] border border-slate-100 shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col md:flex-row items-center gap-6 group"
-                                     >
-                                         <!-- Eq Info -->
-                                         <div class="md:w-1/3 flex items-center gap-4">
-                                             <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 shrink-0">
-                                                 <Zap :size="20" v-if="!item.is_standby" />
-                                                 <Activity :size="20" v-else class="text-rose-400" />
-                                             </div>
-                                             <div class="min-w-0">
-                                                 <h4 class="font-black text-slate-900 truncate tracking-tight">{{ item.name }}</h4>
-                                                 <p v-if="item.brand || item.model" class="text-[9px] font-bold text-energy-solar uppercase truncate">
-                                                     {{ item.brand }} {{ item.model }}
-                                                 </p>
-                                                 <p class="text-[10px] text-slate-400 font-bold uppercase flex items-center gap-1">
-                                                     <DoorOpen :size="10" /> {{ item.room_name }}
-                                                 </p>
-                                                 <div class="flex items-center gap-2 mt-2">
-                                                     <span class="text-[9px] font-black px-2 py-0.5 bg-slate-50 border border-slate-100 rounded-full text-slate-500">{{ item.nominal_power_w }}W</span>
-                                                     
-                                                     <button 
-                                                         type="button"
-                                                         @click="form.usages[item.id].has_defined_pattern = !form.usages[item.id].has_defined_pattern"
-                                                         :class="[
-                                                             'text-[9px] font-black px-2 py-0.5 rounded-full border flex items-center gap-1 transition-all',
-                                                             form.usages[item.id].has_defined_pattern 
-                                                                 ? 'bg-sky-50 text-sky-500 border-sky-100' 
-                                                                 : 'bg-slate-50 text-slate-300 border-slate-100'
-                                                         ]"
-                                                     >
-                                                         <Lock :size="8" /> {{ form.usages[item.id].has_defined_pattern ? 'PATRÓN FIJO' : 'USO VARIABLE' }}
-                                                     </button>
- 
-                                                     <span v-if="item.is_validated" class="text-[9px] font-black px-2 py-0.5 bg-energy-success/10 text-energy-success rounded-full">VALIDADO</span>
-                                                 </div>
-                                             </div>
-                                         </div>
- 
-                                         <!-- Inputs Adaptativos -->
-                                         <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                                             
-                                             <!-- === HORAS === -->
-                                             <template v-if="item.usage_unit === 'hours'">
-                                                 <div class="space-y-3">
-                                                     <div class="flex justify-between items-center px-1">
-                                                         <div class="flex flex-col">
-                                                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Uso/Día</label>
-                                                             <button 
-                                                                 type="button"
-                                                                 @click="form.usages[item.id].use_minutes = !form.usages[item.id].use_minutes"
-                                                                 class="text-[8px] font-bold text-sky-500 uppercase flex items-center gap-1"
-                                                             >
-                                                                 <Clock :size="8" /> {{ form.usages[item.id].use_minutes ? 'Pasar a Horas' : 'Ajustar Minutos' }}
-                                                             </button>
-                                                         </div>
-                                                         <span class="text-sm font-black text-slate-900 bg-slate-50 px-2 rounded-md">{{ getDisplayTime(item.id) }}</span>
-                                                     </div>
-                                                     <input 
-                                                         v-if="!form.usages[item.id].use_minutes"
-                                                         type="range" v-model.number="form.usages[item.id].avg_daily_use_hours" 
-                                                         min="0" max="24" step="0.5"
-                                                         class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-slate-900" 
-                                                     />
-                                                     <input 
-                                                         v-else
-                                                         type="range" :value="Math.round(form.usages[item.id].avg_daily_use_hours * 60)" 
-                                                         @input="handleMinuteSlider($event, item.id)"
-                                                         min="0" max="60" step="1"
-                                                         class="w-full h-1.5 bg-sky-100 rounded-lg appearance-none cursor-pointer accent-sky-500" 
-                                                     />
-                                                 </div>
-                                                 <div class="space-y-3">
-                                                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Frecuencia</label>
-                                                     <select 
-                                                         v-model="form.usages[item.id].usage_frequency"
-                                                         @change="form.usages[item.id].avg_daily_use_hours = ($event.target.value === 'nunca' ? 0 : form.usages[item.id].avg_daily_use_hours)"
-                                                         class="w-full bg-slate-50 border-none rounded-2xl text-xs font-bold py-3 px-4"
-                                                     >
-                                                         <option value="diario">Diaria</option>
-                                                         <option value="casi_frecuentemente">Casi Frecuente</option>
-                                                         <option value="frecuentemente">Frecuente</option>
-                                                         <option value="ocasionalmente">Ocasional</option>
-                                                         <option value="raramente">Raramente</option>
-                                                         <option value="nunca">No se usó</option>
-                                                     </select>
-                                                 </div>
-                                             </template>
- 
-                                             <!-- === CICLOS === -->
-                                             <template v-else-if="item.usage_unit === 'cycles'">
-                                                 <div v-if="item.cycle_suggestion > 0 && !form.usages[item.id].cycle_confirmed"
-                                                      class="col-span-1 md:col-span-2 bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-center gap-4">
-                                                     <Zap :size="18" class="text-amber-500 shrink-0" />
-                                                     <div class="flex-1">
-                                                         <p class="text-[10px] font-bold text-amber-900">Sugerencia: ~{{ item.cycle_suggestion }} usos este bimestre.</p>
-                                                     </div>
-                                                     <button type="button" @click="confirmCycleSuggestion(item.id, item.cycle_suggestion)" class="px-3 py-1 bg-amber-500 text-white text-[9px] font-black rounded-lg">USAR</button>
-                                                 </div>
- 
-                                                 <div class="space-y-3">
-                                                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Usos / Bimestre</label>
-                                                     <div class="flex items-center gap-3">
-                                                         <button type="button" @click="form.usages[item.id].cycles_per_period = Math.max(0, form.usages[item.id].cycles_per_period - 1)" class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600"><Minus :size="14" /></button>
-                                                         <input type="number" v-model.number="form.usages[item.id].cycles_per_period" class="flex-1 bg-slate-50 border-none rounded-lg text-center font-black py-1 focus:ring-0" />
-                                                         <button type="button" @click="form.usages[item.id].cycles_per_period++" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white"><Plus :size="14" /></button>
-                                                     </div>
-                                                 </div>
-                                                 <div class="space-y-3">
-                                                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Referencia</label>
-                                                     <select v-model="form.usages[item.id].usage_frequency" class="w-full bg-slate-50 border-none rounded-2xl text-xs font-bold py-3 px-4">
-                                                         <option value="diario">Diaria</option>
-                                                         <option value="frecuentemente">Frecuente</option>
-                                                         <option value="ocasionalmente">Ocasional</option>
-                                                         <option value="nunca">No se usó</option>
-                                                     </select>
-                                                 </div>
-                                             </template>
- 
-                                             <!-- === PERSONAS === -->
-                                             <template v-else-if="item.usage_unit === 'people_proportional'">
-                                                 <div class="col-span-1 md:col-span-2 bg-slate-50 rounded-2xl p-4 flex items-center gap-4">
-                                                     <LayoutGrid :size="20" class="text-slate-400" />
-                                                     <p class="text-[10px] font-bold text-slate-500">Cálculo automático basado en {{ entity.people_count }} personas.</p>
-                                                 </div>
-                                             </template>
-                                         </div>
- 
-                                         <!-- Result -->
-                                         <div class="md:w-48 text-right shrink-0">
-                                             <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Consumo</p>
-                                             <p class="text-2xl font-black text-slate-900 leading-none mb-1">{{ calculateKwh(item.id).toFixed(1) }} <span class="text-[10px] font-normal text-slate-400">kWh</span></p>
-                                             <p class="text-[9px] font-bold text-slate-400 font-mono tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
-                                                 {{ getFormula(item.id) }}
-                                             </p>
-                                             <div v-if="getClimateLimitation(item.id).isLimited" class="mt-2 inline-flex items-center gap-1 bg-sky-50 text-sky-600 px-2 py-1 rounded-md border border-sky-100">
-                                                 <ThermometerSun :size="10" />
-                                                 <span class="text-[8px] font-black uppercase">{{ getClimateLimitation(item.id).days }} Días (API)</span>
-                                             </div>
-                                         </div>
-                                     </div>
-                                 </div>
+
+                                <!-- Inputs Adaptativos -->
+                                <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6 w-full py-1">
+                                    
+                                    <!-- === HORAS === -->
+                                    <template v-if="item.usage_unit === 'hours'">
+                                        <div class="space-y-3">
+                                            <div class="flex justify-between items-center px-1">
+                                                <div class="flex flex-col">
+                                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Uso/Día</label>
+                                                    <button 
+                                                        type="button"
+                                                        @click="form.usages[item.id].use_minutes = !form.usages[item.id].use_minutes"
+                                                        class="text-[8px] font-bold text-sky-500 uppercase flex items-center gap-1"
+                                                    >
+                                                        <Clock :size="8" /> {{ form.usages[item.id].use_minutes ? 'Pasar a Horas' : 'Ajustar Minutos' }}
+                                                    </button>
+                                                </div>
+                                                <span class="text-sm font-black text-slate-900 bg-slate-50 px-2 rounded-md">{{ getDisplayTime(item.id) }}</span>
+                                            </div>
+                                            <input 
+                                                v-if="!form.usages[item.id].use_minutes"
+                                                type="range" v-model.number="form.usages[item.id].avg_daily_use_hours" 
+                                                min="0" max="24" step="0.5"
+                                                class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-slate-900" 
+                                            />
+                                            <input 
+                                                v-else
+                                                type="range" :value="Math.round(form.usages[item.id].avg_daily_use_hours * 60)" 
+                                                @input="handleMinuteSlider($event, item.id)"
+                                                min="0" max="60" step="1"
+                                                class="w-full h-1.5 bg-sky-100 rounded-lg appearance-none cursor-pointer accent-sky-500" 
+                                            />
+                                        </div>
+                                        <div class="space-y-3">
+                                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Frecuencia</label>
+                                            <select 
+                                                v-model="form.usages[item.id].usage_frequency"
+                                                @change="form.usages[item.id].avg_daily_use_hours = ($event.target.value === 'nunca' ? 0 : form.usages[item.id].avg_daily_use_hours)"
+                                                class="w-full bg-slate-50 border-none rounded-2xl text-xs font-bold py-3 px-4"
+                                            >
+                                                <option value="diario">Diaria</option>
+                                                <option value="casi_frecuentemente">Casi Frecuente</option>
+                                                <option value="frecuentemente">Frecuente</option>
+                                                <option value="ocasionalmente">Ocasional</option>
+                                                <option value="raramente">Raramente</option>
+                                                <option value="nunca">No se usó</option>
+                                            </select>
+                                        </div>
+                                    </template>
+
+                                    <!-- === CICLOS === -->
+                                    <template v-else-if="item.usage_unit === 'cycles'">
+                                        <div v-if="item.cycle_suggestion > 0 && !form.usages[item.id].cycle_confirmed"
+                                             class="col-span-1 md:col-span-2 bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-center gap-4">
+                                            <Zap :size="18" class="text-amber-500 shrink-0" />
+                                            <div class="flex-1">
+                                                <p class="text-[10px] font-bold text-amber-900">Sugerencia: ~{{ item.cycle_suggestion }} usos este bimestre.</p>
+                                            </div>
+                                            <button type="button" @click="confirmCycleSuggestion(item.id, item.cycle_suggestion)" class="px-3 py-1 bg-amber-500 text-white text-[9px] font-black rounded-lg">USAR</button>
+                                        </div>
+
+                                        <div class="space-y-3">
+                                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Usos / Bimestre</label>
+                                            <div class="flex items-center gap-3">
+                                                <button type="button" @click="form.usages[item.id].cycles_per_period = Math.max(0, form.usages[item.id].cycles_per_period - 1)" class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600"><Minus :size="14" /></button>
+                                                <input type="number" v-model.number="form.usages[item.id].cycles_per_period" class="flex-1 bg-slate-50 border-none rounded-lg text-center font-black py-1 focus:ring-0" />
+                                                <button type="button" @click="form.usages[item.id].cycles_per_period++" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white"><Plus :size="14" /></button>
+                                            </div>
+                                        </div>
+                                        <div class="space-y-3">
+                                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Referencia</label>
+                                            <select v-model="form.usages[item.id].usage_frequency" class="w-full bg-slate-50 border-none rounded-2xl text-xs font-bold py-3 px-4">
+                                                <option value="diario">Diaria</option>
+                                                <option value="frecuentemente">Frecuente</option>
+                                                <option value="ocasionalmente">Ocasional</option>
+                                                <option value="nunca">No se usó</option>
+                                            </select>
+                                        </div>
+                                    </template>
+
+                                    <!-- === PERSONAS (Automático Ajustable) === -->
+                                    <template v-else-if="item.usage_unit === 'people_proportional'">
+                                        <div class="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div class="bg-slate-50 rounded-2xl p-4 flex flex-col justify-center gap-1">
+                                                <div class="flex items-center gap-2">
+                                                    <LayoutGrid :size="14" class="text-slate-400" />
+                                                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Cálculo Automático</p>
+                                                </div>
+                                                <p class="text-[9px] text-slate-400 font-medium">Basado en {{ entity.people_count }} personas. Ajusta la frecuencia para calibrar.</p>
+                                            </div>
+                                            <div class="space-y-3">
+                                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Frecuencia de Uso</label>
+                                                <select 
+                                                    v-model="form.usages[item.id].usage_frequency" 
+                                                    class="w-full bg-slate-50 border-none rounded-2xl text-xs font-bold py-3 px-4"
+                                                >
+                                                    <option value="diario">Normal (Diario)</option>
+                                                    <option value="frecuentemente">Frecuente</option>
+                                                    <option value="ocasionalmente">Ocasional</option>
+                                                    <option value="nunca">No se usó</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Result -->
+                                <div class="md:w-40 text-right shrink-0 pt-1">
+                                    <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Consumo</p>
+                                    <p class="text-2xl font-black text-slate-900 leading-none mb-1">
+                                        {{ (kwhMap[item.id] || 0) < 1 && (kwhMap[item.id] || 0) > 0
+                                            ? (kwhMap[item.id] || 0).toFixed(3)
+                                            : (kwhMap[item.id] || 0).toFixed(1)
+                                        }}
+                                        <span class="text-[10px] font-normal text-slate-400">kWh</span>
+                                    </p>
+                                    <p class="text-[9px] font-bold text-slate-400 font-mono tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {{ getFormula(item.id) }}
+                                    </p>
+                                    <div v-if="getClimateLimitation(item.id).isLimited" class="mt-2 inline-flex items-center gap-1 bg-sky-50 text-sky-600 px-2 py-1 rounded-md border border-sky-100">
+                                        <ThermometerSun :size="10" />
+                                        <span class="text-[8px] font-black uppercase">{{ getClimateLimitation(item.id).days }} Días (API)</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -597,8 +676,8 @@ const getTankColor = (key) => {
                                 </p>
                             </div>
 
-                            <!-- Tank Breakdown Metrics -->
-                            <div class="pt-6 border-t border-slate-50 space-y-4">
+                            <!-- Tank Breakdown Metrics (Oculto en Fase 1) -->
+                            <div v-if="false" class="pt-6 border-t border-slate-50 space-y-4">
                                 <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest px-1">Desglose por Tanques</p>
                                 <div v-for="tank in tankTotals" :key="tank.key" class="space-y-2">
                                     <div class="flex justify-between items-end">

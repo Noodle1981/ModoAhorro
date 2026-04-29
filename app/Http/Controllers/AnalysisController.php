@@ -448,6 +448,7 @@ class AnalysisController extends Controller
         
         DB::transaction(function() use ($request, $invoice) {
             foreach ($request->usages as $eqId => $data) {
+                // 1. Guardar uso del periodo
                 EquipmentUsage::updateOrCreate(
                     ['invoice_id' => $invoice->id, 'equipment_id' => $eqId],
                     [
@@ -457,6 +458,14 @@ class AnalysisController extends Controller
                         'is_standby' => $data['is_standby'] ?? false,
                     ]
                 );
+
+                // 2. Actualizar la ficha técnica del equipo (Patrón Fijo)
+                $equipment = \App\Models\Equipment::find($eqId);
+                if ($equipment) {
+                    $equipment->update([
+                        'has_defined_pattern' => $data['has_defined_pattern'] ?? false,
+                    ]);
+                }
             }
         });
 
