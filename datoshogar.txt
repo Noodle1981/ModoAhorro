@@ -20,52 +20,152 @@ Nombre de Tarifa: T1-R1
 
 # HISTORIAL DE FACTURAS (Últimas registradas)
 
-Factura N°: 140937991 (Cuota 2/2)
-Fecha Emisión: 27/02/2026
-Periodo: 12/11/2025 al 15/01/2026
-Consumo: 503 kWh
-Total Energía: $58.631,43
-Impuestos: $25.952,16
-Total: $84.583,59
-Estado: Pagada
+Factura N°: 137182126 (Cuota 1/2)
+Fecha Emisión: 28/01/2025
+Periodo: 15/11/2024 al 14/01/2025
+Consumo: 430 kWh
+Consumo Bimestre Real: 859 kWh
+Total Energía: $44118,19
+Impuestos: $18841,80
+Total: $62960,00
 Tarifa: T1-R3
 
-Factura N°: 14068867 (Cuota 1/2)
-Fecha Emisión: 28/01/2026
-Periodo: 12/11/2025 al 15/01/2026
-Consumo: 504 kWh
-Total Energía: $58.772,97
-Impuestos: $25.241,47
-Total: $84.014,44
-Estado: Pagada
+Factura N°: 137423224 (Cuota 2/2)
+Fecha Emisión: 28/01/2025
+Periodo: 15/11/2025 al 14/01/2025
+Consumo: 429 kWh
+Consumo Bimestre Real: 859 kWh
+Total Energía: $43987,21
+Impuestos: $18788,60
+Total: $62775,81
 Tarifa: T1-R3
 
-Factura N°: 140232616 (Cuota 2/2)
-Fecha Emisión: 23/12/2025
-Periodo: 08/09/2025 al 11/11/2025
-Consumo: 132 kWh
-Total Energía: $15.494,76
-Impuestos: $5.917,70
-Total: $21.412,46
-Estado: Pagada
+Factura N°: 137756868 (Cuota 1/2)
+Fecha Emisión: 28/03/2025
+Periodo: 15/01/2025 al 20/03/2025
+Consumo: 624 kWh
+Consumo Bimestre Real: 1247 kWh
+Total Energía: $67876,86
+Impuestos: $28078,31
+Total: $95955,17
+Tarifa: T1-R3
 
-Factura N°: 140021493 (Cuota 1/2)
-Fecha Emisión: 27/11/2025
-Periodo: 08/09/2025 al 11/11/2025
-Consumo: 133 kWh
-Total Energía: $15.575,77
-Impuestos: $5.680,47
-Total: $21.256,24
-Estado: Pagada
+Factura N°: 138004036 (Cuota 2/2)
+Fecha Emisión: 25/04/2025
+Periodo: 15/01/2025 al 20/03/2025
+Consumo: 623 kWh
+Consumo Bimestre Real: 1247 kWh
+Total Energía: $67748,37
+Impuestos: $28026,71
+Total: $95775,08
+Tarifa: T1-R3
+
+Factura N°: 138370044 (Cuota 1/2)
+Fecha Emisión: 29/05/2025
+Periodo: 21/03/2025 al 13/05/2025
+Consumo: 124 kWh
+Consumo Bimestre Real: 247 kWh
+Total Energía: $13858,13
+Impuestos: $4768,66
+Total: $18626,79
+Tarifa: T1-R2
+
+Factura N°: 138579184 (Cuota 2/2)
+Fecha Emisión: 17/07/2025
+Periodo: 21/03/2025 al 13/05/2025
+Consumo: 123 kWh
+Consumo Bimestre Real: 247 kWh
+Total Energía: $13784,62
+Impuestos: $4743,40 
+Total: $18528,02
+Tarifa: T1-R2
+
+Factura N°: 13891203 (Cuota 1/2)
+Fecha Emisión: 29/07/2025
+Periodo: 14/05/2025 al 15/07/2025
+Consumo: 83 kWh
+Consumo Bimestre Real: 166 kWh
+Total Energía: $8503,49
+Impuestos: $2452,22
+Total: $10955,71
+Tarifa: T1-R1
+
+Factura N°: 13915993 (Cuota 2/2)
+Fecha Emisión: 27/08/2025
+Periodo: 14/05/2025 al 15/07/2025
+Consumo: 83 kWh
+Consumo Bimestre Real: 166 kWh
+Total Energía: $8503,49
+Impuestos: $2452,22
+Total: $10955,71
+Tarifa: T1-R1
+
+Factura N°: 139459979 (Cuota 1/2)
+Fecha Emisión: 26/09/2025
+Periodo: 16/07/2025 al 07/09/2025
+Consumo: 78 kWh
+Consumo Bimestre Real: 156 kWh
+Total Energía: $8293,53
+Impuestos: $2484,72 
+Total: $10778,25
+Tarifa: T1-R1
 
 Factura N°: 139674278 (Cuota 2/2)
 Fecha Emisión: 23/10/2025
 Periodo: 16/07/2025 al 07/09/2025
 Consumo: 78 kWh
-Total Energía: $8.293,53
-Impuestos: $2.484,72
-Total: $10.778,25
-Estado: Pagada
+Consumo Bimestre Real: 156 kWh
+Total Energía: $8293,53
+Impuestos: $2484,72 
+Total: $10778,25
+Tarifa: T1-R1
+
+Factura N°: 140021493 (Cuota 1/2)
+Fecha Emisión: 27/11/2025
+Periodo: 08/09/2025 al 11/11/2025
+Consumo: 133 kWh
+Consumo Bimestre Real: 265 kWh
+Total Energía: $15575,77
+Impuestos: $5680,47
+Total: $21256,24
+Tarifa: T1-R2
+
+Factura N°: 140232616 (Cuota 2/2)
+Fecha Emisión: 23/12/2025
+Periodo: 08/09/2025 al 11/11/2025
+Consumo: 132 kWh
+Consumo Bimestre Real: 265 kWh
+Total Energía: $15494,76
+Impuestos: $5917,70 
+Total: $21412,46
+Tarifa: T1-R2
+
+Factura N°: 14068867 (Cuota 1/2)
+Fecha Emisión: 28/01/2026
+Periodo: 12/11/2025 al 15/01/2026
+Consumo: 504 kWh
+Consumo Bimestre Real: 1007
+Total Energía: $58772,97
+Impuestos: $25241,47 
+Total: $84014,44
+Tarifa: T1-R2
+
+
+Factura N°: 140937991 (Cuota 2/2)
+Fecha Emisión: 27/02/2026
+Periodo: 12/11/2025 al 15/01/2026
+Consumo: 503 kWh
+Consumo Bimestre Real: 1007
+Total Energía: $58631,43
+Impuestos: $25652,16 
+Total: $84283,59
+Tarifa: T1-R2
+
+
+
+
+
+
 
 # INVENTARIO DE EQUIPOS POR AMBIENTE
 

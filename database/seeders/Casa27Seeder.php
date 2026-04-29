@@ -90,7 +90,128 @@ class Casa27Seeder extends Seeder
         // ── 5. FACTURAS (fuente: datoshogar.txt) ─────────────────────────────
         // Cuotas bimestrales: dos cuotas por período de lectura (1/2 y 2/2)
         $invoices = [
+            // Período: 15/11/2024 – 14/01/2025
+            [
+                'num'         => '137182126',
+                'date'        => '2025-01-28',
+                'start'       => '2024-11-15',
+                'end'         => '2025-01-14',
+                'kwh'         => 430,
+                'energy'      => 44118.19,
+                'taxes'       => 18841.80,
+                'total'       => 62960.00,
+                'installment' => 1,
+                'of'          => 2,
+                'tariff'      => 'T1-R3',
+            ],
+            [
+                'num'         => '137423224',
+                'date'        => '2025-01-28',
+                'start'       => '2024-11-15',
+                'end'         => '2025-01-14',
+                'kwh'         => 429,
+                'energy'      => 43987.21,
+                'taxes'       => 18788.60,
+                'total'       => 62775.81,
+                'installment' => 2,
+                'of'          => 2,
+                'tariff'      => 'T1-R3',
+            ],
+            // Período: 15/01/2025 – 20/03/2025
+            [
+                'num'         => '137756868',
+                'date'        => '2025-03-28',
+                'start'       => '2025-01-15',
+                'end'         => '2025-03-20',
+                'kwh'         => 624,
+                'energy'      => 67876.86,
+                'taxes'       => 28078.31,
+                'total'       => 95955.17,
+                'installment' => 1,
+                'of'          => 2,
+                'tariff'      => 'T1-R3',
+            ],
+            [
+                'num'         => '138004036',
+                'date'        => '2025-04-25',
+                'start'       => '2025-01-15',
+                'end'         => '2025-03-20',
+                'kwh'         => 623,
+                'energy'      => 67748.37,
+                'taxes'       => 28026.71,
+                'total'       => 95775.08,
+                'installment' => 2,
+                'of'          => 2,
+                'tariff'      => 'T1-R3',
+            ],
+            // Período: 21/03/2025 – 13/05/2025
+            [
+                'num'         => '138370044',
+                'date'        => '2025-05-29',
+                'start'       => '2025-03-21',
+                'end'         => '2025-05-13',
+                'kwh'         => 124,
+                'energy'      => 13858.13,
+                'taxes'       => 4768.66,
+                'total'       => 18626.79,
+                'installment' => 1,
+                'of'          => 2,
+                'tariff'      => 'T1-R2',
+            ],
+            [
+                'num'         => '138579184',
+                'date'        => '2025-07-17',
+                'start'       => '2025-03-21',
+                'end'         => '2025-05-13',
+                'kwh'         => 123,
+                'energy'      => 13784.62,
+                'taxes'       => 4743.40,
+                'total'       => 18528.02,
+                'installment' => 2,
+                'of'          => 2,
+                'tariff'      => 'T1-R2',
+            ],
+            // Período: 14/05/2025 – 15/07/2025
+            [
+                'num'         => '13891203',
+                'date'        => '2025-07-29',
+                'start'       => '2025-05-14',
+                'end'         => '2025-07-15',
+                'kwh'         => 83,
+                'energy'      => 8503.49,
+                'taxes'       => 2452.22,
+                'total'       => 10955.71,
+                'installment' => 1,
+                'of'          => 2,
+                'tariff'      => 'T1-R1',
+            ],
+            [
+                'num'         => '13915993',
+                'date'        => '2025-08-27',
+                'start'       => '2025-05-14',
+                'end'         => '2025-07-15',
+                'kwh'         => 83,
+                'energy'      => 8503.49,
+                'taxes'       => 2452.22,
+                'total'       => 10955.71,
+                'installment' => 2,
+                'of'          => 2,
+                'tariff'      => 'T1-R1',
+            ],
             // Período: 16/07/2025 – 07/09/2025
+            [
+                'num'         => '139459979',
+                'date'        => '2025-09-26',
+                'start'       => '2025-07-16',
+                'end'         => '2025-09-07',
+                'kwh'         => 78,
+                'energy'      => 8293.53,
+                'taxes'       => 2484.72,
+                'total'       => 10778.25,
+                'installment' => 1,
+                'of'          => 2,
+                'tariff'      => 'T1-R1',
+            ],
             [
                 'num'         => '139674278',
                 'date'        => '2025-10-23',
@@ -102,9 +223,9 @@ class Casa27Seeder extends Seeder
                 'total'       => 10778.25,
                 'installment' => 2,
                 'of'          => 2,
-                'tariff'      => null,
+                'tariff'      => 'T1-R1',
             ],
-            // Período: 08/09/2025 – 11/11/2025 (cuota 1)
+            // Período: 08/09/2025 – 11/11/2025
             [
                 'num'         => '140021493',
                 'date'        => '2025-11-27',
@@ -116,9 +237,8 @@ class Casa27Seeder extends Seeder
                 'total'       => 21256.24,
                 'installment' => 1,
                 'of'          => 2,
-                'tariff'      => null,
+                'tariff'      => 'T1-R2',
             ],
-            // Período: 08/09/2025 – 11/11/2025 (cuota 2)
             [
                 'num'         => '140232616',
                 'date'        => '2025-12-23',
@@ -130,9 +250,9 @@ class Casa27Seeder extends Seeder
                 'total'       => 21412.46,
                 'installment' => 2,
                 'of'          => 2,
-                'tariff'      => null,
+                'tariff'      => 'T1-R2',
             ],
-            // Período: 12/11/2025 – 15/01/2026 (cuota 1)
+            // Período: 12/11/2025 – 15/01/2026
             [
                 'num'         => '14068867',
                 'date'        => '2026-01-28',
@@ -144,9 +264,8 @@ class Casa27Seeder extends Seeder
                 'total'       => 84014.44,
                 'installment' => 1,
                 'of'          => 2,
-                'tariff'      => 'T1-R3',
+                'tariff'      => 'T1-R2',
             ],
-            // Período: 12/11/2025 – 15/01/2026 (cuota 2)
             [
                 'num'         => '140937991',
                 'date'        => '2026-02-27',
@@ -154,11 +273,11 @@ class Casa27Seeder extends Seeder
                 'end'         => '2026-01-15',
                 'kwh'         => 503,
                 'energy'      => 58631.43,
-                'taxes'       => 25952.16,
-                'total'       => 84583.59,
+                'taxes'       => 25652.16,
+                'total'       => 84283.59,
                 'installment' => 2,
                 'of'          => 2,
-                'tariff'      => 'T1-R3',
+                'tariff'      => 'T1-R2',
             ],
         ];
 
@@ -175,7 +294,6 @@ class Casa27Seeder extends Seeder
                 'installment_number'        => $inv['installment'],
                 'total_installments'        => $inv['of'],
                 'tariff'                    => $inv['tariff'],
-                'status'                    => 'paid',
                 'source'                    => 'manual',
             ]);
         }

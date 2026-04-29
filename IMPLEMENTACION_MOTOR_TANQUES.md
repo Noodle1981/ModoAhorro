@@ -119,5 +119,8 @@ if ($equipment) {
 
 1. **Escenario 1**: Sin patrones fijos → Todo a Tank Variable.
 2. **Escenario 2**: Heladera (24h) como patrón fijo → Heladera a Tank Crítico, resto a Variable.
-3. **Escenario 3**: Aire Split como patrón fijo → Aire Split a Tank Climático.
+3. **Escenario 3**: Aire Split con patrón fijo o no igual → Aire Split a Tank Climático.
 4. **Escenario 4**: PC Gamer como patrón fijo → PC Gamer a Tank Certeza.
+
+
+es decir que tenemos la vista http://127.0.0.1:8000/analisis/ajuste-uso para elegir el periodo a ajustar, lo cual esta muy bien, pero debe ordenarse de la factura mas antigua a la mas reciente, para no crear confusion y trabajar como algo más predecible, ya que el ajuste es la ante sala de los ajuste posteriores, y es mas ordenado, el resto del flujo lo vamos a ir probando y puliendo sobre la marcha, solo que hay que tener en cuenta las nuevas condiciones y logicas que hemos establecido, anteriormente 

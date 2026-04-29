@@ -6974,3 +6974,22 @@ Stack trace:
 [2026-04-28 00:54:30] testing.ERROR: Error obteniendo datos climáticos: cURL error 60: SSL certificate problem: unable to get local issuer certificate (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://archive-api.open-meteo.com/v1/archive?latitude=-31.5375&longitude=-68.5364&start_date=2025-01-01&end_date=2025-02-01&daily=temperature_2m_max%2Ctemperature_2m_min%2Ctemperature_2m_mean%2Cprecipitation_sum%2Cwind_speed_10m_max%2Crelative_humidity_2m_mean%2Ccloudcover_mean%2Csunshine_duration%2Cshortwave_radiation_sum&timezone=auto  
 [2026-04-28 00:56:30] testing.ERROR: Error obteniendo datos climáticos: cURL error 60: SSL certificate problem: unable to get local issuer certificate (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://archive-api.open-meteo.com/v1/archive?latitude=-31.5375&longitude=-68.5364&start_date=2025-01-01&end_date=2025-02-01&daily=temperature_2m_max%2Ctemperature_2m_min%2Ctemperature_2m_mean%2Cprecipitation_sum%2Cwind_speed_10m_max%2Crelative_humidity_2m_mean%2Ccloudcover_mean%2Csunshine_duration%2Cshortwave_radiation_sum&timezone=auto  
 [2026-04-28 00:57:08] testing.ERROR: Error obteniendo datos climáticos: cURL error 60: SSL certificate problem: unable to get local issuer certificate (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://archive-api.open-meteo.com/v1/archive?latitude=-31.5375&longitude=-68.5364&start_date=2025-01-01&end_date=2025-02-01&daily=temperature_2m_max%2Ctemperature_2m_min%2Ctemperature_2m_mean%2Cprecipitation_sum%2Cwind_speed_10m_max%2Crelative_humidity_2m_mean%2Ccloudcover_mean%2Csunshine_duration%2Cshortwave_radiation_sum&timezone=auto  
+[2026-04-29 22:51:11] local.ERROR: Command "router" is not defined.
+
+Did you mean one of these?
+    route:cache
+    route:clear
+    route:list {"exception":"[object] (Symfony\\Component\\Console\\Exception\\CommandNotFoundException(code: 0): Command \"router\" is not defined.
+
+Did you mean one of these?
+    route:cache
+    route:clear
+    route:list at D:/ModoAhorro/vendor/symfony/console/Application.php:749)
+[stacktrace]
+#0 D:/ModoAhorro/vendor/symfony/console/Application.php(298): Symfony/Component/Console/Application->find()
+#1 D:/ModoAhorro/vendor/symfony/console/Application.php(195): Symfony/Component/Console/Application->doRun()
+#2 D:/ModoAhorro/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(198): Symfony/Component/Console/Application->run()
+#3 D:/ModoAhorro/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1235): Illuminate/Foundation/Console/Kernel->handle()
+#4 D:/ModoAhorro/artisan(16): Illuminate/Foundation/Application->handleCommand()
+#5 {main}
+"} 
