@@ -52,12 +52,12 @@ const form = useForm({
                 avg_daily_use_hours: item.usage.avg_daily_use_hours || 0,
                 usage_frequency: item.usage.usage_frequency || 'diario',
                 is_standby: item.usage.is_standby || false,
-                // Lee del uso guardado. Si nunca se guardó → false (USO VARIABLE).
-                // El usuario decide manualmente cuáles son Patrón Fijo.
-                has_defined_pattern: item.usage.has_defined_pattern ?? false,
+                // Lee de la ficha técnica del equipo (item), no del uso temporal.
+                has_defined_pattern: item.has_defined_pattern ?? false,
                 nominal_power_w: item.nominal_power_w,
                 use_minutes: (item.usage.avg_daily_use_hours < 1 && item.usage.avg_daily_use_hours > 0),
                 cycles_per_period: item.cycles_per_period ?? 0,
+                cycles_per_week: item.cycles_per_period ? parseFloat((item.cycles_per_period / (props.period.days / 7)).toFixed(1)) : 0,
                 cycle_confirmed: false,
             };
         });
@@ -127,7 +127,9 @@ const calculateKwh = (eqId) => {
     // 1. CÁLCULO POR CICLOS
     if (item.usage_unit === 'cycles') {
         const energyPerCycle = item.energy_per_cycle ?? (item.nominal_power_w / 1000);
-        return energyPerCycle * (data.cycles_per_period || 0);
+        // Si hay ciclos por semana definidos, mandan sobre el total del periodo (reactividad)
+        const totalCycles = data.cycles_per_week ? (data.cycles_per_week * (props.period.days / 7)) : (data.cycles_per_period || 0);
+        return energyPerCycle * totalCycles;
     }
 
     // 2. CÁLCULO POR PROPORCIÓN SOCIAL (Actualizado: Ajustable por frecuencia)
@@ -262,7 +264,8 @@ const getFormula = (eqId) => {
 
     if (item.usage_unit === 'cycles') {
         const energyPerCycle = item.energy_per_cycle ?? (item.nominal_power_w / 1000);
-        return `${energyPerCycle.toFixed(2)}kWh × ${data.cycles_per_period} ciclos`;
+        const totalCycles = data.cycles_per_week ? (data.cycles_per_week * (props.period.days / 7)) : (data.cycles_per_period || 0);
+        return `${energyPerCycle.toFixed(2)}kWh × ${Math.round(totalCycles)} ciclos totales`;
     }
 
     if (item.usage_unit === 'people_proportional') {
@@ -313,7 +316,7 @@ const handleMinuteSlider = (event, eqId) => {
 
 // Smart Prompt Helpers
 const confirmCycleSuggestion = (eqId, suggestion) => {
-    form.usages[eqId].cycles_per_period = suggestion;
+    form.usages[eqId].cycles_per_week = suggestion;
     form.usages[eqId].has_defined_pattern = true;
     form.usages[eqId].cycle_confirmed = true;
 };
@@ -544,27 +547,21 @@ const getTankColor = (key) => {
                                              class="col-span-1 md:col-span-2 bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-center gap-4">
                                             <Zap :size="18" class="text-amber-500 shrink-0" />
                                             <div class="flex-1">
-                                                <p class="text-[10px] font-bold text-amber-900">Sugerencia: ~{{ item.cycle_suggestion }} usos este bimestre.</p>
+                                                <p class="text-[10px] font-bold text-amber-900">Sugerencia inteligente: ~{{ item.cycle_suggestion }} usos por semana para {{ entity.people_count }} personas.</p>
                                             </div>
                                             <button type="button" @click="confirmCycleSuggestion(item.id, item.cycle_suggestion)" class="px-3 py-1 bg-amber-500 text-white text-[9px] font-black rounded-lg">USAR</button>
                                         </div>
 
                                         <div class="space-y-3">
-                                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Usos / Bimestre</label>
-                                            <div class="flex items-center gap-3">
-                                                <button type="button" @click="form.usages[item.id].cycles_per_period = Math.max(0, form.usages[item.id].cycles_per_period - 1)" class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600"><Minus :size="14" /></button>
-                                                <input type="number" v-model.number="form.usages[item.id].cycles_per_period" class="flex-1 bg-slate-50 border-none rounded-lg text-center font-black py-1 focus:ring-0" />
-                                                <button type="button" @click="form.usages[item.id].cycles_per_period++" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white"><Plus :size="14" /></button>
+                                            <div class="flex justify-between items-center px-1">
+                                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Usos / Semana</label>
+                                                <span class="text-[10px] font-black text-slate-300">~{{ Math.round(form.usages[item.id].cycles_per_week * (props.period.days / 7)) }} total</span>
                                             </div>
-                                        </div>
-                                        <div class="space-y-3">
-                                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Referencia</label>
-                                            <select v-model="form.usages[item.id].usage_frequency" class="w-full bg-slate-50 border-none rounded-2xl text-xs font-bold py-3 px-4">
-                                                <option value="diario">Diaria</option>
-                                                <option value="frecuentemente">Frecuente</option>
-                                                <option value="ocasionalmente">Ocasional</option>
-                                                <option value="nunca">No se usó</option>
-                                            </select>
+                                            <div class="flex items-center gap-3">
+                                                <button type="button" @click="form.usages[item.id].cycles_per_week = Math.max(0, parseFloat((form.usages[item.id].cycles_per_week - 0.5).toFixed(1)))" class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600"><Minus :size="14" /></button>
+                                                <input type="number" step="0.5" v-model.number="form.usages[item.id].cycles_per_week" class="flex-1 bg-slate-50 border-none rounded-lg text-center font-black py-1 focus:ring-0" />
+                                                <button type="button" @click="form.usages[item.id].cycles_per_week = parseFloat((form.usages[item.id].cycles_per_week + 0.5).toFixed(1))" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white"><Plus :size="14" /></button>
+                                            </div>
                                         </div>
                                     </template>
 

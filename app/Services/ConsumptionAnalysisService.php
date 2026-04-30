@@ -172,7 +172,7 @@ class ConsumptionAnalysisService
     {
         $category = $usage->equipment->category->name ?? '';
         
-        if ($category !== 'Climatización') {
+        if ($category !== 'Climatización y Ambiente' && $category !== 'Climatización') {
             return $totalDays;
         }
 
@@ -183,7 +183,9 @@ class ConsumptionAnalysisService
              return $totalDays; 
         }
 
-        $isCooling = ($category === 'Climatización');
+        $name = strtolower($usage->equipment->type->name ?? '');
+        $isCooling = str_contains($name, 'aire') || str_contains($name, 'ventilador') || str_contains($name, 'split') || str_contains($name, 'portátil');
+        
         $detectedDays = $isCooling ? ($climateDays['cooling_days'] ?? 0) : ($climateDays['heating_days'] ?? 0);
 
         return min($detectedDays, $totalDays);
@@ -356,6 +358,9 @@ class ConsumptionAnalysisService
             // 2. Cargar datos climáticos para el rango completo
             $climateLoad = $this->climateService->loadDataForDateRange($entity, $startDate, $endDate);
             $isFallback = $climateLoad['is_fallback'] ?? false;
+            
+            // 🔥 SINCRONIZACIÓN: Inyectar datos climáticos en el motor ANTES de calcular teóricos
+            $this->energyEngine->setClimateDays($climateLoad);
 
             // 3. Obtener consumos de equipos (Usamos los de la factura representativa como base del inventario)
             // Si el usuario cargó inventarios diferentes en cada cuota (raro), tomamos los de la representativa.
@@ -456,6 +461,7 @@ class ConsumptionAnalysisService
                 // — Estructura para EngineResults.vue —
                 'invoiced_kwh'    => round($invoicedKwh, 2),
                 'declared_kwh'    => round($declaredKwh, 2),
+                'calibrated_total' => round($assignedTotal, 2),
                 'adjustment_kwh'  => round($invoicedKwh - $declaredKwh, 2),
                 'tanks'           => $tanks,
                 'unassigned_remainder' => $unassigned,

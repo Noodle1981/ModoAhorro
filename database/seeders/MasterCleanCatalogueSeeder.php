@@ -72,9 +72,9 @@ class MasterCleanCatalogueSeeder extends Seeder
             ['Tostadora',                700, 1200, 900,  'CONSTANT_ELASTIC',   'cycles',             0.85,  0,     0,    'COCINA',    false, false, 0.04],
 
             // --- LAVADO Y LIMPIEZA ---
-            ['Lavarropas',               400, 2500, 2500, 'BASE_LOAD',          'cycles',             0.90, -0.10,  0,    'LAVADO',    false, false, 1.50],
-            ['Secarropas',               1500,3000, 2000, 'CONSTANT_ELASTIC',   'cycles',             0.80, -0.20,  0,    'LAVADO',    false, false, 2.50],
-            ['Lavavajillas',             1000,2200, 1500, 'BASE_LOAD',          'cycles',             0.90, -0.20,  0,    'LAVADO',    false, false, 1.20],
+            ['Lavarropas',               400, 2500, 2500, 'BASE_LOAD',          'cycles',             0.90, -0.10,  1.5,  'LAVADO',    false, false, 1.50],
+            ['Secarropas',               1500,3000, 2000, 'CONSTANT_ELASTIC',   'cycles',             0.80, -0.20,  1.0,  'LAVADO',    false, false, 2.50],
+            ['Lavavajillas',             1000,2200, 1500, 'BASE_LOAD',          'cycles',             0.90, -0.20,  1.2,  'LAVADO',    false, false, 1.20],
 
             // --- ILUMINACIÓN ---
             ['Foco LED',                 3,   15,   8,    'CONSTANT_ELASTIC',   'hours',              0.70,  0,     0,    'ILUM',      false, false, null],

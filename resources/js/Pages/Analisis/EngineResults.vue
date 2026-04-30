@@ -36,6 +36,11 @@ const hasUnassignedAlert = computed(() => unassignedPercent.value > 5);
 
 const formatKwh = (val) => Number(val || 0).toFixed(1);
 
+const calibratedTotal = computed(() => {
+    if (props.engine?.calibrated_total > 0) return props.engine.calibrated_total;
+    return (props.engine?.tanks || []).reduce((acc, t) => acc + (t.total_kwh || 0), 0);
+});
+
 const getTankIcon = (key) => {
     switch (key) {
         case 1: return ShieldCheck;
@@ -46,23 +51,23 @@ const getTankIcon = (key) => {
     }
 };
 
-const getTankColorClass = (key) => {
+const getTankBarClass = (key) => {
     switch (key) {
-        case 1: return 'text-slate-900 bg-slate-50 border-slate-200';
-        case 2: return 'text-sky-500 bg-sky-50 border-sky-100';
-        case 3: return 'text-energy-water bg-energy-water/10 border-energy-water/20';
-        case 4: return 'text-energy-solar bg-energy-solar/10 border-energy-solar/20';
-        default: return 'text-slate-500 bg-slate-50 border-slate-100';
+        case 1: return 'bg-emerald-600'; // Certeza (Verde Esmeralda)
+        case 2: return 'bg-rose-500';    // Base Crítica (Rojo)
+        case 3: return 'bg-sky-400';     // Climatización (Celeste)
+        case 4: return 'bg-lime-500';    // Uso Variable (Verde Lima)
+        default: return 'bg-slate-400';
     }
 };
 
-const getTankBarClass = (key) => {
+const getTankColorClass = (key) => {
     switch (key) {
-        case 1: return 'bg-slate-900';
-        case 2: return 'bg-sky-400';
-        case 3: return 'bg-energy-water';
-        case 4: return 'bg-energy-solar';
-        default: return 'bg-slate-400';
+        case 1: return 'text-emerald-600 bg-emerald-50 border-emerald-100';
+        case 2: return 'text-rose-500 bg-rose-50 border-rose-100';
+        case 3: return 'text-sky-500 bg-sky-50 border-sky-100';
+        case 4: return 'text-lime-600 bg-lime-50 border-lime-100';
+        default: return 'text-slate-500 bg-slate-50 border-slate-100';
     }
 };
 
@@ -140,10 +145,10 @@ const formatDate = (dateString) => {
                                     :key="tank.key"
                                     class="h-full rounded-[14px] transition-all duration-1000 ease-out group relative cursor-help"
                                     :class="getTankBarClass(tank.key)"
-                                    :style="{ width: (tank.total_kwh / engine.invoiced_kwh * 100) + '%' }"
+                                    :style="{ width: (tank.total_kwh / calibratedTotal * 100) + '%' }"
                                 >
                                     <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <span class="text-[10px] font-black text-white">{{ Math.round(tank.total_kwh / engine.invoiced_kwh * 100) }}%</span>
+                                        <span class="text-[10px] font-black text-white">{{ Math.round(tank.total_kwh / calibratedTotal * 100) }}%</span>
                                     </div>
                                 </div>
                             </div>

@@ -274,7 +274,7 @@ class AnalysisController extends Controller
         $entity = $this->getActiveEntity($request);
         if (!$entity) return redirect()->route('dashboard');
 
-        $unifications = $this->getUnifiedPeriods($entity);
+        $unifications = $this->getUnifiedPeriods($entity)->sortBy('start_date')->values();
 
         return Inertia::render('Analisis/UsageAdjustment', [
             'entity' => $entity,
@@ -359,7 +359,9 @@ class AnalysisController extends Controller
                     'energy_per_cycle' => $equipment->type->energy_per_cycle,
                     'social_coefficient' => $equipment->type->social_coefficient ?? 0,
                     'cycles_per_period' => ($usage instanceof \App\Models\EquipmentUsage) ? $usage->cycles_per_period : ($usage['cycles_per_period'] ?? null),
-                    'cycle_suggestion' => null, // Opcional: calcular basado en remanente previo
+                    'cycle_suggestion' => ($equipment->type->usage_unit === 'cycles' && $equipment->type->social_coefficient > 0) 
+                        ? round($equipment->type->social_coefficient * ($entity->people_count ?? 1), 1)
+                        : null,
                 ];
 
                 $tanks[$tier]['items'][] = $item;
@@ -403,13 +405,21 @@ class AnalysisController extends Controller
         
         DB::transaction(function() use ($request, $invoice) {
             foreach ($request->usages as $eqId => $data) {
+                // Si el usuario envió ciclos por semana, convertimos a ciclos por periodo
+                $cyclesPerPeriod = $data['cycles_per_period'] ?? null;
+                if (isset($data['cycles_per_week']) && $data['cycles_per_week'] !== null) {
+                    $invoice = Invoice::find($request->invoice_id);
+                    $days = Carbon::parse($invoice->start_date)->diffInDays(Carbon::parse($invoice->end_date)) ?: 30;
+                    $cyclesPerPeriod = $data['cycles_per_week'] * ($days / 7);
+                }
+
                 // 1. Guardar uso específico para este periodo (Factura)
                 EquipmentUsage::updateOrCreate(
                     ['invoice_id' => $invoice->id, 'equipment_id' => $eqId],
                     [
                         'avg_daily_use_hours' => $data['avg_daily_use_hours'] ?? null,
                         'usage_frequency' => $data['usage_frequency'] ?? 'diario',
-                        'cycles_per_period' => $data['cycles_per_period'] ?? null,
+                        'cycles_per_period' => $cyclesPerPeriod,
                         'is_standby' => $data['is_standby'] ?? false,
                     ]
                 );
@@ -418,6 +428,11 @@ class AnalysisController extends Controller
                 $equipment = \App\Models\Equipment::find($eqId);
                 if ($equipment) {
                     $isFrozen = $data['has_defined_pattern'] ?? false;
+                    // Si el usuario ingresó ciclos manualmente, forzamos el patrón definido
+                    if ($cyclesPerPeriod !== null && $cyclesPerPeriod > 0) {
+                        $isFrozen = true;
+                    }
+                    
                     $equipment->update(['has_defined_pattern' => $isFrozen]);
                     
                     if ($isFrozen) {
@@ -448,13 +463,20 @@ class AnalysisController extends Controller
         
         DB::transaction(function() use ($request, $invoice) {
             foreach ($request->usages as $eqId => $data) {
+                // Conversión de ciclos por semana si aplica
+                $cyclesPerPeriod = $data['cycles_per_period'] ?? null;
+                if (isset($data['cycles_per_week']) && $data['cycles_per_week'] !== null) {
+                    $days = Carbon::parse($invoice->start_date)->diffInDays(Carbon::parse($invoice->end_date)) ?: 30;
+                    $cyclesPerPeriod = $data['cycles_per_week'] * ($days / 7);
+                }
+
                 // 1. Guardar uso del periodo
                 EquipmentUsage::updateOrCreate(
                     ['invoice_id' => $invoice->id, 'equipment_id' => $eqId],
                     [
                         'avg_daily_use_hours' => $data['avg_daily_use_hours'] ?? null,
                         'usage_frequency' => $data['usage_frequency'] ?? 'diario',
-                        'cycles_per_period' => $data['cycles_per_period'] ?? null,
+                        'cycles_per_period' => $cyclesPerPeriod,
                         'is_standby' => $data['is_standby'] ?? false,
                     ]
                 );
@@ -462,8 +484,12 @@ class AnalysisController extends Controller
                 // 2. Actualizar la ficha técnica del equipo (Patrón Fijo)
                 $equipment = \App\Models\Equipment::find($eqId);
                 if ($equipment) {
+                    $isFrozen = $data['has_defined_pattern'] ?? false;
+                    if ($cyclesPerPeriod !== null && $cyclesPerPeriod > 0) {
+                        $isFrozen = true;
+                    }
                     $equipment->update([
-                        'has_defined_pattern' => $data['has_defined_pattern'] ?? false,
+                        'has_defined_pattern' => $isFrozen,
                     ]);
                 }
             }
@@ -513,28 +539,38 @@ class AnalysisController extends Controller
             ]
         ]);
     }
+
     /**
-     * Lógica legacy de clasificación por Tiers
+     * Lógica de clasificación por Tiers
      */
     private function getEquipmentTier($equipment): string
     {
-        // T1: Certeza Matemática (Patrón congelado por el usuario O score muy alto)
-        if ($equipment->has_defined_pattern || ($equipment->type && $equipment->type->determinism_score >= 0.9)) {
+        // 1. Tanque 1: Certeza (Prioridad absoluta a la intención del usuario)
+        if ($equipment->has_defined_pattern) {
             return 'certeza';
         }
 
-        // T2: Base Inmutable (Ciclos automáticos)
-        if ($equipment->type && $equipment->type->consumption_logic === 'BASE_LOAD') {
+        // 2. Tanque 2: Base Crítica (Refrigeración, Conectividad o uso continuo)
+        if ($this->isCritical($equipment)) {
             return 'base_critica';
         }
 
-        // T3: Sensibilidad Climática (Excepto SEASONAL_HABIT que va a T4)
-        if ($equipment->type && $equipment->type->is_thermal_sensitive && $equipment->type->consumption_logic !== 'SEASONAL_HABIT') {
+        // 3. Tanque 3: Climatización (Sensible al clima)
+        if ($equipment->type?->is_thermal_sensitive) {
             return 'climatizacion';
         }
 
-        // T4: Todo lo demás (Elasticidad y Hábitos)
+        // 4. Tanque 4: Uso Variable (El resto)
         return 'uso_variable';
+    }
+
+    private function isCritical($equipment): bool
+    {
+        $criticalCategories = ['Refrigeración', 'Conectividad y Seguridad'];
+        $categoryName = $equipment->category->name ?? $equipment->type?->category?->name ?? '';
+        $hours = $equipment->avg_daily_use_hours ?? 0;
+        
+        return in_array($categoryName, $criticalCategories) || $hours >= 23.5;
     }
 
     private function getTopItemsForTank(array $items): array

@@ -16,12 +16,7 @@ class Tank1BaseService
         $logs = [];
 
         $targetEquipments = $equipments->filter(function ($eq) {
-            // Tank Crítico: Entra cualquier equipo que funcione 24hs
-            // o pertenezca a categorías inamovibles (Refrigeración, Conectividad).
-            // El usuario NO necesita marcar Patrón Fijo: es un criterio técnico.
-            // La categoría determina el algoritmo de cálculo dentro del tanque.
-            return $eq->tank_assignment === null
-                && $this->isCritical($eq);
+            return $eq->tank_assignment === null && $this->isEligible($eq);
         });
 
         foreach ($targetEquipments as $eq) {
@@ -58,15 +53,23 @@ class Tank1BaseService
         ];
     }
 
-    private function isCritical(Equipment $eq): bool
+    public function isEligible(Equipment $eq): bool
     {
-        // Crítico = 24hs continuas Y todos los días (diario).
-        // Un servidor que se apaga los fines de semana tiene 24h
-        // pero NO es diario: va a Certeza (si es Patrón Fijo) o Variable.
-        $hours = $eq->avg_daily_use_hours ?? 0;
-        $frequency = $eq->usage_frequency ?? 'diario';
-        $isDailyOrAlways = in_array($frequency, ['diario', 'diariamente']);
+        // Si el usuario ya definió un patrón, este equipo ya fue procesado por el Tanque 1 (Certeza)
+        if ($eq->has_defined_pattern) {
+            return false;
+        }
 
-        return $hours >= 23.5 && $isDailyOrAlways;
+        return $this->isCritical($eq);
+    }
+
+    public function isCritical(Equipment $eq): bool
+    {
+        $criticalCategories = ['Refrigeración', 'Conectividad y Seguridad'];
+        $categoryName = $eq->category->name ?? $eq->type?->category?->name ?? '';
+        $hours = $eq->avg_daily_use_hours ?? 0;
+        
+        // Es crítico si pertenece a una categoría esencial O si se usa las 24hs
+        return in_array($categoryName, $criticalCategories) || $hours >= 23.5;
     }
 }

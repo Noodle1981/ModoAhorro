@@ -28,12 +28,7 @@ class Tank2ClimateService
         $entity = $invoice->contract->entity;
 
         $targetEquipments = $equipments->filter(function ($eq) {
-            // Tank Climático: Entra cualquier equipo de categoría Climatización.
-            // El usuario NO necesita marcar Patrón Fijo: la categoría es la llave.
-            // Incluye ventiladores (SEASONAL_HABIT): el motor climático los limita
-            // a los días con condición estacional activa.
-            return $eq->tank_assignment === null
-                && $eq->type?->is_thermal_sensitive === true;
+            return $eq->tank_assignment === null && $this->isEligible($eq);
         });
 
         if ($targetEquipments->isEmpty()) {
@@ -163,5 +158,17 @@ class Tank2ClimateService
             'climate_data' => $climateStats,
             'processed_count' => $targetEquipments->count()
         ];
+    }
+    public function isEligible(Equipment $eq): bool
+    {
+        // Si ya tiene un patrón definido por el usuario, ya fue procesado por el Tanque de Certeza (T1)
+        if ($eq->has_defined_pattern) {
+            return false;
+        }
+
+        $name = strtolower($eq->type?->name ?? '');
+        $isCoolingOrHeating = str_contains($name, 'aire') || str_contains($name, 'split') || str_contains($name, 'portátil') || str_contains($name, 'estufa') || str_contains($name, 'calefactor') || str_contains($name, 'ventilador');
+
+        return ($eq->type?->is_thermal_sensitive ?? false) || $isCoolingOrHeating;
     }
 }

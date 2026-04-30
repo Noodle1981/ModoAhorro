@@ -17,9 +17,11 @@ class Tank0CertaintyService
         $logs = [];
 
         $targetEquipments = $equipments->filter(function ($eq) {
-            // Solo equipos que el USUARIO marcó como Patrón Fijo
-            // Y que NO son ni Críticos (-> Tank1) ni de Climatización (-> Tank2)
-            return $eq->has_defined_pattern === true 
+            // NUEVO (CORRECTO):
+            // Solo entran equipos que el USUARIO marcó como Patrón Fijo
+            // Y que NO sean ni de Refrigeración/Conectividad (-> Tank Crítico)
+            // NI de Climatización (-> Tank Climático)
+            return $eq->has_defined_pattern === true
                 && !$this->isCritical($eq)
                 && !($eq->type?->is_thermal_sensitive);
         });
@@ -45,11 +47,11 @@ class Tank0CertaintyService
 
     private function isCritical(Equipment $eq): bool
     {
-        // Crítico = 24hs continuas Y todos los días.
+        $criticalCategories = ['Refrigeración', 'Conectividad y Seguridad'];
+        $categoryName = $eq->type?->category?->name ?? '';
         $hours = $eq->avg_daily_use_hours ?? 0;
-        $frequency = $eq->usage_frequency ?? 'diario';
-        $isDailyOrAlways = in_array($frequency, ['diario', 'diariamente']);
 
-        return $hours >= 23.5 && $isDailyOrAlways;
+        return in_array($categoryName, $criticalCategories)
+            || $hours >= 23.5;
     }
 }

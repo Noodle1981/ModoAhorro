@@ -41,7 +41,8 @@ class EnergyEngineService
     public function processInvoice(Invoice $invoice, Collection $equipments): array
     {
         $entity = $invoice->contract->entity;
-        $totalBillKwh = $invoice->bimonthly_consumption_kwh ?? $invoice->total_energy_consumed_kwh ?? $invoice->consumption_kwh ?? 0;
+        // Priorizamos el consumo de la factura (cuota) sobre el bimensual si estamos en un proceso de unificación
+        $totalBillKwh = $invoice->total_energy_consumed_kwh ?? $invoice->consumption_kwh ?? $invoice->bimonthly_consumption_kwh ?? 0;
         $logs = [];
 
         // 1. CONTEXTO OPERATIVO
@@ -88,12 +89,44 @@ class EnergyEngineService
         $this->lastClimateDays = $resT2['climate_data'] ?? [];
 
         // --- PASO 3: TANQUE 3 (ELASTICIDAD/VARIABLE) ---
+        // Si el remanente es negativo o muy bajo, comprimimos los tanques anteriores (excepto T0) 
+        // para dar espacio al Tanque Variable (Hábitos).
+        $minVariableResidue = $totalBillKwh * 0.03; // Reservamos un 3% para lo variable
+        
+        if ($remainingKwh < $minVariableResidue && $totalBillKwh > 0) {
+            $excess = $minVariableResidue - $remainingKwh;
+            $compressibleKwh = $resT1['consumption'] + $resT2['consumption'];
+            
+            if ($compressibleKwh > 0) {
+                $compressionFactor = ($compressibleKwh - $excess) / $compressibleKwh;
+                $compressionFactor = max(0.5, $compressionFactor); // No comprimir más del 50%
+                
+                // Aplicar compresión a los equipos de T2 y T3
+                foreach ($equipments->whereIn('tank_assignment', [2, 3]) as $eq) {
+                    $oldVal = $eq->calculated_consumption_kwh;
+                    $newVal = $oldVal * $compressionFactor;
+                    $eq->calculated_consumption_kwh = $newVal;
+                    
+                    $tempLogs = $eq->audit_logs ?? [];
+                    $tempLogs[] = "Compresión de motor (x" . number_format($compressionFactor, 2) . ") para ajuste de bolsa.";
+                    $eq->audit_logs = $tempLogs;
+                }
+                
+                $resT1['consumption'] *= $compressionFactor;
+                $resT2['consumption'] *= $compressionFactor;
+                
+                // Recalculamos el remanente con los nuevos valores comprimidos
+                $remainingKwh = $totalBillKwh - ($resT0['consumption'] + $resT1['consumption'] + $resT2['consumption'] + $standbyKwh);
+                $remainingKwh = max($minVariableResidue, $remainingKwh);
+            }
+        }
+
         $resT3 = $this->tank3->process($equipments->where('is_standby', false), $remainingKwh, $opContext);
         $logs = array_merge($logs, $resT3['logs']);
 
         // --- CÁLCULO FINAL ---
         $totalTheoretical = $resT0['consumption'] + $resT1['consumption'] + $resT2['consumption'] + ($resT3['processed_count'] > 0 ? $remainingKwh : 0);
-        $totalAssigned = $resT0['consumption'] + $resT1['consumption'] + $resT2['consumption'] + $resT3['consumption'];
+        $totalAssigned = $resT0['consumption'] + $resT1['consumption'] + $resT2['consumption'] + $resT3['consumption'] + $standbyKwh;
         
         $recommendedTotalKwh = $totalTheoretical;
         if ($totalBillKwh > 0) {
@@ -165,5 +198,11 @@ class EnergyEngineService
     public function getClimateDays(): array
     {
         return $this->lastClimateDays;
+    }
+
+    public function setClimateDays(array $days): self
+    {
+        $this->lastClimateDays = $days;
+        return $this;
     }
 }
