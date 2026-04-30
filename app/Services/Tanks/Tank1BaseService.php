@@ -55,11 +55,8 @@ class Tank1BaseService
 
     public function isEligible(Equipment $eq): bool
     {
-        // Si el usuario ya definió un patrón, este equipo ya fue procesado por el Tanque 1 (Certeza)
-        if ($eq->has_defined_pattern) {
-            return false;
-        }
-
+        // Si es crítico, SIEMPRE entra al Tanque 2 (Base Crítica),
+        // independientemente de si tiene patrón fijo o no.
         return $this->isCritical($eq);
     }
 

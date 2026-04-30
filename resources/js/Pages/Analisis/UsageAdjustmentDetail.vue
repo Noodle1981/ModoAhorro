@@ -181,18 +181,9 @@ const allItemsFlat = computed(() => {
 // IMPORTANTE: este computed es la fuente de verdad reactiva.
 // calculateKwh() es una función normal, no un computed; Vue no la trackea
 // cuando se llama directamente desde el template. Al wrappearla acá,
-// todos los accesos a form.usages quedan bajo el tracking del computed.
-const kwhMap = computed(() => {
-    const map = {};
-    // Accedemos a todos los valores del form para que Vue registre
-    // la dependencia en cada propiedad relevante
-    Object.entries(form.usages).forEach(([id]) => {
-        map[id] = calculateKwh(Number(id));
-    });
-    return map;
-});
 
-// 3. Agrupación por Ambiente (Room) — usa kwhMap para ser reactiva
+
+// 3. Agrupación por Ambiente (Room)
 const roomsFlat = computed(() => {
     const roomsMap = {};
     allItemsFlat.value.forEach(item => {
@@ -205,20 +196,23 @@ const roomsFlat = computed(() => {
             };
         }
         roomsMap[roomName].items.push(item);
-        roomsMap[roomName].current_kwh += (kwhMap.value[item.id] || 0);
+        roomsMap[roomName].current_kwh += calculateKwh(item.id);
     });
     
     return Object.values(roomsMap).sort((a, b) => a.name.localeCompare(b.name));
 });
 
-// Totales reactivos — usan kwhMap
 const totalCalculatedKwh = computed(() => {
-    return Object.values(kwhMap.value).reduce((sum, v) => sum + v, 0);
+    let sum = 0;
+    allItemsFlat.value.forEach(item => {
+        sum += calculateKwh(item.id);
+    });
+    return sum;
 });
 
 const tankTotals = computed(() => {
     return props.tanks.map(tank => {
-        const kwh = tank.items.reduce((sum, item) => sum + (kwhMap.value[item.id] || 0), 0);
+        const kwh = tank.items.reduce((sum, item) => sum + calculateKwh(item.id), 0);
         
         const roomsMap = {};
         tank.items.forEach(item => {
@@ -227,7 +221,7 @@ const tankTotals = computed(() => {
                 roomsMap[roomName] = { name: roomName, items: [], current_kwh: 0 };
             }
             roomsMap[roomName].items.push(item);
-            roomsMap[roomName].current_kwh += (kwhMap.value[item.id] || 0);
+            roomsMap[roomName].current_kwh += calculateKwh(item.id);
         });
         
         const rooms = Object.values(roomsMap).sort((a, b) => a.name.localeCompare(b.name));
@@ -239,6 +233,10 @@ const tankTotals = computed(() => {
 const diffPercentage = computed(() => {
     const invoiced = props.period.total_kwh || 1;
     return ((totalCalculatedKwh.value - invoiced) / invoiced) * 100;
+});
+
+const isWithinMargin = computed(() => {
+    return diffPercentage.value >= -5 && diffPercentage.value <= 20;
 });
 
 const roomTotals = computed(() => {
@@ -595,9 +593,9 @@ const getTankColor = (key) => {
                                 <div class="md:w-40 text-right shrink-0 pt-1">
                                     <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Consumo</p>
                                     <p class="text-2xl font-black text-slate-900 leading-none mb-1">
-                                        {{ (kwhMap[item.id] || 0) < 1 && (kwhMap[item.id] || 0) > 0
-                                            ? (kwhMap[item.id] || 0).toFixed(3)
-                                            : (kwhMap[item.id] || 0).toFixed(1)
+                                        {{ calculateKwh(item.id) < 1 && calculateKwh(item.id) > 0
+                                            ? calculateKwh(item.id).toFixed(3)
+                                            : calculateKwh(item.id).toFixed(1)
                                         }}
                                         <span class="text-[10px] font-normal text-slate-400">kWh</span>
                                     </p>
@@ -633,7 +631,7 @@ const getTankColor = (key) => {
                                 </div>
                                 <div class="text-right">
                                     <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">vs Facturado</p>
-                                    <span :class="['text-sm font-black px-2 py-1 rounded-lg', Math.abs(diffPercentage) < 5 ? 'text-energy-success bg-green-50' : 'text-amber-600 bg-amber-50']">
+                                    <span :class="['text-sm font-black px-2 py-1 rounded-lg', isWithinMargin ? 'text-energy-success bg-green-50' : 'text-amber-600 bg-amber-50']">
                                         {{ diffPercentage > 0 ? '+' : '' }}{{ Math.round(diffPercentage) }}%
                                     </span>
                                 </div>
@@ -651,11 +649,10 @@ const getTankColor = (key) => {
                                         <div class="w-2 h-2 bg-slate-400 rounded-full -mt-1 shadow-sm"></div>
                                     </div>
                                     
-                                    <!-- Progress Fill -->
                                     <div 
                                         class="h-full rounded-full transition-all duration-1000 ease-out shadow-lg flex items-center justify-end px-2" 
                                         :class="[
-                                            Math.abs(diffPercentage) < 5 ? 'bg-energy-success' : 
+                                            isWithinMargin ? 'bg-energy-success' : 
                                             (totalCalculatedKwh > period.total_kwh ? 'bg-rose-500' : 'bg-slate-900')
                                         ]"
                                         :style="{ width: Math.min(100, (totalCalculatedKwh / period.total_kwh) * 100) + '%' }"
@@ -667,9 +664,9 @@ const getTankColor = (key) => {
                                 </div>
                                 
                                 <!-- Alert if gap is too big -->
-                                <p v-if="Math.abs(diffPercentage) > 20" class="text-[10px] text-amber-600 font-bold italic leading-relaxed flex items-start gap-2 bg-amber-50 p-4 rounded-2xl border border-amber-100">
+                                <p v-if="!isWithinMargin" class="text-[10px] text-amber-600 font-bold italic leading-relaxed flex items-start gap-2 bg-amber-50 p-4 rounded-2xl border border-amber-100">
                                     <AlertCircle :size="14" class="shrink-0" />
-                                    Nota: Diferencia importante ({{ Math.round(diffPercentage) }}%) detectada. Revisa los hábitos.
+                                    No puedes guardar. El cálculo total ({{ Math.round((totalCalculatedKwh / period.total_kwh) * 100) }}%) supera el margen permitido (95% - 120%). Ajusta los hábitos.
                                 </p>
                             </div>
 
@@ -729,8 +726,8 @@ const getTankColor = (key) => {
                             <button 
                                 type="button"
                                 @click="submitSave"
-                                :disabled="form.processing"
-                                class="w-full py-5 bg-slate-100 text-slate-900 rounded-[32px] font-black text-xs uppercase tracking-widest hover:bg-slate-200 flex items-center justify-center gap-3 transition-all outline-none"
+                                :disabled="form.processing || !isWithinMargin"
+                                class="w-full py-5 bg-slate-100 text-slate-900 rounded-[32px] font-black text-xs uppercase tracking-widest hover:bg-slate-200 flex items-center justify-center gap-3 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <Save :size="16" /> Guardar Contexto
                             </button>
@@ -739,8 +736,8 @@ const getTankColor = (key) => {
                             <button 
                                 type="button"
                                 @click="submitCalibrate"
-                                :disabled="form.processing"
-                                class="w-full py-6 bg-slate-900 text-white rounded-[32px] font-black text-xs uppercase tracking-widest hover:bg-energy-solar shadow-2xl flex items-center justify-center gap-3 transition-all outline-none"
+                                :disabled="form.processing || !isWithinMargin"
+                                class="w-full py-6 bg-slate-900 text-white rounded-[32px] font-black text-xs uppercase tracking-widest hover:bg-energy-solar shadow-2xl flex items-center justify-center gap-3 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-900"
                             >
                                 <Zap :size="16" /> Sintonizar Motor →
                             </button>

@@ -13,6 +13,7 @@ Este documento registra la evolución arquitectónica de **ModoAhorro** hacia un
 | v2 | Sin diferenciación tecnológica (Inverter vs On/Off) | `is_inverter` + `energy_label_coefficients` |
 | v3 | Motor clasificaba por catálogo, ignorando al usuario | Cascada de tanques basada en comportamiento declarado |
 | v4 | `has_defined_pattern` binario no distingue tipos de patrón | Motor v4: criterios técnicos (24h, categoría) + flag usuario |
+| v5 | "Caja Negra" de compresión alteraba datos reales para forzar coincidencia con factura | **Arquitectura Teórico Puro**: Motor calcula consumo real, no comprime, y calcula un **Residual Matemático**. |
 
 ---
 
@@ -45,14 +46,15 @@ Este documento registra la evolución arquitectónica de **ModoAhorro** hacia un
 
 ---
 
-## 4. Motor de Energía v4 — Cascada de Tanques
+## 4. Motor de Energía v5 — Arquitectura Teórico Puro
 
-### Cambio fundamental respecto a v3
-**v3**: El motor clasificaba equipos usando `consumption_logic` y `determinism_score` del catálogo (seeder). El usuario no tenía control real sobre los tanques.
+### Cambio fundamental respecto a v4 (El Fin de la Compresión)
+**v4**: El motor intentaba que la suma de los tanques coincidiera exactamente con la factura, usando el `Tank4` como "esponja elástica" y un factor de compresión artificial. Esto rompía la confianza matemática del sistema.
 
-**v4**: El motor usa **criterios técnicos + decisión del usuario**:
-- El usuario decide qué es "patrón fijo". El motor sub-clasifica técnicamente.
-- Las categorías especiales (Climatización, Refrigeración) solo determinan el *algoritmo de cálculo*, no el *tanque de entrada*.
+**v5 (Teórico Puro)**: El motor **NO COMPRIME**. Calcula estrictamente el consumo en base a hábitos y clima (honestidad matemática). La diferencia con la factura se considera puramente **Energía Residual** (exceso o faltante).
+- Se elimina la lógica de distribución elástica forzada.
+- Gatekeeper de Tolerancia: Solo permite guardar ajustes si el Teórico Puro cae en un rango lógico de la factura (**95% - 120%**).
+- Si el ajuste es >120%, el usuario está sobre-declarando. Si es <95%, está sub-declarando u olvidó equipos.
 
 ### Cascada de clasificación
 
@@ -81,12 +83,13 @@ PASO 3 - Tank Climático (Tank2ClimateService):
   → Algoritmo: cooling_days / heating_days de la API × load_factor × room_size_factor
   → Incluye ventiladores: limitados a días con condición estacional activa
 
-PASO 4 - Tank Volátil (Tank3ElasticityService):
+PASO 4 - Tank Variable (Uso Variable):
   → Criterio: todo lo que no fue asignado en pasos anteriores
-  → Algoritmo en 3 pasos:
-      A. Deducción social (people_proportional): social_coeff × people × días × freq_factor
-      B. Deducción por ciclos (ciclos declarados o estimados del remanente)
-      C. Residuo elástico: distribuido proporcionalmente por intensidad y potencia
+  → Algoritmo simplificado: Cálculo Teórico directo basado en horas o frecuencia. Se eliminó la distribución social, ciclos adivinados y elasticidad.
+
+PASO 5 - Cálculo Residual:
+  → Energía Residual = Factura (Billed) - Suma Teórica de Tanques
+  → Este valor se reporta visualmente, sin intentar esconderlo dentro del Tank 4.
 ```
 
 ### Invariantes del motor (NO romper)
@@ -111,8 +114,9 @@ PASO 4 - Tank Volátil (Tank3ElasticityService):
 - Equipos en "No se usó" se atenúan visualmente.
 
 ### Fase 2: Resultados del Motor (`EngineResults.vue`)
-- Visualización de 4 tanques con kWh total y top 5 equipos.
-- Balance: kWh facturado vs kWh calculado vs remanente no asignado.
+- Visualización Teórico Puro: Barra de 100% o con límite de factura (dashed line).
+- Color morado/rojo para representar explícitamente el Faltante/Exceso Residual.
+- Se eliminan mensajes engañosos de "Ajustes por motor".
 
 ---
 
@@ -138,14 +142,14 @@ PASO 4 - Tank Volátil (Tank3ElasticityService):
 - [x] Cargar datos reales de calibración para "Casa 27".
 - [x] Vista de ajuste plana por Ambiente (Fase 1 sin tanques).
 - [x] Motor v4: clasificación por comportamiento + decisión de usuario.
+- [x] **Motor v5 (Teórico Puro)**: Eliminación de compresión artificial. Gatekeeper 95%-120%. Gráficos duales para Residuales.
 - [x] Reactividad en tiempo real del consumo por slider.
 - [ ] **ARQUITECTURA TARGET**: Migrar `has_defined_pattern boolean` → `pattern_type ENUM('inamovible', 'periodico', 'volatil')` + CategoryCalculators enchufables (ver `rules.md § 7`).
 - [ ] Implementar curva de carga variable para equipos Inverter.
 - [ ] Crear Analizador de Capacidad (comparar frigorías vs m² de habitación).
 - [ ] Agregar Categoría Calefacción con motor climático propio (HDD).
 - [ ] Agregar Termotanque con lógica de pérdida térmica independiente.
-- [ ] Refactorizar Analizador de Hábitos para sugerir cambios basados en Tank Volátil.
 
 ---
 
-**Estado del Proyecto**: Motor v4 funcional. Clasificación por comportamiento declarado (usuario) + criterios técnicos (24h, categoría Climatización). Interfaz de ajuste por ambientes con reactividad en tiempo real. Arquitectura target (calculators enchufables) documentada para próxima sesión.
+**Estado del Proyecto**: Motor v5 funcional (**Teórico Puro**). Clasificación por comportamiento declarado + cálculo inamovible sin compresión artificial. Interfaz gráfica adaptada para mostrar Excesos y Faltantes Residuales (Barra Morada/Línea Punteada). Error de clonación en Eloquent arreglado para evitar sobreescrituras en cadena. Arquitectura target documentada para próxima sesión.

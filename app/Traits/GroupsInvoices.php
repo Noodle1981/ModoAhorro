@@ -88,7 +88,7 @@ trait GroupsInvoices
                 ];
             })
             ->values()
-            ->sortByDesc('end_date')
+            ->sortBy('end_date')
             ->values();
     }
 }

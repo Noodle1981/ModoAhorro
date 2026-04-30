@@ -9,14 +9,14 @@ use Illuminate\Support\Facades\Log;
 
 class EnergyEngineService
 {
-    protected $climateService;
-    protected $thermalService;
-    protected $tank0;
-    protected $tank1;
-    protected $tank2;
-    protected $tank3;
-    protected $lastClimateDays = [];
-    protected $isFallbackMode = false;
+    protected ClimateService $climateService;
+    protected ThermalProfileService $thermalService;
+    protected \App\Services\Tanks\Tank0CertaintyService $tank0;
+    protected \App\Services\Tanks\Tank1BaseService $tank1;
+    protected \App\Services\Tanks\Tank2ClimateService $tank2;
+    protected \App\Services\Tanks\Tank3ElasticityService $tank3;
+    protected array $lastClimateDays = [];
+    protected bool $isFallbackMode = false;
 
     public function __construct(
         ClimateService $climateService, 
@@ -89,51 +89,24 @@ class EnergyEngineService
         $this->lastClimateDays = $resT2['climate_data'] ?? [];
 
         // --- PASO 3: TANQUE 3 (ELASTICIDAD/VARIABLE) ---
-        // Si el remanente es negativo o muy bajo, comprimimos los tanques anteriores (excepto T0) 
-        // para dar espacio al Tanque Variable (Hábitos).
-        $minVariableResidue = $totalBillKwh * 0.03; // Reservamos un 3% para lo variable
-        
-        if ($remainingKwh < $minVariableResidue && $totalBillKwh > 0) {
-            $excess = $minVariableResidue - $remainingKwh;
-            $compressibleKwh = $resT1['consumption'] + $resT2['consumption'];
-            
-            if ($compressibleKwh > 0) {
-                $compressionFactor = ($compressibleKwh - $excess) / $compressibleKwh;
-                $compressionFactor = max(0.5, $compressionFactor); // No comprimir más del 50%
-                
-                // Aplicar compresión a los equipos de T2 y T3
-                foreach ($equipments->whereIn('tank_assignment', [2, 3]) as $eq) {
-                    $oldVal = $eq->calculated_consumption_kwh;
-                    $newVal = $oldVal * $compressionFactor;
-                    $eq->calculated_consumption_kwh = $newVal;
-                    
-                    $tempLogs = $eq->audit_logs ?? [];
-                    $tempLogs[] = "Compresión de motor (x" . number_format($compressionFactor, 2) . ") para ajuste de bolsa.";
-                    $eq->audit_logs = $tempLogs;
-                }
-                
-                $resT1['consumption'] *= $compressionFactor;
-                $resT2['consumption'] *= $compressionFactor;
-                
-                // Recalculamos el remanente con los nuevos valores comprimidos
-                $remainingKwh = $totalBillKwh - ($resT0['consumption'] + $resT1['consumption'] + $resT2['consumption'] + $standbyKwh);
-                $remainingKwh = max($minVariableResidue, $remainingKwh);
-            }
-        }
-
-        $resT3 = $this->tank3->process($equipments->where('is_standby', false), $remainingKwh, $opContext);
+        // Se calcula el Teórico Puro basado en las horas declaradas. Sin distribución artificial.
+        $resT3 = $this->tank3->process($equipments->where('is_standby', false), $opContext);
         $logs = array_merge($logs, $resT3['logs']);
 
-        // --- CÁLCULO FINAL ---
-        $totalTheoretical = $resT0['consumption'] + $resT1['consumption'] + $resT2['consumption'] + ($resT3['processed_count'] > 0 ? $remainingKwh : 0);
+        // --- CÁLCULO FINAL (TEÓRICO PURO) ---
         $totalAssigned = $resT0['consumption'] + $resT1['consumption'] + $resT2['consumption'] + $resT3['consumption'] + $standbyKwh;
+        $totalTheoretical = $totalAssigned; // En la nueva filosofía, el asignado ES el teórico puro.
         
+        $unassignedRemainder = $totalBillKwh - $totalTheoretical;
+        
+        if (abs($unassignedRemainder) > 0) {
+            $logs[] = "[Energía Residual] " . number_format($unassignedRemainder, 1) . " kWh (Diferencia entre Facturado y Teórico Puro).";
+        }
+
         $recommendedTotalKwh = $totalTheoretical;
         if ($totalBillKwh > 0) {
             $recommendedTotalKwh = max($totalBillKwh, min($totalBillKwh * 1.30, $totalTheoretical));
         }
-
-        $invoice->update(['recommended_kwh' => $recommendedTotalKwh]);
 
         return [
             'total_bill' => $totalBillKwh,
@@ -144,7 +117,7 @@ class EnergyEngineService
             'tank_2_base' => $resT1['consumption'],
             'tank_3_climate' => $resT2['consumption'],
             'tank_4_elasticity' => $resT3['consumption'],
-            'unassigned_remainder' => $totalBillKwh - $totalAssigned,
+            'unassigned_remainder' => $unassignedRemainder,
             'equipments_processed' => $equipments->count(),
             'logs' => $logs,
             'climate_data' => $this->lastClimateDays
@@ -160,7 +133,7 @@ class EnergyEngineService
     /**
      * Calcula el contexto operativo basado en horarios y días laborables de la entidad.
      */
-    protected function calculateOperationalContext($entity, $startDate, $endDate): array
+    protected function calculateOperationalContext(mixed $entity, string $startDate, string $endDate): array
     {
         $dailyHours = 24;
         if ($entity->opens_at && $entity->closes_at) {

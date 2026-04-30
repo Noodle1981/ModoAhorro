@@ -19,7 +19,7 @@ class AnalysisController extends Controller
 {
     use HasActiveEntity, GroupsInvoices;
 
-    protected $analysisService;
+    protected ConsumptionAnalysisService $analysisService;
 
     public function __construct(ConsumptionAnalysisService $analysisService)
     {
@@ -50,7 +50,7 @@ class AnalysisController extends Controller
     /**
      * Obtiene todos los datos analíticos de un periodo específico
      */
-    private function getPeriodAnalytics(Entity $entity, $period)
+    private function getPeriodAnalytics(Entity $entity, array $period)
     {
         if (!$period) return [
             'categoryBreakdown' => [], 'roomBreakdown' => [], 'topConsumers' => [],
@@ -65,7 +65,7 @@ class AnalysisController extends Controller
             ->join('equipment', 'equipment_usages.equipment_id', '=', 'equipment.id')
             ->join('equipment_categories', 'equipment.category_id', '=', 'equipment_categories.id')
             ->whereIn('invoice_id', $invoiceIds)
-            ->select('equipment_categories.name', DB::raw('SUM(COALESCE(kwh_reconciled, consumption_kwh, 0)) as value'))
+            ->select(['equipment_categories.name', DB::raw('SUM(COALESCE(kwh_reconciled, consumption_kwh, 0)) as value')])
             ->groupBy('equipment_categories.name')
             ->get()->toArray();
 
@@ -73,7 +73,7 @@ class AnalysisController extends Controller
             ->join('equipment', 'equipment_usages.equipment_id', '=', 'equipment.id')
             ->join('rooms', 'equipment.room_id', '=', 'rooms.id')
             ->whereIn('invoice_id', $invoiceIds)
-            ->select('rooms.name', DB::raw('SUM(COALESCE(kwh_reconciled, consumption_kwh, 0)) as value'))
+            ->select(['rooms.name', DB::raw('SUM(COALESCE(kwh_reconciled, consumption_kwh, 0)) as value')])
             ->groupBy('rooms.name')
             ->orderBy('value', 'desc')
             ->get()->toArray();
@@ -169,9 +169,9 @@ class AnalysisController extends Controller
     }
 
     /**
-     * Procesa la evolución temporal de múltiples periodos
-     */
-    private function getTimeEvolutionData(Entity $entity, $periods)
+      * Procesa la evolución temporal de múltiples periodos
+      */
+     private function getTimeEvolutionData(Entity $entity, \Illuminate\Support\Collection $periods)
     {
         if ($periods->isEmpty()) return [];
 
@@ -238,21 +238,76 @@ class AnalysisController extends Controller
         if ($selectedPeriod) {
             $pricePerKwh = $selectedPeriod['total_kwh'] > 0 ? $selectedPeriod['total_amount'] / $selectedPeriod['total_kwh'] : 0;
             
-            $invoiceIds = collect($selectedPeriod['invoices'])->pluck('id');
-            $usages = \App\Models\EquipmentUsage::whereIn('invoice_id', $invoiceIds)
+            // Cargar todos los usos de todas las facturas de la entidad para armar el historial
+             $allInvoiceIds = collect($periods)->pluck('invoices')->flatten(1)->pluck('id')->toArray();
+             $allUsages = EquipmentUsage::query()->whereIn('invoice_id', $allInvoiceIds, 'and', false)
                 ->with(['equipment.room', 'equipment.category'])
                 ->get();
 
-            $equipmentData = $usages->map(function($usage) use ($pricePerKwh) {
-                $kwh = $usage->kwh_reconciled ?? $usage->consumption_kwh;
+            // Mapear Periodo -> Precio para historiales
+            $invoiceToPeriodMap = [];
+            foreach ($periods as $p) {
+                $pPrice = $p['total_kwh'] > 0 ? $p['total_amount'] / $p['total_kwh'] : 0;
+                $pLabel = \Carbon\Carbon::parse($p['end_date'])->locale('es')->translatedFormat('M y');
+                foreach ($p['invoices'] as $inv) {
+                    $invoiceToPeriodMap[$inv['id']] = [
+                        'period_id' => $p['id'],
+                        'label' => $pLabel,
+                        'price' => $pPrice,
+                        'end_date' => $p['end_date']
+                    ];
+                }
+            }
+
+            // Agrupar historial por equipo
+            $historyByEquipment = [];
+            foreach ($allUsages as $u) {
+                $eqId = $u->equipment_id;
+                $invMap = $invoiceToPeriodMap[$u->invoice_id] ?? null;
+                if (!$invMap) continue;
+                
+                $kwh = $u->kwh_reconciled ?? $u->consumption_kwh;
+                $cost = $kwh * $invMap['price'];
+                $pId = $invMap['period_id'];
+                
+                if (!isset($historyByEquipment[$eqId])) {
+                    $historyByEquipment[$eqId] = [];
+                }
+                
+                if (!isset($historyByEquipment[$eqId][$pId])) {
+                    $historyByEquipment[$eqId][$pId] = [
+                        'period_id' => $pId,
+                        'label' => $invMap['label'],
+                        'kwh' => 0,
+                        'cost' => 0,
+                        'end_date' => $invMap['end_date']
+                    ];
+                }
+                
+                $historyByEquipment[$eqId][$pId]['kwh'] += $kwh;
+                $historyByEquipment[$eqId][$pId]['cost'] += $cost;
+            }
+
+            // Filtrar usos solo para el periodo seleccionado actual
+            $selectedInvoiceIds = collect($selectedPeriod['invoices'])->pluck('id');
+            $selectedUsages = $allUsages->whereIn('invoice_id', $selectedInvoiceIds)->groupBy('equipment_id');
+
+            $equipmentData = $selectedUsages->map(function($usages, $eqId) use ($pricePerKwh, $historyByEquipment) {
+                $firstUsage = $usages->first();
+                $totalKwh = $usages->sum(fn($u) => $u->kwh_reconciled ?? $u->consumption_kwh);
+                
+                // Ordenar historial cronológicamente
+                $eqHistory = collect($historyByEquipment[$eqId] ?? [])->sortBy('end_date')->values()->toArray();
+
                 return [
-                    'id' => $usage->equipment->id,
-                    'name' => $usage->equipment->name,
-                    'room' => $usage->equipment->room->name ?? 'Sin área',
-                    'category' => $usage->equipment->category->name ?? 'Sin categoría',
-                    'kwh' => (float)$kwh,
-                    'cost' => (float)($kwh * $pricePerKwh),
-                    'hours' => $usage->daily_hours,
+                    'id' => $firstUsage->equipment->id,
+                    'name' => $firstUsage->equipment->name,
+                    'room' => $firstUsage->equipment->room->name ?? 'Sin área',
+                    'category' => $firstUsage->equipment->category->name ?? 'Sin categoría',
+                    'kwh' => (float)$totalKwh,
+                    'cost' => (float)($totalKwh * $pricePerKwh),
+                    'hours' => $firstUsage->daily_hours,
+                    'history' => $eqHistory
                 ];
             })->sortByDesc('cost')->values();
         }
@@ -285,7 +340,7 @@ class AnalysisController extends Controller
     /**
      * Detalle del ajuste de uso (Sintonía Fina)
      */
-    public function usageAdjustmentDetail(Request $request, $contractId, $startDate, $endDate)
+    public function usageAdjustmentDetail(Request $request, int|string $contractId, string $startDate, string $endDate)
     {
         $entity = $this->getActiveEntity($request);
         if (!$entity) return redirect()->route('dashboard');
@@ -294,7 +349,7 @@ class AnalysisController extends Controller
         $parsedEnd = Carbon::parse($endDate)->format('Y-m-d');
 
         // Buscar todas las facturas del periodo para verificar si está completo
-        $allInvoices = Invoice::where('contract_id', $contractId)
+        $allInvoices = Invoice::query()->where('contract_id', $contractId)
             ->where('start_date', 'like', $parsedStart . '%')
             ->where('end_date', 'like', $parsedEnd . '%')
             ->get();
@@ -308,8 +363,23 @@ class AnalysisController extends Controller
         $installmentsCount = $allInvoices->count();
         $isComplete = ($installmentsCount >= ($invoice->total_installments ?? 2)) || ($installmentsCount == 1 && empty($invoice->installment_number));
 
-        // Obtener usos existentes
+        // Obtener usos existentes para esta factura específica
         $usages = $invoice->equipmentUsages()->get()->keyBy('equipment_id');
+        
+        // Si esta factura aún no fue sintonizada, usamos la última sintonizada como espejo (plantilla)
+        if ($usages->isEmpty()) {
+            $lastTunedInvoice = Invoice::query()
+                ->where('contract_id', $contractId)
+                ->where('id', '!=', $invoice->id)
+                ->where('start_date', '<', $invoice->start_date)
+                ->whereHas('equipmentUsages')
+                ->orderByDesc('start_date')
+                ->first();
+
+            if ($lastTunedInvoice) {
+                $usages = $lastTunedInvoice->equipmentUsages()->get()->keyBy('equipment_id');
+            }
+        }
         
         // Obtener ambientes y equipos instalados en este periodo
         $rooms = $entity->rooms()->with(['equipment' => function($q) use ($invoice) {
@@ -408,7 +478,7 @@ class AnalysisController extends Controller
                 // Si el usuario envió ciclos por semana, convertimos a ciclos por periodo
                 $cyclesPerPeriod = $data['cycles_per_period'] ?? null;
                 if (isset($data['cycles_per_week']) && $data['cycles_per_week'] !== null) {
-                    $invoice = Invoice::find($request->invoice_id);
+                    $invoice = Invoice::query()->find($request->invoice_id);
                     $days = Carbon::parse($invoice->start_date)->diffInDays(Carbon::parse($invoice->end_date)) ?: 30;
                     $cyclesPerPeriod = $data['cycles_per_week'] * ($days / 7);
                 }
@@ -425,7 +495,7 @@ class AnalysisController extends Controller
                 );
 
                 // 2. Actualizar la ficha técnica del equipo
-                $equipment = \App\Models\Equipment::find($eqId);
+                $equipment = \App\Models\Equipment::query()->find($eqId);
                 if ($equipment) {
                     $isFrozen = $data['has_defined_pattern'] ?? false;
                     // Si el usuario ingresó ciclos manualmente, forzamos el patrón definido
@@ -482,7 +552,7 @@ class AnalysisController extends Controller
                 );
 
                 // 2. Actualizar la ficha técnica del equipo (Patrón Fijo)
-                $equipment = \App\Models\Equipment::find($eqId);
+                $equipment = \App\Models\Equipment::query()->find($eqId);
                 if ($equipment) {
                     $isFrozen = $data['has_defined_pattern'] ?? false;
                     if ($cyclesPerPeriod !== null && $cyclesPerPeriod > 0) {
@@ -496,7 +566,7 @@ class AnalysisController extends Controller
         });
 
         // Ejecutar calibración sobre el periodo unificado
-        $invoices = Invoice::where('contract_id', $invoice->contract_id)
+        $invoices = Invoice::query()->where('contract_id', $invoice->contract_id)
             ->where('start_date', $invoice->start_date)
             ->where('end_date', $invoice->end_date)
             ->get();
@@ -543,16 +613,17 @@ class AnalysisController extends Controller
     /**
      * Lógica de clasificación por Tiers
      */
-    private function getEquipmentTier($equipment): string
+    private function getEquipmentTier(\App\Models\Equipment $equipment): string
     {
-        // 1. Tanque 1: Certeza (Prioridad absoluta a la intención del usuario)
-        if ($equipment->has_defined_pattern) {
-            return 'certeza';
-        }
-
-        // 2. Tanque 2: Base Crítica (Refrigeración, Conectividad o uso continuo)
+        // 1. Tanque 2: Base Crítica (Refrigeración, Conectividad o uso continuo)
+        // Tiene prioridad incluso sobre el patrón fijo para mantener la categoría visual
         if ($this->isCritical($equipment)) {
             return 'base_critica';
+        }
+
+        // 2. Tanque 1: Certeza (Prioridad a la intención del usuario para el resto de equipos)
+        if ($equipment->has_defined_pattern) {
+            return 'certeza';
         }
 
         // 3. Tanque 3: Climatización (Sensible al clima)
@@ -564,7 +635,7 @@ class AnalysisController extends Controller
         return 'uso_variable';
     }
 
-    private function isCritical($equipment): bool
+    private function isCritical(\App\Models\Equipment $equipment): bool
     {
         $criticalCategories = ['Refrigeración', 'Conectividad y Seguridad'];
         $categoryName = $equipment->category->name ?? $equipment->type?->category?->name ?? '';

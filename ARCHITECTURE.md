@@ -11,10 +11,10 @@
 
 ## 2. Componentes Nucleares (The Engine)
 
-### A. EnergyEngineService
+### A. EnergyEngineService (Teórico Puro)
 Orquestador principal del motor de energía. Ejecuta la cascada de tanques en orden fijo:
-Standby → TankCrítico → TankCerteza → TankClimático → TankVolátil.
-Conecta los 4 servicios de tanque y calcula el `remainingKwh` entre cada paso.
+Standby → TankCrítico → TankCerteza → TankClimático → TankVariable.
+Conecta los 4 servicios de tanque y suma el Total Teórico sin aplicar factores de compresión artificial. Genera un Residual (Faltante/Exceso) respecto a la factura.
 
 ### B. ConsumptionAnalysisService
 Pre-calcula el `_theo_kwh` de cada equipo antes de la cascada de tanques.
@@ -36,14 +36,14 @@ Integración con APIs meteorológicas (Visual Crossing).
 Tank0CertaintyService  → Tanque Certeza (has_defined_pattern + no Crítico + no Climático)
 Tank1BaseService       → Tanque Crítico (24h + diario)
 Tank2ClimateService    → Tanque Climático (categoría Climatización)
-Tank3ElasticityService → Tanque Volátil (remanente de la bolsa)
+Tank3ElasticityService → Tanque Variable (Uso variable por hábitos directos, sin distribución artificial)
 ```
 
 Cada servicio filtra por `tank_assignment === null` para no reprocessar equipos ya asignados.
 
 ### E. Capa de Persistencia (Desacoplada)
 - **`saveContextOnly`**: Persiste ajustes del usuario (horas, ciclos, frecuencia, `has_defined_pattern`) sin ejecutar el motor. Endpoint liviano.
-- **`calibrateAndShowResults`**: Persiste ajustes + ejecuta motor + retorna resultados a `EngineResults.vue`.
+- **`calibrateAndShowResults`**: Persiste ajustes + ejecuta motor + retorna resultados a `EngineResults.vue`. Validado por un Gatekeeper de tolerancia (95% - 120%) para asegurar honestidad matemática.
 
 ---
 
@@ -58,8 +58,8 @@ El usuario **no conoce los tanques**. Solo ajusta sus equipos.
 - Los equipos `people_proportional` (Router, Microondas) tienen selector de Frecuencia para calibrar el coeficiente automático.
 
 **Fase 2 — Sintonizar Motor (`EngineResults.vue`)**
-- El motor distribuye el kWh de la factura en 4 tanques.
-- Muestra top 5 equipos por tanque + remanente no asignado.
+- El motor calcula el Teórico Puro en 4 tanques.
+- Muestra top 5 equipos por tanque + Energía Residual (Faltante o Exceso) en la barra de distribución.
 
 ---
 
@@ -72,7 +72,7 @@ El usuario **no conoce los tanques**. Solo ajusta sus equipos.
 | **Crítico** | `avg_daily_use_hours >= 24` AND `usage_frequency IN ('diario')` | Motor (técnico) | Categoría determina el algoritmo: Refrigeración=especial, resto=base load simple |
 | **Climático** | `category = 'Climatización y Ambiente'` | Motor (técnico) | API clima → días activos → ventiladores limitados por condición estacional |
 | **Certeza** | `has_defined_pattern = true` AND no cayó en Crítico/Climático | Usuario | kWh teórico congelado tal como fue declarado |
-| **Volátil** | Todo lo que no cayó en ninguno anterior | Motor | Redistribución del `remainingKwh` (deducción social → ciclos → residuo elástico) |
+| **Volátil** | Todo lo que no cayó en ninguno anterior | Motor | Cálculo teórico directo sin redistribución forzada ni "esponja elástica" |
 
 ### Principio de Categorías como Calculators
 Las categorías **no fuerzan** el tank de un equipo — solo determinan el **algoritmo de cálculo** dentro del tanque.
@@ -90,8 +90,8 @@ Las categorías **no fuerzan** el tank de un equipo — solo determinan el **alg
 3. Factura     → kWh reales del medidor, periodo (start_date → end_date)
 4. Clima       → ClimateService inyecta cooling_days y heating_days del periodo
 5. Ajuste      → Usuario calibra horas/ciclos/frecuencia y marca Patrón Fijo
-6. Motor       → Cascada de tanques → _theo_kwh → remainingKwh → distribución
-7. Resultados  → EngineResults.vue → top items por tanque + balance de energía
+6. Motor       → Cascada de tanques → Suma de _theo_kwh → Cálculo de Energía Residual
+7. Resultados  → EngineResults.vue → top items por tanque + balance Teórico vs Real
 ```
 
 ---

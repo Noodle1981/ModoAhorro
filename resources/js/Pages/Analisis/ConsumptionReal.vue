@@ -166,6 +166,29 @@ const barOptions = {
 
 const totalRealKwh = computed(() => props.history.reduce((acc, h) => acc + h.real, 0));
 const avgMonthlyKwh = computed(() => props.history.length > 0 ? totalRealKwh.value / props.history.length : 0);
+
+// Lógica de Residual para la barra
+const residualAmount = computed(() => {
+    if (!props.validation) return 0;
+    return props.validation.billed - props.validation.calculated;
+});
+
+const residualKwh = computed(() => Math.max(0, residualAmount.value));
+const isExcess = computed(() => residualAmount.value < 0);
+const residualAbs = computed(() => Math.abs(residualAmount.value));
+
+const totalBarSpace = computed(() => {
+    if (!props.validation) return 1;
+    return Math.max(props.validation.billed, props.validation.calculated);
+});
+
+const getTankColor = (name) => {
+    if (name.includes('Tanque 1') || name.includes('Certeza')) return '#059669'; // emerald-600
+    if (name.includes('Tanque 2') || name.includes('Base')) return '#f43f5e';    // rose-500
+    if (name.includes('Tanque 3') || name.includes('Clima')) return '#38bdf8';   // sky-400
+    if (name.includes('Tanque 4') || name.includes('Variable')) return '#84cc16'; // lime-500
+    return '#94a3b8'; // default slate
+};
 </script>
 
 <template>
@@ -293,40 +316,73 @@ const avgMonthlyKwh = computed(() => props.history.length > 0 ? totalRealKwh.val
             </div>
 
 
-            <!-- Three Tanks Quick View -->
+            <!-- Tanks & Residual Quick View -->
             <div v-if="tankBreakdown && tankBreakdown.some(t => t.value > 0)" class="bg-white rounded-[48px] border border-slate-100 shadow-2xl shadow-slate-200/30 p-10 space-y-8">
                 <div class="flex items-center justify-between">
                     <div class="space-y-1">
-                        <h3 class="text-2xl font-black text-slate-800 tracking-tight">Modelo de los <span class="text-energy-solar">3 Tanques</span></h3>
-                        <p class="text-sm text-slate-400 font-medium">Desglose técnico de la naturaleza de tu consumo en el periodo <span class="text-slate-600 font-bold" v-if="latestInvoice">{{ formatInvoiceDate(latestInvoice.start_date) }} al {{ formatInvoiceDate(latestInvoice.end_date) }}</span>.</p>
+                        <h3 class="text-2xl font-black text-slate-800 tracking-tight">Distribución <span class="text-energy-solar">Teórica y Residual</span></h3>
+                        <p class="text-sm text-slate-400 font-medium">Desglose técnico de la naturaleza de tu consumo frente a la factura real (<span class="text-slate-600 font-bold" v-if="latestInvoice">{{ formatInvoiceDate(latestInvoice.start_date) }} al {{ formatInvoiceDate(latestInvoice.end_date) }}</span>).</p>
                     </div>
                     <div class="p-3 bg-slate-50 rounded-2xl text-slate-400">
                         <Info :size="20" />
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-                    <div v-for="tank in tankBreakdown" :key="tank.name" class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ tank.name }}</span>
-                            <span class="text-xs font-black text-slate-900">{{ Math.round(tank.value) }} <span class="text-[8px] text-slate-300">kWh</span></span>
+                <!-- Nueva Barra Horizontal Unificada -->
+                <div class="space-y-4">
+                    <div class="relative h-16 w-full bg-slate-50 rounded-[24px] p-2 flex gap-1.5 overflow-hidden border border-slate-100">
+                        <div 
+                            v-for="tank in tankBreakdown" 
+                            :key="tank.name"
+                            class="h-full rounded-[14px] transition-all duration-1000 ease-out group relative cursor-help"
+                            :style="{ backgroundColor: getTankColor(tank.name), width: (tank.value / totalBarSpace * 100) + '%' }"
+                        >
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="text-[10px] font-black text-white">{{ Math.round(tank.value / totalBarSpace * 100) }}%</span>
+                            </div>
                         </div>
-                        <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-                            <div 
-                                class="h-full rounded-full transition-all duration-1000" 
-                                :style="{ 
-                                    backgroundColor: tank.color, 
-                                    width: (tank.value / tankBreakdown.reduce((acc, t) => acc + t.value, 0) * 100) + '%' 
-                                }"
-                            ></div>
+                        
+                        <!-- Residual Segment (Morado) Solo si falta para llegar al 100% -->
+                        <div 
+                            v-if="residualKwh > 0"
+                            class="h-full rounded-[14px] bg-purple-500 transition-all duration-1000 ease-out group relative cursor-help flex items-center justify-center"
+                            :style="{ width: (residualKwh / totalBarSpace * 100) + '%' }"
+                        >
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="text-[10px] font-black text-white">{{ Math.round(residualKwh / totalBarSpace * 100) }}%</span>
+                            </div>
                         </div>
-                        <p class="text-[10px] text-slate-400 font-medium leading-relaxed">
-                            {{ 
-                                tank.name.includes('Tanque 1') ? 'Consumo inamovible (Refrigeración y Seguridad).' : 
-                                tank.name.includes('Tanque 2') ? 'Consumo variable según el clima exterior.' : 
-                                'Consumo basado en tus hábitos y uso diario.' 
-                            }}
-                        </p>
+
+                        <!-- Marca de Límite de Factura (cuando nos excedemos) -->
+                        <div v-if="isExcess" 
+                             class="absolute top-0 bottom-0 border-l-4 border-dashed border-slate-900 z-10 flex items-start justify-center"
+                             :style="{ left: ((validation.billed / totalBarSpace) * 100) + '%' }">
+                             <div class="bg-slate-900 text-white text-[9px] font-black px-2 py-0.5 rounded-b-md shadow-lg transform -translate-x-1/2">
+                                 FACTURA ({{ Math.round(validation.billed) }})
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detalle en celdas -->
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-6 pt-4">
+                    <div v-for="tank in tankBreakdown" :key="tank.name" class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: getTankColor(tank.name) }"></div>
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">{{ tank.name.split(' - ')[0] || tank.name }}</span>
+                        </div>
+                        <p class="text-lg font-black text-slate-900">{{ Math.round(tank.value) }} <span class="text-xs text-slate-400">kWh</span></p>
+                    </div>
+                    
+                    <!-- Tarjeta Residual -->
+                    <div v-if="residualAbs > 0" class="space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full" :class="isExcess ? 'bg-rose-500' : 'bg-purple-500'"></div>
+                            <span class="text-[10px] font-black uppercase tracking-widest truncate" :class="isExcess ? 'text-rose-600' : 'text-purple-600'">
+                                {{ isExcess ? 'Exceso' : 'Faltante' }}
+                            </span>
+                        </div>
+                        <p class="text-lg font-black" :class="isExcess ? 'text-rose-500' : 'text-purple-500'">{{ Math.round(residualAbs) }} <span class="text-xs opacity-50">kWh</span></p>
                     </div>
                 </div>
             </div>

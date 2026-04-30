@@ -291,6 +291,7 @@ class Casa27Seeder extends Seeder
                 'cost_for_energy'           => $inv['energy'],
                 'taxes'                     => $inv['taxes'],
                 'total_amount'              => $inv['total'],
+                'bimonthly_consumption_kwh' => $inv['installment'] == 1 ? $inv['kwh'] + $invoices[array_search($inv, $invoices) + 1]['kwh'] : $inv['kwh'] + $invoices[array_search($inv, $invoices) - 1]['kwh'],
                 'installment_number'        => $inv['installment'],
                 'total_installments'        => $inv['of'],
                 'tariff'                    => $inv['tariff'],
