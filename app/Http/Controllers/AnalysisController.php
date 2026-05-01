@@ -229,84 +229,117 @@ class AnalysisController extends Controller
         if (!$entity) return redirect()->route('dashboard');
 
         $periods = $this->getUnifiedPeriods($entity)->sortByDesc('start_date')->values();
-        $selectedPeriodId = $request->input('period_id', $periods->first()['id'] ?? null);
-        $selectedPeriod = $periods->firstWhere('id', $selectedPeriodId);
+        
+        // El valor por defecto ahora es 'all' (Promedio Histórico)
+        $selectedPeriodId = $request->input('period_id', 'all');
+        $selectedPeriod = ($selectedPeriodId === 'all') ? null : $periods->firstWhere('id', $selectedPeriodId);
 
         $equipmentData = [];
         $pricePerKwh = 0;
 
-        if ($selectedPeriod) {
-            $pricePerKwh = $selectedPeriod['total_kwh'] > 0 ? $selectedPeriod['total_amount'] / $selectedPeriod['total_kwh'] : 0;
+        // 1. Cargar todos los usos para construir historiales (Se necesita para ambas vistas)
+        $allInvoiceIds = collect($periods)->pluck('invoices')->flatten(1)->pluck('id')->toArray();
+        $allUsages = EquipmentUsage::query()->whereIn('invoice_id', $allInvoiceIds, 'and', false)
+            ->with(['equipment.room', 'equipment.category'])
+            ->get();
+
+        // 2. Mapear Periodo -> Datos de Periodo para historiales
+        $invoiceToPeriodMap = [];
+        foreach ($periods as $p) {
+            $pPrice = $p['total_kwh'] > 0 ? $p['total_amount'] / $p['total_kwh'] : 0;
+            $pLabel = \Carbon\Carbon::parse($p['end_date'])->locale('es')->translatedFormat('M y');
+            foreach ($p['invoices'] as $inv) {
+                $invoiceToPeriodMap[$inv['id']] = [
+                    'period_id' => $p['id'],
+                    'label' => $pLabel,
+                    'price' => $pPrice,
+                    'end_date' => $p['end_date']
+                ];
+            }
+        }
+
+        // 3. Agrupar historial por equipo
+        $historyByEquipment = [];
+        foreach ($allUsages as $u) {
+            $eqId = $u->equipment_id;
+            $invMap = $invoiceToPeriodMap[$u->invoice_id] ?? null;
+            if (!$invMap) continue;
             
-            // Cargar todos los usos de todas las facturas de la entidad para armar el historial
-             $allInvoiceIds = collect($periods)->pluck('invoices')->flatten(1)->pluck('id')->toArray();
-             $allUsages = EquipmentUsage::query()->whereIn('invoice_id', $allInvoiceIds, 'and', false)
-                ->with(['equipment.room', 'equipment.category'])
-                ->get();
-
-            // Mapear Periodo -> Precio para historiales
-            $invoiceToPeriodMap = [];
-            foreach ($periods as $p) {
-                $pPrice = $p['total_kwh'] > 0 ? $p['total_amount'] / $p['total_kwh'] : 0;
-                $pLabel = \Carbon\Carbon::parse($p['end_date'])->locale('es')->translatedFormat('M y');
-                foreach ($p['invoices'] as $inv) {
-                    $invoiceToPeriodMap[$inv['id']] = [
-                        'period_id' => $p['id'],
-                        'label' => $pLabel,
-                        'price' => $pPrice,
-                        'end_date' => $p['end_date']
-                    ];
-                }
+            $kwh = $u->kwh_reconciled ?? $u->consumption_kwh;
+            $cost = $kwh * $invMap['price'];
+            $pId = $invMap['period_id'];
+            
+            if (!isset($historyByEquipment[$eqId])) {
+                $historyByEquipment[$eqId] = [];
             }
-
-            // Agrupar historial por equipo
-            $historyByEquipment = [];
-            foreach ($allUsages as $u) {
-                $eqId = $u->equipment_id;
-                $invMap = $invoiceToPeriodMap[$u->invoice_id] ?? null;
-                if (!$invMap) continue;
-                
-                $kwh = $u->kwh_reconciled ?? $u->consumption_kwh;
-                $cost = $kwh * $invMap['price'];
-                $pId = $invMap['period_id'];
-                
-                if (!isset($historyByEquipment[$eqId])) {
-                    $historyByEquipment[$eqId] = [];
-                }
-                
-                if (!isset($historyByEquipment[$eqId][$pId])) {
-                    $historyByEquipment[$eqId][$pId] = [
-                        'period_id' => $pId,
-                        'label' => $invMap['label'],
-                        'kwh' => 0,
-                        'cost' => 0,
-                        'end_date' => $invMap['end_date']
-                    ];
-                }
-                
-                $historyByEquipment[$eqId][$pId]['kwh'] += $kwh;
-                $historyByEquipment[$eqId][$pId]['cost'] += $cost;
+            
+            if (!isset($historyByEquipment[$eqId][$pId])) {
+                $historyByEquipment[$eqId][$pId] = [
+                    'period_id' => $pId,
+                    'label' => $invMap['label'],
+                    'kwh' => 0,
+                    'cost' => 0,
+                    'hours' => (float)$u->avg_daily_use_hours,
+                    'end_date' => $invMap['end_date']
+                ];
             }
+            
+            $historyByEquipment[$eqId][$pId]['kwh'] += $kwh;
+            $historyByEquipment[$eqId][$pId]['cost'] += $cost;
+        }
 
-            // Filtrar usos solo para el periodo seleccionado actual
+        // 4. Lógica para vista de PROMEDIO o PERIODO ESPECÍFICO
+        if ($selectedPeriodId === 'all') {
+            // VISTA: PROMEDIO HISTÓRICO
+            $equipmentData = collect($historyByEquipment)->map(function($history, $eqId) use ($allUsages) {
+                $firstUsage = $allUsages->where('equipment_id', $eqId)->first();
+                $activeHistory = collect($history)->filter(fn($h) => $h['cost'] > 0);
+                $periodCount = $activeHistory->count() ?: 1;
+                $totalKwh = $activeHistory->sum('kwh');
+                $totalCost = $activeHistory->sum('cost');
+                
+                $avgHours = $activeHistory->avg('hours') ?: collect($history)->avg('hours');
+                if ($avgHours > 0 && $avgHours < 1) $avgHours = 1;
+                $avgHours = round($avgHours, 1);
+
+                return [
+                    'id' => $eqId,
+                    'name' => $firstUsage->equipment->name ?? 'Desconocido',
+                    'room' => $firstUsage->equipment->room->name ?? 'Sin área',
+                    'category' => $firstUsage->equipment->category->name ?? 'Sin categoría',
+                    'kwh' => round($totalKwh / $periodCount, 1),
+                    'cost' => round($totalCost / $periodCount, 0),
+                    'hours' => (float)$avgHours,
+                    'history' => collect($history)->sortBy('end_date')->values()->toArray()
+                ];
+            })->sortByDesc('cost')->values();
+
+            // Precio promedio histórico
+            $pricePerKwh = $periods->count() > 0 
+                ? $periods->avg(fn($p) => $p['total_kwh'] > 0 ? $p['total_amount'] / $p['total_kwh'] : 0)
+                : 0;
+        } else if ($selectedPeriod) {
+            // VISTA: PERIODO ESPECÍFICO
+            $pricePerKwh = $selectedPeriod['total_kwh'] > 0 ? $selectedPeriod['total_amount'] / $selectedPeriod['total_kwh'] : 0;
             $selectedInvoiceIds = collect($selectedPeriod['invoices'])->pluck('id');
             $selectedUsages = $allUsages->whereIn('invoice_id', $selectedInvoiceIds)->groupBy('equipment_id');
 
             $equipmentData = $selectedUsages->map(function($usages, $eqId) use ($pricePerKwh, $historyByEquipment) {
                 $firstUsage = $usages->first();
                 $totalKwh = $usages->sum(fn($u) => $u->kwh_reconciled ?? $u->consumption_kwh);
-                
-                // Ordenar historial cronológicamente
                 $eqHistory = collect($historyByEquipment[$eqId] ?? [])->sortBy('end_date')->values()->toArray();
+
+                $h = (float)$firstUsage->avg_daily_use_hours;
+                if ($h > 0 && $h < 1) $h = 1;
 
                 return [
                     'id' => $firstUsage->equipment->id,
                     'name' => $firstUsage->equipment->name,
                     'room' => $firstUsage->equipment->room->name ?? 'Sin área',
                     'category' => $firstUsage->equipment->category->name ?? 'Sin categoría',
-                    'kwh' => (float)$totalKwh,
-                    'cost' => (float)($totalKwh * $pricePerKwh),
-                    'hours' => $firstUsage->daily_hours,
+                    'kwh' => round($totalKwh, 1),
+                    'cost' => round($totalKwh * $pricePerKwh, 0),
+                    'hours' => round($h, 1),
                     'history' => $eqHistory
                 ];
             })->sortByDesc('cost')->values();
@@ -317,7 +350,7 @@ class AnalysisController extends Controller
             'periods' => $periods,
             'selectedPeriodId' => $selectedPeriodId,
             'equipmentData' => $equipmentData,
-            'pricePerKwh' => $pricePerKwh
+            'pricePerKwh' => (float)$pricePerKwh
         ]);
     }
 

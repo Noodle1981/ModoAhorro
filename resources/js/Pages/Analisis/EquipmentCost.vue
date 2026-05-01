@@ -138,83 +138,65 @@ const detailedChartOptions = {
         <Head title="Coste por Equipo" />
 
         <div class="max-w-7xl mx-auto space-y-10 pb-20">
-            <!-- Breadcrumbs -->
-            <div class="flex items-center gap-4 text-slate-400">
-                <Link :href="route('analisis.consumption')" class="hover:text-emerald-500 transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
-                    <ArrowLeft :size="14" />
-                    Consumo Real
-                </Link>
-                <span class="text-slate-200">/</span>
-                <Link :href="route('analisis.time')" class="hover:text-indigo-500 transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
-                    <History :size="14" />
-                    Evolución
-                </Link>
-                <span class="text-slate-200">/</span>
-                <span class="text-xs font-bold uppercase tracking-widest text-slate-300 italic">Impacto por Equipo</span>
-            </div>
-
-            <!-- Header -->
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
-                        <DollarSign :size="14" />
-                        Auditoría de Gastos
+            <!-- Minimalist Header -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex flex-col gap-1">
+                    <div class="flex items-center gap-2 text-slate-400 mb-1">
+                        <Link :href="route('analisis.consumption')" class="hover:text-emerald-500 transition-colors text-[10px] font-black uppercase tracking-widest">Auditoría</Link>
+                        <span class="text-slate-200">/</span>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-slate-300">Coste por Equipo</span>
                     </div>
-                    <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Coste por <span class="text-emerald-500">Equipo</span>
+                    <h1 class="text-3xl font-black text-slate-900 tracking-tighter leading-none flex items-center gap-3">
+                        Impacto <span class="text-emerald-500">Económico</span>
+                        <span v-if="selectedPeriodId === 'all'" class="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-md uppercase font-black tracking-widest mt-1">Promedio Histórico</span>
                     </h1>
-                    <p class="text-lg text-slate-500 font-medium">Análisis monetario de cada artefacto en base a la tarifa del periodo.</p>
                 </div>
 
-                <div class="flex flex-col gap-2">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest text-right px-2">Seleccionar Periodo</p>
-                    <div class="flex items-center gap-2">
-                        <select 
-                            :value="selectedPeriodId" 
-                            @change="changePeriod($event.target.value)"
-                            class="bg-white border border-slate-100 rounded-3xl py-4 px-8 text-sm font-black text-slate-900 shadow-2xl shadow-slate-200/40 outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all appearance-none pr-12 relative"
-                        >
-                            <option v-for="p in periods" :key="p.id" :value="p.id">
-                                {{ formatDate(p.start_date, p.end_date) }}
-                            </option>
-                        </select>
-                    </div>
+                <div class="relative min-w-[240px]">
+                    <select 
+                        :value="selectedPeriodId" 
+                        @change="changePeriod($event.target.value)"
+                        class="w-full bg-white border border-slate-200 rounded-2xl py-3 px-5 text-sm font-bold text-slate-900 shadow-sm outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all appearance-none pr-10"
+                    >
+                        <option value="all">Promedio Histórico (Global)</option>
+                        <option v-for="p in periods" :key="p.id" :value="p.id">
+                            Periodo: {{ formatDate(p.start_date, p.end_date) }}
+                        </option>
+                    </select>
+                    <ChevronDown :size="16" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 </div>
             </div>
 
-            <!-- Stats Bar -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-slate-900 rounded-[40px] p-8 text-white relative overflow-hidden">
-                    <div class="absolute -right-4 -top-4 opacity-10">
-                        <DollarSign :size="120" />
+            <!-- Compact Stats Bar -->
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="bg-slate-900 rounded-3xl p-5 text-white flex-1 min-w-[200px] relative overflow-hidden flex items-center justify-between shadow-xl shadow-slate-900/10">
+                    <div>
+                        <p class="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-1">Tarifa Promedio</p>
+                        <p class="text-xl font-black">${{ pricePerKwh.toFixed(2) }}<span class="text-[10px] font-medium text-white/30 ml-1">/kWh</span></p>
                     </div>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 text-white/50">Precio Energía Tarifa</p>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-4xl font-black">${{ pricePerKwh.toFixed(2) }}</span>
-                        <span class="text-xs font-bold text-white/40">/ kWh</span>
-                    </div>
+                    <DollarSign :size="32" class="text-white/10" />
                 </div>
-                <div class="bg-white border border-slate-100 rounded-[40px] p-8 shadow-2xl shadow-slate-200/20">
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 text-slate-300">Total en Pesos</p>
-                    <div class="flex items-baseline gap-2">
-                        <span class="text-4xl font-black text-slate-900">${{ filteredData.reduce((acc, d) => acc + d.cost, 0).toLocaleString('es-ES', { minimumFractionDigits: 2 }) }}</span>
+                
+                <div class="bg-white border border-slate-100 rounded-3xl p-5 flex-1 min-w-[200px] flex items-center justify-between shadow-lg shadow-slate-200/20">
+                    <div>
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{{ selectedPeriodId === 'all' ? 'Gasto Prom. Periodo' : 'Total en Pesos' }}</p>
+                        <p class="text-xl font-black text-slate-900">${{ filteredData.reduce((acc, d) => acc + d.cost, 0).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</p>
                     </div>
+                    <Activity :size="32" class="text-slate-100" />
                 </div>
-                <div class="bg-emerald-50 border border-emerald-100 rounded-[40px] p-8 relative group cursor-pointer overflow-hidden">
-                    <div class="absolute top-0 right-0 p-6 text-emerald-200 group-hover:scale-110 transition-transform">
-                        <TrendingUp :size="40" />
+
+                <div class="bg-emerald-50 border border-emerald-100 rounded-3xl p-5 flex-1 min-w-[200px] flex items-center justify-between group cursor-pointer hover:bg-emerald-100 transition-colors">
+                    <div>
+                        <p class="text-[9px] font-black text-emerald-600/60 uppercase tracking-[0.2em] mb-1">Mayor Impacto</p>
+                        <p class="text-xl font-black text-emerald-900 truncate max-w-[140px]">{{ filteredData[0]?.name || '-' }}</p>
                     </div>
-                    <p class="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em] mb-4">Gasto Mayor</p>
-                    <div class="space-y-1">
-                        <div class="text-2xl font-black text-emerald-900 truncate pr-10">{{ filteredData[0]?.name || '-' }}</div>
-                        <p class="text-[10px] font-black text-emerald-500 uppercase tracking-widest">${{ (filteredData[0]?.cost || 0).toLocaleString('es-ES', { minimumFractionDigits: 2 }) }}</p>
-                    </div>
+                    <TrendingUp :size="32" class="text-emerald-200 group-hover:scale-110 transition-transform" />
                 </div>
             </div>
 
             <!-- Table Section -->
             <div class="bg-white rounded-[56px] border border-slate-100 shadow-2xl shadow-slate-200/40 overflow-hidden">
-                <div class="p-10 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div class="p-6 lg:p-10 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-8">
                     <div>
                         <h3 class="text-2xl font-black text-slate-900 tracking-tighter">Impacto por Artefacto</h3>
                         <p class="text-xs text-slate-400 font-medium mt-1">Lista ordenada por impacto económico descendente</p>
@@ -234,33 +216,22 @@ const detailedChartOptions = {
                     <table class="w-full text-left">
                         <thead>
                             <tr class="bg-slate-50/50">
-                                <th class="px-10 py-5 text-[10px] font-black text-slate-300 uppercase tracking-[0.15em]">Equipo</th>
-                                <th class="px-10 py-5 text-[10px] font-black text-slate-300 uppercase tracking-[0.15em]">Área / Categoría</th>
-                                <th class="px-10 py-5 text-[10px] font-black text-slate-300 uppercase tracking-[0.15em] text-center">Uso/Día</th>
-                                <th class="px-10 py-5 text-[10px] font-black text-slate-300 uppercase tracking-[0.15em] text-right">Consumo</th>
-                                <th class="px-10 py-5 text-[10px] font-black text-slate-300 uppercase tracking-[0.15em] text-center">Tendencia</th>
-                                <th class="px-10 py-5 text-[10px] font-black text-emerald-400 uppercase tracking-[0.15em] text-right">Impacto en Pesos</th>
-                                <th class="px-6 py-5"></th>
+                                <th class="px-6 lg:px-10 py-5 text-[10px] font-black text-slate-300 uppercase tracking-[0.15em]">Equipo</th>
+                                <th class="px-6 lg:px-10 py-5 text-[10px] font-black text-slate-300 uppercase tracking-[0.15em]">Área / Categoría</th>
+                                <th class="px-6 lg:px-10 py-5 text-[10px] font-black text-slate-300 uppercase tracking-[0.15em] text-center">Uso/Día</th>
+                                <th class="px-6 lg:px-10 py-5 text-[10px] font-black text-slate-300 uppercase tracking-[0.15em] text-right">Consumo</th>
+                                <th class="px-6 lg:px-10 py-5 text-[10px] font-black text-slate-300 uppercase tracking-[0.15em] text-center">Tendencia</th>
+                                <th class="px-6 lg:px-10 py-5 text-[10px] font-black text-emerald-400 uppercase tracking-[0.15em] text-right">Impacto en Pesos</th>
+                                <th class="px-4 lg:px-6 py-5"></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">
                             <template v-for="item in filteredData" :key="item.id">
                                 <tr @click="toggleRow(item.id)" class="group hover:bg-emerald-50/40 transition-all duration-300 cursor-pointer" :class="{ 'bg-emerald-50/20': expandedRow === item.id }">
-                                    <td class="px-10 py-8">
-                                        <div class="flex items-center gap-5">
-                                            <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-white group-hover:text-emerald-500 shadow-sm transition-all duration-500 group-hover:scale-110" :class="{ 'bg-white text-emerald-500 scale-110': expandedRow === item.id }">
-                                                <Zap :size="20" />
-                                            </div>
-                                            <div class="space-y-1">
-                                                <p class="text-base font-black text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors" :class="{ 'text-emerald-600': expandedRow === item.id }">{{ item.name }}</p>
-                                                <div class="flex items-center gap-2">
-                                                    <div class="w-2 h-2 rounded-full bg-emerald-500/30"></div>
-                                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ID: {{ item.id }}</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                    <td class="px-4 py-4 lg:px-10 lg:py-6">
+                                        <p class="text-base font-black text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors" :class="{ 'text-emerald-600': expandedRow === item.id }">{{ item.name }}</p>
                                     </td>
-                                    <td class="px-10 py-8">
+                                    <td class="px-4 py-4 lg:px-10 lg:py-6">
                                         <div class="space-y-1">
                                             <div class="flex items-center gap-2 text-slate-900 font-bold text-xs uppercase tracking-tight">
                                                 <Building :size="14" class="text-slate-400" />
@@ -269,33 +240,33 @@ const detailedChartOptions = {
                                             <p class="text-[10px] font-black text-slate-300 uppercase tracking-[0.1em]">{{ item.category }}</p>
                                         </div>
                                     </td>
-                                    <td class="px-10 py-8 text-center">
+                                    <td class="px-4 py-4 lg:px-10 lg:py-6 text-center">
                                         <div class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-xl text-slate-600 group-hover:bg-white transition-colors">
                                             <Clock :size="14" />
-                                            <span class="text-sm font-black">{{ item.hours }}h</span>
+                                            <span class="text-sm font-black">{{ typeof item.hours === 'number' ? item.hours.toLocaleString('es-ES', { maximumFractionDigits: 1 }) : item.hours }}h</span>
                                         </div>
                                     </td>
-                                    <td class="px-10 py-8 text-right">
+                                    <td class="px-4 py-4 lg:px-10 lg:py-6 text-right">
                                         <div class="text-sm font-black text-slate-500 group-hover:text-slate-900 transition-colors">
                                             {{ Math.round(item.kwh) }} <span class="text-[10px] text-slate-300">kWh</span>
                                         </div>
                                     </td>
-                                    <td class="px-10 py-8 text-center">
+                                    <td class="px-4 py-4 lg:px-10 lg:py-6 text-center">
                                         <!-- Sparkline -->
                                         <div v-if="item.history && item.history.length > 1" class="h-10 w-24 inline-block opacity-60 group-hover:opacity-100 transition-opacity">
                                             <Line :data="getSparklineData(item.history)" :options="sparklineOptions" />
                                         </div>
                                         <span v-else class="text-[10px] font-bold text-slate-300">Sin historial</span>
                                     </td>
-                                    <td class="px-10 py-8 text-right">
+                                    <td class="px-4 py-4 lg:px-10 lg:py-6 text-right">
                                         <div class="flex flex-col items-end">
-                                            <span class="text-xl font-black text-slate-900 group-hover:text-emerald-600 transition-colors" :class="{ 'text-emerald-600': expandedRow === item.id }">${{ item.cost.toLocaleString('es-ES', { minimumFractionDigits: 2 }) }}</span>
+                                            <span class="text-xl font-black text-slate-900 group-hover:text-emerald-600 transition-colors" :class="{ 'text-emerald-600': expandedRow === item.id }">${{ item.cost.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</span>
                                             <div class="h-1 w-20 bg-emerald-100 rounded-full mt-2 overflow-hidden">
                                                 <div class="h-full bg-emerald-500" :style="{ width: (item.cost / filteredData[0].cost * 100) + '%' }"></div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-8 text-slate-300">
+                                    <td class="px-4 py-4">
                                         <ChevronUp v-if="expandedRow === item.id" :size="20" />
                                         <ChevronDown v-else :size="20" class="group-hover:text-emerald-500" />
                                     </td>
@@ -316,7 +287,7 @@ const detailedChartOptions = {
                                                 <div class="grid grid-cols-2 gap-4">
                                                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                                                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Gasto Histórico Total</p>
-                                                        <p class="text-lg font-black text-emerald-600">${{ item.history?.reduce((acc, h) => acc + h.cost, 0).toLocaleString('es-ES', { minimumFractionDigits: 2 }) || '0.00' }}</p>
+                                                        <p class="text-lg font-black text-emerald-600">${{ item.history?.reduce((acc, h) => acc + h.cost, 0).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || '0' }}</p>
                                                     </div>
                                                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                                                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Consumo Total</p>

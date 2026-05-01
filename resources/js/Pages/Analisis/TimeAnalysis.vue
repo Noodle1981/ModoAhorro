@@ -83,34 +83,24 @@ const motorData = computed(() => {
 const tanksData = computed(() => {
     const data = props.evolution || [];
     
-    // Colores base (Normales)
-    const colors = {
-        t1: '#059669', // Certeza
-        t4: '#84cc16', // Variable
-        t2: '#f97316', // Base
-        t3: '#38bdf8', // Clima
-    };
-
-    // Colores de Exceso (Más oscuros/saturados)
-    const excessColors = {
-        t1: '#064e3b', 
-        t4: '#365314', 
-        t2: '#7c2d12', 
-        t3: '#0c4a6e', 
+    // Configuración de Tanques
+    const tankInfo = {
+        1: { label: 'Tanque 1 (Certeza)', color: '#059669' },
+        4: { label: 'Tanque 4 (Variable)', color: '#84cc16' },
+        2: { label: 'Tanque 2 (Base)', color: '#f97316' },
+        3: { label: 'Tanque 3 (Clima)', color: '#38bdf8' }
     };
 
     const order = [1, 4, 2, 3];
     const labels = data.map(d => d.label);
-
     const datasets = [];
 
-    // Construir datasets para Normal y Exceso por cada tanque
+    // 1. Datasets para la parte "Normal" (Dentro del límite de la factura)
     order.forEach(key => {
         const tankKey = `t${key}`;
         
-        // Dataset Normal
         datasets.push({
-            label: `T${key} (Normal)`,
+            label: tankInfo[key].label,
             data: data.map(d => {
                 let cumulativeBefore = 0;
                 for (let i = 0; i < order.indexOf(key); i++) {
@@ -118,33 +108,38 @@ const tanksData = computed(() => {
                 }
                 const val = d.tanks[tankKey] || 0;
                 const limit = d.billed;
+                // Solo lo que cabe debajo del límite
                 return Math.max(0, Math.min(val, limit - cumulativeBefore));
             }),
-            backgroundColor: colors[tankKey],
-            stack: 'combined',
-            borderRadius: 0
-        });
-
-        // Dataset Exceso
-        datasets.push({
-            label: `T${key} (Exceso)`,
-            data: data.map(d => {
-                let cumulativeBefore = 0;
-                for (let i = 0; i < order.indexOf(key); i++) {
-                    cumulativeBefore += d.tanks[`t${order[i]}`] || 0;
-                }
-                const val = d.tanks[tankKey] || 0;
-                const limit = d.billed;
-                const normalPart = Math.max(0, Math.min(val, limit - cumulativeBefore));
-                return val - normalPart;
-            }),
-            backgroundColor: excessColors[tankKey],
+            backgroundColor: tankInfo[key].color,
             stack: 'combined',
             borderRadius: 0
         });
     });
 
-    // Añadir línea de Factura como frontera
+    // 2. Dataset único para el Consumo no Justificado (Suma de excedentes)
+    datasets.push({
+        label: 'Consumo no Justificado',
+        data: data.map(d => {
+            let totalExcess = 0;
+            let cumulative = 0;
+            const limit = d.billed;
+
+            order.forEach(key => {
+                const val = d.tanks[`t${key}`] || 0;
+                const normalPart = Math.max(0, Math.min(val, limit - cumulative));
+                totalExcess += (val - normalPart);
+                cumulative += val;
+            });
+
+            return totalExcess;
+        }),
+        backgroundColor: '#475569', // Slate 600
+        stack: 'combined',
+        borderRadius: 0
+    });
+
+    // 3. Línea de Factura (Frontera)
     datasets.push({
         label: 'Límite Factura',
         data: data.map(d => d.billed),
