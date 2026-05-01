@@ -87,10 +87,8 @@ const navigation = computed(() => [
         items: [
             { name: 'Proyecto Solar', icon: Sun, href: route('recomendaciones.solar') },
             { name: 'Reemplazos Eficientes', icon: RefreshCw, href: route('recomendaciones.replacements') },
-            { name: 'Análisis de Ciclos', icon: RefreshCw, href: '#' }, // Futuro
-            { name: 'Modelos Deterministas', icon: Heart, href: '#' }, // Futuro
             { name: 'Consumo Fantasma', icon: Ghost, href: route('recomendaciones.standby') },
-            { name: 'Optimización Horarios', icon: Clock, href: route('analisis.grid-optimization') },
+            { name: 'Optimización Horarios', icon: Clock, href: route('recomendaciones.grid-optimization') },
         ]
     },
     {

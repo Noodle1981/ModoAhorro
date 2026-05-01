@@ -28,20 +28,26 @@ class RecommendationController extends Controller
         $entity = $this->getActiveEntity($request);
         if (!$entity) return redirect()->route('dashboard');
 
+        // Permitir ajustes dinámicos desde el frontend
+        $peopleCount = $request->input('people_count', $entity->people_count ?? 4);
+        $availableArea = $request->input('available_area', 30); // Default 30m2
+
         // Analizar facturas para obtener consumos
         $invoices = Invoice::whereHas('contract', fn($q) => $q->where('entity_id', $entity->id))->get();
         $maxConsumption = $invoices->max('total_energy_consumed_kwh') ?? 400;
         $avgConsumption = $invoices->avg('total_energy_consumed_kwh') ?? 300;
-
-        $availableArea = 30; // Default 30m2
         
         $photovoltaic = $solarPower->calculateSolarCoverage($availableArea, $maxConsumption, $avgConsumption);
-        $thermal = $solarWater->calculateWaterHeaterData($entity);
+        $thermal = $solarWater->calculateWaterHeaterData($entity, (int)$peopleCount);
 
         return Inertia::render('Recomendaciones/Solar', [
             'entity' => $entity,
             'photovoltaic' => $photovoltaic,
-            'thermal' => $thermal
+            'thermal' => $thermal,
+            'filters' => [
+                'people_count' => (int)$peopleCount,
+                'available_area' => (int)$availableArea,
+            ]
         ]);
     }
 
@@ -148,6 +154,18 @@ class RecommendationController extends Controller
                 'checklist' => $result['checklist'],
                 'total_savings' => $result['total_savings']
             ]
+        ]);
+    }
+    /**
+     * Optimización de Horarios
+     */
+    public function gridOptimization(Request $request)
+    {
+        $entity = $this->getActiveEntity($request);
+        if (!$entity) return redirect()->route('dashboard');
+
+        return Inertia::render('Recomendaciones/GridOptimization', [
+            'entity' => $entity
         ]);
     }
 }

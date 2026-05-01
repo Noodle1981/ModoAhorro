@@ -86,7 +86,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/ajuste-uso/guardar-detalle', 'App\Http\Controllers\AnalysisController@saveContextOnly')->name('usage.save');
         Route::post('/ajuste-uso/sintonizar', 'App\Http\Controllers\AnalysisController@calibrateAndShowResults')->name('usage.calibrate');
         Route::get('/ajuste-uso/{invoice}/resultados', 'App\Http\Controllers\AnalysisController@showEngineResults')->name('usage.results');
-        Route::get('/optimizacion-horarios', 'App\Http\Controllers\AnalysisController@gridOptimization')->name('grid-optimization');
     });
 
     Route::prefix('recomendaciones')->name('recomendaciones.')->group(function () {
@@ -96,6 +95,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/salud-termica', 'App\Http\Controllers\RecommendationController@thermalHealth')->name('thermal-health');
         Route::get('/mantenimiento', 'App\Http\Controllers\RecommendationController@maintenance')->name('maintenance');
         Route::get('/vacaciones', 'App\Http\Controllers\RecommendationController@vacation')->name('vacation');
+        Route::get('/optimizacion-horarios', 'App\Http\Controllers\RecommendationController@gridOptimization')->name('grid-optimization');
     });
 
     Route::prefix('sistema')->name('sistema.')->group(function () {

@@ -650,17 +650,4 @@ class AnalysisController extends Controller
         return array_slice($items, 0, 5);
     }
 
-    /**
-     * Optimización de Horarios
-     */
-    public function gridOptimization(Request $request)
-    {
-        $entity = $this->getActiveEntity($request);
-        if (!$entity) return redirect()->route('dashboard');
-
-        // En esta fase, devolvemos una vista estática/dashboard que será poblada con lógica de desplazamiento
-        return Inertia::render('Analisis/GridOptimization', [
-            'entity' => $entity
-        ]);
-    }
 }

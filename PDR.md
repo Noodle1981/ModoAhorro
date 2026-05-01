@@ -1,7 +1,10 @@
 # PDR - Project Development Record: ModoAhorro Motor v4
 
 ## 1. Visión General
-Este documento registra la evolución arquitectónica de **ModoAhorro** hacia un modelo de simulación física (Gemelo Digital). El sistema ha migrado de una gestión de inventario plana a una gestión de activos con comportamiento termodinámico, patrones de habitabilidad declarados por el usuario y un motor de distribución de energía por tanques progresivamente más inteligente.
+Este documento registra la evolución arquitectónica de **ModoAhorro** hacia un modelo de simulación física (Gemelo Digital). El sistema ha migrado de una gestión de inventario plana a:
+- **Cálculo Solar**: Módulo que dimensiona plantas fotovoltaicas y térmicas basándose en el consumo real histórico y datos climáticos de la zona.
+- **Física-First**: El motor simula comportamiento termoeléctrico, no solo suma números.
+- **Gestión de activos**: Integración de patrones de habitabilidad declarados por el usuario y un motor de distribución de energía por tanques progresivamente más inteligente.
 
 ---
 
@@ -15,6 +18,7 @@ Este documento registra la evolución arquitectónica de **ModoAhorro** hacia un
 | v4 | `has_defined_pattern` binario no distingue tipos de patrón | Motor v4: criterios técnicos (24h, categoría) + flag usuario |
 | v5 | "Caja Negra" de compresión alteraba datos reales para forzar coincidencia con factura | **Arquitectura Teórico Puro**: Motor calcula consumo real, no comprime, y calcula un **Residual Matemático**. |
 | v6 | Falta de contexto climático en resultados y confusión visual entre tanques | **Diagnóstico Climático**: Inyección de días de calor/frío en resultados. Reordenamiento visual pro-usuario (`Certeza->Variable->Base->Clima`) y sombreado de exceso (Stripes). |
+| v7 | Módulo Solar estático y desconectado | **Proyecto Solar Interactitvo**: Sliders dinámicos para área y habitantes. Cálculo de ahorro por tipo de combustible (Gas/Elec). Layout "Single-Page" (sin scroll). |
 
 ---
 

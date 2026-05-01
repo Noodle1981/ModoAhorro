@@ -62,6 +62,7 @@ El usuario **no conoce los tanques**. Solo ajusta sus equipos.
 - Visualización de **Doble Stack**: Los tanques se reordenan visualmente (`Certeza -> Variable -> Base -> Clima`) para priorizar hábitos.
 - **Zona de Exceso**: Sombreado dinámico (rayas de peligro) para todo consumo que supere la línea de factura.
 - **Diagnóstico Climático**: Tarjeta inteligente que cruza los días de calor/frío de la API con el exceso detectado para dar una explicación técnica al usuario.
+- **Ahorro Solar**: Módulo interactivo que dimensiona sistemas fotovoltaicos (paneles) y térmicos (agua caliente) con sliders dinámicos para ajustar área y habitantes, calculando el ROI según el combustible actual.
 - Muestra top 5 equipos por tanque + Energía Residual (Faltante o Exceso) en la barra de distribución.
 
 ---
