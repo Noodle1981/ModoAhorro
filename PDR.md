@@ -14,6 +14,7 @@ Este documento registra la evolución arquitectónica de **ModoAhorro** hacia un
 | v3 | Motor clasificaba por catálogo, ignorando al usuario | Cascada de tanques basada en comportamiento declarado |
 | v4 | `has_defined_pattern` binario no distingue tipos de patrón | Motor v4: criterios técnicos (24h, categoría) + flag usuario |
 | v5 | "Caja Negra" de compresión alteraba datos reales para forzar coincidencia con factura | **Arquitectura Teórico Puro**: Motor calcula consumo real, no comprime, y calcula un **Residual Matemático**. |
+| v6 | Falta de contexto climático en resultados y confusión visual entre tanques | **Diagnóstico Climático**: Inyección de días de calor/frío en resultados. Reordenamiento visual pro-usuario (`Certeza->Variable->Base->Clima`) y sombreado de exceso (Stripes). |
 
 ---
 
@@ -115,6 +116,9 @@ PASO 5 - Cálculo Residual:
 
 ### Fase 2: Resultados del Motor (`EngineResults.vue`)
 - Visualización Teórico Puro: Barra de 100% o con límite de factura (dashed line).
+- **Zona de Exceso**: Sombreado con patrón de rayas (peligro) y desenfoque para consumos que superan la factura real.
+- **Jerarquía Pro-Usuario**: Los tanques se apilan priorizando hábitos (`Certeza -> Variable`) para que el desborde caiga sobre los tanques técnicos (`Base -> Clima`).
+- **Diagnóstico Automático**: Tarjeta de insight que cruza los días de calor/frío con el exceso para dar una explicación humana al error de cálculo.
 - Color morado/rojo para representar explícitamente el Faltante/Exceso Residual.
 - Se eliminan mensajes engañosos de "Ajustes por motor".
 

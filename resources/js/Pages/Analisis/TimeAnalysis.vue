@@ -79,43 +79,87 @@ const motorData = computed(() => {
     };
 });
 
-// 2. Chart: Thermodynamic Composition (Stacked Tanks)
+// 2. Chart: Thermodynamic Composition (Stacked Tanks with Excess Shading)
 const tanksData = computed(() => {
     const data = props.evolution || [];
+    
+    // Colores base (Normales)
+    const colors = {
+        t1: '#059669', // Certeza
+        t4: '#84cc16', // Variable
+        t2: '#f97316', // Base
+        t3: '#38bdf8', // Clima
+    };
+
+    // Colores de Exceso (Más oscuros/saturados)
+    const excessColors = {
+        t1: '#064e3b', 
+        t4: '#365314', 
+        t2: '#7c2d12', 
+        t3: '#0c4a6e', 
+    };
+
+    const order = [1, 4, 2, 3];
+    const labels = data.map(d => d.label);
+
+    const datasets = [];
+
+    // Construir datasets para Normal y Exceso por cada tanque
+    order.forEach(key => {
+        const tankKey = `t${key}`;
+        
+        // Dataset Normal
+        datasets.push({
+            label: `T${key} (Normal)`,
+            data: data.map(d => {
+                let cumulativeBefore = 0;
+                for (let i = 0; i < order.indexOf(key); i++) {
+                    cumulativeBefore += d.tanks[`t${order[i]}`] || 0;
+                }
+                const val = d.tanks[tankKey] || 0;
+                const limit = d.billed;
+                return Math.max(0, Math.min(val, limit - cumulativeBefore));
+            }),
+            backgroundColor: colors[tankKey],
+            stack: 'combined',
+            borderRadius: 0
+        });
+
+        // Dataset Exceso
+        datasets.push({
+            label: `T${key} (Exceso)`,
+            data: data.map(d => {
+                let cumulativeBefore = 0;
+                for (let i = 0; i < order.indexOf(key); i++) {
+                    cumulativeBefore += d.tanks[`t${order[i]}`] || 0;
+                }
+                const val = d.tanks[tankKey] || 0;
+                const limit = d.billed;
+                const normalPart = Math.max(0, Math.min(val, limit - cumulativeBefore));
+                return val - normalPart;
+            }),
+            backgroundColor: excessColors[tankKey],
+            stack: 'combined',
+            borderRadius: 0
+        });
+    });
+
+    // Añadir línea de Factura como frontera
+    datasets.push({
+        label: 'Límite Factura',
+        data: data.map(d => d.billed),
+        type: 'line',
+        borderColor: '#0f172a',
+        borderWidth: 2,
+        borderDash: [5, 5],
+        pointRadius: 0,
+        fill: false,
+        order: -1
+    });
+
     return {
-        labels: data.map(d => d.label),
-        datasets: [
-            {
-                label: 'T1 Certeza',
-                data: data.map(d => d.tanks.t1),
-                backgroundColor: '#059669', // emerald-600
-                borderRadius: 4
-            },
-            {
-                label: 'T2 Base',
-                data: data.map(d => d.tanks.t2),
-                backgroundColor: '#f43f5e', // rose-500
-                borderRadius: 4
-            },
-            {
-                label: 'T3 Clima',
-                data: data.map(d => d.tanks.t3),
-                backgroundColor: '#38bdf8', // sky-400
-                borderRadius: 4
-            },
-            {
-                label: 'T4 Variable',
-                data: data.map(d => d.tanks.t4),
-                backgroundColor: '#84cc16', // lime-500
-                borderRadius: 4
-            },
-            {
-                label: 'Residual',
-                data: data.map(d => d.theoretical > 0 ? Math.max(0, d.billed - d.theoretical) : 0),
-                backgroundColor: '#ef4444', // rojo, a petición del usuario
-                borderRadius: 4
-            }
-        ]
+        labels,
+        datasets
     };
 });
 

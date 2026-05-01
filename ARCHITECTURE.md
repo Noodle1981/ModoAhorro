@@ -59,6 +59,9 @@ El usuario **no conoce los tanques**. Solo ajusta sus equipos.
 
 **Fase 2 — Sintonizar Motor (`EngineResults.vue`)**
 - El motor calcula el Teórico Puro en 4 tanques.
+- Visualización de **Doble Stack**: Los tanques se reordenan visualmente (`Certeza -> Variable -> Base -> Clima`) para priorizar hábitos.
+- **Zona de Exceso**: Sombreado dinámico (rayas de peligro) para todo consumo que supere la línea de factura.
+- **Diagnóstico Climático**: Tarjeta inteligente que cruza los días de calor/frío de la API con el exceso detectado para dar una explicación técnica al usuario.
 - Muestra top 5 equipos por tanque + Energía Residual (Faltante o Exceso) en la barra de distribución.
 
 ---
@@ -101,7 +104,7 @@ Las categorías **no fuerzan** el tank de un equipo — solo determinan el **alg
 - **Física-First**: El motor simula comportamiento termoeléctrico, no solo suma números.
 - **Usuario-Árbitro**: El usuario valida patrones. El motor sub-clasifica técnicamente.
 - **Categorías Enchufables**: Cada categoría especial tiene su propio calculator interno. Escalable por diseño.
-- **Estética Premium**: Dark mode, glassmorphism, micro-animaciones. Diseño que impacta al primer vistazo.
+- **Estética Premium**: Dark mode, glassmorphism, micro-animaciones y **Sombreado de Exceso** (visualización de desbordes mediante patrones de peligro).
 - **Open/Closed**: Agregar un nuevo tipo de equipo o categoría no requiere modificar el código existente.
 - **Confianza (Testing)**: Cambios en el motor se validan con suite de pruebas para evitar derivas en la distribución.
 

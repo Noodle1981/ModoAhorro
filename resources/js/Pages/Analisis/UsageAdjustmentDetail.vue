@@ -386,6 +386,28 @@ const getTankColor = (key) => {
                             <span class="text-[10px] font-medium text-slate-400 mb-0.5">{{ formatDate(period.start) }} al {{ formatDate(period.end) }}</span>
                         </div>
                     </div>
+
+                    <!-- Indicadores de Clima Rápidos -->
+                    <div v-if="period.cooling_days > 0 || period.heating_days > 0" class="hidden md:flex items-center gap-3">
+                        <div v-if="period.cooling_days > 0" class="bg-orange-50 border border-orange-100 px-4 py-3 rounded-[24px] flex items-center gap-3 group hover:bg-orange-100/50 transition-colors">
+                            <div class="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-orange-500 shadow-sm border border-orange-50">
+                                <ThermometerSun :size="18" />
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black text-orange-400 uppercase tracking-widest leading-none mb-1">Mucho Calor</p>
+                                <p class="text-base font-black text-orange-600 leading-none">{{ Math.round(period.cooling_days) }} <span class="text-[10px] font-bold opacity-70">días</span></p>
+                            </div>
+                        </div>
+                        <div v-if="period.heating_days > 0" class="bg-sky-50 border border-sky-100 px-4 py-3 rounded-[24px] flex items-center gap-3 group hover:bg-sky-100/50 transition-colors">
+                            <div class="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-sky-500 shadow-sm border border-sky-50">
+                                <Activity :size="18" />
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black text-sky-400 uppercase tracking-widest leading-none mb-1">Mucho Frío</p>
+                                <p class="text-base font-black text-sky-600 leading-none">{{ Math.round(period.heating_days) }} <span class="text-[10px] font-bold opacity-70">días</span></p>
+                            </div>
+                        </div>
+                    </div>
                     <div class="bg-slate-900 text-white p-4 rounded-[24px] shadow-xl shadow-slate-200/50">
                         <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total Facturado</p>
                         <p class="text-xl font-black">{{ Math.round(period.total_kwh) }}<span class="text-xs ml-1 opacity-50">kWh</span></p>

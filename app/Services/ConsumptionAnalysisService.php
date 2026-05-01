@@ -466,6 +466,11 @@ class ConsumptionAnalysisService
                 'tanks'           => $tanks,
                 'unassigned_remainder' => $unassigned,
                 'logs'            => $engineResult['logs'] ?? [],
+                'climate' => [
+                    'cooling_days' => $climateLoad['cooling_days'] ?? 0,
+                    'heating_days' => $climateLoad['heating_days'] ?? 0,
+                    'avg_temp'     => $climateLoad['avg_temp'] ?? 20,
+                ],
 
                 // — Estructura legacy (para otros callers que usen 'summary') —
                 'summary' => [
