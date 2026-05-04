@@ -213,6 +213,74 @@ const costsData = computed(() => {
     };
 });
 
+// 5. Chart: Brecha de Eficiencia (Facturado - Recomendado)
+const breachData = computed(() => {
+    const data = props.evolution || [];
+    return {
+        labels: data.map(d => d.label),
+        datasets: [{
+            label: 'Desvío (kWh)',
+            data: data.map(d => Math.round(d.billed - (d.recommended || d.billed))),
+            backgroundColor: data.map(d => (d.billed - (d.recommended || d.billed)) > 0 ? 'rgba(244, 63, 94, 0.8)' : 'rgba(16, 185, 129, 0.8)'),
+            borderRadius: 8,
+        }]
+    };
+});
+
+// 6. Chart: Composición 100% de Tanques por periodo
+const pctTanksData = computed(() => {
+    const data = props.evolution || [];
+    const tankInfo = {
+        1: { label: 'Certeza %', color: '#059669' },
+        4: { label: 'Variable %', color: '#84cc16' },
+        2: { label: 'Base %',    color: '#f97316' },
+        3: { label: 'Clima %',   color: '#38bdf8' },
+    };
+    const order = [1, 4, 2, 3];
+    const datasets = order.map(key => ({
+        label: tankInfo[key].label,
+        data: data.map(d => {
+            const total = Object.values(d.tanks).reduce((a, b) => a + (b || 0), 0);
+            return total > 0 ? +((( d.tanks[`t${key}`] || 0) / total) * 100).toFixed(1) : 0;
+        }),
+        backgroundColor: tankInfo[key].color,
+        stack: 'pct',
+        borderRadius: 0,
+    }));
+    return { labels: data.map(d => d.label), datasets };
+});
+
+// 7. Chart: Gasto Bimestral Total en Pesos
+const billedCostData = computed(() => {
+    const data = props.evolution || [];
+    const totals = data.map(d => Math.round((d.costs.per_kwh || 0) * (d.billed || 0)));
+    // Tendencia: media móvil de ventana 2
+    const trend = totals.map((v, i) => i === 0 ? v : Math.round((v + totals[i - 1]) / 2));
+    return {
+        labels: data.map(d => d.label),
+        datasets: [
+            {
+                label: 'Gasto Bimestral ($)',
+                data: totals,
+                backgroundColor: 'rgba(99, 102, 241, 0.75)',
+                borderRadius: 8,
+                yAxisID: 'y',
+            },
+            {
+                label: 'Tendencia',
+                data: trend,
+                type: 'line',
+                borderColor: '#f59e0b',
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                tension: 0.4,
+                pointRadius: 0,
+                yAxisID: 'y',
+            }
+        ]
+    };
+});
+
 const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -242,6 +310,34 @@ const chartOptions = {
     }
 };
 
+const breachOptions = {
+    ...chartOptions,
+    plugins: {
+        ...chartOptions.plugins,
+        tooltip: {
+            ...chartOptions.plugins.tooltip,
+            callbacks: {
+                label: (item) => {
+                    const val = item.raw;
+                    return val > 0 ? ` +${val} kWh sobre lo recomendado` : ` ${val} kWh bajo lo recomendado`;
+                }
+            }
+        }
+    },
+    scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10, weight: '600' } } },
+        y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } }, beginAtZero: false }
+    }
+};
+
+const pctOptions = {
+    ...chartOptions,
+    scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10, weight: '600' } } },
+        y: { stacked: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 }, callback: (v) => `${v}%` }, max: 100 }
+    }
+};
+
 const dualYOptions = {
     ...chartOptions,
     scales: {
@@ -256,6 +352,14 @@ const stackedOptions = {
     scales: {
         x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10, weight: '600' } } },
         y: { stacked: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } }
+    }
+};
+
+const billedCostOptions = {
+    ...chartOptions,
+    scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10, weight: '600' } } },
+        y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 }, callback: (v) => `$${v.toLocaleString('es-AR')}` } }
     }
 };
 </script>
@@ -380,6 +484,65 @@ const stackedOptions = {
                     </div>
                 </div>
 
+            </div>
+
+            <!-- Row 3: Nuevos gráficos -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                <!-- Chart 5: Brecha de Eficiencia -->
+                <div class="bg-white p-8 rounded-[48px] border border-slate-100 shadow-2xl shadow-slate-200/30">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <div class="p-2 bg-rose-50 text-rose-500 rounded-xl">
+                                    <TrendingDown :size="18" />
+                                </div>
+                                <h3 class="text-xl font-black text-slate-900 tracking-tight">Brecha de Eficiencia</h3>
+                            </div>
+                            <p class="text-xs text-slate-400 font-medium pl-10">Desvío entre Facturado y Recomendado por periodo <span class="text-rose-400 font-bold">● Exceso</span> <span class="text-emerald-500 font-bold">● Ahorro</span></p>
+                        </div>
+                    </div>
+                    <div class="h-80 w-full">
+                        <Bar :data="breachData" :options="breachOptions" />
+                    </div>
+                </div>
+
+                <!-- Chart 6: Composición % de Tanques -->
+                <div class="bg-white p-8 rounded-[48px] border border-slate-100 shadow-2xl shadow-slate-200/30">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <div class="p-2 bg-amber-50 text-amber-500 rounded-xl">
+                                    <Layers :size="18" />
+                                </div>
+                                <h3 class="text-xl font-black text-slate-900 tracking-tight">Composición % por Tanque</h3>
+                            </div>
+                            <p class="text-xs text-slate-400 font-medium pl-10">Participación relativa de cada tanque — independiente del total</p>
+                        </div>
+                    </div>
+                    <div class="h-80 w-full">
+                        <Bar :data="pctTanksData" :options="pctOptions" />
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Chart 7: Gasto Bimestral en Pesos (full width) -->
+            <div class="bg-white p-8 rounded-[48px] border border-slate-100 shadow-2xl shadow-slate-200/30">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <div class="p-2 bg-violet-50 text-violet-500 rounded-xl">
+                                <DollarSign :size="18" />
+                            </div>
+                            <h3 class="text-xl font-black text-slate-900 tracking-tight">Gasto Bimestral en Pesos</h3>
+                        </div>
+                        <p class="text-xs text-slate-400 font-medium pl-10">Costo total facturado por periodo con línea de tendencia suavizada</p>
+                    </div>
+                </div>
+                <div class="h-72 w-full">
+                    <Bar :data="billedCostData" :options="billedCostOptions" />
+                </div>
             </div>
 
             <!-- Bottom Insight -->
