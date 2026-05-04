@@ -239,7 +239,7 @@ class AnalysisController extends Controller
 
         // 1. Cargar todos los usos para construir historiales (Se necesita para ambas vistas)
         $allInvoiceIds = collect($periods)->pluck('invoices')->flatten(1)->pluck('id')->toArray();
-        $allUsages = EquipmentUsage::query()->whereIn('invoice_id', $allInvoiceIds, 'and', false)
+        $allUsages = EquipmentUsage::query()->whereIn('invoice_id', $allInvoiceIds)
             ->with(['equipment.room', 'equipment.category'])
             ->get();
 
@@ -248,12 +248,14 @@ class AnalysisController extends Controller
         foreach ($periods as $p) {
             $pPrice = $p['total_kwh'] > 0 ? $p['total_amount'] / $p['total_kwh'] : 0;
             $pLabel = \Carbon\Carbon::parse($p['end_date'])->locale('es')->translatedFormat('M y');
+            $pDays = \Carbon\Carbon::parse($p['start_date'])->diffInDays(\Carbon\Carbon::parse($p['end_date'])) + 1;
             foreach ($p['invoices'] as $inv) {
                 $invoiceToPeriodMap[$inv['id']] = [
                     'period_id' => $p['id'],
                     'label' => $pLabel,
                     'price' => $pPrice,
-                    'end_date' => $p['end_date']
+                    'end_date' => $p['end_date'],
+                    'days' => $pDays,
                 ];
             }
         }
@@ -280,7 +282,8 @@ class AnalysisController extends Controller
                     'kwh' => 0,
                     'cost' => 0,
                     'hours' => (float)$u->avg_daily_use_hours,
-                    'end_date' => $invMap['end_date']
+                    'end_date' => $invMap['end_date'],
+                    'days' => $invMap['days'] ?? 0,
                 ];
             }
             
@@ -322,7 +325,7 @@ class AnalysisController extends Controller
             // VISTA: PERIODO ESPECÍFICO
             $pricePerKwh = $selectedPeriod['total_kwh'] > 0 ? $selectedPeriod['total_amount'] / $selectedPeriod['total_kwh'] : 0;
             $selectedInvoiceIds = collect($selectedPeriod['invoices'])->pluck('id');
-            $selectedUsages = $allUsages->whereIn('invoice_id', $selectedInvoiceIds)->groupBy('equipment_id');
+            $selectedUsages = $allUsages->filter(fn($u) => $selectedInvoiceIds->contains($u->invoice_id))->groupBy('equipment_id');
 
             $equipmentData = $selectedUsages->map(function($usages, $eqId) use ($pricePerKwh, $historyByEquipment) {
                 $firstUsage = $usages->first();

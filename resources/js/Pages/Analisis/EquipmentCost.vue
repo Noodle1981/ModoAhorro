@@ -71,7 +71,7 @@ const toggleRow = (id) => {
 
 const getSparklineData = (history) => {
     return {
-        labels: history.map(h => h.label),
+        labels: history.map(h => h.days ? `${h.label} (${h.days}d)` : h.label),
         datasets: [{
             data: history.map(h => h.cost),
             borderColor: '#10b981', // emerald-500
@@ -93,7 +93,7 @@ const sparklineOptions = {
 
 const getDetailedChartData = (history) => {
     return {
-        labels: history.map(h => h.label),
+        labels: history.map(h => h.days ? `${h.label} · ${h.days}d` : h.label),
         datasets: [
             {
                 label: 'Coste ($)',
@@ -123,7 +123,21 @@ const detailedChartOptions = {
     maintainAspectRatio: false,
     plugins: {
         legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 6, font: { size: 10, weight: '700' } } },
-        tooltip: { backgroundColor: '#0f172a', padding: 12, cornerRadius: 12 }
+        tooltip: {
+            backgroundColor: '#0f172a',
+            padding: 12,
+            cornerRadius: 12,
+            callbacks: {
+                title: (items) => {
+                    // El label ya trae "ene. 25 · 61d", lo mostramos tal cual
+                    return items[0]?.label ?? '';
+                },
+                label: (item) => {
+                    if (item.datasetIndex === 0) return ` Coste: $${Math.round(item.raw).toLocaleString('es-AR')}`;
+                    return ` Consumo: ${Math.round(item.raw)} kWh`;
+                }
+            }
+        }
     },
     scales: {
         x: { grid: { display: false }, ticks: { font: { size: 10, weight: '600' } } },
@@ -131,6 +145,16 @@ const detailedChartOptions = {
         y1: { position: 'right', grid: { display: false }, ticks: { font: { size: 10 } }, beginAtZero: true }
     }
 };
+const selectedPeriod = computed(() => {
+    if (props.selectedPeriodId === 'all') return null;
+    return props.periods.find(p => p.id === props.selectedPeriodId);
+});
+
+const totalKwh = computed(() => {
+    if (selectedPeriod.value) return selectedPeriod.value.total_kwh;
+    // Si es promedio, sumamos los kWh de los equipos (que ya vienen promediados en equipmentData)
+    return props.equipmentData.reduce((acc, d) => acc + d.kwh, 0);
+});
 </script>
 
 <template>
@@ -171,7 +195,7 @@ const detailedChartOptions = {
             <div class="flex flex-wrap items-center gap-4">
                 <div class="bg-slate-900 rounded-3xl p-5 text-white flex-1 min-w-[200px] relative overflow-hidden flex items-center justify-between shadow-xl shadow-slate-900/10">
                     <div>
-                        <p class="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-1">Tarifa Promedio</p>
+                        <p class="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-1">{{ selectedPeriodId === 'all' ? 'Tarifa Promedio' : 'Tarifa del Periodo' }}</p>
                         <p class="text-xl font-black">${{ pricePerKwh.toFixed(2) }}<span class="text-[10px] font-medium text-white/30 ml-1">/kWh</span></p>
                     </div>
                     <DollarSign :size="32" class="text-white/10" />
@@ -179,18 +203,18 @@ const detailedChartOptions = {
                 
                 <div class="bg-white border border-slate-100 rounded-3xl p-5 flex-1 min-w-[200px] flex items-center justify-between shadow-lg shadow-slate-200/20">
                     <div>
-                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{{ selectedPeriodId === 'all' ? 'Gasto Prom. Periodo' : 'Total en Pesos' }}</p>
-                        <p class="text-xl font-black text-slate-900">${{ filteredData.reduce((acc, d) => acc + d.cost, 0).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</p>
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">{{ selectedPeriodId === 'all' ? 'Gasto Prom. Periodo' : 'Total Facturado' }}</p>
+                        <p class="text-xl font-black text-slate-900">${{ (selectedPeriod?.total_amount || filteredData.reduce((acc, d) => acc + d.cost, 0)).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</p>
                     </div>
                     <Activity :size="32" class="text-slate-100" />
                 </div>
 
-                <div class="bg-emerald-50 border border-emerald-100 rounded-3xl p-5 flex-1 min-w-[200px] flex items-center justify-between group cursor-pointer hover:bg-emerald-100 transition-colors">
+                <div class="bg-emerald-50 border border-emerald-100 rounded-3xl p-5 flex-1 min-w-[200px] flex items-center justify-between group">
                     <div>
-                        <p class="text-[9px] font-black text-emerald-600/60 uppercase tracking-[0.2em] mb-1">Mayor Impacto</p>
-                        <p class="text-xl font-black text-emerald-900 truncate max-w-[140px]">{{ filteredData[0]?.name || '-' }}</p>
+                        <p class="text-[9px] font-black text-emerald-600/60 uppercase tracking-[0.2em] mb-1">{{ selectedPeriodId === 'all' ? 'Consumo Promedio' : 'Consumo del Periodo' }}</p>
+                        <p class="text-xl font-black text-emerald-900">{{ Math.round(totalKwh).toLocaleString('es-AR') }} <span class="text-[10px] font-bold text-emerald-600/40 ml-1">kWh</span></p>
                     </div>
-                    <TrendingUp :size="32" class="text-emerald-200 group-hover:scale-110 transition-transform" />
+                    <Zap :size="32" class="text-emerald-200 group-hover:scale-110 transition-transform" />
                 </div>
             </div>
 
