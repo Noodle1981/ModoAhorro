@@ -79,14 +79,45 @@ const motorData = computed(() => {
     };
 });
 
+// Computed properties para procesar la evolución con la nueva lógica de exceso
+const processedEvolution = computed(() => {
+    return (props.evolution || []).map(d => {
+        let newTanks = { ...d.tanks };
+        let calculated = Object.values(newTanks).reduce((a, b) => a + (b || 0), 0);
+        let excess = Math.max(0, calculated - d.billed);
+        let shortfall = Math.max(0, d.billed - calculated);
+
+        let t4_base = newTanks['t4'] || 0;
+        let t4_excess = 0;
+
+        if (excess > 0) {
+            let climate = newTanks['t3'] || 0;
+            let deductible = Math.min(climate, excess);
+            newTanks['t3'] = climate - deductible;
+            t4_excess = deductible;
+        }
+
+        return { 
+            ...d, 
+            adjustedTanks: {
+                t1: newTanks.t1 || 0,
+                t2: newTanks.t2 || 0,
+                t3: newTanks.t3 || 0,
+                t4_base,
+                t4_excess
+            },
+            shortfall
+        };
+    });
+});
+
 // 2. Chart: Thermodynamic Composition (Stacked Tanks with Excess Shading)
 const tanksData = computed(() => {
-    const data = props.evolution || [];
+    const data = processedEvolution.value;
     
     // Configuración de Tanques
     const tankInfo = {
         1: { label: 'Tanque 1 (Certeza)', color: '#059669' },
-        4: { label: 'Tanque 4 (Variable)', color: '#84cc16' },
         2: { label: 'Tanque 2 (Base)', color: '#f97316' },
         3: { label: 'Tanque 3 (Clima)', color: '#38bdf8' }
     };
@@ -95,46 +126,39 @@ const tanksData = computed(() => {
     const labels = data.map(d => d.label);
     const datasets = [];
 
-    // 1. Datasets para la parte "Normal" (Dentro del límite de la factura)
+    // Datasets para la parte "Normal" y el exceso absorbido
     order.forEach(key => {
-        const tankKey = `t${key}`;
-        
-        datasets.push({
-            label: tankInfo[key].label,
-            data: data.map(d => {
-                let cumulativeBefore = 0;
-                for (let i = 0; i < order.indexOf(key); i++) {
-                    cumulativeBefore += d.tanks[`t${order[i]}`] || 0;
-                }
-                const val = d.tanks[tankKey] || 0;
-                const limit = d.billed;
-                // Solo lo que cabe debajo del límite
-                return Math.max(0, Math.min(val, limit - cumulativeBefore));
-            }),
-            backgroundColor: tankInfo[key].color,
-            stack: 'combined',
-            borderRadius: 0
-        });
+        if (key === 4) {
+            datasets.push({
+                label: 'Tanque 4 (Variable)',
+                data: data.map(d => d.adjustedTanks.t4_base),
+                backgroundColor: '#84cc16', // lime-500
+                stack: 'combined',
+                borderRadius: 0
+            });
+            datasets.push({
+                label: 'Tanque 4 (Exceso Absorbido)',
+                data: data.map(d => d.adjustedTanks.t4_excess),
+                backgroundColor: '#4d7c0f', // lime-700
+                stack: 'combined',
+                borderRadius: 0
+            });
+        } else {
+            datasets.push({
+                label: tankInfo[key].label,
+                data: data.map(d => d.adjustedTanks[`t${key}`]),
+                backgroundColor: tankInfo[key].color,
+                stack: 'combined',
+                borderRadius: 0
+            });
+        }
     });
 
-    // 2. Dataset único para el Consumo no Justificado (Suma de excedentes)
+    // Dataset para el Faltante (Residual) si la factura fue mayor al calculado
     datasets.push({
-        label: 'Consumo no Justificado',
-        data: data.map(d => {
-            let totalExcess = 0;
-            let cumulative = 0;
-            const limit = d.billed;
-
-            order.forEach(key => {
-                const val = d.tanks[`t${key}`] || 0;
-                const normalPart = Math.max(0, Math.min(val, limit - cumulative));
-                totalExcess += (val - normalPart);
-                cumulative += val;
-            });
-
-            return totalExcess;
-        }),
-        backgroundColor: '#475569', // Slate 600
+        label: 'Residual Faltante',
+        data: data.map(d => d.shortfall),
+        backgroundColor: '#a855f7', // purple-500
         stack: 'combined',
         borderRadius: 0
     });
@@ -229,24 +253,50 @@ const breachData = computed(() => {
 
 // 6. Chart: Composición 100% de Tanques por periodo
 const pctTanksData = computed(() => {
-    const data = props.evolution || [];
+    const data = processedEvolution.value;
     const tankInfo = {
         1: { label: 'Certeza %', color: '#059669' },
-        4: { label: 'Variable %', color: '#84cc16' },
         2: { label: 'Base %',    color: '#f97316' },
         3: { label: 'Clima %',   color: '#38bdf8' },
     };
     const order = [1, 4, 2, 3];
-    const datasets = order.map(key => ({
-        label: tankInfo[key].label,
-        data: data.map(d => {
-            const total = Object.values(d.tanks).reduce((a, b) => a + (b || 0), 0);
-            return total > 0 ? +((( d.tanks[`t${key}`] || 0) / total) * 100).toFixed(1) : 0;
-        }),
-        backgroundColor: tankInfo[key].color,
-        stack: 'pct',
-        borderRadius: 0,
-    }));
+    const datasets = [];
+
+    order.forEach(key => {
+        if (key === 4) {
+            datasets.push({
+                label: 'Variable Base %',
+                data: data.map(d => {
+                    const total = Object.values(d.adjustedTanks).reduce((a, b) => a + b, 0);
+                    return total > 0 ? +((d.adjustedTanks.t4_base / total) * 100).toFixed(1) : 0;
+                }),
+                backgroundColor: '#84cc16',
+                stack: 'pct',
+                borderRadius: 0,
+            });
+            datasets.push({
+                label: 'Variable Exceso %',
+                data: data.map(d => {
+                    const total = Object.values(d.adjustedTanks).reduce((a, b) => a + b, 0);
+                    return total > 0 ? +((d.adjustedTanks.t4_excess / total) * 100).toFixed(1) : 0;
+                }),
+                backgroundColor: '#4d7c0f',
+                stack: 'pct',
+                borderRadius: 0,
+            });
+        } else {
+            datasets.push({
+                label: tankInfo[key].label,
+                data: data.map(d => {
+                    const total = Object.values(d.adjustedTanks).reduce((a, b) => a + b, 0);
+                    return total > 0 ? +((d.adjustedTanks[`t${key}`] / total) * 100).toFixed(1) : 0;
+                }),
+                backgroundColor: tankInfo[key].color,
+                stack: 'pct',
+                borderRadius: 0,
+            });
+        }
+    });
     return { labels: data.map(d => d.label), datasets };
 });
 

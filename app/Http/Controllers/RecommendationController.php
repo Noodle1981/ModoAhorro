@@ -71,9 +71,6 @@ class RecommendationController extends Controller
         ]);
     }
 
-    /**
-     * Consumo Fantasma (Standby)
-     */
     public function standby(Request $request, StandbyAnalysisService $service)
     {
         $entity = $this->getActiveEntity($request);
@@ -85,6 +82,15 @@ class RecommendationController extends Controller
             'entity' => $entity,
             'analysis' => $results
         ]);
+    }
+
+    /**
+     * Alternar estado de standby de un equipo
+     */
+    public function toggleStandby(Equipment $equipment, StandbyAnalysisService $service)
+    {
+        $service->toggleEquipmentStandby($equipment->id);
+        return back();
     }
 
     /**

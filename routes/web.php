@@ -92,6 +92,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/solar', 'App\Http\Controllers\RecommendationController@solar')->name('solar');
         Route::get('/reemplazos', 'App\Http\Controllers\RecommendationController@replacements')->name('replacements');
         Route::get('/consumo-fantasma', 'App\Http\Controllers\RecommendationController@standby')->name('standby');
+        Route::post('/consumo-fantasma/{equipment}/toggle', 'App\Http\Controllers\RecommendationController@toggleStandby')->name('standby.toggle');
         Route::get('/salud-termica', 'App\Http\Controllers\RecommendationController@thermalHealth')->name('thermal-health');
         Route::get('/mantenimiento', 'App\Http\Controllers\RecommendationController@maintenance')->name('maintenance');
         Route::get('/vacaciones', 'App\Http\Controllers\RecommendationController@vacation')->name('vacation');

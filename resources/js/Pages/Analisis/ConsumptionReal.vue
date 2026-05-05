@@ -177,9 +177,32 @@ const residualKwh = computed(() => Math.max(0, residualAmount.value));
 const isExcess = computed(() => residualAmount.value < 0);
 const residualAbs = computed(() => Math.abs(residualAmount.value));
 
+const displayTanks = computed(() => {
+    let tanks = JSON.parse(JSON.stringify(props.tankBreakdown || []));
+    
+    if (isExcess.value && residualAbs.value > 0) {
+        let climateTank = tanks.find(t => t.name.includes('Clima') || t.name.includes('Tanque 3'));
+        let variableTank = tanks.find(t => t.name.includes('Variable') || t.name.includes('Tanque 4'));
+
+        if (climateTank && variableTank) {
+            let deductible = Math.min(climateTank.value, residualAbs.value);
+            climateTank.value -= deductible;
+            variableTank.base_value = variableTank.value;
+            variableTank.absorbed_excess = deductible;
+            variableTank.value += deductible;
+        }
+    }
+    return tanks;
+});
+
+const calibratedTotalDisplay = computed(() => {
+    let baseTotal = props.validation ? props.validation.calculated : 0;
+    return isExcess.value ? baseTotal - residualAbs.value : baseTotal;
+});
+
 const totalBarSpace = computed(() => {
     if (!props.validation) return 1;
-    return Math.max(props.validation.billed, props.validation.calculated);
+    return Math.max(props.validation.billed, calibratedTotalDisplay.value);
 });
 
 const getTankColor = (name) => {
@@ -332,14 +355,29 @@ const getTankColor = (name) => {
                 <div class="space-y-4">
                     <div class="relative h-16 w-full bg-slate-50 rounded-[24px] p-2 flex gap-1.5 overflow-hidden border border-slate-100">
                         <div 
-                            v-for="tank in tankBreakdown" 
+                            v-for="tank in displayTanks" 
                             :key="tank.name"
-                            class="h-full rounded-[14px] transition-all duration-1000 ease-out group relative cursor-help"
-                            :style="{ backgroundColor: getTankColor(tank.name), width: (tank.value / totalBarSpace * 100) + '%' }"
+                            class="h-full transition-all duration-1000 ease-out group relative cursor-help flex"
+                            :class="tank.name.includes('Variable') && tank.absorbed_excess ? 'gap-1.5' : 'rounded-[14px]'"
+                            :style="{ backgroundColor: tank.name.includes('Variable') && tank.absorbed_excess ? 'transparent' : getTankColor(tank.name), width: (tank.value / totalBarSpace * 100) + '%' }"
                         >
-                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <span class="text-[10px] font-black text-white">{{ Math.round(tank.value / totalBarSpace * 100) }}%</span>
-                            </div>
+                            <!-- Si es tanque Variable y tiene exceso absorbido -->
+                            <template v-if="tank.name.includes('Variable') && tank.absorbed_excess">
+                                <div class="h-full rounded-[14px] bg-lime-500 relative transition-all" :style="{ width: (tank.base_value / tank.value * 100) + '%' }"></div>
+                                <div class="h-full rounded-[14px] bg-lime-700 relative overflow-hidden transition-all" :style="{ width: (tank.absorbed_excess / tank.value * 100) + '%' }">
+                                    <div class="absolute inset-0 opacity-20" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0,0,0,0.2) 8px, rgba(0,0,0,0.2) 16px)"></div>
+                                </div>
+                                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                    <span class="text-[10px] font-black text-white">{{ Math.round(tank.value / totalBarSpace * 100) }}%</span>
+                                </div>
+                            </template>
+                            
+                            <!-- Resto de tanques -->
+                            <template v-else>
+                                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span class="text-[10px] font-black text-white">{{ Math.round(tank.value / totalBarSpace * 100) }}%</span>
+                                </div>
+                            </template>
                         </div>
                         
                         <!-- Residual Segment (Morado) Solo si falta para llegar al 100% -->
@@ -352,37 +390,32 @@ const getTankColor = (name) => {
                                 <span class="text-[10px] font-black text-white">{{ Math.round(residualKwh / totalBarSpace * 100) }}%</span>
                             </div>
                         </div>
-
-                        <!-- Marca de Límite de Factura (cuando nos excedemos) -->
-                        <div v-if="isExcess" 
-                             class="absolute top-0 bottom-0 border-l-4 border-dashed border-slate-900 z-10 flex items-start justify-center"
-                             :style="{ left: ((validation.billed / totalBarSpace) * 100) + '%' }">
-                             <div class="bg-slate-900 text-white text-[9px] font-black px-2 py-0.5 rounded-b-md shadow-lg transform -translate-x-1/2">
-                                 FACTURA ({{ Math.round(validation.billed) }})
-                             </div>
-                        </div>
                     </div>
                 </div>
 
                 <!-- Detalle en celdas -->
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-6 pt-4">
-                    <div v-for="tank in tankBreakdown" :key="tank.name" class="space-y-2">
+                    <div v-for="tank in displayTanks" :key="tank.name" class="space-y-2">
                         <div class="flex items-center gap-2">
-                            <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: getTankColor(tank.name) }"></div>
+                            <div class="flex gap-0.5" v-if="tank.name.includes('Variable') && tank.absorbed_excess">
+                                <div class="w-3 h-3 rounded-l-full bg-lime-500"></div>
+                                <div class="w-3 h-3 rounded-r-full bg-lime-700"></div>
+                            </div>
+                            <div v-else class="w-3 h-3 rounded-full" :style="{ backgroundColor: getTankColor(tank.name) }"></div>
                             <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">{{ tank.name.split(' - ')[0] || tank.name }}</span>
                         </div>
                         <p class="text-lg font-black text-slate-900">{{ Math.round(tank.value) }} <span class="text-xs text-slate-400">kWh</span></p>
                     </div>
                     
                     <!-- Tarjeta Residual -->
-                    <div v-if="residualAbs > 0" class="space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                    <div v-if="residualKwh > 0" class="space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-100">
                         <div class="flex items-center gap-2">
-                            <div class="w-3 h-3 rounded-full" :class="isExcess ? 'bg-rose-500' : 'bg-purple-500'"></div>
-                            <span class="text-[10px] font-black uppercase tracking-widest truncate" :class="isExcess ? 'text-rose-600' : 'text-purple-600'">
-                                {{ isExcess ? 'Exceso' : 'Faltante' }}
+                            <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+                            <span class="text-[10px] font-black uppercase tracking-widest truncate text-purple-600">
+                                Faltante
                             </span>
                         </div>
-                        <p class="text-lg font-black" :class="isExcess ? 'text-rose-500' : 'text-purple-500'">{{ Math.round(residualAbs) }} <span class="text-xs opacity-50">kWh</span></p>
+                        <p class="text-lg font-black text-purple-500">{{ Math.round(residualKwh) }} <span class="text-xs opacity-50">kWh</span></p>
                     </div>
                 </div>
             </div>

@@ -61,7 +61,9 @@ El usuario **no conoce los tanques**. Solo ajusta sus equipos.
 - El motor calcula el Teórico Puro en 4 tanques.
 - Visualización de **Doble Stack**: Los tanques se reordenan visualmente (`Certeza -> Variable -> Base -> Clima`) para priorizar hábitos.
 - **Zona de Exceso**: Sombreado dinámico (rayas de peligro) para todo consumo que supere la línea de factura.
-- **Diagnóstico Climático**: Tarjeta inteligente que cruza los días de calor/frío de la API con el exceso detectado para dar una explicación técnica al usuario.
+- **Diagnóstico Automático**: Tarjeta inteligente que cruza los días de calor/frío de la API con el exceso detectado para dar una explicación técnica al usuario.
+- **Exceso Absorbido (v8)**: El exceso teórico ya no se visualiza como zona roja. Se descuenta del tanque Climático y se agrega al Visual Variable con dos tonos (lima base + lima oscuro), manteniendo la trazabilidad sin alarmar visualmente. Eliminado el marcador invasivo "FACTURA" de la barra.
+- **Proyección Total sin Ajuste**: renombre del antiguo "Consumo Teórico Calculado" con tooltip explicativo para el cliente final.
 - **Ahorro Solar**: Módulo interactivo que dimensiona sistemas fotovoltaicos (paneles) y térmicos (agua caliente) con sliders dinámicos para ajustar área y habitantes, calculando el ROI según el combustible actual.
 - Muestra top 5 equipos por tanque + Energía Residual (Faltante o Exceso) en la barra de distribución.
 
@@ -84,6 +86,14 @@ Las categorías **no fuerzan** el tank de un equipo — solo determinan el **alg
 - La categoría `Refrigeración` no fuerza Crítico; lo que lo fuerza es que la heladera corre 24h diariamente.
 - Agregar una nueva categoría con lógica especial NO requiere modificar los tanques existentes.
 
+### Representación Visual del Exceso (v8)
+Cuando el Total Teórico supera a la Factura:
+- El exceso se descuenta del Tanque Climático (primera fuente de incertidumbre).
+- Se agrega al Tanque Variable como capa oscura adicional (`t4_excess`).
+- Ambas capas se apilan en la misma barra con diferente tono de verde lima.
+- El resultado neto de la barra coincide visualmente con la línea de factura (sin zona roja externa).
+- La misma lógica aplica en `EngineResults.vue`, `ConsumptionReal.vue` y `TimeAnalysis.vue`.
+
 ---
 
 ## 5. Flujo de Datos
@@ -105,9 +115,18 @@ Las categorías **no fuerzan** el tank de un equipo — solo determinan el **alg
 - **Física-First**: El motor simula comportamiento termoeléctrico, no solo suma números.
 - **Usuario-Árbitro**: El usuario valida patrones. El motor sub-clasifica técnicamente.
 - **Categorías Enchufables**: Cada categoría especial tiene su propio calculator interno. Escalable por diseño.
-- **Estética Premium**: Dark mode, glassmorphism, micro-animaciones y **Sombreado de Exceso** (visualización de desbordes mediante patrones de peligro).
+- **Estética Premium (Tailwind v4 Rules)**: Gradientes sutiles (`bg-gradient-to-br from-slate-900 to-slate-800`), bordes `rounded-[24px]/[32px]`, glassmorphism (`backdrop-blur-md bg-white/10 border border-white/20`). Colores semánticos globales: `energy-solar` (amber-500), `energy-success` (emerald-500), `energy-danger` (rose-500). Nunca hardcodear variantes cuando corresponde un color semántico.
+- **Visualización Honesta**: El exceso teórico se integra limpiamente al Uso Variable (dos tonos), evitando zonas rojas que alarmen sin contexto.
 - **Open/Closed**: Agregar un nuevo tipo de equipo o categoría no requiere modificar el código existente.
 - **Confianza (Testing)**: Cambios en el motor se validan con suite de pruebas para evitar derivas en la distribución.
+
+### Módulo Consumo Fantasma (Standby) — v8
+- **Ruta**: `GET /recomendaciones/consumo-fantasma` → `Standby.vue`
+- **Toggle Backend**: `POST /recomendaciones/consumo-fantasma/{equipment}/toggle` → `RecommendationController@toggleStandby` → `StandbyAnalysisService::toggleEquipmentStandby`.
+- **Vista**: Listado real de equipos agrupado por categoría. Cada fila tiene: nombre, ambiente, potencia standby, horas en espera, costo mensual, y un switch interactivo.
+- **Lógica de Ahorro**: La tarjeta KPI verde alterna dinámicamente entre "Ahorro Potencial" (si no se desenchufó nada) y "Ahorro Logrado" (si algún equipo está desenchufado), calculado desde `totalRealizedSavings`.
+- **Filtros de Inclusión**: `StandbyAnalysisService` excluye: iluminación, portátiles, equipos con `default_standby_power_w = 0`, y equipos inactivos.
+
 
 ---
 

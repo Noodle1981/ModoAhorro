@@ -38,12 +38,30 @@ const formatKwh = (val) => Number(val || 0).toFixed(1);
 
 const sortedTanks = computed(() => {
     const order = [1, 4, 2, 3];
-    return [...(props.engine?.tanks || [])].sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
+    let tanks = JSON.parse(JSON.stringify(props.engine?.tanks || []));
+    
+    if (isExcess.value && residualAbs.value > 0) {
+        let climateTank = tanks.find(t => t.key === 3);
+        let variableTank = tanks.find(t => t.key === 4);
+
+        if (climateTank && variableTank) {
+            let deductible = Math.min(climateTank.total_kwh, residualAbs.value);
+            climateTank.total_kwh -= deductible;
+            variableTank.base_kwh = variableTank.total_kwh;
+            variableTank.absorbed_excess = deductible;
+            variableTank.total_kwh += deductible;
+        }
+    }
+
+    return tanks.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
 });
 
 const calibratedTotal = computed(() => {
-    if (props.engine?.calibrated_total > 0) return props.engine.calibrated_total;
-    return (props.engine?.tanks || []).reduce((acc, t) => acc + (t.total_kwh || 0), 0);
+    // Si hay exceso, lo descontamos del total calibrado base para que el espacio de la barra refleje el límite de la factura
+    let baseTotal = props.engine?.calibrated_total > 0 
+        ? props.engine.calibrated_total 
+        : (props.engine?.tanks || []).reduce((acc, t) => acc + (t.total_kwh || 0), 0);
+    return isExcess.value ? baseTotal - residualAbs.value : baseTotal;
 });
 
 const residualKwh = computed(() => {
@@ -169,27 +187,27 @@ const formatDate = (dateString) => {
                                 <div 
                                     v-for="tank in sortedTanks" 
                                     :key="tank.key"
-                                    class="h-full rounded-[14px] transition-all duration-1000 ease-out group relative cursor-help"
-                                    :class="getTankBarClass(tank.key)"
+                                    class="h-full transition-all duration-1000 ease-out group relative cursor-help flex"
+                                    :class="tank.key === 4 && tank.absorbed_excess ? 'gap-1.5' : 'rounded-[14px] ' + getTankBarClass(tank.key)"
                                     :style="{ width: (tank.total_kwh / totalBarSpace * 100) + '%' }"
                                 >
-                                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <span class="text-[10px] font-black text-white">{{ Math.round(tank.total_kwh / totalBarSpace * 100) }}%</span>
-                                    </div>
-                                </div>
-
-                                <!-- Overlay de Zona de Exceso (Limpio y Potente) -->
-                                <div 
-                                    v-if="isExcess"
-                                    class="absolute top-0 bottom-0 right-0 z-0 bg-rose-500/[0.06] backdrop-blur-[2px] pointer-events-none border-l-4 border-rose-600/50"
-                                    :style="{ 
-                                        left: invoicePercent + '%',
-                                        backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(225, 29, 72, 0.08) 12px, rgba(225, 29, 72, 0.08) 24px)'
-                                    }"
-                                >
-                                    <div class="absolute bottom-2 right-4 flex items-center gap-1.5 text-[8px] font-black text-rose-600 uppercase tracking-[0.2em] opacity-60">
-                                        <AlertCircle :size="10" /> Zona de Exceso
-                                    </div>
+                                    <!-- Si es tanque Variable y tiene exceso absorbido -->
+                                    <template v-if="tank.key === 4 && tank.absorbed_excess">
+                                        <div class="h-full rounded-[14px] bg-lime-500 relative transition-all" :style="{ width: (tank.base_kwh / tank.total_kwh * 100) + '%' }"></div>
+                                        <div class="h-full rounded-[14px] bg-lime-700 relative overflow-hidden transition-all" :style="{ width: (tank.absorbed_excess / tank.total_kwh * 100) + '%' }">
+                                            <div class="absolute inset-0 opacity-20" style="background-image: repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0,0,0,0.2) 8px, rgba(0,0,0,0.2) 16px)"></div>
+                                        </div>
+                                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                            <span class="text-[10px] font-black text-white">{{ Math.round(tank.total_kwh / totalBarSpace * 100) }}%</span>
+                                        </div>
+                                    </template>
+                                    
+                                    <!-- Resto de tanques -->
+                                    <template v-else>
+                                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <span class="text-[10px] font-black text-white">{{ Math.round(tank.total_kwh / totalBarSpace * 100) }}%</span>
+                                        </div>
+                                    </template>
                                 </div>
 
                                 <!-- Residual Segment (Morado) Solo si falta para llegar al 100% -->
@@ -203,33 +221,28 @@ const formatDate = (dateString) => {
                                     </div>
                                 </div>
                                 
-                                <!-- Marca de Límite de Factura (Frontera) -->
-                                <div v-if="totalBarSpace > 0" 
-                                     class="absolute top-0 bottom-0 border-l-[6px] border-dashed border-slate-900 z-10 flex items-start justify-center shadow-[0_0_15px_rgba(0,0,0,0.2)]"
-                                     :style="{ left: invoicePercent + '%' }">
-                                     <div class="bg-slate-900 text-white text-[10px] font-black px-3 py-1 rounded-b-xl shadow-2xl transform -translate-x-1/2 whitespace-nowrap ring-4 ring-white/50">
-                                         FACTURA ({{ Math.round(engine.invoiced_kwh) }} kWh)
-                                     </div>
-                                </div>
+
                             </div>
 
                             <div class="flex flex-wrap gap-4 px-2 justify-center">
                                 <div v-for="tank in sortedTanks" :key="tank.key" class="text-center space-y-1 px-2">
                                     <div class="flex items-center justify-center gap-1.5">
-                                        <div class="w-2 h-2 rounded-full" :class="getTankBarClass(tank.key)"></div>
+                                        <div class="flex gap-0.5" v-if="tank.key === 4 && tank.absorbed_excess">
+                                            <div class="w-2 h-2 rounded-l-full bg-lime-500"></div>
+                                            <div class="w-2 h-2 rounded-r-full bg-lime-700"></div>
+                                        </div>
+                                        <div v-else class="w-2 h-2 rounded-full" :class="getTankBarClass(tank.key)"></div>
                                         <span class="text-[10px] font-black text-slate-900 uppercase tracking-tighter">{{ tank.label }}</span>
                                     </div>
                                     <p class="text-sm font-black text-slate-400">{{ Math.round(tank.total_kwh) }} kWh</p>
                                 </div>
-                                <!-- Leyenda Residual / Exceso -->
-                                <div v-if="residualAbs > 0" class="text-center space-y-1 px-2">
+                                <!-- Leyenda Residual (Solo Faltante, el Exceso ya se absorbió) -->
+                                <div v-if="residualKwh > 0" class="text-center space-y-1 px-2">
                                     <div class="flex items-center justify-center gap-1.5">
-                                        <div class="w-2 h-2 rounded-full" :class="isExcess ? 'bg-rose-500' : 'bg-purple-500'"></div>
-                                        <span class="text-[10px] font-black uppercase tracking-tighter" :class="isExcess ? 'text-rose-900' : 'text-purple-900'">
-                                            {{ isExcess ? 'Exceso Teórico' : 'Residual (Faltante)' }}
-                                        </span>
+                                        <div class="w-2 h-2 rounded-full bg-purple-500"></div>
+                                        <span class="text-[10px] font-black text-purple-900 uppercase tracking-tighter">Residual (Faltante)</span>
                                     </div>
-                                    <p class="text-sm font-black" :class="isExcess ? 'text-rose-500' : 'text-purple-400'">{{ Math.round(residualAbs) }} kWh</p>
+                                    <p class="text-sm font-black text-purple-400">{{ Math.round(residualKwh) }} kWh</p>
                                 </div>
                             </div>
                         </div>
@@ -251,7 +264,7 @@ const formatDate = (dateString) => {
                                     </div>
                                 </div>
                                 <h3 class="text-lg font-black text-slate-900 uppercase tracking-tight">{{ tank.label }}</h3>
-                                <p class="text-xs text-slate-500 font-medium leading-relaxed mt-2 mb-6 h-8 overflow-hidden">
+                                <p class="text-xs text-slate-500 font-medium leading-relaxed mt-2 mb-6 min-h-[3rem]">
                                     {{ tank.description || 'Consumo identificado y procesado por el motor.' }}
                                 </p>
                                 
@@ -297,8 +310,11 @@ const formatDate = (dateString) => {
                         </div>
 
                         <div class="space-y-6">
-                            <div class="flex justify-between items-center py-4 border-b border-white/10">
-                                <span class="text-sm font-bold text-slate-400">Consumo Teórico Calculado</span>
+                            <div class="flex justify-between items-center py-4 border-b border-white/10 group relative">
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-slate-400 border-b border-dashed border-slate-500 inline-block w-max cursor-help">Proyección Total sin Ajuste</span>
+                                    <span class="text-[10px] text-slate-500 mt-1 absolute -bottom-4 opacity-0 group-hover:opacity-100 transition-opacity w-64 bg-slate-800 p-2 rounded z-20 pointer-events-none shadow-xl">Suma teórica bruta antes del corte por tope de factura.</span>
+                                </div>
                                 <span class="text-lg font-black">{{ Math.round(engine.declared_kwh) }} kWh</span>
                             </div>
                             <div class="flex justify-between items-center py-4 border-b border-white/10">

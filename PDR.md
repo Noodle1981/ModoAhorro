@@ -19,6 +19,7 @@ Este documento registra la evolución arquitectónica de **ModoAhorro** hacia un
 | v5 | "Caja Negra" de compresión alteraba datos reales para forzar coincidencia con factura | **Arquitectura Teórico Puro**: Motor calcula consumo real, no comprime, y calcula un **Residual Matemático**. |
 | v6 | Falta de contexto climático en resultados y confusión visual entre tanques | **Diagnóstico Climático**: Inyección de días de calor/frío en resultados. Reordenamiento visual pro-usuario (`Certeza->Variable->Base->Clima`) y sombreado de exceso (Stripes). |
 | v7 | Módulo Solar estático y desconectado | **Proyecto Solar Interactitvo**: Sliders dinámicos para área y habitantes. Cálculo de ahorro por tipo de combustible (Gas/Elec). Layout "Single-Page" (sin scroll). |
+| v8 | Visualización de exceso confusa y Consumo Fantasma sin interactividad | **Integración Visual de Exceso**: El exceso teórico se absorbe en Uso Variable (dos tonos). Eliminación del marcador FACTURADO. Gráficos de evolución temporal sincronizados. **Consumo Fantasma Interactivo**: Listado real de equipos agrupado por categoría con toggles funcionales. Tarjetas de ahorro potencial vs. ahorro logrado. Cumplimiento estricto de Tailwind v4 Design Rules. |
 
 ---
 
@@ -120,11 +121,12 @@ PASO 5 - Cálculo Residual:
 
 ### Fase 2: Resultados del Motor (`EngineResults.vue`)
 - Visualización Teórico Puro: Barra de 100% o con límite de factura (dashed line).
-- **Zona de Exceso**: Sombreado con patrón de rayas (peligro) y desenfoque para consumos que superan la factura real.
+- **Exceso Absorbido en Variable (v8)**: El exceso teórico ya NO se muestra como zona roja externa. Se descuenta de Climatización y se suma visualmente al Tanque Variable con dos tonos (verde lima + lima oscuro). Esto preserva la trazabilidad sin generar alarma visual innecesaria.
+- El marcador invasivo "FACTURA" fue eliminado de la barra de progreso.
 - **Jerarquía Pro-Usuario**: Los tanques se apilan priorizando hábitos (`Certeza -> Variable`) para que el desborde caiga sobre los tanques técnicos (`Base -> Clima`).
 - **Diagnóstico Automático**: Tarjeta de insight que cruza los días de calor/frío con el exceso para dar una explicación humana al error de cálculo.
 - Color morado/rojo para representar explícitamente el Faltante/Exceso Residual.
-- Se eliminan mensajes engañosos de "Ajustes por motor".
+- Renombrado: "Consumo Teórico Calculado" → "Proyección Total sin Ajuste" (con tooltip explicativo).
 
 ---
 
@@ -152,6 +154,9 @@ PASO 5 - Cálculo Residual:
 - [x] Motor v4: clasificación por comportamiento + decisión de usuario.
 - [x] **Motor v5 (Teórico Puro)**: Eliminación de compresión artificial. Gatekeeper 95%-120%. Gráficos duales para Residuales.
 - [x] Reactividad en tiempo real del consumo por slider.
+- [x] **v8 — Visualización de Exceso Absorbido**: Exceso teórico integrado al Tanque Variable en `EngineResults.vue`, `ConsumptionReal.vue` y `TimeAnalysis.vue` con lógica unificada.
+- [x] **v8 — Consumo Fantasma Interactivo**: `Standby.vue` restaura interactividad del legacy (toggles, equipos agrupados por categoría, ahorro logrado vs. potencial). Nueva ruta POST `recomendaciones.standby.toggle` + método `toggleStandby` en `RecommendationController`.
+- [x] **v8 — Design Rules**: Unificación de colores semánticos (`energy-solar`, `energy-success`, `energy-danger`), gradientes premium y bordes estandarizados en `Standby.vue`.
 - [ ] **ARQUITECTURA TARGET**: Migrar `has_defined_pattern boolean` → `pattern_type ENUM('inamovible', 'periodico', 'volatil')` + CategoryCalculators enchufables (ver `rules.md § 7`).
 - [ ] Implementar curva de carga variable para equipos Inverter.
 - [ ] Crear Analizador de Capacidad (comparar frigorías vs m² de habitación).
@@ -160,4 +165,4 @@ PASO 5 - Cálculo Residual:
 
 ---
 
-**Estado del Proyecto**: Motor v5 funcional (**Teórico Puro**). Clasificación por comportamiento declarado + cálculo inamovible sin compresión artificial. Interfaz gráfica adaptada para mostrar Excesos y Faltantes Residuales (Barra Morada/Línea Punteada). Error de clonación en Eloquent arreglado para evitar sobreescrituras en cadena. Arquitectura target documentada para próxima sesión.
+**Estado del Proyecto (v8)**: Motor v5 funcional (**Teórico Puro**). Clasificación por comportamiento declarado + cálculo inamovible sin compresión artificial. Visualización mejorada: el exceso teórico se absorbe limpiamente en Uso Variable (sin zona roja externa), consistente en `EngineResults`, `ConsumptionReal` y `TimeAnalysis`. Módulo **Consumo Fantasma** restaurado con interactividad completa (toggle de equipos, ahorro logrado vs. potencial). Design Rules aplicadas globalmente (colores semánticos, gradientes, radios). Arquitectura target documentada para próxima sesión.
