@@ -14,7 +14,8 @@ import {
     ShieldAlert,
     Plug,
     CheckCircle2,
-    Power
+    Power,
+    Lock
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -44,14 +45,16 @@ const groupedEquipment = computed(() => {
 });
 
 const toggleStandby = (id) => {
-    router.post(route('standby.toggle', id), {}, {
+    router.post(route('recomendaciones.standby.toggle', id), {}, {
         preserveScroll: true
     });
 };
 
-// Cálculo de ahorro para cada equipo (basado en lógica de StandbyAnalysisService)
+// Cálculo de ahorro para cada equipo (coincidente con StandbyAnalysisService)
 const getEquipmentStats = (eq) => {
-    const standbyPowerW = eq.type?.default_standby_power_w ?? 5;
+    const dbStandby = eq.type?.default_standby_power_w;
+    const standbyPowerW = (dbStandby && dbStandby > 0) ? dbStandby : 5;
+    
     const standbyPowerKw = standbyPowerW / 1000;
     const activeHours = eq.avg_daily_use_hours ?? 2;
     const standbyHours = Math.max(0, 24 - activeHours);
@@ -132,80 +135,111 @@ const getEquipmentStats = (eq) => {
                 </div>
             </div>
 
-            <!-- Interactive Equipment List -->
-            <div class="space-y-6">
-                <div class="flex items-center justify-between px-4">
-                    <h3 class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Mis Equipos en Standby</h3>
-                    <div class="flex items-center gap-4 text-[9px] font-black uppercase tracking-widest">
-                        <span class="flex items-center gap-1.5 text-energy-solar">
-                            <div class="w-2 h-2 rounded-full bg-energy-solar"></div> Enchufado (Consume)
+            <!-- Interactive Equipment Audit -->
+            <div class="space-y-8">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 px-4">
+                    <div>
+                        <h3 class="text-2xl font-black text-slate-900 tracking-tight">Auditoría de Equipos</h3>
+                        <p class="text-sm text-slate-500 font-medium">Marcá el estado real de cada aparato para calcular tu consumo fantasma.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3 text-[9px] font-black uppercase tracking-widest bg-slate-100/50 p-3 rounded-[24px] border border-slate-200">
+                        <span class="flex items-center gap-1.5 text-energy-solar px-3 py-1 bg-white rounded-xl shadow-sm border border-slate-100">
+                            <div class="w-2 h-2 rounded-full bg-energy-solar animate-pulse"></div> Enchufado
                         </span>
-                        <span class="flex items-center gap-1.5 text-energy-success">
-                            <div class="w-2 h-2 rounded-full bg-energy-success"></div> Desenchufado (Ahorra)
+                        <span class="flex items-center gap-1.5 text-energy-success px-3 py-1 bg-white rounded-xl shadow-sm border border-slate-100">
+                            <div class="w-2 h-2 rounded-full bg-energy-success"></div> Desenchufado
+                        </span>
+                        <span class="flex items-center gap-1.5 text-slate-400 px-3 py-1 bg-white rounded-xl shadow-sm border border-slate-100">
+                            <div class="w-2 h-2 rounded-full bg-slate-300"></div> Pendiente
                         </span>
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-[32px] border border-slate-100 shadow-2xl shadow-slate-200/30 overflow-hidden">
-                    <div v-for="(items, categoryName) in groupedEquipment" :key="categoryName">
-                        <div class="px-8 py-3 bg-slate-50 border-y border-slate-100 first:border-t-0">
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ categoryName }}</span>
-                        </div>
-                        <div 
-                            v-for="eq in items" 
-                            :key="eq.id"
-                            class="flex flex-col md:flex-row items-center justify-between px-8 py-6 border-b border-slate-50 last:border-b-0 hover:bg-slate-50/50 transition-all group"
-                            :class="!eq.is_standby && 'opacity-60 grayscale-[0.5]'"
-                        >
-                            <!-- Info Equipo -->
-                            <div class="flex items-center gap-4 flex-1 w-full md:w-auto">
-                                <div class="w-12 h-12 rounded-2xl flex items-center justify-center transition-colors"
-                                    :class="eq.is_standby ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'">
-                                    <Plug :size="24" />
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div v-for="eq in equipmentList" :key="eq.id"
+                        class="relative group bg-white rounded-[32px] border-2 p-6 transition-all duration-300 cursor-pointer overflow-hidden shadow-sm hover:shadow-xl"
+                        :class="[
+                            eq.is_standby === 1 ? 'border-orange-500 bg-orange-50/10 shadow-orange-500/10' : 
+                            eq.is_standby === 0 ? 'border-emerald-200 bg-emerald-50/5' :
+                            'border-slate-100 bg-slate-50/30 grayscale hover:grayscale-0 opacity-80 hover:opacity-100'
+                        ]"
+                        @click="toggleStandby(eq.id)"
+                    >
+                        <!-- Background Glow when active -->
+                        <div v-if="eq.is_standby === 1" class="absolute -right-12 -bottom-12 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl"></div>
+
+                        <div class="relative z-10 flex flex-col h-full justify-between gap-6">
+                            <div class="flex items-start justify-between gap-4">
+                                <div class="w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm"
+                                    :class="[
+                                        eq.is_standby === 1 ? 'bg-orange-600 text-white shadow-orange-600/20' : 
+                                        eq.is_standby === 0 ? 'bg-emerald-500 text-white shadow-emerald-500/20' :
+                                        'bg-slate-200 text-slate-400'
+                                    ]">
+                                    <Plug v-if="eq.is_standby === 1" :size="28" />
+                                    <ZapOff v-else-if="eq.is_standby === 0" :size="28" />
+                                    <Lock v-else :size="24" class="opacity-40" />
                                 </div>
-                                <div class="min-w-0">
-                                    <h4 class="text-base font-black text-slate-900 truncate">{{ eq.name }}</h4>
-                                    <p class="text-[10px] font-bold text-slate-400 uppercase">
-                                        {{ eq.room?.name || 'Ambiente' }} · {{ getEquipmentStats(eq).standbyPowerW }}W · {{ Math.round(getEquipmentStats(eq).standbyHours) }}h en espera
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="text-lg font-black text-slate-900 truncate tracking-tight leading-tight">{{ eq.name }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide mt-1">
+                                        {{ eq.room?.name || 'General' }} · {{ getEquipmentStats(eq).standbyPowerW }}W
                                     </p>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <div class="w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all duration-300 shadow-sm"
+                                        :class="[
+                                            eq.is_standby === 1 ? 'bg-orange-600 border-orange-600 text-white' : 
+                                            eq.is_standby === 0 ? 'bg-emerald-500 border-emerald-500 text-white' :
+                                            'border-slate-200 bg-white text-slate-200'
+                                        ]">
+                                        <CheckCircle2 v-if="eq.is_standby !== null" :size="18" />
+                                        <span v-else class="text-[14px] font-black">?</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Impacto -->
-                            <div class="flex items-center gap-12 mt-4 md:mt-0 w-full md:w-auto justify-between md:justify-end">
-                                <div class="text-right">
-                                    <template v-if="eq.is_standby">
-                                        <p class="text-sm font-black text-slate-900">{{ getEquipmentStats(eq).monthlyKwh.toFixed(1) }} kWh/mes</p>
-                                        <p class="text-[10px] font-black text-energy-danger uppercase">{{ formatMoney(getEquipmentStats(eq).monthlyCost) }}/mes</p>
-                                    </template>
-                                    <template v-else>
-                                        <p class="text-sm font-black text-energy-success">Ahorrando</p>
-                                        <p class="text-[10px] font-black text-emerald-400 uppercase">-{{ formatMoney(getEquipmentStats(eq).monthlyCost) }}/mes</p>
-                                    </template>
-                                </div>
-
-                                <!-- Switch Toggle -->
-                                <button 
-                                    @click="toggleStandby(eq.id)"
-                                    class="relative w-14 h-8 rounded-full transition-colors duration-300 focus:outline-none ring-offset-2 focus:ring-2 focus:ring-energy-solar"
-                                    :class="eq.is_standby ? 'bg-energy-solar' : 'bg-slate-200'"
-                                >
-                                    <div class="absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-sm transition-transform duration-300"
-                                        :class="eq.is_standby ? 'translate-x-6' : 'translate-x-0'">
+                            <div class="flex items-end justify-between border-t border-slate-100 pt-4 mt-auto">
+                                <div>
+                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                        {{ eq.is_standby === null ? 'Estado Desconocido' : 'Impacto Mensual' }}
+                                    </p>
+                                    <div class="flex items-baseline gap-1">
+                                        <template v-if="eq.is_standby === 1">
+                                            <span class="text-xl font-black text-orange-600">{{ formatMoney(getEquipmentStats(eq).monthlyCost) }}</span>
+                                            <span class="text-[10px] font-bold text-slate-400">/ mes</span>
+                                        </template>
+                                        <template v-else-if="eq.is_standby === 0">
+                                            <span class="text-xl font-black text-emerald-600">¡Optimizado!</span>
+                                        </template>
+                                        <template v-else>
+                                            <span class="text-xl font-black text-slate-400">Declarar</span>
+                                        </template>
                                     </div>
-                                </button>
+                                </div>
+                                <div v-if="eq.is_standby === 1" class="text-right">
+                                    <p class="text-[9px] font-black text-orange-600 uppercase tracking-widest mb-1">Consumo Activo</p>
+                                    <p class="text-sm font-black text-orange-700 tracking-tight">{{ getEquipmentStats(eq).monthlyKwh.toFixed(1) }} kWh</p>
+                                </div>
+                                <div v-if="eq.is_standby === 0" class="text-right">
+                                    <p class="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1">Evitaste pagar</p>
+                                    <p class="text-sm font-black text-emerald-700 tracking-tight">{{ formatMoney(getEquipmentStats(eq).monthlyCost) }}</p>
+                                </div>
+                                <div v-else-if="eq.is_standby === null" class="text-right">
+                                    <p class="text-[8px] font-bold text-slate-300 uppercase leading-tight">Haz clic para<br>desbloquear</p>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div v-if="equipmentList.length === 0" class="p-20 text-center space-y-4">
-                        <div class="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-[32px] flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/10">
-                            <CheckCircle2 :size="40" />
-                        </div>
-                        <div class="space-y-1">
-                            <h4 class="text-xl font-black text-slate-900">¡Zona Libre de Vampiros!</h4>
-                            <p class="text-sm text-slate-500 font-medium">No se detectaron equipos con consumo standby relevante.</p>
-                        </div>
+                <div v-if="equipmentList.length === 0" class="bg-white rounded-[48px] border border-slate-100 p-20 text-center space-y-4 shadow-xl">
+                    <div class="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-[36px] flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/10">
+                        <CheckCircle2 :size="48" />
+                    </div>
+                    <div class="space-y-2">
+                        <h4 class="text-2xl font-black text-slate-900">Tu casa está limpia</h4>
+                        <p class="text-slate-500 font-medium">No detectamos equipos para analizar.</p>
                     </div>
                 </div>
             </div>

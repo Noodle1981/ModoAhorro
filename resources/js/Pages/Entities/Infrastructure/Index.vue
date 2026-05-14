@@ -76,7 +76,7 @@ const eqForm = useForm({
     model: '',
     serial_number: '',
     energy_label: '',
-    is_standby: false,
+    is_standby: null,
     is_inverter: false,
     cantidad: 1,
     is_active: true

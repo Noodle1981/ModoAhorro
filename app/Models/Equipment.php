@@ -15,7 +15,6 @@ class Equipment extends Model
     ];
 
     protected $casts = [
-        'is_standby' => 'boolean',
         'is_active' => 'boolean',
         'is_validated' => 'boolean',
         'has_defined_pattern' => 'boolean',

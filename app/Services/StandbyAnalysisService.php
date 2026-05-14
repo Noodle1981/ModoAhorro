@@ -24,31 +24,13 @@ class StandbyAnalysisService
     {
         $entity->load(['rooms.equipment.type', 'rooms.equipment.category']);
 
-        // Obtener todos los equipos de categorías que SÍ tienen standby
+        // Obtener TODOS los equipos para la auditoría de 3 estados
         $equipmentList = $entity->rooms
             ->flatMap(fn($room) => $room->equipment)
-            ->filter(function ($eq) {
-                // 1. Excluir categorías irrelevantes
-                $categoryName = $eq->category->name ?? '';
-                if (in_array($categoryName, self::EXCLUDED_CATEGORY_NAMES)) {
-                    return false;
-                }
-
-                // 2. Excluir equipos con 0W de standby (ej: Ventilador de techo, Caloventor)
-                // Si el tipo no tiene dato, asumimos 5W (fallback).
-                // Pero si tiene dato explícito de 0W, lo respetamos y ocultamos.
-                $standbyPowerW = $eq->type->default_standby_power_w;
-                
-                if (!is_null($standbyPowerW) && $standbyPowerW == 0) {
-                    return false;
-                }
-
-                return true;
-            })
             ->filter(fn($eq) => $eq->is_active !== false)
             ->values();
 
-        // Calcular totales: solo los que TIENEN standby activo
+        // Calcular totales
         $totalStandbyKwh      = 0;
         $totalStandbyCost     = 0;
         $totalPotentialSavingsKwh = 0;
@@ -57,21 +39,29 @@ class StandbyAnalysisService
         $averageTariff = 150; // ARS/kWh
 
         foreach ($equipmentList as $eq) {
-            $standbyPowerW  = $eq->type->default_standby_power_w ?? 5; // 5W default si no hay dato
+            // Lógica de potencia standby (con fallback de 5W)
+            $dbStandby = $eq->type->default_standby_power_w;
+            $standbyPowerW = ($dbStandby && $dbStandby > 0) ? $dbStandby : 5;
+            
             $standbyPowerKw = $standbyPowerW / 1000;
             $activeHours    = $eq->avg_daily_use_hours ?? 2;
             $standbyHours   = max(0, 24 - $activeHours);
             $monthlyKwh     = $standbyPowerKw * $standbyHours * 30;
 
-            if ($eq->is_standby) {
-                // Equipo enchufado en standby → está consumiendo
+            // ESTADOS:
+            // 1 (True) -> Enchufado (Consume)
+            // 0 (False) -> Desenchufado/No tiene (Ahorra)
+            // null -> Pendiente (Gris)
+            
+            if ($eq->is_standby === 1 || $eq->is_standby === true) {
                 $totalStandbyKwh  += $monthlyKwh;
                 $totalStandbyCost += $monthlyKwh * $averageTariff;
                 $totalPotentialSavingsKwh += $monthlyKwh;
-            } else {
-                // Equipo desenchufado → ya está ahorrando
+            } elseif ($eq->is_standby === 0 || $eq->is_standby === false) {
+                // Si explícitamente es 0, cuenta como ahorro realizado
                 $totalRealizedSavingsKwh += $monthlyKwh;
             }
+            // Si es NULL, no suma ni a gasto ni a ahorro (está en gris)
         }
 
         return [
@@ -90,7 +80,14 @@ class StandbyAnalysisService
     public function toggleEquipmentStandby(string $equipmentId): void
     {
         $equipment = Equipment::findOrFail($equipmentId);
-        $equipment->is_standby = !$equipment->is_standby;
+        
+        // Ciclo: null (pendiente) -> 1 (enchufado) -> 0 (desenchufado)
+        if (is_null($equipment->is_standby)) {
+            $equipment->is_standby = 1;
+        } else {
+            $equipment->is_standby = $equipment->is_standby ? 0 : 1;
+        }
+        
         $equipment->save();
     }
 }
