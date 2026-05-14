@@ -28,12 +28,17 @@ class DatosComercioSeeder extends Seeder
             ['name' => 'Cafetería La Esquina'],
             [
                 'type' => 'comercio',
+                'comercio_type' => 'gastronomia',
                 'address_street' => 'Av. San Martín 890',
                 'address_postal_code' => '5400',
                 'locality_id' => $locality->id,
                 'description' => 'Cafetería y Restaurant - Abierto 7 días',
                 'square_meters' => 120,
-                'people_count' => 8,
+                'staff_count' => 8,
+                'visitors_count' => 120,
+                'service_turns' => 2,
+                'opens_at' => '07:00',
+                'closes_at' => '23:30',
             ]
         );
 
@@ -52,6 +57,8 @@ class DatosComercioSeeder extends Seeder
                 'meter_number' => '7654321',
                 'tariff_type' => 'T3-G3',
                 'rate_name' => 'T3-G3 Comercios Grandes',
+                'supply_type' => 'trifasico',
+                'contracted_power_kw' => 25.5,
                 'start_date' => now()->subYear(),
             ]
         );
@@ -127,16 +134,16 @@ class DatosComercioSeeder extends Seeder
 
         // 6. Equipment (equipos comerciales)
         $equipmentList = [
-            // Heladeras y Freezers Comerciales
-            ['room' => 'Cocina', 'category' => 'Electrodomésticos', 'type' => 'Heladera con Freezer', 'name' => 'Heladera Comercial Grande', 'power' => 500, 'cantidad' => 1],
-            ['room' => 'Barra', 'category' => 'Electrodomésticos', 'type' => 'Heladera pequeña', 'name' => 'Heladera Bebidas', 'power' => 200, 'cantidad' => 1],
-            ['room' => 'Depósito', 'category' => 'Electrodomésticos', 'type' => 'Freezer Horizontal', 'name' => 'Freezer Congelados', 'power' => 350, 'cantidad' => 1],
+            // Heladeras y Freezers Comerciales (Uso de nuevos tipos industriales)
+            ['room' => 'Cocina', 'category' => 'Refrigeración Comercial', 'type' => 'Exhibidor Refrigerado Vertical', 'name' => 'Heladera Comercial Grande', 'power' => 850, 'cantidad' => 1],
+            ['room' => 'Barra', 'category' => 'Refrigeración Comercial', 'type' => 'Mesa Refrigerada', 'name' => 'Heladera Bebidas', 'power' => 450, 'cantidad' => 1],
+            ['room' => 'Depósito', 'category' => 'Refrigeración Comercial', 'type' => 'Cámara de Frío (+4°C)', 'name' => 'Freezer Congelados', 'power' => 1200, 'cantidad' => 1],
 
-            // Equipos de Cocina
-            ['room' => 'Cocina', 'category' => 'Cocina', 'type' => 'Horno Eléctrico', 'name' => 'Horno Industrial', 'power' => 3000, 'cantidad' => 1],
-            ['room' => 'Cocina', 'category' => 'Cocina', 'type' => 'Microondas', 'name' => 'Microondas Cocina', 'power' => 1200, 'cantidad' => 1],
-            ['room' => 'Cocina', 'category' => 'Cocina', 'type' => 'Anafe Eléctrico (4 hornallas)', 'name' => 'Anafe Principal', 'power' => 4000, 'cantidad' => 1],
-            ['room' => 'Cocina', 'category' => 'Electrodomésticos', 'type' => 'Campana Extractora', 'name' => 'Campana Cocina', 'power' => 300, 'cantidad' => 1],
+            // Equipos de Cocina (Uso de tipos gastronómicos)
+            ['room' => 'Cocina', 'category' => 'Equipamiento Gastronómico', 'type' => 'Horno Convector Industrial', 'name' => 'Horno Industrial', 'power' => 4500, 'cantidad' => 1],
+            ['room' => 'Cocina', 'category' => 'Equipamiento Gastronómico', 'type' => 'Freidora Eléctrica', 'name' => 'Freidora', 'power' => 3000, 'cantidad' => 1],
+            ['room' => 'Cocina', 'category' => 'Extracción y Ventilación', 'type' => 'Campana Extractora', 'name' => 'Campana Cocina', 'power' => 750, 'cantidad' => 1],
+
 
             // Barra - Equipos de Café
             ['room' => 'Barra', 'category' => 'Cocina', 'type' => 'Cafetera', 'name' => 'Cafetera Profesional', 'power' => 2000, 'cantidad' => 1],
@@ -169,7 +176,7 @@ class DatosComercioSeeder extends Seeder
             $room = $rooms[$item['room']];
 
             if ($type && $category && $room) {
-                Equipment::firstOrCreate(
+                $eq = Equipment::firstOrCreate(
                     ['name' => $item['name'], 'room_id' => $room->id],
                     [
                         'type_id' => $type->id,
@@ -178,6 +185,17 @@ class DatosComercioSeeder extends Seeder
                         'is_active' => true,
                     ]
                 );
+
+                // Crear USAGE para cada factura
+                foreach ($createdInvoices as $inv) {
+                    EquipmentUsage::firstOrCreate([
+                        'invoice_id' => $inv->id,
+                        'equipment_id' => $eq->id,
+                    ], [
+                        'avg_daily_use_hours' => ($eq->type->consumption_logic === 'CONTINUOUS_COMMERCIAL' ? 24 : 4),
+                        'usage_frequency' => 'diario',
+                    ]);
+                }
             }
         }
 

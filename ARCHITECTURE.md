@@ -14,14 +14,22 @@
 ### A. EnergyEngineService (Teórico Puro)
 Orquestador principal del motor de energía. Ejecuta la cascada de tanques en orden fijo:
 Standby → TankCrítico → TankCerteza → TankClimático → TankVariable.
-Conecta los 4 servicios de tanque y suma el Total Teórico sin aplicar factores de compresión artificial. Genera un Residual (Faltante/Exceso) respecto a la factura.
+
+#### A.1 Engine Profiles (Estrategias de Negocio) [NUEVO]
+Inyecta lógica específica según el rubro de la entidad para no saturar el orquestador:
+- **`GastronomyEngineProfile`**: Lógica de turnos y comensales.
+- **`RetailEngineProfile`**: Lógica de horarios de atención y clientes.
+- **`OfficeEngineProfile`**: Lógica de jornada laboral y empleados.
 
 ### B. ConsumptionAnalysisService
 Pre-calcula el `_theo_kwh` de cada equipo antes de la cascada de tanques.
 Contiene los algoritmos de cálculo específicos:
 - **Por horas**: `W × h × días × loadFactor × labelCoeff`
 - **Por ciclos**: `energy_per_cycle × ciclos_declarados`
-- **Proporcional a personas**: `social_coefficient × people_count × días × frequencyFactor`
+- **Proporcional a personas**: `social_coefficient × (people_count | visitors_count) × días × frequencyFactor`
+- **Lógicas B2B**:
+    - `TURNS_BASED`: `W × turns × turnDuration × días`
+    - `SERVICE_HOURS`: `W × (closes_at - opens_at) × días`
 - **Heladera especial**: modelo de carga cíclica `(0.25 + people × 0.015) × 24h × días × ajusteClima`
 
 ### C. ClimateService

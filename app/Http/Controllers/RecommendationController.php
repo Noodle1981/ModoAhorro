@@ -170,8 +170,53 @@ class RecommendationController extends Controller
         $entity = $this->getActiveEntity($request);
         if (!$entity) return redirect()->route('dashboard');
 
+        $contract = $entity->contracts()->where('is_active', true)->first();
+        
+        // Equipos de alta potencia (Hornos, Lavavajillas, etc.)
+        $heavyEquipments = Equipment::whereHas('room', fn($q) => $q->where('entity_id', $entity->id))
+            ->where('nominal_power_w', '>=', 1500)
+            ->with('type')
+            ->get();
+
+        $recommendations = [];
+        foreach ($heavyEquipments as $eq) {
+            $isLaundry = str_contains(strtolower($eq->name), 'lavarropas') || str_contains(strtolower($eq->name), 'lavavajillas');
+            $isCooking = str_contains(strtolower($eq->type->name), 'horno') || str_contains(strtolower($eq->type->name), 'freidora');
+            
+            if ($isLaundry) {
+                $recommendations[] = [
+                    'title' => 'Mover ' . $eq->name,
+                    'current' => '19:00 (Pico)',
+                    'suggested' => '23:30 (Valle)',
+                    'saving' => '15%',
+                    'icon' => 'Clock',
+                    'color' => 'text-sky-500',
+                    'bg' => 'bg-sky-50'
+                ];
+            } elseif ($isCooking && $entity->type === 'comercio') {
+                $recommendations[] = [
+                    'title' => 'Precalentado de ' . $eq->name,
+                    'current' => '11:30 (Cima)',
+                    'suggested' => '10:30 (Valle)',
+                    'saving' => '10%',
+                    'icon' => 'Timer',
+                    'color' => 'text-amber-500',
+                    'bg' => 'bg-amber-50'
+                ];
+            }
+        }
+
+        // Default if empty
+        if (empty($recommendations)) {
+            $recommendations = [
+                ['title' => 'Programar Climatización', 'current' => 'Uso Manual', 'suggested' => 'Pre-enfriado 15:00', 'saving' => '8%', 'icon' => 'Sun', 'color' => 'text-amber-500', 'bg' => 'bg-amber-50'],
+            ];
+        }
+
         return Inertia::render('Recomendaciones/GridOptimization', [
-            'entity' => $entity
+            'entity' => $entity,
+            'contract' => $contract,
+            'recommendations' => $recommendations
         ]);
     }
 }

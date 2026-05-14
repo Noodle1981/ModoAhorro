@@ -1,2 +1,3 @@
-id,contract_number,entity_id,proveedor_id,utility_company_id,serial_number,meter_number,client_number,supply_number,contract_identifier,rate_name,tariff_type,contracted_power_kw_p1,contracted_power_kw_p2,contracted_power_kw_p3,start_date,end_date,is_active,created_at,updated_at,is_three_phase
-1,36697,1,3,2,,9618495,,07182202700,,T1-R1,,,,,,,1,"2026-04-27 23:24:12","2026-04-27 23:24:12",0
+id,contract_number,entity_id,proveedor_id,utility_company_id,serial_number,meter_number,client_number,supply_number,contract_identifier,rate_name,tariff_type,contracted_power_kw_p1,contracted_power_kw_p2,contracted_power_kw_p3,start_date,end_date,is_active,created_at,updated_at,is_three_phase,supply_type,contracted_power_kw
+1,36697,1,3,2,,9618495,,07182202700,,T1-R1,,,,,,,1,"2026-04-30 00:17:08","2026-04-30 00:17:08",0,monofasico,
+2,CO-55444,2,1,2,,7654321,09384756300,09384756300,,"T3-G3 Comercios Grandes",T3-G3,,,,"2025-05-14 01:00:54",,1,"2026-05-14 01:00:54","2026-05-14 01:00:54",0,trifasico,25.5

@@ -10,11 +10,10 @@ use Illuminate\Support\Facades\DB;
 
 class ConsumptionAnalysisService
 {
-    protected $usageSuggestionService;
-    protected $energyEngine;
-    /** @var ClimateService */
-    protected $climateService;
-    protected $maintenanceService;
+    protected \App\Services\Climate\UsageSuggestionService $usageSuggestionService;
+    protected \App\Services\EnergyEngineService $energyEngine;
+    protected \App\Services\ClimateService $climateService;
+    protected \App\Services\MaintenanceService $maintenanceService;
 
     public function __construct(
         \App\Services\Climate\UsageSuggestionService $usageSuggestionService,
@@ -71,9 +70,21 @@ class ConsumptionAnalysisService
 
         $powerKw *= ($labelCoefficient * $inverterMultiplier); // Escalar potencia por eficiencia y tecnología
 
-        // ❄️ CÁLCULO ESPECÍFICO PARA HELADERAS (Modelo Avanzado)
+        // ❄️ CÁLCULO ESPECÍFICO PARA HELADERAS
         if ($this->isFridge($usage)) {
+            $entity = $invoice->contract->entity;
+            if ($entity->type === 'comercio') {
+                return $this->calculateCommercialFridgeConsumption($usage, $invoice);
+            }
             return $this->calculateFridgeConsumption($usage, $invoice);
+        }
+        
+        // 🍳 CÁLCULO COMERCIAL: TURNOS Y HORAS DE SERVICIO
+        if ($equipmentType->consumption_logic === 'TURNS_BASED') {
+            return $this->calculateTurnsBasedConsumption($usage, $invoice);
+        }
+        if ($equipmentType->consumption_logic === 'SERVICE_HOURS') {
+            return $this->calculateServiceHoursConsumption($usage, $invoice);
         }
         
         // 3. Cálculo para Frecuencia Diaria/Semanal (Solo si es por horas)
@@ -147,7 +158,22 @@ class ConsumptionAnalysisService
 
         // 5. Cálculo Proporcional a Personas (Modelo Determinista)
         if ($equipmentType->usage_unit === 'people_proportional') {
-            $peopleCount = $invoice->contract->entity->people_count ?? 1;
+            $entity = $invoice->contract->entity;
+            $peopleCount = $entity->people_count ?? 1;
+            $socialCoeff = $equipmentType->social_coefficient;
+
+            // Si es comercio, sumamos staff y visitantes con sus propios coeficientes
+            if ($entity->type === 'comercio') {
+                $staffCount = $entity->staff_count ?? 0;
+                $visitorsCount = $entity->visitors_count ?? 0;
+                
+                // El social_coefficient del tipo actúa como base (staff)
+                // Los visitantes tienen un impacto menor (ej: 15% del base)
+                $visitorCoeff = $socialCoeff * 0.15; 
+                
+                $peopleCount = $staffCount + ($visitorsCount * 0.15);
+            }
+
             $daysInPeriod = $usage->use_days_in_period;
             
             if (empty($daysInPeriod)) {
@@ -157,7 +183,7 @@ class ConsumptionAnalysisService
             
             // Fórmula: Coeficiente Social * Personas * Días * Factor de Frecuencia
             $frequencyFactor = $this->getFrequencyFactor($usage->usage_frequency);
-            $consumption = $equipmentType->social_coefficient * $peopleCount * $daysInPeriod * $frequencyFactor;
+            $consumption = $socialCoeff * $peopleCount * $daysInPeriod * $frequencyFactor;
             
             return round($consumption, 4);
         }
@@ -323,6 +349,68 @@ class ConsumptionAnalysisService
         return round($consumption, 4);
     }
 
+    private function calculateCommercialFridgeConsumption(EquipmentUsage $usage, Invoice $invoice): float
+    {
+        $equipmentType = $usage->equipment->type;
+        $labelCoefficient = 1.0; // Simplificado para brevedad, igual que base
+        $powerKw = ($usage->equipment->nominal_power_w ?? $equipmentType->default_power_watts ?? 0) / 1000;
+        
+        $daysInPeriod = Carbon::parse($invoice->start_date)->diffInDays(Carbon::parse($invoice->end_date));
+        $daysInPeriod = max(1, $daysInPeriod);
+
+        $entity = $invoice->contract->entity;
+        
+        // En comercio, el factor de carga base es mayor (0.40 vs 0.25) por apertura constante
+        $baseLoadFactor = 0.40; 
+        
+        // Impacto de visitantes (comensales) en la pérdida de frío
+        $visitorsCount = $entity->visitors_count ?? 0;
+        $visitorImpact = ($visitorsCount * 0.005); // Cada comensal suma 0.5% de carga extra
+        
+        $totalLoadFactor = min(0.95, $baseLoadFactor + $visitorImpact);
+        
+        $consumption = $powerKw * 24 * $daysInPeriod * $totalLoadFactor;
+
+        return round($consumption, 4);
+    }
+
+    private function calculateTurnsBasedConsumption(EquipmentUsage $usage, Invoice $invoice): float
+    {
+        $entity = $invoice->contract->entity;
+        $equipmentType = $usage->equipment->type;
+        $powerKw = ($usage->equipment->nominal_power_w ?? $equipmentType->default_power_watts ?? 0) / 1000;
+        
+        $turns = $entity->service_turns ?? 1;
+        $hoursPerTurn = $usage->avg_daily_use_hours ?? 4; // Por defecto 4hs por turno si no se especifica
+        
+        $daysInPeriod = Carbon::parse($invoice->start_date)->diffInDays(Carbon::parse($invoice->end_date));
+        $daysInPeriod = max(1, $daysInPeriod);
+
+        $consumption = $powerKw * $turns * $hoursPerTurn * $daysInPeriod * ($equipmentType->load_factor ?? 0.80);
+        
+        return round($consumption, 4);
+    }
+
+    private function calculateServiceHoursConsumption(EquipmentUsage $usage, Invoice $invoice): float
+    {
+        $entity = $invoice->contract->entity;
+        $equipmentType = $usage->equipment->type;
+        $powerKw = ($usage->equipment->nominal_power_w ?? $equipmentType->default_power_watts ?? 0) / 1000;
+        
+        // Horas de apertura comercial
+        $opens = Carbon::parse($entity->opens_at ?? '08:00');
+        $closes = Carbon::parse($entity->closes_at ?? '20:00');
+        $dailyHours = $opens->diffInHours($closes);
+        if ($dailyHours <= 0) $dailyHours = 12;
+
+        $daysInPeriod = Carbon::parse($invoice->start_date)->diffInDays(Carbon::parse($invoice->end_date));
+        $daysInPeriod = max(1, $daysInPeriod);
+
+        $consumption = $powerKw * $dailyHours * $daysInPeriod * ($equipmentType->load_factor ?? 1.0);
+        
+        return round($consumption, 4);
+    }
+
     public function calculateInvoiceConsumption(Invoice $invoice): array
     {
         $result = [];
@@ -340,7 +428,7 @@ class ConsumptionAnalysisService
     /**
      * Calibra un grupo de facturas (Unificación) de forma integral.
      */
-    public function calibrateUnifiedPeriod($invoices): array
+    public function calibrateUnifiedPeriod(\Illuminate\Support\Collection $invoices): array
     {
         if ($invoices->isEmpty()) {
             throw new \Exception("No hay facturas para calibrar.");
@@ -554,7 +642,7 @@ class ConsumptionAnalysisService
         ];
     }
 
-    private function getFrequencyFactor($frequency): float
+    private function getFrequencyFactor(?string $frequency): float
     {
         return match($frequency) {
             'diario', 'diariamente' => 1.0,
@@ -567,7 +655,7 @@ class ConsumptionAnalysisService
         };
     }
 
-    private function getDaysByFrequency($frequency, $totalDays)
+    private function getDaysByFrequency(?string $frequency, int $totalDays): int
     {
         $factor = $this->getFrequencyFactor($frequency);
         return floor($totalDays * $factor);

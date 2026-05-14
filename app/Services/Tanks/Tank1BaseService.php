@@ -15,8 +15,8 @@ class Tank1BaseService
         $tankConsumption = 0;
         $logs = [];
 
-        $targetEquipments = $equipments->filter(function ($eq) {
-            return $eq->tank_assignment === null && $this->isEligible($eq);
+        $targetEquipments = $equipments->filter(function ($eq) use ($opContext) {
+            return $eq->tank_assignment === null && $this->isEligible($eq, $opContext);
         });
 
         foreach ($targetEquipments as $eq) {
@@ -53,16 +53,23 @@ class Tank1BaseService
         ];
     }
 
-    public function isEligible(Equipment $eq): bool
+    public function isEligible(Equipment $eq, array $opContext): bool
     {
         // Si es crítico, SIEMPRE entra al Tanque 2 (Base Crítica),
         // independientemente de si tiene patrón fijo o no.
-        return $this->isCritical($eq);
+        $isContinuous = $eq->type?->consumption_logic === 'CONTINUOUS_COMMERCIAL';
+        return $this->isCritical($eq, $opContext) || $isContinuous;
     }
 
-    public function isCritical(Equipment $eq): bool
+    public function isCritical(Equipment $eq, array $opContext): bool
     {
         $criticalCategories = ['Refrigeración', 'Conectividad y Seguridad'];
+        
+        // Si hay un perfil comercial, sobreescribimos las categorías críticas
+        if (isset($opContext['commercial_profile'])) {
+            $criticalCategories = $opContext['commercial_profile']->getCriticalCategories();
+        }
+
         $categoryName = $eq->category->name ?? $eq->type?->category?->name ?? '';
         $hours = $eq->avg_daily_use_hours ?? 0;
         

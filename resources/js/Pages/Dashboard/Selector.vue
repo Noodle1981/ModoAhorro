@@ -1,5 +1,9 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
+
+const createEntity = (type) => {
+    router.post(route('entities.store'), { type });
+};
 import { 
     Building, 
     Plus, 
@@ -90,9 +94,12 @@ const iconMap = {
                         </div>
                     </div>
 
-                    <!-- Botón Añadir -->
                     <div class="p-8 pt-0 mt-auto">
-                        <button v-if="type.enabled && type.can_add" class="w-full bg-slate-900 text-white py-4 px-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-energy-consumption transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-200">
+                        <button 
+                            v-if="type.enabled && type.can_add" 
+                            @click="createEntity(type.type)"
+                            class="w-full bg-slate-900 text-white py-4 px-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-energy-consumption transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-200"
+                        >
                              <Plus :size="18" stroke-width="3" />
                              Nueva {{ type.name }}
                         </button>

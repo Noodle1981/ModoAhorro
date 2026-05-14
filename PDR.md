@@ -20,6 +20,7 @@ Este documento registra la evolución arquitectónica de **ModoAhorro** hacia un
 | v6 | Falta de contexto climático en resultados y confusión visual entre tanques | **Diagnóstico Climático**: Inyección de días de calor/frío en resultados. Reordenamiento visual pro-usuario (`Certeza->Variable->Base->Clima`) y sombreado de exceso (Stripes). |
 | v7 | Módulo Solar estático y desconectado | **Proyecto Solar Interactitvo**: Sliders dinámicos para área y habitantes. Cálculo de ahorro por tipo de combustible (Gas/Elec). Layout "Single-Page" (sin scroll). |
 | v8 | Visualización de exceso confusa y Consumo Fantasma sin interactividad | **Integración Visual de Exceso**: El exceso teórico se absorbe en Uso Variable (dos tonos). Eliminación del marcador FACTURADO. Gráficos de evolución temporal sincronizados. **Consumo Fantasma Interactivo**: Listado real de equipos agrupado por categoría con toggles funcionales. Tarjetas de ahorro potencial vs. ahorro logrado. Cumplimiento estricto de Tailwind v4 Design Rules. |
+| v9 | Expansión al sector comercial (B2B) - Caso Restaurantes/Oficinas | **Soporte Comercial (B2B)**: Inyección de perfiles de motor (`Gastronomy`, `Retail`, `Office`). Nuevas lógicas de cálculo: `TURNS_BASED` y `SERVICE_HOURS`. Adaptación de UI a perfiles industriales. |
 
 ---
 
@@ -31,8 +32,14 @@ Este documento registra la evolución arquitectónica de **ModoAhorro** hacia un
 - **`usage_frequency`**: Periodicidad declarada (`diario`, `frecuentemente`, `ocasionalmente`, `raramente`, `nunca`). Multiplica el cálculo teórico.
 - Campos de activo: `brand`, `model`, `serial_number`, `energy_label`, `is_inverter`, `nominal_power_w`.
 
+### Tabla `entities` [NUEVO B2B]
+- **`comercio_type`**: Rubro específico (`gastronomia`, `retail`, `oficina`). Determina el **Engine Profile** inyectado.
+- **`staff_count`**, **`visitors_count`**: Cantidad de personal y comensales/visitantes. Reemplaza `people_count` para cálculos proporcionales finos.
+- **`service_turns`**: Cantidad de turnos operativos (ej: Almuerzo/Cena). Multiplicador para lógicas `TURNS_BASED`.
+- **`opens_at`**, **`closes_at`**: Horario de apertura comercial. Base para lógicas `SERVICE_HOURS`.
+
 ### Tabla `equipment_types`
-- **`consumption_logic`**: Clasificación termodinámica del tipo (`BASE_LOAD`, `CLIMATE_DEPENDENT`, `CLIMATE_INEFFICIENT`, `CONSTANT_ELASTIC`, `SEASONAL_HABIT`, `BASE_THERMAL_LOSS`). Usado solo para cálculos internos, NO para routing de tanques.
+- **`consumption_logic`**: Clasificación termodinámica del tipo. Nuevos valores: `TURNS_BASED`, `SERVICE_HOURS`, `CONTINUOUS_COMMERCIAL`.
 - **`usage_unit`**: Unidad de medida del consumo (`hours`, `cycles`, `people_proportional`). Determina la interfaz de ajuste y el algoritmo de cálculo.
 - **`energy_per_cycle`**: kWh por ciclo para línea blanca (Lavarropas, Cafetera, etc.).
 - **`social_coefficient`**: Factor de cálculo proporcional a personas (Microondas, Pava eléctrica).
@@ -155,8 +162,7 @@ PASO 5 - Cálculo Residual:
 - [x] **Motor v5 (Teórico Puro)**: Eliminación de compresión artificial. Gatekeeper 95%-120%. Gráficos duales para Residuales.
 - [x] Reactividad en tiempo real del consumo por slider.
 - [x] **v8 — Visualización de Exceso Absorbido**: Exceso teórico integrado al Tanque Variable en `EngineResults.vue`, `ConsumptionReal.vue` y `TimeAnalysis.vue` con lógica unificada.
-- [x] **v8 — Consumo Fantasma Interactivo**: `Standby.vue` restaura interactividad del legacy (toggles, equipos agrupados por categoría, ahorro logrado vs. potencial). Nueva ruta POST `recomendaciones.standby.toggle` + método `toggleStandby` en `RecommendationController`.
-- [x] **v8 — Design Rules**: Unificación de colores semánticos (`energy-solar`, `energy-success`, `energy-danger`), gradientes premium y bordes estandarizados en `Standby.vue`.
+- [x] **v9 — Soporte Comercial (B2B)**: Implementación de perfiles `Gastronomy`, `Retail` y `Office`. Nuevas lógicas de cálculo industrial (`TURNS_BASED`, `SERVICE_HOURS`). Interfaz adaptativa (Azul Cobalto para B2B).
 - [ ] **ARQUITECTURA TARGET**: Migrar `has_defined_pattern boolean` → `pattern_type ENUM('inamovible', 'periodico', 'volatil')` + CategoryCalculators enchufables (ver `rules.md § 7`).
 - [ ] Implementar curva de carga variable para equipos Inverter.
 - [ ] Crear Analizador de Capacidad (comparar frigorías vs m² de habitación).

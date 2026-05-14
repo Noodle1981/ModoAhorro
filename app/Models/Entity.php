@@ -14,10 +14,19 @@ class Entity extends Model
         parent::boot();
 
         static::created(function ($entity) {
-            $entity->rooms()->createMany([
-                ['name' => 'Portables'],
-                ['name' => 'Eventos / Tareas Extras'],
-            ]);
+            if ($entity->type === 'comercio') {
+                $entity->rooms()->createMany([
+                    ['name' => 'Cocina', 'description' => 'Área de preparación industrial'],
+                    ['name' => 'Salón', 'description' => 'Atención al público'],
+                    ['name' => 'Depósito / Cámara', 'description' => 'Almacenamiento y refrigeración'],
+                    ['name' => 'Baños / Servicios', 'description' => 'Áreas comunes'],
+                ]);
+            } else {
+                $entity->rooms()->createMany([
+                    ['name' => 'Portables'],
+                    ['name' => 'Eventos / Tareas Extras'],
+                ]);
+            }
         });
     }
 
@@ -48,6 +57,10 @@ class Entity extends Model
         'closes_at',
         'operating_days',
         'thermal_profile',
+        'comercio_type',
+        'staff_count',
+        'visitors_count',
+        'service_turns',
     ];
 
     protected $casts = [
@@ -59,6 +72,9 @@ class Entity extends Model
         'people_count' => 'integer',
         'square_meters' => 'float',
         'operating_days' => 'array',
+        'staff_count' => 'integer',
+        'visitors_count' => 'integer',
+        'service_turns' => 'integer',
     ];
 
     public function users()

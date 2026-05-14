@@ -110,4 +110,47 @@ class EntityController extends Controller
 
         return redirect()->route('home')->with('success', 'Perfil de la casa actualizado correctamente.');
     }
+    /**
+     * Store a new entity and link it to the user.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'type' => 'required|string|in:hogar,comercio,oficina',
+        ]);
+
+        $user = $request->user();
+        $plan = $user->currentPlan();
+
+        // Check limits
+        $currentCount = $user->entities()->where('type', $request->type)->count();
+        if ($currentCount >= ($plan->max_entities ?? 5)) {
+            return back()->with('error', 'Has alcanzado el límite de entidades para este tipo.');
+        }
+
+        // Get a default locality
+        $defaultLocality = Locality::whereHas('province', fn($q) => $q->where('name', 'San Juan'))->first() ?? Locality::first();
+
+        // 1. Create Entity
+        $entityName = $request->type === 'comercio' ? 'Nueva Entidad Comercial' : ($request->type === 'oficina' ? 'Nueva Oficina' : 'Nueva Vivienda');
+        
+        $entity = Entity::create([
+            'name' => $entityName,
+            'type' => $request->type,
+            'locality_id' => $defaultLocality->id,
+            'address_street' => 'Pendiente completar',
+        ]);
+
+        // 2. Attach to User via pivot
+        $user->entities()->attach($entity->id, [
+            'plan_id' => $plan->id,
+            'subscribed_at' => now(),
+        ]);
+
+        // 3. Set as active session
+        session(['active_entity_id' => $entity->id]);
+
+        // 4. Redirect to edit profile
+        return redirect()->route('gestion.entity.edit')->with('success', 'Entidad creada correctamente. Por favor completa los datos.');
+    }
 }

@@ -53,7 +53,15 @@ const form = useForm({
     has_business_activity: props.entity.has_business_activity || false,
     business_type: props.entity.business_type || '',
     description: props.entity.description || '',
+    comercio_type: props.entity.comercio_type || 'gastronomia',
+    staff_count: props.entity.staff_count || '',
+    visitors_count: props.entity.visitors_count || '',
+    service_turns: props.entity.service_turns || 1,
+    opens_at: props.entity.opens_at || '08:00',
+    closes_at: props.entity.closes_at || '20:00',
 });
+
+const isCommercial = computed(() => props.entity.type === 'comercio');
 
 // Filter localities based on selected province
 const filteredLocalities = computed(() => {
@@ -130,20 +138,24 @@ const climateZoneColor = computed(() => {
                         <ChevronLeft :size="20" stroke-width="3" />
                     </Link>
                     <div>
-                        <div class="flex items-center gap-2">
-                            <h1 class="text-3xl font-black text-slate-900 tracking-tighter">Mi <span class="text-emerald-600">Casa</span></h1>
-                            <div class="px-2 py-0.5 bg-emerald-100 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-200">
-                                Digital Twin
+                        <div class="flex items-center gap-4">
+                            <h1 class="text-3xl font-black text-slate-900 tracking-tighter">
+                                Mi <span :class="isCommercial ? 'text-blue-600' : 'text-emerald-600'">{{ isCommercial ? 'Comercio' : 'Casa' }}</span>
+                            </h1>
+                            <div :class="['px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border', isCommercial ? 'bg-blue-100 text-blue-600 border-blue-200' : 'bg-emerald-100 text-emerald-600 border-emerald-200']">
+                                {{ isCommercial ? 'Digital Twin B2B' : 'Digital Twin' }}
                             </div>
                         </div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Configuración residencial y contexto bioclimático</p>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                            {{ isCommercial ? 'Configuración comercial y logística de consumo' : 'Configuración residencial y contexto bioclimático' }}
+                        </p>
                     </div>
                 </div>
 
                 <button 
                     @click="submit"
                     :disabled="form.processing"
-                    class="px-6 py-3 bg-emerald-600 text-white rounded-[20px] font-black text-xs uppercase tracking-widest flex items-center gap-2 hover:bg-emerald-500 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-emerald-900/20 disabled:opacity-50"
+                    :class="['px-6 py-3 text-white rounded-[20px] font-black text-xs uppercase tracking-widest flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg disabled:opacity-50', isCommercial ? 'bg-blue-600 shadow-blue-900/20 hover:bg-blue-500' : 'bg-emerald-600 shadow-emerald-900/20 hover:bg-emerald-500']"
                 >
                     <Save :size="16" stroke-width="3" />
                     {{ form.processing ? 'Guardando...' : 'Guardar Perfil' }}
@@ -159,11 +171,11 @@ const climateZoneColor = computed(() => {
                     <!-- Left Body -->
                     <div class="lg:col-span-7 space-y-6">
                         <!-- Mixed Usage Logic -->
-                        <section>
+                        <section v-if="!isCommercial">
                             <h3 class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <Briefcase :size="14" /> Actividad Adicional en el Hogar
                             </h3>
-                            
+                            <!-- ... existing business activity section ... -->
                             <div class="bg-slate-50/50 p-6 rounded-[32px] border border-slate-100 space-y-4">
                                 <div class="flex items-center justify-between">
                                     <div>
@@ -193,6 +205,57 @@ const climateZoneColor = computed(() => {
                             </div>
                         </section>
 
+                        <!-- Commercial Specific Config -->
+                        <section v-if="isCommercial">
+                            <h3 class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <Store :size="14" /> Configuración Logística Comercial
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 p-6 rounded-[32px] border border-slate-100">
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Rubro del Comercio</label>
+                                        <select v-model="form.comercio_type" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans">
+                                            <option value="gastronomia">Gastronomía (Restaurante / Bar)</option>
+                                            <option value="retail">Retail / Venta al público</option>
+                                        </select>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Apertura</label>
+                                            <input v-model="form.opens_at" type="time" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans"/>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Cierre</label>
+                                            <input v-model="form.closes_at" type="time" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Personal (Staff)</label>
+                                            <input v-model="form.staff_count" type="number" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans" placeholder="0"/>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Comensales / día</label>
+                                            <input v-model="form.visitors_count" type="number" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans" placeholder="0"/>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Turnos de Servicio</label>
+                                        <div class="flex gap-2">
+                                            <button v-for="n in 3" :key="n" type="button" @click="form.service_turns = n"
+                                                :class="['flex-1 py-3 rounded-2xl border-2 transition-all text-xs font-black uppercase tracking-widest', form.service_turns === n ? 'border-blue-500 bg-white text-blue-600' : 'border-transparent bg-white/50 text-slate-400']"
+                                            >
+                                                {{ n }} {{ n === 1 ? 'Turno' : 'Turnos' }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
                         <!-- Basic Attributes -->
                         <section class="grid grid-cols-2 gap-6 pt-2">
                             <div class="space-y-4">
@@ -206,7 +269,7 @@ const climateZoneColor = computed(() => {
                                         <input v-model="form.square_meters" type="number" step="0.1" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold font-sans"/>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Habitantes</label>
+                                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{{ isCommercial ? 'Personas en Staff' : 'Habitantes' }}</label>
                                         <input v-model="form.people_count" type="number" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold font-sans"/>
                                     </div>
                                 </div>
@@ -223,7 +286,7 @@ const climateZoneColor = computed(() => {
                         </section>
 
                         <section class="pt-2">
-                            <h3 class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <h3 class="text-[10px] font-black uppercase tracking-widest mb-4 flex items-center gap-2" :class="isCommercial ? 'text-blue-600' : 'text-emerald-600'">
                                 <Zap :size="14" /> Servicios Avanzados
                             </h3>
                             <div class="grid grid-cols-2 gap-4">

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Invoice;
 use App\Models\Equipment;
+use App\Models\Entity;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -15,6 +16,7 @@ class EnergyEngineService
     protected \App\Services\Tanks\Tank1BaseService $tank1;
     protected \App\Services\Tanks\Tank2ClimateService $tank2;
     protected \App\Services\Tanks\Tank3ElasticityService $tank3;
+    protected ?\App\Services\Commercial\CommercialEngineProfile $commercialProfile = null;
     protected array $lastClimateDays = [];
     protected bool $isFallbackMode = false;
 
@@ -41,6 +43,10 @@ class EnergyEngineService
     public function processInvoice(Invoice $invoice, Collection $equipments): array
     {
         $entity = $invoice->contract->entity;
+        
+        // Cargar perfil comercial si aplica
+        $this->commercialProfile = $this->getCommercialProfile($entity);
+        
         // Priorizamos el consumo de la factura (cuota) sobre el bimensual si estamos en un proceso de unificación
         $totalBillKwh = $invoice->total_energy_consumed_kwh ?? $invoice->consumption_kwh ?? $invoice->bimonthly_consumption_kwh ?? 0;
         $logs = [];
@@ -71,7 +77,7 @@ class EnergyEngineService
         }
 
         // --- PASO 0: TANQUE 0 (CERTEZA) ---
-        $resT0 = $this->tank0->process($equipments->where('is_standby', false), $remainingKwh);
+        $resT0 = $this->tank0->process($equipments->where('is_standby', false), $remainingKwh, $opContext);
         $logs = array_merge($logs, $resT0['logs']);
 
         // --- PASO 1: TANQUE 1 (BASE INMUTABLE) ---
@@ -130,6 +136,21 @@ class EnergyEngineService
         return $this;
     }
 
+    protected function getCommercialProfile(Entity $entity): ?\App\Services\Commercial\CommercialEngineProfile
+    {
+        if ($entity->type === 'oficina') {
+            return new \App\Services\Commercial\OfficeEngineProfile();
+        }
+
+        if ($entity->type !== 'comercio') return null;
+
+        return match ($entity->comercio_type) {
+            'gastronomia' => new \App\Services\Commercial\GastronomyEngineProfile(),
+            'retail'      => new \App\Services\Commercial\RetailEngineProfile(),
+            default       => null,
+        };
+    }
+
     /**
      * Calcula el contexto operativo basado en horarios y días laborables de la entidad.
      */
@@ -165,6 +186,11 @@ class EnergyEngineService
             'work_days'   => $workDays,
             'total_days'  => $totalDays,
             'people_count' => $entity->people_count ?? 1,
+            'staff_count' => $entity->staff_count ?? 0,
+            'visitors_count' => $entity->visitors_count ?? 0,
+            'service_turns' => $entity->service_turns ?? 1,
+            'is_commercial' => $entity->type === 'comercio',
+            'commercial_profile' => $this->commercialProfile,
         ];
     }
 

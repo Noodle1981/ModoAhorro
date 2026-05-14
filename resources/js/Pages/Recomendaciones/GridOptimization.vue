@@ -19,8 +19,14 @@ import {
 } from 'lucide-vue-next';
 
 const props = defineProps({
-    entity: Object
+    entity: Object,
+    contract: Object,
+    recommendations: Array
 });
+
+const iconMap = {
+    Clock, Sun, Timer, Zap, Play
+};
 
 const hourlyData = ref([
     { hour: '00', level: 20, peak: false },
@@ -37,38 +43,8 @@ const hourlyData = ref([
     { hour: '22', level: 40, peak: false },
 ]);
 
-// Recommendations
-const recommendations = [
-    {
-        title: 'Mover Lavado de Ropa',
-        current: '19:00 (Pico)',
-        suggested: '23:30 (Valle)',
-        saving: '12%',
-        icon: Clock,
-        color: 'text-sky-500',
-        bg: 'bg-sky-50'
-    },
-    {
-        title: 'Programar Climatización',
-        current: 'Uso Manual',
-        suggested: 'Pre-enfriado 15:00',
-        saving: '8%',
-        icon: Sun,
-        color: 'text-amber-500',
-        bg: 'bg-amber-50'
-    },
-    {
-        title: 'Bomba de Agua / Riego',
-        current: '09:00',
-        suggested: '02:00',
-        saving: '15%',
-        icon: Timer,
-        color: 'text-emerald-500',
-        bg: 'bg-emerald-50'
-    }
-];
-
-const selectedTariff = ref('T1-R (Simple)');
+// Recommendations are now coming from props
+const selectedTariff = ref(props.contract?.supply_type === 'trifasico' ? 'T1-G (Trifásica)' : 'T1-R (Simple)');
 </script>
 
 <template>
@@ -152,7 +128,7 @@ const selectedTariff = ref('T1-R (Simple)');
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-4">
                                 <div :class="['w-12 h-12 rounded-2xl flex items-center justify-center', rec.bg, rec.color]">
-                                    <component :is="rec.icon" :size="24" />
+                                    <component :is="iconMap[rec.icon] || Info" :size="24" />
                                 </div>
                                 <h4 class="text-lg font-black text-slate-900 leading-none">{{ rec.title }}</h4>
                             </div>

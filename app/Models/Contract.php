@@ -25,6 +25,8 @@ class Contract extends Model
         'start_date',
         'end_date',
         'is_active',
+        'supply_type',
+        'contracted_power_kw',
     ];
 
     /**
@@ -40,6 +42,7 @@ class Contract extends Model
         'contracted_power_kw_p3' => 'decimal:3',
         'start_date' => 'date',
         'end_date' => 'date',
+        'contracted_power_kw' => 'decimal:3',
     ];
 
     public function entity()

@@ -170,3 +170,24 @@ Este proyecto es progresivo por diseño. Cada refactorización descubre simplifi
 La arquitectura de calculators enchufables es el destino natural de lo que ya existe —
 no es un cambio de paradigma sino una formalización del modelo mental que ya se aplica.
 
+---
+
+## 8. Soporte Comercial (B2B)
+
+### Filosofía B2B
+Las entidades comerciales (`comercio`, `oficina`) operan bajo lógicas de logística y producción, no solo habitabilidad.
+
+### Engine Profiles
+Cada rubro comercial inyecta un perfil que define:
+- Categorías críticas y de proceso.
+- Coeficientes sociales específicos (comensales, clientes, empleados).
+- Etiquetas de unidad para visitantes.
+
+### Lógicas de Cálculo Industriales
+- **`TURNS_BASED`**: Consumo = Potencia × Cantidad de Turnos × Horas por Turno × Días.
+- **`SERVICE_HOURS`**: Consumo = Potencia × (Cierre - Apertura) × Días.
+- **`CONTINUOUS_COMMERCIAL`**: Consumo 24h con factores de carga industriales (refrigeración pesada).
+
+### UI Semántica B2B
+- Las entidades comerciales usan una paleta de **Azul Cobalto / Indigo** para diferenciarse del **Verde Esmeralda** residencial.
+- Los campos de `people_count` se adaptan a `Staff` y `Visitantes/Comensales` según el rubro.

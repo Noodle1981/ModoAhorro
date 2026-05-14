@@ -166,6 +166,13 @@ class Tank2ClimateService
             return false;
         }
 
+        $logic = $eq->type?->consumption_logic ?? '';
+        
+        // Excluimos lógicas comerciales que van a otros tanques
+        if (in_array($logic, ['TURNS_BASED', 'SERVICE_HOURS', 'CONTINUOUS_COMMERCIAL'])) {
+            return false;
+        }
+
         $name = strtolower($eq->type?->name ?? '');
         $isCoolingOrHeating = str_contains($name, 'aire') || str_contains($name, 'split') || str_contains($name, 'portátil') || str_contains($name, 'estufa') || str_contains($name, 'calefactor') || str_contains($name, 'ventilador');
 
