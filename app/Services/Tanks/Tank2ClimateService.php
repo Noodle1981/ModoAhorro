@@ -3,14 +3,15 @@
 namespace App\Services\Tanks;
 
 use App\Models\Equipment;
+use App\Models\Invoice;
 use App\Services\ClimateService;
 use App\Services\ThermalProfileService;
 use Illuminate\Support\Collection;
 
 class Tank2ClimateService
 {
-    protected $climateService;
-    protected $thermalService;
+    protected ClimateService $climateService;
+    protected ThermalProfileService $thermalService;
 
     public function __construct(ClimateService $climateService, ThermalProfileService $thermalService)
     {
@@ -21,7 +22,7 @@ class Tank2ClimateService
     /**
      * Procesa los equipos sensibles al clima.
      */
-    public function process(Collection $equipments, float &$remainingKwh, array $opContext, $invoice, bool $isFallbackMode): array
+    public function process(Collection $equipments, float &$remainingKwh, array $opContext, Invoice $invoice, bool $isFallbackMode): array
     {
         $tankConsumption = 0;
         $logs = [];

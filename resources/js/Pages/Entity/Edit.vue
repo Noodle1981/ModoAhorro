@@ -128,7 +128,7 @@ const climateZoneColor = computed(() => {
 
 <template>
     <MainLayout>
-        <Head title="Perfil de Mi Casa" />
+        <Head title="Perfil de Entidad" />
 
         <div class="h-full flex flex-col gap-4">
             <!-- Header Section -->
@@ -218,6 +218,7 @@ const climateZoneColor = computed(() => {
                                         <select v-model="form.comercio_type" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans">
                                             <option value="gastronomia">Gastronomía (Restaurante / Bar)</option>
                                             <option value="retail">Retail / Venta al público</option>
+                                            <option value="oficina">Oficina / Corporativo</option>
                                         </select>
                                     </div>
                                     <div class="grid grid-cols-2 gap-4">
@@ -238,7 +239,9 @@ const climateZoneColor = computed(() => {
                                             <input v-model="form.staff_count" type="number" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans" placeholder="0"/>
                                         </div>
                                         <div>
-                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Comensales / día</label>
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
+                                                {{ form.comercio_type === 'gastronomia' ? 'Comensales / día' : (form.comercio_type === 'oficina' ? 'Visitantes / día' : 'Clientes / día') }}
+                                            </label>
                                             <input v-model="form.visitors_count" type="number" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans" placeholder="0"/>
                                         </div>
                                     </div>

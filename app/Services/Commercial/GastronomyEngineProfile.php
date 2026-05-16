@@ -5,7 +5,7 @@ namespace App\Services\Commercial;
 use App\Models\Entity;
 use App\Models\Equipment;
 
-class GastronomyEngineProfile implements CommercialEngineProfile
+class GastronomyEngineProfile extends AbstractCommercialProfile
 {
     public function getCriticalCategories(): array
     {
@@ -34,9 +34,19 @@ class GastronomyEngineProfile implements CommercialEngineProfile
         return 'comensales';
     }
 
-    public function isThermalProcess(Equipment $equipment): bool
+    public function getStandbyMultiplier(): float
     {
-        $category = $equipment->category?->name ?? '';
-        return in_array($category, $this->getProcessCategories());
+        return 1.2; // Alta carga térmica por heladeras que nunca cortan
+    }
+
+    public function calculateOperationalLoad(array $context): float
+    {
+        $turns = max(1, $context['service_turns'] ?? 1);
+        $visitors = $context['visitors_count'] ?? 0;
+        
+        // Multiplicador base por turnos, con un plus si hay mucho tráfico de comensales.
+        $trafficMultiplier = $visitors > 0 ? 1.5 : 1.0;
+        
+        return $turns * $trafficMultiplier;
     }
 }

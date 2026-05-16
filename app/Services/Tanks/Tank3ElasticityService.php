@@ -44,11 +44,16 @@ class Tank3ElasticityService
                     $powerW = $eq->nominal_power_w ?? $eq->type->default_power_watts ?? 0;
 
                     if ($logic === 'TURNS_BASED') {
-                        $turns = $opContext['service_turns'] ?? 1;
-                        $dailyKwh = ($powerW * $turns * $hours * $loadFactor) / 1000;
+                        $commercialLoad = isset($opContext['commercial_profile']) && $opContext['commercial_profile'] 
+                            ? $opContext['commercial_profile']->calculateOperationalLoad($opContext) 
+                            : ($opContext['service_turns'] ?? 1);
+                        $dailyKwh = ($powerW * $commercialLoad * $hours * $loadFactor) / 1000;
                     } elseif ($logic === 'SERVICE_HOURS') {
+                        $commercialLoad = isset($opContext['commercial_profile']) && $opContext['commercial_profile']
+                            ? $opContext['commercial_profile']->calculateOperationalLoad($opContext) 
+                            : 1.0;
                         $dailyHours = $opContext['daily_hours'] ?? 12;
-                        $dailyKwh = ($powerW * $dailyHours * $loadFactor) / 1000;
+                        $dailyKwh = ($powerW * $dailyHours * $commercialLoad * $loadFactor) / 1000;
                     } else {
                         $dailyKwh = ($powerW * $hours * $loadFactor) / 1000;
                     }

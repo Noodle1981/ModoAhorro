@@ -5,7 +5,7 @@ namespace App\Services\Commercial;
 use App\Models\Entity;
 use App\Models\Equipment;
 
-class RetailEngineProfile implements CommercialEngineProfile
+class RetailEngineProfile extends AbstractCommercialProfile
 {
     public function getCriticalCategories(): array
     {
@@ -34,9 +34,15 @@ class RetailEngineProfile implements CommercialEngineProfile
         return 'clientes';
     }
 
-    public function isThermalProcess(Equipment $equipment): bool
+    public function getStandbyMultiplier(): float
     {
-        $category = $equipment->category?->name ?? '';
-        return in_array($category, $this->getProcessCategories());
+        return 0.8; // Prácticamente todo apagado salvo cartelería/alarma
+    }
+
+    public function calculateOperationalLoad(array $context): float
+    {
+        // En retail los turnos no afectan tanto el consumo de los equipos,
+        // ya que la iluminación comercial está encendida de todos modos.
+        return 1.0;
     }
 }

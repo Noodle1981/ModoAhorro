@@ -5,7 +5,7 @@ namespace App\Services\Commercial;
 use App\Models\Entity;
 use App\Models\Equipment;
 
-class OfficeEngineProfile implements CommercialEngineProfile
+class OfficeEngineProfile extends AbstractCommercialProfile
 {
     public function getCriticalCategories(): array
     {
@@ -35,9 +35,20 @@ class OfficeEngineProfile implements CommercialEngineProfile
         return 'visitantes';
     }
 
-    public function isThermalProcess(Equipment $equipment): bool
+    public function getStandbyMultiplier(): float
     {
-        $category = $equipment->category?->name ?? '';
-        return in_array($category, $this->getProcessCategories());
+        return 1.2; // Alta carga nocturna por Servidores y Racks
+    }
+
+    public function calculateOperationalLoad(array $context): float
+    {
+        $turns = max(1, $context['service_turns'] ?? 1);
+        $staff = $context['staff_count'] ?? 0;
+        
+        // El impacto del staff es mayor en oficinas, ya que cada empleado 
+        // implica equipos encendidos y mayor uso de climatización.
+        $staffMultiplier = $staff > 0 ? 1.2 : 1.0;
+        
+        return $turns * $staffMultiplier;
     }
 }

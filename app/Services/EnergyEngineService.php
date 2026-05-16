@@ -63,7 +63,8 @@ class EnergyEngineService
             $stbyPower = $eq->type->default_standby_power_w ?? 0;
             $hoursActive = $eq->avg_daily_use_hours ?? 0;
             $hoursStandby = max(0, 24 - $hoursActive);
-            $dailyStbyKwh = ($stbyPower * $hoursStandby) / 1000;
+            $commercialStandbyFactor = $this->commercialProfile ? $this->commercialProfile->getStandbyMultiplier() : 1.0;
+            $dailyStbyKwh = (($stbyPower * $commercialStandbyFactor) * $hoursStandby) / 1000;
             $periodStbyKwh = $dailyStbyKwh * $opContext['total_days'];
             
             $eq->calculated_consumption_kwh = $periodStbyKwh;
@@ -147,6 +148,7 @@ class EnergyEngineService
         return match ($entity->comercio_type) {
             'gastronomia' => new \App\Services\Commercial\GastronomyEngineProfile(),
             'retail'      => new \App\Services\Commercial\RetailEngineProfile(),
+            'oficina'     => new \App\Services\Commercial\OfficeEngineProfile(),
             default       => null,
         };
     }

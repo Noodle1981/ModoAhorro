@@ -27,7 +27,17 @@ interface CommercialEngineProfile
     public function getVisitorsUnitLabel(): string;
 
     /**
-     * Determina si un equipo debe ser procesado como proceso térmico.
+     * Determina si un equipo debe ser procesado como proceso clave o térmico.
      */
-    public function isThermalProcess(\App\Models\Equipment $equipment): bool;
+    public function isCoreProcess(\App\Models\Equipment $equipment): bool;
+
+    /**
+     * Multiplicador base para el consumo vampiro/standby.
+     */
+    public function getStandbyMultiplier(): float;
+
+    /**
+     * Calcula la carga operativa basada en turnos, visitantes y staff.
+     */
+    public function calculateOperationalLoad(array $context): float;
 }
