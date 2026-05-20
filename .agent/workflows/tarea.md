@@ -1,6 +1,5 @@
 ---
 description: Rediseño de link en navbar
----
 
 Trabajar con estas direcciones, revisar en las vistas legacy
 
@@ -41,3 +40,22 @@ Medidor Inteligente /entities/{entity}/smart-meter-demo
 Sistema
 Administración
 Benchmarks
+---
+description: Tareas y lineamientos para rediseño de navegación y vistas legacy.
+tags: [tareas, legacy, navegación, rediseño, workflow]
+last_updated: 2026-05-20
+type: task
+owner: equipo_modoahorro
+---
+
+## Para IA
+
+- Aplica estas tareas y lineamientos al sugerir cambios en la navegación o vistas legacy.
+- Prioriza la preparación de rutas y componentes reutilizables.
+- Si detectas referencias a vistas legacy, sugiere refactorización progresiva hacia la nueva arquitectura.
+
+---
+
+## Para Humanos
+
+Este archivo contiene tareas y lineamientos para el rediseño de la navegación y vistas legacy. Úsalo como checklist y referencia para migraciones progresivas.

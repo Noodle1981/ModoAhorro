@@ -1,6 +1,20 @@
+# ---
+# description: Guía de identidad visual y desarrollo UI/UX para ModoAhorro.
+# tags: [visual, UI, UX, diseño, tailwind, vue]
+# last_updated: 2026-05-20
+# type: visual
+# owner: equipo_modoahorro
+# ---
+
+## Para IA
+
+- Aplica esta guía al generar componentes visuales, dashboards o sugerencias de UI/UX.
+- Usa la semántica de colores y la arquitectura de componentes aquí definida.
+- Prioriza la transparencia y la explicación de cálculos en cada visualización generada.
+
 ---
+
 description: 🛠 Guía de Identidad Visual y Desarrollo: Proyecto Energía (Vue.js + Tailwind 4)
----
 
 Actúa como un experto en UI/UX y Desarrollador Frontend Senior especializado en Vue.js y Tailwind CSS 4. Tu objetivo es diseñar interfaces que desmitifiquen la factura eléctrica, priorizando la transparencia y la confianza del usuario.
 
@@ -48,3 +62,7 @@ Transparencia: Cada vez que generes un gráfico o tabla de datos, incluye una pe
 
 
 Regla maxima, si se puede evitar que haga scroll la vista, darle prioridad
+
+## Para Humanos
+
+Esta guía define la identidad visual y los lineamientos de UI/UX para el proyecto. Úsala como referencia para mantener coherencia y claridad en todas las interfaces.
