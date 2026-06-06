@@ -31,7 +31,40 @@ import {
 const props = defineProps({
     currentEntity: Object,
     currentWeather: Object,
-    climateProfile: Object
+    climateProfile: Object,
+    stats: Object,
+});
+
+const tankPercentages = computed(() => {
+    const tanks = props.stats?.tanks || { 1: 0, 2: 0, 3: 0, 4: 0 };
+    const base = (tanks[1] || 0) + (tanks[2] || 0);
+    const clima = tanks[3] || 0;
+    const habits = tanks[4] || 0;
+    
+    const total = base + clima + habits;
+    if (total <= 0) {
+        return { base: 48, clima: 32, habits: 20 };
+    }
+    
+    return {
+        base: Math.max(5, Math.round((base / total) * 100)),
+        clima: Math.max(5, Math.round((clima / total) * 100)),
+        habits: Math.max(5, Math.round((habits / total) * 100)),
+    };
+});
+
+const entityTypeLabel = computed(() => {
+    const type = props.currentEntity?.type;
+    if (type === 'comercio') return 'Mi Comercio';
+    if (type === 'oficina') return 'Mi Oficina';
+    return 'Mi Hogar';
+});
+
+const thermalActionLabel = computed(() => {
+    const type = props.currentEntity?.type;
+    if (type === 'comercio') return 'Diagnosticar Predio / Lugar';
+    if (type === 'oficina') return 'Diagnosticar Local / Oficina';
+    return 'Diagnosticar Vivienda';
 });
 
 const categories = [
@@ -128,21 +161,27 @@ const climateZoneColor = computed(() => {
                         <!-- CO2 -->
                         <div class="bg-white p-4 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/10 flex flex-col justify-center gap-1 h-32">
                             <Leaf :size="16" class="text-emerald-500 mb-2" />
-                            <h4 class="text-2xl font-black text-slate-900 tracking-tighter">0.45 <span class="text-xs font-bold text-slate-400">kg</span></h4>
+                            <h4 class="text-2xl font-black text-slate-900 tracking-tighter">
+                                {{ stats?.has_data ? stats.co2_reduced.toFixed(2) : '--' }} <span class="text-xs font-bold text-slate-400">kg</span>
+                            </h4>
                             <span class="text-[8px] font-black text-emerald-500 uppercase tracking-widest">CO2 Reducido</span>
                         </div>
 
                         <!-- Cost -->
                         <div class="bg-slate-900 p-4 rounded-[32px] shadow-xl shadow-slate-400/20 flex flex-col justify-center gap-1 h-32 text-white">
                             <DollarSign :size="16" class="text-emerald-400 mb-2" />
-                            <h4 class="text-2xl font-black tracking-tighter leading-none">$42.50</h4>
+                            <h4 class="text-2xl font-black tracking-tighter leading-none">
+                                {{ stats?.has_data ? '$' + stats.daily_cost.toFixed(2) : '$0.00' }}
+                            </h4>
                             <span class="text-[8px] font-black text-emerald-400 uppercase tracking-widest">Diario Est.</span>
                         </div>
 
                         <!-- Energy -->
                         <div class="bg-white p-4 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/10 flex flex-col justify-center gap-1 h-32">
                             <Zap :size="16" class="text-amber-500 mb-2" />
-                            <h4 class="text-2xl font-black text-slate-900 tracking-tighter">185 <span class="text-xs font-bold text-slate-400">kWh</span></h4>
+                            <h4 class="text-2xl font-black text-slate-900 tracking-tighter">
+                                {{ stats?.has_data ? stats.monthly_consumption : '--' }} <span class="text-xs font-bold text-slate-400">kWh</span>
+                            </h4>
                             <span class="text-[8px] font-black text-amber-500 uppercase tracking-widest">Consumo Mes</span>
                         </div>
                     </div>
@@ -168,13 +207,13 @@ const climateZoneColor = computed(() => {
 
                             <div class="flex-1 w-full grid grid-cols-3 gap-6 h-32 items-end px-4">
                                 <div class="bg-slate-50 rounded-[20px] h-full relative p-1 border border-slate-100 flex flex-col justify-end">
-                                    <div class="bg-emerald-600 w-full rounded-[16px] h-[48%]"></div>
+                                    <div class="bg-emerald-600 w-full rounded-[16px]" :style="{ height: tankPercentages.base + '%' }"></div>
                                 </div>
                                 <div class="bg-slate-50 rounded-[20px] h-full relative p-1 border border-slate-100 flex flex-col justify-end">
-                                    <div class="bg-teal-400 w-full rounded-[16px] h-[32%]"></div>
+                                    <div class="bg-teal-400 w-full rounded-[16px]" :style="{ height: tankPercentages.clima + '%' }"></div>
                                 </div>
                                 <div class="bg-slate-50 rounded-[20px] h-full relative p-1 border border-slate-100 flex flex-col justify-end">
-                                    <div class="bg-amber-500 w-full rounded-[16px] h-[20%]"></div>
+                                    <div class="bg-amber-500 w-full rounded-[16px]" :style="{ height: tankPercentages.habits + '%' }"></div>
                                 </div>
                             </div>
                         </div>
@@ -267,7 +306,7 @@ const climateZoneColor = computed(() => {
                         </div>
                         <div class="text-left">
                             <p class="text-[10px] font-black uppercase tracking-widest opacity-70">Salud Térmica</p>
-                            <p class="text-sm font-bold">Diagnosticar Vivienda</p>
+                            <p class="text-sm font-bold">{{ thermalActionLabel }}</p>
                         </div>
                     </div>
                     <ArrowRight :size="16" class="transform group-hover:translate-x-1 transition-transform" />
@@ -278,7 +317,9 @@ const climateZoneColor = computed(() => {
                             <Building :size="20" />
                         </div>
                         <div class="text-left">
-                            <p class="text-[10px] font-black uppercase tracking-widest opacity-70">Mi Casa</p>
+                            <p class="text-[10px] font-black uppercase tracking-widest opacity-70">
+                                {{ entityTypeLabel }}
+                            </p>
                             <p class="text-sm font-bold">Configurar Perfil</p>
                         </div>
                     </div>

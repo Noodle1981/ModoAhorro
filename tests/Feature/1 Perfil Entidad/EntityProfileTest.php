@@ -247,4 +247,39 @@ class EntityProfileTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function authorized_user_can_delete_entity()
+    {
+        $entity = Entity::factory()->create([
+            'locality_id' => $this->locality->id,
+            'type' => 'hogar'
+        ]);
+        $this->user->entities()->attach($entity->id, ['plan_id' => $this->plan->id, 'subscribed_at' => now()]);
+
+        $response = $this->actingAs($this->user)
+            ->withSession(['active_entity_id' => $entity->id])
+            ->delete(route('entities.destroy', $entity->id));
+
+        $response->assertRedirect(route('dashboard'));
+        $this->assertDatabaseMissing('entities', [
+            'id' => $entity->id
+        ]);
+        $this->assertNull(session('active_entity_id'));
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function unauthorized_user_cannot_delete_other_user_entity()
+    {
+        $otherUser = User::factory()->create();
+        $otherEntity = Entity::factory()->create(['locality_id' => $this->locality->id]);
+
+        $response = $this->actingAs($this->user)
+            ->delete(route('entities.destroy', $otherEntity->id));
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('entities', [
+            'id' => $otherEntity->id
+        ]);
+    }
 }

@@ -80,7 +80,7 @@ class InfrastructureTest extends TestCase
             ]);
 
         $response->assertRedirect();
-        $room = Room::first();
+        $room = Room::where('name', 'Living Comedor')->first();
         $this->assertEquals('Living Comedor', $room->name);
 
         // 2. Update Room

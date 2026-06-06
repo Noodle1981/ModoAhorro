@@ -27,6 +27,7 @@ Route::middleware(['auth'])->group(function () {
     // Entidades (Selector)
     Route::get('/entidades', 'App\Http\Controllers\DashboardController@index')->name('dashboard');
     Route::post('/entidades/nueva', 'App\Http\Controllers\EntityController@store')->name('entities.store');
+    Route::delete('/entidades/{entity}', 'App\Http\Controllers\EntityController@destroy')->name('entities.destroy');
     Route::redirect('/dashboard', '/entidades');
 
     // Inicio / Resumen de Entidad (Panel con Sidebar)

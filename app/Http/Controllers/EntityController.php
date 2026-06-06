@@ -117,6 +117,7 @@ class EntityController extends Controller
     {
         $request->validate([
             'type' => 'required|string|in:hogar,comercio,oficina',
+            'name' => 'required|string|max:255',
         ]);
 
         $user = $request->user();
@@ -132,10 +133,8 @@ class EntityController extends Controller
         $defaultLocality = Locality::whereHas('province', fn($q) => $q->where('name', 'San Juan'))->first() ?? Locality::first();
 
         // 1. Create Entity
-        $entityName = $request->type === 'comercio' ? 'Nueva Entidad Comercial' : ($request->type === 'oficina' ? 'Nueva Oficina' : 'Nueva Vivienda');
-        
         $entity = Entity::create([
-            'name' => $entityName,
+            'name' => $request->name,
             'type' => $request->type,
             'locality_id' => $defaultLocality->id,
             'address_street' => 'Pendiente completar',
@@ -152,5 +151,24 @@ class EntityController extends Controller
 
         // 4. Redirect to edit profile
         return redirect()->route('gestion.entity.edit')->with('success', 'Entidad creada correctamente. Por favor completa los datos.');
+    }
+
+    /**
+     * Delete the entity.
+     */
+    public function destroy(Request $request, Entity $entity)
+    {
+        if ($request->user()->cannot('delete', $entity)) {
+            abort(403);
+        }
+
+        // Check if it's the active entity
+        if (session('active_entity_id') == $entity->id) {
+            session()->forget('active_entity_id');
+        }
+
+        $entity->delete();
+
+        return redirect()->route('dashboard')->with('success', 'Entidad eliminada correctamente.');
     }
 }

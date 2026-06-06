@@ -67,6 +67,7 @@ trait GroupsInvoices
                     'installments_count' => $installments_count,
                     'total_expected_installments' => $total_expected_installments,
                     'is_complete' => ($installments_count >= $total_expected_installments) || ($installments_count == 1 && empty($first->installment_number)),
+                    'status' => (($installments_count >= $total_expected_installments) || ($installments_count == 1 && empty($first->installment_number))) ? 'complete' : 'pending',
                     'is_calibrated' => $all_calibrated,
                     'is_partially_calibrated' => $any_calibrated && !$all_calibrated,
                     'has_usages_saved' => $has_usages,

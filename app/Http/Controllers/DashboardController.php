@@ -80,10 +80,54 @@ class DashboardController extends Controller
             $climateProfile = $weatherService->getLocalityClimateProfile($currentEntity->locality);
         }
 
+        // Cargar estadísticas reales para los KPIs del dashboard
+        $stats = [
+            'co2_reduced' => 0.0,
+            'daily_cost' => 0.0,
+            'monthly_consumption' => 0.0,
+            'tanks' => [1 => 0, 2 => 0, 3 => 0, 4 => 0],
+            'has_data' => false,
+        ];
+
+        if ($currentEntity) {
+            $invoices = \App\Models\Invoice::whereHas('contract', fn($q) => $q->where('entity_id', $currentEntity->id))->get();
+            if ($invoices->isNotEmpty()) {
+                $stats['has_data'] = true;
+                
+                $latestInvoice = $invoices->sortByDesc('end_date')->first();
+                $totalDays = \Carbon\Carbon::parse($latestInvoice->start_date)->diffInDays(\Carbon\Carbon::parse($latestInvoice->end_date)) ?: 30;
+                
+                $stats['monthly_consumption'] = round(($latestInvoice->total_energy_consumed_kwh / $totalDays) * 30, 0);
+                $stats['daily_cost'] = round($latestInvoice->total_amount / $totalDays, 2);
+                
+                // Estimación de CO2 reducido
+                $solarSaving = $currentEntity->has_solar ? 150 : 0;
+                $thermalProfile = $currentEntity->thermal_profile ?? [];
+                $thermalSaving = isset($thermalProfile['thermal_score']) && $thermalProfile['thermal_score'] > 60
+                    ? ($thermalProfile['thermal_score'] - 60) * 2
+                    : 0;
+                $stats['co2_reduced'] = round(($solarSaving + $thermalSaving) * 0.4, 2);
+                
+                // Desglose de tanques del último periodo calibrado
+                $lastCalibrated = $invoices->whereNotNull('calibrated_at')->sortByDesc('end_date')->first();
+                if ($lastCalibrated) {
+                    $usages = $lastCalibrated->equipmentUsages()->get();
+                    foreach ($usages as $usage) {
+                        $kwh = $usage->kwh_reconciled ?? $usage->consumption_kwh ?? 0;
+                        $tank = (int) $usage->tank_assignment;
+                        if (isset($stats['tanks'][$tank])) {
+                            $stats['tanks'][$tank] += $kwh;
+                        }
+                    }
+                }
+            }
+        }
+
         return Inertia::render('Dashboard/Home', [
             'currentEntity' => $currentEntity,
             'currentWeather' => $weather,
             'climateProfile' => $climateProfile,
+            'stats' => $stats,
         ]);
     }
 }
