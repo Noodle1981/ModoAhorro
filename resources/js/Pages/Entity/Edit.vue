@@ -61,7 +61,39 @@ const form = useForm({
     closes_at: props.entity.closes_at || '20:00',
 });
 
-const isCommercial = computed(() => props.entity.type === 'comercio');
+// Detección precisa del tipo de entidad
+const entityType  = computed(() => props.entity.type);
+const isHogar     = computed(() => entityType.value === 'hogar');
+const isOficina   = computed(() => entityType.value === 'oficina');
+const isComercial = computed(() => entityType.value === 'comercio');
+const isB2B       = computed(() => isOficina.value || isComercial.value);
+
+// Label dinámico del tipo
+const entityLabel = computed(() => {
+    if (isComercial.value) return 'Comercio';
+    if (isOficina.value)   return 'Oficina';
+    return 'Casa';
+});
+const entitySubtitle = computed(() => {
+    if (isComercial.value) return 'Configuración comercial y logística de consumo';
+    if (isOficina.value)   return 'Configuración de oficina y contexto laboral';
+    return 'Configuración residencial y contexto bioclimático';
+});
+const accentColor = computed(() => {
+    if (isComercial.value) return 'text-blue-600';
+    if (isOficina.value)   return 'text-violet-600';
+    return 'text-emerald-600';
+});
+const btnClass = computed(() => {
+    if (isComercial.value) return 'bg-blue-600 shadow-blue-900/20 hover:bg-blue-500';
+    if (isOficina.value)   return 'bg-violet-600 shadow-violet-900/20 hover:bg-violet-500';
+    return 'bg-emerald-600 shadow-emerald-900/20 hover:bg-emerald-500';
+});
+const badgeClass = computed(() => {
+    if (isComercial.value) return 'bg-blue-100 text-blue-600 border-blue-200';
+    if (isOficina.value)   return 'bg-violet-100 text-violet-600 border-violet-200';
+    return 'bg-emerald-100 text-emerald-600 border-emerald-200';
+});
 
 // Filter localities based on selected province
 const filteredLocalities = computed(() => {
@@ -140,14 +172,14 @@ const climateZoneColor = computed(() => {
                     <div>
                         <div class="flex items-center gap-4">
                             <h1 class="text-3xl font-black text-slate-900 tracking-tighter">
-                                Mi <span :class="isCommercial ? 'text-blue-600' : 'text-emerald-600'">{{ isCommercial ? 'Comercio' : 'Casa' }}</span>
+                                Mi <span :class="accentColor">{{ entityLabel }}</span>
                             </h1>
-                            <div :class="['px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border', isCommercial ? 'bg-blue-100 text-blue-600 border-blue-200' : 'bg-emerald-100 text-emerald-600 border-emerald-200']">
-                                {{ isCommercial ? 'Digital Twin B2B' : 'Digital Twin' }}
+                            <div :class="['px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border', badgeClass]">
+                                {{ isB2B ? 'Digital Twin B2B' : 'Digital Twin' }}
                             </div>
                         </div>
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            {{ isCommercial ? 'Configuración comercial y logística de consumo' : 'Configuración residencial y contexto bioclimático' }}
+                            {{ entitySubtitle }}
                         </p>
                     </div>
                 </div>
@@ -155,7 +187,7 @@ const climateZoneColor = computed(() => {
                 <button 
                     @click="submit"
                     :disabled="form.processing"
-                    :class="['px-6 py-3 text-white rounded-[20px] font-black text-xs uppercase tracking-widest flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg disabled:opacity-50', isCommercial ? 'bg-blue-600 shadow-blue-900/20 hover:bg-blue-500' : 'bg-emerald-600 shadow-emerald-900/20 hover:bg-emerald-500']"
+                    :class="['px-6 py-3 text-white rounded-[20px] font-black text-xs uppercase tracking-widest flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg disabled:opacity-50', btnClass]"
                 >
                     <Save :size="16" stroke-width="3" />
                     {{ form.processing ? 'Guardando...' : 'Guardar Perfil' }}
@@ -170,12 +202,11 @@ const climateZoneColor = computed(() => {
                     
                     <!-- Left Body -->
                     <div class="lg:col-span-7 space-y-6">
-                        <!-- Mixed Usage Logic -->
-                        <section v-if="!isCommercial">
+                        <!-- Mixed Usage Logic — Solo para Hogar -->
+                        <section v-if="isHogar">
                             <h3 class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <Briefcase :size="14" /> Actividad Adicional en el Hogar
                             </h3>
-                            <!-- ... existing business activity section ... -->
                             <div class="bg-slate-50/50 p-6 rounded-[32px] border border-slate-100 space-y-4">
                                 <div class="flex items-center justify-between">
                                     <div>
@@ -205,8 +236,8 @@ const climateZoneColor = computed(() => {
                             </div>
                         </section>
 
-                        <!-- Commercial Specific Config -->
-                        <section v-if="isCommercial">
+                        <!-- Commercial Specific Config — Solo para Comercio -->
+                        <section v-if="isComercial">
                             <h3 class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <Store :size="14" /> Configuración Logística Comercial
                             </h3>
@@ -259,6 +290,39 @@ const climateZoneColor = computed(() => {
                             </div>
                         </section>
 
+                        <!-- Office Specific Config — Solo para Oficina -->
+                        <section v-if="isOficina">
+                            <h3 class="text-[10px] font-black text-violet-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <Building :size="14" /> Configuración de Oficina
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 p-6 rounded-[32px] border border-slate-100">
+                                <div class="space-y-4">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Apertura</label>
+                                            <input v-model="form.opens_at" type="time" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans"/>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Cierre</label>
+                                            <input v-model="form.closes_at" type="time" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Empleados</label>
+                                            <input v-model="form.staff_count" type="number" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans" placeholder="0"/>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Visitantes / día</label>
+                                            <input v-model="form.visitors_count" type="number" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans" placeholder="0"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
                         <!-- Basic Attributes -->
                         <section class="grid grid-cols-2 gap-6 pt-2">
                             <div class="space-y-4">
@@ -289,7 +353,7 @@ const climateZoneColor = computed(() => {
                         </section>
 
                         <section class="pt-2">
-                            <h3 class="text-[10px] font-black uppercase tracking-widest mb-4 flex items-center gap-2" :class="isCommercial ? 'text-blue-600' : 'text-emerald-600'">
+                            <h3 class="text-[10px] font-black uppercase tracking-widest mb-4 flex items-center gap-2" :class="accentColor">
                                 <Zap :size="14" /> Servicios Avanzados
                             </h3>
                             <div class="grid grid-cols-2 gap-4">
