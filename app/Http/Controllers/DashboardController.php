@@ -24,9 +24,6 @@ class DashboardController extends Controller
         // Get all entity type configurations
         $entityTypes = config('entity_types', []);
         
-        // Get allowed entity types from plan (for business logic)
-        $allowedTypesFromPlan = $plan->allowed_entity_types ?? ['hogar'];
-        
         // Get user's entities
         $userEntities = $user->entities()->with('locality')->get();
         
@@ -40,11 +37,13 @@ class DashboardController extends Controller
             $entitiesByType[] = [
                 'type' => $type,
                 'name' => $config['label'],
-                'icon' => $config['icon'],
-                'color' => $config['color'],
                 'enabled' => $isEnabled,
                 'entities' => $userEntities->where('type', $type)->values(),
                 'can_add' => $isEnabled && ($userEntities->where('type', $type)->count() < $plan->max_entities),
+                // Dynamic styling classes from central config
+                'tailwind_bg' => $config['tailwind_bg'] ?? 'bg-slate-100',
+                'tailwind_text' => $config['tailwind_text'] ?? 'text-slate-600',
+                'tailwind_gradient' => $config['tailwind_gradient'] ?? 'from-slate-500 to-slate-600',
             ];
         }
 

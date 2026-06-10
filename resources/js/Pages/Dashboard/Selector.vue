@@ -28,6 +28,13 @@ const iconMap = {
     'industria': Factory
 };
 
+// Dynamic Hover classes map for buttons
+const hoverBgMap = {
+    'hogar': 'hover:bg-emerald-600',
+    'comercio': 'hover:bg-purple-600',
+    'oficina': 'hover:bg-blue-600'
+};
+
 // Creation State
 const showCreateModal = ref(false);
 const entityTypeToCreate = ref('');
@@ -127,7 +134,7 @@ const confirmDelete = () => {
                 >
                     <!-- Header Tarjeta -->
                     <div class="p-8 pb-0">
-                        <div :class="['w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110 shadow-sm', type.enabled ? 'bg-energy-consumption text-white' : 'bg-slate-200 text-slate-400']">
+                        <div :class="['w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform group-hover:scale-110 shadow-sm', type.enabled ? `${type.tailwind_bg} ${type.tailwind_text}` : 'bg-slate-200 text-slate-400']">
                             <component :is="iconMap[type.type] || Building" :size="32" stroke-width="2.5" />
                         </div>
                         <h3 class="text-2xl font-black text-slate-900 tracking-tight">{{ type.name }}</h3>
@@ -166,7 +173,10 @@ const confirmDelete = () => {
                         <button 
                             v-if="type.enabled && type.can_add" 
                             @click="openCreateModal(type.type)"
-                            class="w-full bg-slate-900 text-white py-4 px-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-energy-consumption transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-200"
+                            :class="[
+                                'w-full bg-slate-900 text-white py-4 px-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg shadow-slate-200',
+                                hoverBgMap[type.type] || 'hover:bg-energy-consumption'
+                            ]"
                         >
                              <Plus :size="18" stroke-width="3" />
                              {{ type.type === 'oficina' ? 'Nueva' : 'Nuevo' }} {{ type.name }}
