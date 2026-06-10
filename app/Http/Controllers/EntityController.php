@@ -73,6 +73,12 @@ class EntityController extends Controller
             'has_business_activity' => 'boolean',
             'business_type' => 'nullable|string|in:almacen,taller,venta',
             'description' => 'nullable|string',
+            'comercio_type' => 'nullable|string|in:gastronomia,retail,oficina',
+            'staff_count' => 'nullable|integer|min:0',
+            'visitors_count' => 'nullable|integer|min:0',
+            'service_turns' => 'nullable|integer|min:1|max:3',
+            'opens_at' => 'nullable|string',
+            'closes_at' => 'nullable|string',
         ]);
 
         $entity->update($validated);

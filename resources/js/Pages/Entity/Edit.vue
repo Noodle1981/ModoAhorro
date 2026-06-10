@@ -3,17 +3,11 @@ import { Head, useForm, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { computed, watch } from 'vue';
 import { 
-    Home, 
     MapPin, 
-    Users, 
-    Maximize, 
     ChevronLeft, 
     Save, 
     Building, 
-    Info,
-    CheckCircle2,
     Globe,
-    Calendar,
     Zap,
     Flame,
     Sun,
@@ -80,19 +74,35 @@ const entitySubtitle = computed(() => {
     return 'Configuración residencial y contexto bioclimático';
 });
 const accentColor = computed(() => {
-    if (isComercial.value) return 'text-blue-600';
-    if (isOficina.value)   return 'text-violet-600';
+    if (isComercial.value) return 'text-purple-600';
+    if (isOficina.value)   return 'text-blue-600';
     return 'text-emerald-600';
 });
 const btnClass = computed(() => {
-    if (isComercial.value) return 'bg-blue-600 shadow-blue-900/20 hover:bg-blue-500';
-    if (isOficina.value)   return 'bg-violet-600 shadow-violet-900/20 hover:bg-violet-500';
+    if (isComercial.value) return 'bg-purple-600 shadow-purple-900/20 hover:bg-purple-500';
+    if (isOficina.value)   return 'bg-blue-600 shadow-blue-900/20 hover:bg-blue-500';
     return 'bg-emerald-600 shadow-emerald-900/20 hover:bg-emerald-500';
 });
 const badgeClass = computed(() => {
-    if (isComercial.value) return 'bg-blue-100 text-blue-600 border-blue-200';
-    if (isOficina.value)   return 'bg-violet-100 text-violet-600 border-violet-200';
+    if (isComercial.value) return 'bg-purple-100 text-purple-600 border-purple-200';
+    if (isOficina.value)   return 'bg-blue-100 text-blue-600 border-blue-200';
     return 'bg-emerald-100 text-emerald-600 border-emerald-200';
+});
+const hoverBgClass = computed(() => {
+    if (isComercial.value) return 'hover:bg-purple-600';
+    if (isOficina.value)   return 'hover:bg-blue-600';
+    return 'hover:bg-emerald-600';
+});
+const blurBgClass = computed(() => {
+    if (isComercial.value) return 'bg-purple-50';
+    if (isOficina.value)   return 'bg-blue-50';
+    return 'bg-emerald-50';
+});
+const weatherBgClass = computed(() => {
+    if (props.currentWeather?.is_fallback) return 'bg-slate-700 shadow-slate-900/20';
+    if (isComercial.value) return 'bg-purple-600 shadow-purple-900/20';
+    if (isOficina.value)   return 'bg-blue-600 shadow-blue-900/20';
+    return 'bg-emerald-600 shadow-emerald-900/20';
 });
 
 // Filter localities based on selected province
@@ -166,7 +176,7 @@ const climateZoneColor = computed(() => {
             <!-- Header Section -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <Link :href="route('home')" class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all shadow-sm">
+                    <Link :href="route('home')" :class="['w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 hover:text-white transition-all shadow-sm', hoverBgClass]">
                         <ChevronLeft :size="20" stroke-width="3" />
                     </Link>
                     <div>
@@ -196,7 +206,7 @@ const climateZoneColor = computed(() => {
 
             <!-- Main Card -->
             <div class="flex-1 bg-white rounded-[40px] border border-slate-100 shadow-2xl shadow-slate-200/20 p-8 relative overflow-hidden">
-                <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-emerald-50 rounded-full blur-[100px] pointer-events-none opacity-50"></div>
+                <div :class="['absolute -right-20 -bottom-20 w-96 h-96 rounded-full blur-[100px] pointer-events-none opacity-50', blurBgClass]"></div>
                 
                 <form @submit.prevent="submit" class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 h-full min-h-0 overflow-y-auto pr-4 scrollbar-hide">
                     
@@ -280,7 +290,7 @@ const climateZoneColor = computed(() => {
                                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Turnos de Servicio</label>
                                         <div class="flex gap-2">
                                             <button v-for="n in 3" :key="n" type="button" @click="form.service_turns = n"
-                                                :class="['flex-1 py-3 rounded-2xl border-2 transition-all text-xs font-black uppercase tracking-widest', form.service_turns === n ? 'border-blue-500 bg-white text-blue-600' : 'border-transparent bg-white/50 text-slate-400']"
+                                                :class="['flex-1 py-3 rounded-2xl border-2 transition-all text-xs font-black uppercase tracking-widest', form.service_turns === n ? 'border-purple-500 bg-white text-purple-600' : 'border-transparent bg-white/50 text-slate-400']"
                                             >
                                                 {{ n }} {{ n === 1 ? 'Turno' : 'Turnos' }}
                                             </button>
@@ -292,7 +302,7 @@ const climateZoneColor = computed(() => {
 
                         <!-- Office Specific Config — Solo para Oficina -->
                         <section v-if="isOficina">
-                            <h3 class="text-[10px] font-black text-violet-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <h3 class="text-[10px] font-black uppercase tracking-widest mb-4 flex items-center gap-2" :class="accentColor">
                                 <Building :size="14" /> Configuración de Oficina
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 p-6 rounded-[32px] border border-slate-100">
@@ -336,7 +346,7 @@ const climateZoneColor = computed(() => {
                                         <input v-model="form.square_meters" type="number" step="0.1" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold font-sans"/>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{{ isCommercial ? 'Personas en Staff' : 'Habitantes' }}</label>
+                                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{{ isB2B ? 'Personas en Staff' : 'Habitantes' }}</label>
                                         <input v-model="form.people_count" type="number" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold font-sans"/>
                                     </div>
                                 </div>
@@ -373,7 +383,7 @@ const climateZoneColor = computed(() => {
                     <div class="lg:col-span-5 space-y-6">
                         <section class="bg-slate-50/50 p-6 rounded-[40px] border border-slate-100 space-y-6">
                             <div>
-                                <h3 class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <h3 class="text-[10px] font-black uppercase tracking-widest mb-4 flex items-center gap-2" :class="accentColor">
                                     <MapPin :size="14" /> Ubicación Geográfica
                                 </h3>
                                 <div class="space-y-4">
@@ -394,7 +404,7 @@ const climateZoneColor = computed(() => {
                             </div>
 
                             <!-- Weather API Monitor (Real Time) -->
-                            <div :class="['p-5 text-white rounded-[32px] shadow-lg relative overflow-hidden group transition-all', currentWeather?.is_fallback ? 'bg-slate-700 shadow-slate-900/20' : 'bg-emerald-600 shadow-emerald-900/20']">
+                            <div :class="['p-5 text-white rounded-[32px] shadow-lg relative overflow-hidden group transition-all', weatherBgClass]">
                                 <div class="absolute right-0 top-0 opacity-10 translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
                                     <Globe :size="120" />
                                 </div>
