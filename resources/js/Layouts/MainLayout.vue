@@ -1,7 +1,6 @@
 <script setup>
 import { Link, Head, usePage } from '@inertiajs/vue3';
 import { 
-    LayoutGrid, 
     FileText, 
     Activity, 
     LogOut, 
@@ -18,9 +17,6 @@ import {
     Sun,
     RefreshCw,
     Ghost,
-    Wrench,
-    Palmtree,
-    Heart,
     Settings,
     TrendingUp,
     ChevronDown,
@@ -28,7 +24,7 @@ import {
     Thermometer,
     DollarSign
 } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { ref, computed, watchEffect } from 'vue';
 
 const page = usePage();
 const auth = computed(() => page.props.auth);
@@ -39,8 +35,52 @@ const isSidebarOpen = ref(true);
 const isEntityMenuOpen = ref(false);
 const activeCategory = ref(auth.value?.user?.is_super_admin ? 'Sistema' : 'Gestión Física');
 
+const themeColors = computed(() => {
+    const type = currentEntity.value?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            bg: 'bg-purple-600',
+            bgLight: 'bg-purple-600/10',
+            hoverBg: 'hover:bg-purple-600',
+            hoverText: 'hover:text-purple-600',
+            groupHoverText: 'group-hover:text-purple-600',
+            borderHover: 'hover:border-purple-600/30',
+            activeMenuBg: 'bg-purple-50/50',
+            hoverMenuBg: 'hover:bg-purple-50',
+            logoBg: 'bg-purple-600 shadow-purple-900/50',
+        };
+    }
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            bg: 'bg-blue-600',
+            bgLight: 'bg-blue-600/10',
+            hoverBg: 'hover:bg-blue-600',
+            hoverText: 'hover:text-blue-600',
+            groupHoverText: 'group-hover:text-blue-600',
+            borderHover: 'hover:border-blue-600/30',
+            activeMenuBg: 'bg-blue-50/50',
+            hoverMenuBg: 'hover:bg-blue-50',
+            logoBg: 'bg-blue-600 shadow-blue-900/50',
+        };
+    }
+    // Default / hogar (Emerald theme)
+    return {
+        text: 'text-emerald-600',
+        bg: 'bg-emerald-600',
+        bgLight: 'bg-emerald-600/10',
+        hoverBg: 'hover:bg-emerald-600',
+        hoverText: 'hover:text-emerald-600',
+        groupHoverText: 'group-hover:text-emerald-600',
+        borderHover: 'hover:border-emerald-600/30',
+        activeMenuBg: 'bg-emerald-50/50',
+        hoverMenuBg: 'hover:bg-emerald-50',
+        logoBg: 'bg-emerald-600 shadow-emerald-900/50',
+    };
+});
+
 // Sincronizar categoría activa con la URL actual
-import { watchEffect } from 'vue';
 watchEffect(() => {
     const url = page.url;
     if (url.startsWith('/sistema')) activeCategory.value = 'Sistema';
@@ -139,7 +179,7 @@ const isActive = (href) => {
         <!-- Level 1: Slim Sidebar (Central Icons) -->
         <aside class="hidden lg:flex w-20 bg-slate-900 flex flex-col items-center py-6 z-[90] border-r border-white/5 shrink-0">
             <!-- Brand Logo -->
-            <Link :href="route('dashboard')" class="w-12 h-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-900/50 mb-10 hover:scale-105 transition-transform">
+            <Link :href="route('dashboard')" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg mb-10 hover:scale-105 transition-transform" :class="themeColors.logoBg">
                 <Zap :size="24" stroke-width="3" />
             </Link>
 
@@ -195,10 +235,11 @@ const isActive = (href) => {
                 <div class="p-6 relative">
                     <button 
                         @click="isEntityMenuOpen = !isEntityMenuOpen"
-                        class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between group hover:border-emerald-600/30 transition-all"
+                        class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between group transition-all"
+                        :class="themeColors.borderHover"
                     >
                         <div class="flex items-center gap-3 text-left overflow-hidden">
-                            <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-emerald-600 shadow-sm border border-slate-100">
+                            <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100" :class="themeColors.text">
                                 <Building :size="16" />
                             </div>
                             <div class="truncate">
@@ -218,7 +259,7 @@ const isActive = (href) => {
                                 :href="route('entities.activate', entity.id)"
                                 class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors text-left"
                             >
-                                <div class="w-2 h-2 rounded-full" :class="entity.id === currentEntity?.id ? 'bg-emerald-600' : 'bg-slate-200'"></div>
+                                <div class="w-2 h-2 rounded-full" :class="entity.id === currentEntity?.id ? themeColors.bg : 'bg-slate-200'"></div>
                                 <span :class="['text-xs font-bold', entity.id === currentEntity?.id ? 'text-slate-900' : 'text-slate-500']">{{ entity.name }}</span>
                             </Link>
                         </div>
@@ -233,19 +274,19 @@ const isActive = (href) => {
                         :href="item.href"
                         :class="[
                             'flex items-center justify-between p-2.5 rounded-2xl group transition-all',
-                            isActive(item.href) ? 'bg-emerald-50/50' : 'hover:bg-slate-50'
+                            isActive(item.href) ? themeColors.activeMenuBg : 'hover:bg-slate-50'
                         ]"
                     >
                         <div class="flex items-center gap-3">
                             <div :class="[
                                 'p-2 rounded-xl transition-all duration-300',
-                                isActive(item.href) ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-400 group-hover:text-emerald-600 group-hover:bg-white group-hover:shadow-sm'
+                                isActive(item.href) ? ['bg-white shadow-sm', themeColors.text] : ['text-slate-400 group-hover:bg-white group-hover:shadow-sm', themeColors.groupHoverText]
                             ]">
                                 <component :is="item.icon" :size="18" />
                             </div>
-                            <span :class="['text-sm font-bold', isActive(item.href) ? 'text-emerald-600' : 'text-slate-600 group-hover:text-slate-900']">{{ item.name }}</span>
+                            <span :class="['text-sm font-bold', isActive(item.href) ? themeColors.text : 'text-slate-600 group-hover:text-slate-900']">{{ item.name }}</span>
                         </div>
-                        <ChevronRight :size="14" :class="['transition-all', isActive(item.href) ? 'text-emerald-600' : 'text-slate-300 group-hover:text-slate-500 opacity-0 group-hover:opacity-100']" />
+                        <ChevronRight :size="14" :class="['transition-all', isActive(item.href) ? themeColors.text : 'text-slate-300 group-hover:text-slate-500 opacity-0 group-hover:opacity-100']" />
                     </Link>
                 </nav>
 
@@ -253,7 +294,8 @@ const isActive = (href) => {
                 <div class="p-4 border-t border-slate-100">
                     <button 
                         @click="isSidebarOpen = false"
-                        class="w-full flex items-center justify-center gap-2 p-3 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all font-bold text-xs uppercase tracking-widest"
+                        class="w-full flex items-center justify-center gap-2 p-3 text-slate-400 rounded-xl transition-all font-bold text-xs uppercase tracking-widest"
+                        :class="[themeColors.hoverText, themeColors.hoverMenuBg]"
                     >
                         <ChevronRight :size="16" class="rotate-180" /> Plegar Menú
                     </button>
@@ -265,7 +307,8 @@ const isActive = (href) => {
         <button 
             v-if="!isSidebarOpen"
             @click="isSidebarOpen = true"
-            class="hidden lg:flex fixed left-20 top-1/2 -translate-y-1/2 w-8 h-12 bg-white border border-slate-200 border-l-0 rounded-r-xl items-center justify-center text-slate-400 hover:text-emerald-600 shadow-sm z-40 transition-all"
+            class="hidden lg:flex fixed left-20 top-1/2 -translate-y-1/2 w-8 h-12 bg-white border border-slate-200 border-l-0 rounded-r-xl items-center justify-center text-slate-400 shadow-sm z-40 transition-all"
+            :class="themeColors.hoverText"
         >
             <ChevronRight :size="16" />
         </button>
@@ -279,7 +322,7 @@ const isActive = (href) => {
                     <X v-else :size="24" />
                 </button>
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white" :class="themeColors.bg">
                         <Zap :size="16" stroke-width="3" />
                     </div>
                     <span class="font-black text-slate-900 tracking-tighter">ModoAhorro</span>
