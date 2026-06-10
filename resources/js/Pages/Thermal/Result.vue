@@ -1,8 +1,8 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import { computed } from 'vue';
 import { 
-    Thermometer, 
     ChevronLeft, 
     TrendingDown,
     Zap,
@@ -12,7 +12,6 @@ import {
     Maximize,
     AlertTriangle,
     CheckCircle2,
-    Calendar,
     ArrowRight
 } from 'lucide-vue-next';
 
@@ -47,6 +46,53 @@ const categories = [
 const getCategoryColor = (label) => {
     return categories.find(c => c.label === label)?.color || 'bg-slate-400';
 };
+
+const themeColors = computed(() => {
+    const type = props.entity?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            bg: 'bg-purple-600',
+            bgLight: 'bg-purple-600/10',
+            borderLight: 'border-purple-200',
+            hoverText: 'hover:text-purple-600',
+            hoverBg: 'hover:bg-purple-600',
+            hoverBorder: 'hover:border-purple-200',
+            hoverBgLight: 'group-hover:bg-purple-50/30',
+            hoverBg5: 'group-hover:bg-purple-50',
+            shadowBg: 'shadow-purple-900/20',
+            rgba: 'rgba(147,51,234,0.3)',
+        };
+    }
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            bg: 'bg-blue-600',
+            bgLight: 'bg-blue-600/10',
+            borderLight: 'border-blue-200',
+            hoverText: 'hover:text-blue-600',
+            hoverBg: 'hover:bg-blue-600',
+            hoverBorder: 'hover:border-blue-200',
+            hoverBgLight: 'group-hover:bg-blue-50/30',
+            hoverBg5: 'group-hover:bg-blue-50',
+            shadowBg: 'shadow-blue-900/20',
+            rgba: 'rgba(37,99,235,0.3)',
+        };
+    }
+    return {
+        text: 'text-emerald-600',
+        bg: 'bg-emerald-600',
+        bgLight: 'bg-emerald-600/10',
+        borderLight: 'border-emerald-200',
+        hoverText: 'hover:text-emerald-600',
+        hoverBg: 'hover:bg-emerald-600',
+        hoverBorder: 'hover:border-emerald-200',
+        hoverBgLight: 'group-hover:bg-emerald-50/30',
+        hoverBg5: 'group-hover:bg-emerald-50',
+        shadowBg: 'shadow-emerald-900/20',
+        rgba: 'rgba(16,185,129,0.3)',
+    };
+});
 </script>
 
 <template>
@@ -57,13 +103,13 @@ const getCategoryColor = (label) => {
             <!-- Header Section (Compact) -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <Link :href="route('dashboard')" class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-emerald-600 hover:text-white transition-all shadow-sm">
+                    <Link :href="route('dashboard')" :class="['w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 hover:text-white transition-all shadow-sm', themeColors.hoverBg]">
                         <ChevronLeft :size="20" stroke-width="3" />
                     </Link>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h1 class="text-3xl font-black text-slate-900 tracking-tighter">Resultado <span class="text-emerald-600">Térmico</span></h1>
-                            <div class="px-2 py-0.5 bg-emerald-100 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-200">
+                            <h1 class="text-3xl font-black text-slate-900 tracking-tighter">Resultado <span :class="themeColors.text">Térmico</span></h1>
+                            <div :class="['px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border', themeColors.bgLight, themeColors.text, themeColors.borderLight]">
                                 Diagnóstico Finalizado
                             </div>
                         </div>
@@ -79,7 +125,7 @@ const getCategoryColor = (label) => {
                 <div class="lg:col-span-1 flex flex-col gap-4 min-h-0">
                     <!-- Gauge Card -->
                     <div class="bg-white rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/20 p-4 flex flex-col items-center justify-center relative overflow-hidden group shrink-0">
-                        <div class="absolute -right-10 -bottom-10 w-24 h-24 bg-slate-50 rounded-full blur-2xl group-hover:bg-emerald-50 transition-colors"></div>
+                        <div :class="['absolute -right-10 -bottom-10 w-24 h-24 bg-slate-50 rounded-full blur-2xl transition-colors', themeColors.hoverBg5]"></div>
                         
                         <div class="relative w-36 h-36 mb-2">
                             <svg class="w-full h-full transform -rotate-90">
@@ -87,7 +133,8 @@ const getCategoryColor = (label) => {
                                 <circle cx="72" cy="72" r="64" stroke="currentColor" stroke-width="12" fill="transparent" 
                                     :stroke-dasharray="2 * Math.PI * 64" 
                                     :stroke-dashoffset="2 * Math.PI * 64 * (1 - scoreResult.thermal_score / 100)"
-                                    class="text-emerald-600 transition-all duration-1000 ease-out stroke-round drop-shadow-[0_0_8px_rgba(16,185,129,0.3)]" 
+                                    :class="[themeColors.text, 'transition-all duration-1000 ease-out stroke-round']" 
+                                    :style="{ filter: `drop-shadow(0 0 8px ${themeColors.rgba})` }"
                                 />
                             </svg>
                             <div class="absolute inset-0 flex flex-col items-center justify-center">
@@ -118,12 +165,12 @@ const getCategoryColor = (label) => {
                                 
                                 <!-- Indicator for current level -->
                                 <div v-if="scoreResult.energy_label === cat.label" class="flex flex-col">
-                                    <span class="text-[9px] font-black text-emerald-600 uppercase tracking-tighter leading-none">Nivel Actual</span>
+                                    <span :class="['text-[9px] font-black uppercase tracking-tighter leading-none', themeColors.text]">Nivel Actual</span>
                                     <span class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter leading-none italic">Su entidad</span>
                                 </div>
 
                                 <!-- Subtle checkmark for active -->
-                                <div v-if="scoreResult.energy_label === cat.label" class="absolute -right-1 top-1/2 -translate-y-1/2 w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                                <div v-if="scoreResult.energy_label === cat.label" :class="['absolute -right-1 top-1/2 -translate-y-1/2 w-6 h-6 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white', themeColors.bg]">
                                     <CheckCircle2 :size="12" stroke-width="3" />
                                 </div>
                             </div>
@@ -139,14 +186,14 @@ const getCategoryColor = (label) => {
                                 <h2 class="text-xl font-black text-slate-900 tracking-tight">Acciones Prioritarias</h2>
                                 <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Impacto en Factura Estimado</p>
                             </div>
-                            <div class="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-100">
+                            <div :class="['flex items-center gap-2 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border', themeColors.bgLight, themeColors.text, themeColors.borderLight]">
                                 <CheckCircle2 :size="12" /> Plan Personalizado
                             </div>
                         </div>
 
                         <!-- Dense Grid of Recommendations -->
                         <div class="flex-1 overflow-y-auto pr-2 grid grid-cols-1 md:grid-cols-2 gap-3 scrollbar-hide">
-                            <div v-for="advice in recommendations" :key="advice.title" class="group bg-slate-50/50 p-4 rounded-2xl border border-slate-100 hover:border-emerald-200 hover:bg-white transition-all flex gap-3 relative overflow-hidden">
+                            <div v-for="advice in recommendations" :key="advice.title" :class="['group bg-slate-50/50 p-4 rounded-2xl border border-slate-100 hover:bg-white transition-all flex gap-3 relative overflow-hidden', themeColors.hoverBorder]">
                                 <div :class="['w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm transition-transform group-hover:scale-110', {
                                     'bg-rose-100 text-rose-600': advice.color === 'danger',
                                     'bg-amber-100 text-amber-600': advice.color === 'warning',
@@ -159,13 +206,13 @@ const getCategoryColor = (label) => {
                                     <h3 class="text-sm font-black text-slate-900 leading-tight mb-0.5 truncate">{{ advice.title }}</h3>
                                     <p class="text-[10px] font-bold text-slate-400 mb-2 truncate uppercase tracking-tighter">{{ advice.problem }}</p>
                                     
-                                    <div class="bg-white/50 p-2.5 rounded-lg border border-slate-100/50 mb-2 group-hover:bg-emerald-50/30">
+                                    <div :class="['bg-white/50 p-2.5 rounded-lg border border-slate-100/50 mb-2', themeColors.hoverBgLight]">
                                         <p class="text-[11px] font-bold text-slate-700 leading-tight">{{ advice.solution }}</p>
                                     </div>
 
                                     <div class="flex items-center gap-2">
                                         <div class="px-1.5 py-0.5 bg-slate-900 text-[8px] text-white rounded font-black uppercase tracking-widest">Impacto {{ advice.impact }}</div>
-                                        <div class="text-[9px] font-bold text-emerald-600">{{ advice.cost_level }}</div>
+                                        <div :class="['text-[9px] font-bold', themeColors.text]">{{ advice.cost_level }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -173,7 +220,7 @@ const getCategoryColor = (label) => {
                     </div>
 
                     <!-- Bottom Quick Action -->
-                    <div class="bg-emerald-600 rounded-[24px] p-4 flex items-center justify-between text-white shadow-lg shadow-emerald-900/20 group hover:bg-emerald-500 transition-all cursor-pointer">
+                    <div :class="['rounded-[24px] p-4 flex items-center justify-between text-white shadow-lg transition-all cursor-pointer group', themeColors.bg, themeColors.hoverBg, themeColors.shadowBg]">
                         <div class="flex items-center gap-4">
                             <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
                                 <TrendingDown :size="20" stroke-width="3" />
@@ -183,7 +230,7 @@ const getCategoryColor = (label) => {
                                 <p class="text-lg font-black leading-none">$125.400 <span class="text-[10px] font-medium opacity-70">Sujeto a implementación</span></p>
                             </div>
                         </div>
-                        <Link :href="route('gestion.thermal.wizard', entity.id)" class="px-4 py-2 bg-white text-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform flex items-center gap-2">
+                        <Link :href="route('gestion.thermal.wizard', entity.id)" :class="['px-4 py-2 bg-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform flex items-center gap-2', themeColors.text]">
                             Re-Diagnosticar <ArrowRight :size="12" stroke-width="3" />
                         </Link>
                     </div>
