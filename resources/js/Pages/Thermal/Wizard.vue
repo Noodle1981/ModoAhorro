@@ -32,6 +32,12 @@ const form = useForm({
 const submit = () => {
     form.post(route('gestion.thermal.store', props.entity.id));
 };
+
+const handleRoofTypeChange = () => {
+    if (form.roof_type === 'middle_floor_apartment') {
+        form.roof_insulation = false;
+    }
+};
 </script>
 
 <template>
@@ -82,8 +88,9 @@ const submit = () => {
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div class="space-y-2">
                                 <label class="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Tipo de Estructura</label>
-                                <select v-model="form.roof_type" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-warning/20 transition-all appearance-none cursor-pointer">
+                                <select v-model="form.roof_type" @change="handleRoofTypeChange" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-warning/20 transition-all appearance-none cursor-pointer">
                                     <option value="">Selecciona material...</option>
+                                    <option value="middle_floor_apartment">Piso intermedio / Entre pisos (otro depto. arriba)</option>
                                     <option value="sheet_metal_no_insulation">Chapa Metálica (Sin aislación)</option>
                                     <option value="concrete_slab">Losa de Hormigón</option>
                                     <option value="insulated_panel">Panel Aislado / Sandwich</option>
@@ -91,7 +98,13 @@ const submit = () => {
                                 </select>
                             </div>
 
-                            <div class="flex flex-col justify-end">
+                            <div v-if="form.roof_type === 'middle_floor_apartment'" class="flex items-center">
+                                <div class="w-full p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center gap-3 text-emerald-800">
+                                    <CheckCircle2 :size="20" class="text-emerald-600 shrink-0" stroke-width="2.5" />
+                                    <span class="text-xs font-bold leading-tight">Al ser piso intermedio, no posee techo expuesto al exterior, logrando un excelente aislamiento natural.</span>
+                                </div>
+                            </div>
+                            <div v-else class="flex flex-col justify-end">
                                 <label :class="['flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer group/opt', form.roof_insulation ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-slate-50 border-transparent']">
                                     <input type="checkbox" v-model="form.roof_insulation" class="hidden" />
                                     <div :class="['w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all', form.roof_insulation ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-200']">

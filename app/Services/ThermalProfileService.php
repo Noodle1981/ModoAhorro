@@ -16,8 +16,10 @@ class ThermalProfileService
 
         // 1. Techo (Pilar Crítico)
         $roofImpact = [
+            'middle_floor_apartment' => 20, // Excelente aislamiento natural al no estar expuesto directamente al exterior
             'insulated_panel' => 15,
             'roof_tiles_with_insulation' => 10,
+            'tile' => 10,
             'concrete_slab' => 0,
             'sheet_metal_no_insulation' => -15,
         ];
