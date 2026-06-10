@@ -7,15 +7,10 @@ import {
     Plus, 
     Zap, 
     Building2, 
-    Pencil, 
     Trash2, 
     Activity, 
-    MoreHorizontal,
     X,
-    CheckCircle2,
     Search,
-    MapPin,
-    AlertCircle,
     Cpu,
     Hash,
     Calendar
@@ -50,6 +45,72 @@ const form = useForm({
 
 const activeEntity = computed(() => {
     return props.entities.find(e => e.id === props.active_entity_id);
+});
+
+const themeColors = computed(() => {
+    const type = activeEntity.value?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            bg: 'bg-purple-600',
+            bgLight: 'bg-purple-600/10',
+            borderLight: 'border-purple-600/20',
+            hoverBg: 'hover:bg-purple-600',
+            focusRing: 'focus:ring-purple-600/10',
+            focusBorder: 'focus:border-purple-600/30',
+            focusText: 'group-focus-within:text-purple-600',
+            borderBottomLight: 'border-b-purple-600/30',
+            checkboxText: 'text-purple-600 focus:ring-purple-600/20',
+            bgSoft: 'bg-purple-50',
+            borderSoft: 'border-purple-100',
+            textSoft: 'text-purple-900',
+            textSoftAccent: 'text-purple-600 bg-purple-50',
+            bgSoftAccent: 'bg-purple-600 text-white shadow-lg shadow-purple-200',
+            focusRingForm: 'focus:ring-purple-600/20',
+            focusRingInput: 'focus:ring-purple-600'
+        };
+    }
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            bg: 'bg-blue-600',
+            bgLight: 'bg-blue-600/10',
+            borderLight: 'border-blue-600/20',
+            hoverBg: 'hover:bg-blue-600',
+            focusRing: 'focus:ring-blue-600/10',
+            focusBorder: 'focus:border-blue-600/30',
+            focusText: 'group-focus-within:text-blue-600',
+            borderBottomLight: 'border-b-blue-600/30',
+            checkboxText: 'text-blue-600 focus:ring-blue-600/20',
+            bgSoft: 'bg-blue-50',
+            borderSoft: 'border-blue-100',
+            textSoft: 'text-blue-900',
+            textSoftAccent: 'text-blue-600 bg-blue-50',
+            bgSoftAccent: 'bg-blue-600 text-white shadow-lg shadow-blue-200',
+            focusRingForm: 'focus:ring-blue-600/20',
+            focusRingInput: 'focus:ring-blue-600'
+        };
+    }
+    // Default / hogar
+    return {
+        text: 'text-emerald-600',
+        bg: 'bg-emerald-600',
+        bgLight: 'bg-emerald-600/10',
+        borderLight: 'border-emerald-600/20',
+        hoverBg: 'hover:bg-emerald-600',
+        focusRing: 'focus:ring-emerald-600/10',
+        focusBorder: 'focus:border-emerald-600/30',
+        focusText: 'group-focus-within:text-emerald-600',
+        borderBottomLight: 'border-b-emerald-600/30',
+        checkboxText: 'text-emerald-600 focus:ring-emerald-600/20',
+        bgSoft: 'bg-emerald-50',
+        borderSoft: 'border-emerald-100',
+        textSoft: 'text-emerald-900',
+        textSoftAccent: 'text-emerald-600 bg-emerald-50',
+        bgSoftAccent: 'bg-emerald-600 text-white shadow-lg shadow-emerald-200',
+        focusRingForm: 'focus:ring-emerald-600/20',
+        focusRingInput: 'focus:ring-emerald-600'
+    };
 });
 
 const openCreateModal = () => {
@@ -142,12 +203,12 @@ const formatDate = (dateString) => {
             <!-- Top Header & Search -->
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-energy-consumption/10 text-energy-consumption rounded-full text-[10px] font-black uppercase tracking-widest border border-energy-consumption/20">
+                    <div :class="['inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border', themeColors.bgLight, themeColors.text, themeColors.borderLight]">
                         <FileText :size="14" />
                         Administración Técnica
                     </div>
                     <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Gestión de <span class="text-energy-consumption">Contratos</span>
+                        Gestión de <span :class="themeColors.text">Contratos</span>
                     </h1>
                     <p v-if="activeEntity" class="text-lg text-slate-500 font-medium">
                         Configurando suministros para <span class="text-slate-900 font-black">{{ activeEntity.name }}</span>
@@ -156,17 +217,17 @@ const formatDate = (dateString) => {
                 
                 <div class="flex items-center gap-4">
                     <div class="relative group">
-                        <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-energy-consumption transition-colors" :size="18" />
+                        <Search :class="['absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 transition-colors', themeColors.focusText]" :size="18" />
                         <input 
                             v-model="searchQuery"
                             type="text" 
                             placeholder="Buscar propiedad o NIU..." 
-                            class="bg-white border-slate-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold shadow-xl shadow-slate-200/50 focus:ring-2 focus:ring-energy-consumption/10 focus:border-energy-consumption/30 transition-all w-64 md:w-80"
+                            :class="['bg-white border-slate-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold shadow-xl shadow-slate-200/50 focus:ring-2 transition-all w-64 md:w-80', themeColors.focusRing, themeColors.focusBorder]"
                         />
                     </div>
                     <button 
                         @click="openCreateModal"
-                        class="bg-slate-900 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl shadow-slate-300 hover:bg-energy-consumption transition-all hover:-translate-y-1"
+                        :class="['bg-slate-900 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl shadow-slate-300 transition-all hover:-translate-y-1', themeColors.hoverBg]"
                     >
                         <Plus :size="24" stroke-width="3" />
                     </button>
@@ -194,7 +255,7 @@ const formatDate = (dateString) => {
                     </div>
                 </div>
                 <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/40 flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-xl bg-energy-consumption/10 flex items-center justify-center text-energy-consumption">
+                    <div :class="['w-12 h-12 rounded-xl flex items-center justify-center', themeColors.bgLight, themeColors.text]">
                         <Zap :size="20" />
                     </div>
                     <div>
@@ -211,7 +272,7 @@ const formatDate = (dateString) => {
                 </div>
                 <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-2">No se encontraron contratos</h3>
                 <p class="text-slate-400 font-medium max-w-sm mx-auto mb-10">Comience agregando el suministro eléctrico de sus propiedades para habilitar el análisis de eficiencia.</p>
-                <button @click="openCreateModal" class="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-energy-consumption transition-all shadow-xl shadow-slate-200">
+                <button @click="openCreateModal" :class="['bg-slate-900 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-slate-200', themeColors.hoverBg]">
                     Registrar Primer Contrato
                 </button>
             </div>
@@ -257,7 +318,7 @@ const formatDate = (dateString) => {
                         </div>
 
                         <div class="grid grid-cols-3 gap-2">
-                            <div class="text-center p-2 rounded-xl bg-white border border-slate-100 border-b-2 border-b-energy-consumption/30">
+                            <div :class="['text-center p-2 rounded-xl bg-white border border-slate-100 border-b-2', themeColors.borderBottomLight]">
                                 <p class="text-[7px] font-black text-slate-300 uppercase">P1</p>
                                 <p class="text-xs font-black text-slate-900">{{ parseFloat(contract.contracted_power_kw_p1).toFixed(1) }}</p>
                             </div>
@@ -276,7 +337,7 @@ const formatDate = (dateString) => {
                     <div class="px-6 pb-6 mt-auto flex gap-2">
                         <button 
                             @click="openEditModal(contract)"
-                            class="flex-1 bg-slate-900 text-white py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all hover:bg-energy-consumption"
+                            :class="['flex-1 bg-slate-900 text-white py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all', themeColors.hoverBg]"
                         >
                             Editar
                         </button>
@@ -313,12 +374,12 @@ const formatDate = (dateString) => {
                 <form @submit.prevent="submit" class="px-12 py-10 space-y-8 max-h-[60vh] overflow-y-auto custom-scrollbar overflow-x-hidden">
                     
                     <!-- Smart Context Info -->
-                    <div v-if="activeEntity && !editingContract" class="p-4 bg-emerald-50 rounded-3xl border border-emerald-100 flex items-center gap-4 text-emerald-900">
-                        <div class="w-12 h-12 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-200">
+                    <div v-if="activeEntity && !editingContract" :class="['p-4 rounded-3xl border flex items-center gap-4', themeColors.bgSoft, themeColors.borderSoft, themeColors.textSoft]">
+                        <div :class="['w-12 h-12 rounded-2xl flex items-center justify-center', themeColors.bgSoftAccent]">
                             <Building2 :size="24" />
                         </div>
                         <div>
-                            <p class="text-[9px] font-black text-emerald-600 uppercase tracking-widest leading-none mb-1">Propiedad Seleccionada</p>
+                            <p :class="['text-[9px] font-black uppercase tracking-widest leading-none mb-1', themeColors.text]">Propiedad Seleccionada</p>
                             <h4 class="text-sm font-black tracking-tight">{{ activeEntity.name }}</h4>
                         </div>
                     </div>
@@ -331,7 +392,7 @@ const formatDate = (dateString) => {
                                 <div v-if="activeEntity && !editingContract" class="w-full bg-slate-100 border-none rounded-2xl p-4 text-sm font-black text-slate-400 cursor-not-allowed">
                                     {{ activeEntity.name }}
                                 </div>
-                                <select v-else v-model="form.entity_id" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all appearance-none">
+                                <select v-else v-model="form.entity_id" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 transition-all appearance-none', themeColors.focusRingForm]">
                                     <option value="">Seleccionar entidad...</option>
                                     <option v-for="e in entities" :key="e.id" :value="e.id">{{ e.name }}</option>
                                 </select>
@@ -340,9 +401,9 @@ const formatDate = (dateString) => {
                             <div class="space-y-2">
                                 <div class="flex items-center justify-between ml-1">
                                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Distribuidora Energética</label>
-                                    <span v-if="activeEntity" class="text-[8px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded uppercase tracking-tighter">Provincial</span>
+                                    <span v-if="activeEntity" :class="['text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-tighter', themeColors.textSoftAccent]">Provincial</span>
                                 </div>
-                                <select v-model="form.proveedor_id" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all appearance-none">
+                                <select v-model="form.proveedor_id" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 transition-all appearance-none', themeColors.focusRingForm]">
                                     <option value="">Seleccionar proveedor...</option>
                                     <option v-for="p in proveedores" :key="p.id" :value="p.id">{{ p.name }}</option>
                                 </select>
@@ -354,12 +415,12 @@ const formatDate = (dateString) => {
                         <div class="space-y-6">
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1"><Hash :size="10" /> N° de Suministro (NIU)</label>
-                                <input v-model="form.supply_number" type="text" placeholder="Ej: 0718220" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all" />
+                                <input v-model="form.supply_number" type="text" placeholder="Ej: 0718220" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 transition-all', themeColors.focusRingForm]" />
                                 <p v-if="form.errors.supply_number" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.supply_number }}</p>
                             </div>
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1"><Cpu :size="10" /> N° de Serie Medidor</label>
-                                <input v-model="form.meter_number" type="text" placeholder="Ej: 9618495" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all" />
+                                <input v-model="form.meter_number" type="text" placeholder="Ej: 9618495" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 transition-all', themeColors.focusRingForm]" />
                             </div>
                         </div>
                     </div>
@@ -368,15 +429,15 @@ const formatDate = (dateString) => {
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                          <div class="space-y-2">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-1"><Calendar :size="10" /> Fecha Inicio</label>
-                            <input v-model="form.start_date" type="date" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-black text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all" />
+                            <input v-model="form.start_date" type="date" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-black text-slate-900 focus:ring-2 transition-all', themeColors.focusRingForm]" />
                         </div>
                          <div class="space-y-2 md:col-span-1">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">ID Contrato</label>
-                            <input v-model="form.contract_number" type="text" placeholder="Ej: 36697" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all" />
+                            <input v-model="form.contract_number" type="text" placeholder="Ej: 36697" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 transition-all', themeColors.focusRingForm]" />
                         </div>
                          <div class="space-y-2 md:col-span-1">
                             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre Tarifa</label>
-                            <input v-model="form.rate_name" type="text" placeholder="Ej: T1-R1" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-consumption/20 transition-all" />
+                            <input v-model="form.rate_name" type="text" placeholder="Ej: T1-R1" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 transition-all', themeColors.focusRingForm]" />
                         </div>
                     </div>
 
@@ -390,7 +451,7 @@ const formatDate = (dateString) => {
                             <label class="flex items-center gap-3 cursor-pointer group">
                                 <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white transition-colors">Conexión Trifásica</span>
                                 <input type="checkbox" v-model="form.is_three_phase" class="hidden" />
-                                <div :class="['w-10 h-5 rounded-full relative transition-colors', form.is_three_phase ? 'bg-energy-consumption' : 'bg-slate-700']">
+                                <div :class="['w-10 h-5 rounded-full relative transition-colors', form.is_three_phase ? themeColors.bg : 'bg-slate-700']">
                                     <div :class="['absolute top-1 w-3 h-3 bg-white rounded-full transition-all', form.is_three_phase ? 'left-6' : 'left-1']"></div>
                                 </div>
                             </label>
@@ -399,21 +460,21 @@ const formatDate = (dateString) => {
                         <div class="grid grid-cols-3 gap-6">
                             <div class="space-y-2">
                                 <label class="text-[8px] font-black text-slate-500 uppercase tracking-widest text-center block">Pico (P1)</label>
-                                <input v-model="form.contracted_power_kw_p1" type="number" step="0.1" class="w-full bg-slate-800 border-none rounded-xl p-3 text-center text-sm font-black text-white focus:ring-1 focus:ring-energy-consumption" />
+                                <input v-model="form.contracted_power_kw_p1" type="number" step="0.1" :class="['w-full bg-slate-800 border-none rounded-xl p-3 text-center text-sm font-black text-white focus:ring-1', themeColors.focusRingInput]" />
                             </div>
                             <div class="space-y-2">
                                 <label class="text-[8px] font-black text-slate-500 uppercase tracking-widest text-center block">Valle (P2)</label>
-                                <input v-model="form.contracted_power_kw_p2" :disabled="!form.is_three_phase" type="number" step="0.1" :class="['w-full border-none rounded-xl p-3 text-center text-sm font-black transition-all', form.is_three_phase ? 'bg-slate-800 text-white focus:ring-1 focus:ring-energy-consumption' : 'bg-slate-900 text-slate-700 cursor-not-allowed']" />
+                                <input v-model="form.contracted_power_kw_p2" :disabled="!form.is_three_phase" type="number" step="0.1" :class="['w-full border-none rounded-xl p-3 text-center text-sm font-black transition-all', form.is_three_phase ? 'bg-slate-800 text-white focus:ring-1 ' + themeColors.focusRingInput : 'bg-slate-900 text-slate-700 cursor-not-allowed']" />
                             </div>
                             <div class="space-y-2">
                                 <label class="text-[8px] font-black text-slate-500 uppercase tracking-widest text-center block">Resto (P3)</label>
-                                <input v-model="form.contracted_power_kw_p3" :disabled="!form.is_three_phase" type="number" step="0.1" :class="['w-full border-none rounded-xl p-3 text-center text-sm font-black transition-all', form.is_three_phase ? 'bg-slate-800 text-white focus:ring-1 focus:ring-energy-consumption' : 'bg-slate-900 text-slate-700 cursor-not-allowed']" />
+                                <input v-model="form.contracted_power_kw_p3" :disabled="!form.is_three_phase" type="number" step="0.1" :class="['w-full border-none rounded-xl p-3 text-center text-sm font-black transition-all', form.is_three_phase ? 'bg-slate-800 text-white focus:ring-1 ' + themeColors.focusRingInput : 'bg-slate-900 text-slate-700 cursor-not-allowed']" />
                             </div>
                         </div>
                     </div>
 
                     <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-3xl">
-                        <input type="checkbox" v-model="form.is_active" class="w-5 h-5 rounded-lg border-slate-200 text-energy-consumption focus:ring-energy-consumption/20" />
+                        <input type="checkbox" v-model="form.is_active" :class="['w-5 h-5 rounded-lg border-slate-200', themeColors.checkboxText]" />
                         <span class="text-xs font-bold text-slate-700">Contrato activo actualmente (para proyecciones)</span>
                     </div>
                 </form>
@@ -422,7 +483,7 @@ const formatDate = (dateString) => {
                     <button 
                         @click="submit"
                         :disabled="form.processing"
-                        class="flex-1 bg-slate-900 text-white py-5 rounded-[24px] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-energy-consumption transition-all disabled:opacity-50"
+                        :class="['flex-1 bg-slate-900 text-white py-5 rounded-[24px] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 transition-all disabled:opacity-50', themeColors.hoverBg]"
                     >
                         {{ editingContract ? 'Aplicar Cambios' : 'Confirmar Registro' }}
                     </button>

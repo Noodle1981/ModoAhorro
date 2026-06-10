@@ -7,7 +7,6 @@ use App\Models\Entity;
 use App\Models\Proveedor;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class ContractController extends Controller

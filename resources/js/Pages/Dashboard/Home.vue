@@ -3,17 +3,11 @@ import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { computed } from 'vue';
 import { 
-    ShieldCheck, 
     Zap, 
     ArrowRight,
-    TrendingUp,
     Leaf,
     Activity,
     DollarSign,
-    Info,
-    ThermometerSnowflake,
-    ZapOff,
-    BarChart3,
     CheckCircle2,
     Lock,
     Globe,
@@ -67,19 +61,34 @@ const thermalActionLabel = computed(() => {
     return 'Diagnosticar Vivienda';
 });
 
-const categories = [
-    { label: 'G', color: 'bg-rose-600' },
-    { label: 'F', color: 'bg-rose-400' },
-    { label: 'E', color: 'bg-orange-500' },
-    { label: 'D', color: 'bg-amber-400' },
-    { label: 'C', color: 'bg-lime-500' },
-    { label: 'B', color: 'bg-emerald-500' },
-    { label: 'A', color: 'bg-emerald-600' },
-];
-
-const getCategoryColor = (label) => {
-    return categories.find(c => c.label === label)?.color || 'bg-slate-300';
-};
+const themeColors = computed(() => {
+    const type = props.currentEntity?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            bg: 'bg-purple-600',
+            bgLight: 'bg-purple-600/10',
+            border: 'border-purple-600/20',
+            hover: 'hover:bg-purple-500'
+        };
+    }
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            bg: 'bg-blue-600',
+            bgLight: 'bg-blue-600/10',
+            border: 'border-blue-600/20',
+            hover: 'hover:bg-blue-500'
+        };
+    }
+    return {
+        text: 'text-emerald-600',
+        bg: 'bg-emerald-600',
+        bgLight: 'bg-emerald-600/10',
+        border: 'border-emerald-600/20',
+        hover: 'hover:bg-emerald-500'
+    };
+});
 
 const hasProfile = props.currentEntity?.thermal_profile;
 const profile = props.currentEntity?.thermal_profile || {};
@@ -123,13 +132,13 @@ const climateZoneColor = computed(() => {
             <!-- Hero / Welcome Section -->
             <div class="relative overflow-hidden group flex items-center justify-between">
                 <div class="space-y-1 relative z-10">
-                    <div class="inline-flex items-center gap-2 px-2 py-0.5 bg-emerald-600/10 text-emerald-600 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-600/20">
+                    <div :class="['inline-flex items-center gap-2 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border', themeColors.bgLight, themeColors.text, themeColors.border]">
                         <Activity :size="14" />
                         Motor de Eficiencia v3.1
                     </div>
                     
                     <h1 class="text-3xl font-black text-slate-900 tracking-tighter leading-none">
-                        Resumen de <span class="text-emerald-600">{{ currentEntity?.name || 'su Entidad' }}</span>
+                        Resumen de <span :class="themeColors.text">{{ currentEntity?.name || 'su Entidad' }}</span>
                     </h1>
                 </div>
                 
@@ -190,7 +199,7 @@ const climateZoneColor = computed(() => {
                     <div class="bg-white p-6 rounded-[48px] border border-slate-100 shadow-2xl shadow-slate-200/20 relative overflow-hidden">
                         <div class="flex flex-col md:flex-row items-center justify-between gap-8">
                             <div class="space-y-2 max-w-sm">
-                                <h3 class="text-xl font-black text-slate-900 tracking-tighter">Desglose <span class="text-emerald-600">3 Tanques</span></h3>
+                                <h3 class="text-xl font-black text-slate-900 tracking-tighter">Desglose <span :class="themeColors.text">3 Tanques</span></h3>
                                 <p class="text-[10px] text-slate-500 font-medium leading-relaxed">Puntajes de eficiencia basados en su inventario y clima.</p>
                                 <div class="pt-2 flex items-center gap-4 text-[8px] font-black uppercase tracking-widest text-slate-300">
                                     <div class="flex items-center gap-1">
@@ -223,7 +232,7 @@ const climateZoneColor = computed(() => {
                 <!-- Right Column: Bioclimatic context (Col 9-12) -->
                 <div class="lg:col-span-4 space-y-4">
                     <!-- Real-time Weather Monitor -->
-                    <div :class="['p-5 text-white rounded-[40px] shadow-lg relative overflow-hidden group transition-all', currentWeather?.is_fallback ? 'bg-slate-800' : 'bg-emerald-600']">
+                    <div :class="['p-5 text-white rounded-[40px] shadow-lg relative overflow-hidden group transition-all', currentWeather?.is_fallback ? 'bg-slate-800' : themeColors.bg]">
                         <div class="absolute right-0 top-0 opacity-10 translate-x-4 -translate-y-4">
                             <Globe :size="100" />
                         </div>
@@ -299,7 +308,7 @@ const climateZoneColor = computed(() => {
 
             <!-- Bottom Actions / Quick Links -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Link :href="route('gestion.thermal.index', currentEntity?.id)" class="bg-emerald-600 rounded-[32px] p-4 text-white flex items-center justify-between hover:bg-emerald-500 transition-all group">
+                <Link :href="route('gestion.thermal.index', currentEntity?.id)" :class="[themeColors.bg, themeColors.hover, 'rounded-[32px] p-4 text-white flex items-center justify-between transition-all group']">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
                             <CheckCircle2 :size="20" />
