@@ -6,27 +6,20 @@ import {
     LayoutGrid, 
     Plus, 
     Monitor, 
-    Lamp, 
-    Wind, 
     Zap, 
     Trash2, 
     Pencil, 
-    X,
-    CheckCircle2,
-    Search,
-    ChevronLeft,
-    Building2,
-    AirVent,
-    Refrigerator,
-    Tv,
-    Lightbulb,
-    Microwave,
-    Waves,
-    ShieldCheck,
-    Bath,
-    Sparkles,
-    Settings,
-    Lock
+    Building2, 
+    AirVent, 
+    Refrigerator, 
+    Tv, 
+    Lightbulb, 
+    Microwave, 
+    Waves, 
+    ShieldCheck, 
+    Bath, 
+    Sparkles, 
+    Settings
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -35,6 +28,72 @@ const props = defineProps({
     categories: Array,
     types: Array,
     flash: Object
+});
+
+const themeColors = computed(() => {
+    const type = props.entity?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            bg: 'bg-purple-600',
+            bgLight: 'bg-purple-600/10',
+            borderLight: 'border-purple-600/20',
+            hoverBg: 'hover:bg-purple-600',
+            hoverText: 'hover:text-purple-600',
+            focusRing: 'focus:ring-purple-600/10',
+            focusRingForm: 'focus:ring-purple-600/20',
+            focusRingInput: 'focus:ring-purple-600',
+            borderBottom: 'border-purple-600',
+            groupHoverText: 'group-hover:text-purple-600',
+            
+            // Room card specific (Comercio = Deep Purple theme)
+            roomBg: 'bg-purple-950 shadow-purple-900/20',
+            roomTextLight: 'text-purple-300',
+            roomTextMuted: 'text-purple-200/60',
+            roomBtn: 'text-purple-950 hover:bg-purple-600 hover:text-white shadow-purple-950/20'
+        };
+    }
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            bg: 'bg-blue-600',
+            bgLight: 'bg-blue-600/10',
+            borderLight: 'border-blue-600/20',
+            hoverBg: 'hover:bg-blue-600',
+            hoverText: 'hover:text-blue-600',
+            focusRing: 'focus:ring-blue-600/10',
+            focusRingForm: 'focus:ring-blue-600/20',
+            focusRingInput: 'focus:ring-blue-600',
+            borderBottom: 'border-blue-600',
+            groupHoverText: 'group-hover:text-blue-600',
+            
+            // Room card specific (Oficina = Deep Blue theme)
+            roomBg: 'bg-blue-950 shadow-blue-900/20',
+            roomTextLight: 'text-blue-300',
+            roomTextMuted: 'text-blue-200/60',
+            roomBtn: 'text-blue-950 hover:bg-blue-600 hover:text-white shadow-blue-950/20'
+        };
+    }
+    // Default / hogar (Emerald theme)
+    return {
+        text: 'text-emerald-600',
+        bg: 'bg-emerald-600',
+        bgLight: 'bg-emerald-600/10',
+        borderLight: 'border-emerald-600/20',
+        hoverBg: 'hover:bg-emerald-600',
+        hoverText: 'hover:text-emerald-600',
+        focusRing: 'focus:ring-emerald-600/10',
+        focusRingForm: 'focus:ring-emerald-600/20',
+        focusRingInput: 'focus:ring-emerald-600',
+        borderBottom: 'border-emerald-600',
+        groupHoverText: 'group-hover:text-emerald-600',
+        
+        // Room card specific (Hogar = Deep Emerald theme)
+        roomBg: 'bg-emerald-950 shadow-emerald-900/20',
+        roomTextLight: 'text-emerald-300',
+        roomTextMuted: 'text-emerald-200/60',
+        roomBtn: 'text-emerald-950 hover:bg-emerald-600 hover:text-white shadow-emerald-950/20'
+    };
 });
 
 const selectedRoomId = ref(props.rooms.length > 0 ? props.rooms[0].id : null);
@@ -242,12 +301,12 @@ const getCategoryIcon = (catName) => {
             <!-- Header Section -->
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-energy-solar/10 text-energy-solar rounded-full text-[10px] font-black uppercase tracking-widest border border-energy-solar/20">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border" :class="[themeColors.bgLight, themeColors.text, themeColors.borderLight]">
                         <Building2 :size="14" />
                         Mapa de Activos
                     </div>
                     <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Infraestructura <span class="text-energy-solar">y Equipos</span>
+                        Infraestructura <span :class="themeColors.text">y Equipos</span>
                     </h1>
                     <p class="text-lg text-slate-500 font-medium">Gestione ambientes y el inventario eléctrico de {{ entity.name }}.</p>
                 </div>
@@ -258,14 +317,14 @@ const getCategoryIcon = (catName) => {
                 <!-- Sidebar: Rooms (Sticky & Compact) -->
                 <aside class="w-full lg:w-72 shrink-0 space-y-4 sticky top-6">
                     <!-- Compact Room Info Card (NOW UP) -->
-                    <div v-if="selectedRoom" class="bg-indigo-900 rounded-[24px] p-6 text-white space-y-4 relative overflow-hidden group shadow-xl shadow-indigo-200 border border-white/5">
+                    <div v-if="selectedRoom" :class="[themeColors.roomBg, 'rounded-[24px] p-6 text-white space-y-4 relative overflow-hidden group shadow-xl border border-white/5']">
                         <div class="absolute -right-2 -bottom-2 opacity-5 group-hover:scale-110 transition-transform duration-700">
                             <Building2 :size="100" />
                         </div>
                         <div class="relative z-10 space-y-4">
                             <div class="flex items-center justify-between border-b border-white/10 pb-3">
                                 <div>
-                                    <p class="text-[8px] font-black text-indigo-300 uppercase tracking-widest mb-1">Ambiente Activo</p>
+                                    <p class="text-[8px] font-black uppercase tracking-widest mb-1" :class="themeColors.roomTextLight">Ambiente Activo</p>
                                     <h4 class="text-sm font-black tracking-tight">{{ selectedRoom.name }}</h4>
                                 </div>
                                 <div class="flex items-center gap-2">
@@ -277,14 +336,15 @@ const getCategoryIcon = (catName) => {
                                     </button>
                                 </div>
                             </div>
-                            <p class="text-[10px] text-indigo-100/60 font-medium leading-relaxed" :title="selectedRoom.description">
+                            <p class="text-[10px] font-medium leading-relaxed" :class="themeColors.roomTextMuted" :title="selectedRoom.description">
                                 {{ selectedRoom.description || 'Sin descripción adicional.' }}
                             </p>
 
                             <!-- Quick Action: Add Equipment -->
                             <button 
                                 @click="openEqCreate" 
-                                class="w-full py-3 bg-white text-indigo-900 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 hover:bg-energy-solar hover:text-white shadow-lg shadow-indigo-950/20"
+                                class="w-full py-3 bg-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg"
+                                :class="themeColors.roomBtn"
                             >
                                 <Plus :size="14" stroke-width="3" /> 
                                 Añadir Equipo
@@ -295,7 +355,7 @@ const getCategoryIcon = (catName) => {
                     <div class="bg-white rounded-[24px] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
                         <div class="p-4 border-b border-slate-50 flex items-center justify-between">
                             <h3 class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Ambientes</h3>
-                            <button @click="openRoomCreate" class="w-7 h-7 rounded-lg bg-energy-solar/10 text-energy-solar flex items-center justify-center hover:bg-energy-solar hover:text-white transition-all">
+                            <button @click="openRoomCreate" class="w-7 h-7 rounded-lg flex items-center justify-center hover:text-white transition-all" :class="[themeColors.bgLight, themeColors.text, themeColors.hoverBg]">
                                 <Plus :size="14" />
                             </button>
                         </div>
@@ -310,7 +370,7 @@ const getCategoryIcon = (catName) => {
                                 ]"
                             >
                                 <div class="flex items-center gap-3">
-                                    <div :class="['w-1.5 h-1.5 rounded-full', selectedRoomId === room.id ? 'bg-energy-solar' : 'bg-slate-200']"></div>
+                                    <div :class="['w-1.5 h-1.5 rounded-full', selectedRoomId === room.id ? themeColors.bg : 'bg-slate-200']"></div>
                                     <span class="text-xs font-bold leading-none">{{ room.name }}</span>
                                 </div>
                                 <span :class="['text-[9px] font-black px-1.5 py-0.5 rounded-md', selectedRoomId === room.id ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-400']">
@@ -326,12 +386,12 @@ const getCategoryIcon = (catName) => {
                     <div v-if="selectedRoom" class="space-y-6">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-white border border-slate-100 shadow-md flex items-center justify-center text-energy-solar">
+                                <div class="w-10 h-10 rounded-xl bg-white border border-slate-100 shadow-md flex items-center justify-center" :class="themeColors.text">
                                     <LayoutGrid :size="18" />
                                 </div>
                                 <h2 class="text-xl font-black text-slate-900 tracking-tight">Equipos <span class="text-slate-300 font-medium ml-1">({{ selectedRoom.equipment_count }})</span></h2>
                             </div>
-                            <button @click="openEqCreate" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-energy-solar transition-all shadow-xl shadow-slate-200">
+                            <button @click="openEqCreate" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-slate-200" :class="themeColors.hoverBg">
                                 <Plus :size="12" class="inline mr-1" stroke-width="3" /> Añadir Equipo
                             </button>
                         </div>
@@ -345,12 +405,12 @@ const getCategoryIcon = (catName) => {
                             >
                                 <div class="flex items-start justify-between">
                                     <div class="flex items-center gap-4">
-                                        <div class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-energy-solar transition-colors border border-slate-100">
+                                        <div class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 transition-colors border border-slate-100" :class="themeColors.groupHoverText">
                                             <component :is="getCategoryIcon(eq.category?.name || '')" :size="28" />
                                         </div>
                                         <div>
                                             <h5 class="font-black text-slate-900 leading-tight">{{ eq.name }}</h5>
-                                            <p v-if="eq.brand || eq.model" class="text-[9px] font-bold text-energy-solar uppercase tracking-wide">
+                                            <p v-if="eq.brand || eq.model" class="text-[9px] font-bold uppercase tracking-wide" :class="themeColors.text">
                                                 {{ eq.brand }} {{ eq.model }}
                                             </p>
                                             <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest">{{ eq.type?.name }}</p>
@@ -381,7 +441,7 @@ const getCategoryIcon = (catName) => {
                                 </div>
 
                                 <div class="flex items-center gap-2 pt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button @click="openEqEdit(eq)" class="flex-1 bg-slate-50 text-slate-400 hover:text-energy-solar py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+                                    <button @click="openEqEdit(eq)" class="flex-1 bg-slate-50 text-slate-400 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all" :class="themeColors.hoverText">
                                         Editar
                                     </button>
                                     <button @click="deleteEq(eq)" class="w-10 bg-slate-50 text-slate-300 hover:text-rose-500 py-2 rounded-xl transition-all">
@@ -397,7 +457,7 @@ const getCategoryIcon = (catName) => {
                                 <Zap :size="40" class="text-slate-100 mx-auto" />
                                 <h4 class="text-xl font-black text-slate-300">Habitación vacía</h4>
                                 <p class="text-sm text-slate-400 font-medium">Añada los equipos eléctricos de este ambiente para ver su impacto energético.</p>
-                                <button @click="openEqCreate" class="text-xs font-black text-energy-solar uppercase tracking-widest border-b-2 border-energy-solar pb-1">
+                                <button @click="openEqCreate" class="text-xs font-black uppercase tracking-widest border-b-2 pb-1" :class="[themeColors.text, themeColors.borderBottom]">
                                     Añadir Primer Equipo
                                 </button>
                             </div>
@@ -428,15 +488,15 @@ const getCategoryIcon = (catName) => {
                 <form @submit.prevent="submitRoom" class="space-y-6">
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre del Espacio</label>
-                        <input v-model="roomForm.name" type="text" placeholder="Ej: Living, Cocina, Oficina..." class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all" />
+                        <input v-model="roomForm.name" type="text" placeholder="Ej: Living, Cocina, Oficina..." class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 transition-all focus:ring-2" :class="themeColors.focusRingForm" />
                         <p v-if="roomForm.errors.name" class="text-[9px] text-rose-500 font-bold">{{ roomForm.errors.name }}</p>
                     </div>
                     <div class="space-y-2">
                         <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Descripción Breve</label>
-                        <textarea v-model="roomForm.description" rows="3" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-medium text-slate-700 focus:ring-2 focus:ring-energy-solar/20 transition-all"></textarea>
+                        <textarea v-model="roomForm.description" rows="3" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-medium text-slate-700 transition-all focus:ring-2" :class="themeColors.focusRingForm"></textarea>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-3 pt-4">
-                        <button type="submit" class="w-full sm:flex-1 bg-slate-900 text-white py-4 md:py-5 rounded-[18px] md:rounded-[24px] font-black text-xs uppercase tracking-widest hover:bg-energy-solar transition-all shadow-xl shadow-slate-200">
+                        <button type="submit" class="w-full sm:flex-1 bg-slate-900 text-white py-4 md:py-5 rounded-[18px] md:rounded-[24px] font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-200" :class="themeColors.hoverBg">
                             Confirmar
                         </button>
                         <button type="button" @click="showRoomModal = false" class="w-full sm:w-auto px-8 py-4 md:py-5 text-slate-400 font-black text-xs uppercase tracking-widest order-last sm:order-none">
@@ -464,14 +524,14 @@ const getCategoryIcon = (catName) => {
                         <div class="space-y-4">
                             <div class="space-y-1.5">
                                 <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Categoría</label>
-                                <select v-model="eqForm.category_id" class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all appearance-none">
+                                <select v-model="eqForm.category_id" class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all appearance-none focus:ring-2" :class="themeColors.focusRingForm">
                                     <option value="">Seleccionar...</option>
                                     <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
                                 </select>
                             </div>
                             <div class="space-y-1.5">
                                 <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Tipo de Equipo</label>
-                                <select v-model="eqForm.type_id" class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all appearance-none disabled:opacity-50" :disabled="!eqForm.category_id">
+                                <select v-model="eqForm.type_id" class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all appearance-none disabled:opacity-50 focus:ring-2" :class="themeColors.focusRingForm" :disabled="!eqForm.category_id">
                                     <option value="">Seleccionar tipo...</option>
                                     <option v-for="type in filteredTypes" :key="type.id" :value="type.id">{{ type.name }}</option>
                                 </select>
@@ -482,11 +542,11 @@ const getCategoryIcon = (catName) => {
                         <div class="space-y-4">
                             <div class="space-y-1.5">
                                 <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre / Alias</label>
-                                <input v-model="eqForm.name" type="text" placeholder="Ej: Aire Living, Heladera Cocina..." class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all" />
+                                <input v-model="eqForm.name" type="text" placeholder="Ej: Aire Living, Heladera Cocina..." class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-black text-slate-900 transition-all focus:ring-2" :class="themeColors.focusRingForm" />
                             </div>
                             <div v-if="!editingEquipment" class="space-y-1.5">
                                 <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Cantidad</label>
-                                <input v-model="eqForm.cantidad" type="number" class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all" />
+                                <input v-model="eqForm.cantidad" type="number" class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-black text-slate-900 transition-all focus:ring-2" :class="themeColors.focusRingForm" />
                             </div>
                         </div>
                     </div>
@@ -496,20 +556,20 @@ const getCategoryIcon = (catName) => {
                         <div class="space-y-4">
                             <div class="space-y-1.5">
                                 <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Marca</label>
-                                <input v-model="eqForm.brand" type="text" placeholder="Ej: Samsung, Philips..." class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all" />
+                                <input v-model="eqForm.brand" type="text" placeholder="Ej: Samsung, Philips..." class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all focus:ring-2" :class="themeColors.focusRingForm" />
                             </div>
                             <div class="space-y-1.5">
                                 <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Modelo / N° Serie</label>
                                 <div class="flex gap-2">
-                                    <input v-model="eqForm.model" type="text" placeholder="Modelo" class="flex-1 bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all" />
-                                    <input v-model="eqForm.serial_number" type="text" placeholder="S/N" class="w-1/3 bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all" />
+                                    <input v-model="eqForm.model" type="text" placeholder="Modelo" class="flex-1 bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all focus:ring-2" :class="themeColors.focusRingForm" />
+                                    <input v-model="eqForm.serial_number" type="text" placeholder="S/N" class="w-1/3 bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all focus:ring-2" :class="themeColors.focusRingForm" />
                                 </div>
                             </div>
                         </div>
                         <div class="space-y-4">
                             <div class="space-y-1.5">
                                 <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Eficiencia Energética</label>
-                                <select v-model="eqForm.energy_label" class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-solar/20 transition-all appearance-none" translate="no">
+                                <select v-model="eqForm.energy_label" class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all appearance-none focus:ring-2" :class="themeColors.focusRingForm" translate="no">
                                     <option value="">Seleccionar...</option>
                                     <option value="A+++">A+++</option>
                                     <option value="A++">A++</option>
@@ -564,7 +624,7 @@ const getCategoryIcon = (catName) => {
                             <div class="space-y-2 col-span-full">
                                 <label class="text-[8px] font-black text-slate-500 uppercase tracking-widest text-center block">Potencia Nominal (W)</label>
                                 <div class="relative">
-                                    <input v-model="eqForm.nominal_power_w" type="number" class="w-full bg-slate-800 border-none rounded-xl p-4 text-center text-xl font-black text-white focus:ring-1 focus:ring-energy-solar" />
+                                    <input v-model="eqForm.nominal_power_w" type="number" class="w-full bg-slate-800 border-none rounded-xl p-4 text-center text-xl font-black text-white focus:ring-1" :class="themeColors.focusRingInput" />
                                     <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-600">W</span>
                                 </div>
                             </div>
@@ -572,7 +632,7 @@ const getCategoryIcon = (catName) => {
                 </form>
 
                 <div class="px-6 md:px-8 py-4 bg-slate-50 flex flex-col sm:flex-row gap-3">
-                    <button @click="submitEq" :disabled="eqForm.processing" class="w-full sm:flex-1 bg-slate-900 text-white py-3.5 md:py-4 rounded-[16px] md:rounded-[20px] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-energy-solar transition-all">
+                    <button @click="submitEq" :disabled="eqForm.processing" class="w-full sm:flex-1 bg-slate-900 text-white py-3.5 md:py-4 rounded-[16px] md:rounded-[20px] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 transition-all" :class="themeColors.hoverBg">
                         {{ editingEquipment ? 'Guardar Cambios' : 'Confirmar Registro' }}
                     </button>
                     <button @click="showEquipmentModal = false" class="w-full sm:w-auto px-6 py-3.5 md:py-4 text-slate-400 font-black text-xs uppercase tracking-widest order-last sm:order-none">

@@ -6,21 +6,15 @@ import {
     Receipt, 
     Plus, 
     Calendar, 
-    DollarSign, 
     Activity, 
     History, 
-    TrendingUp, 
     ArrowRight, 
     Pencil, 
     Trash2, 
     X,
     CheckCircle2,
     Search,
-    ChevronLeft,
-    AlertTriangle,
-    Eye,
-    ChevronDown,
-    Zap
+    AlertTriangle
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -28,6 +22,66 @@ const props = defineProps({
     contracts: Array,
     invoices: Array,
     flash: Object
+});
+
+const themeColors = computed(() => {
+    const type = props.entity?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            bg: 'bg-purple-600',
+            bgLight: 'bg-purple-600/10',
+            borderLight: 'border-purple-600/20',
+            hoverBg: 'hover:bg-purple-600',
+            focusRing: 'focus:ring-purple-600/10',
+            focusBorder: 'focus:border-purple-600/30',
+            focusText: 'group-focus-within:text-purple-600',
+            checkboxText: 'text-purple-600 focus:ring-purple-600/20',
+            focusRingForm: 'focus:ring-purple-600/20',
+            focusRingInput: 'focus:ring-purple-600',
+            focusBorderInput: 'focus:border-purple-600/50',
+            textSoftAccent: 'text-purple-600 bg-purple-50',
+            bgSoftLight: 'bg-purple-600/5',
+            hoverText: 'hover:text-purple-600'
+        };
+    }
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            bg: 'bg-blue-600',
+            bgLight: 'bg-blue-600/10',
+            borderLight: 'border-blue-600/20',
+            hoverBg: 'hover:bg-blue-600',
+            focusRing: 'focus:ring-blue-600/10',
+            focusBorder: 'focus:border-blue-600/30',
+            focusText: 'group-focus-within:text-blue-600',
+            checkboxText: 'text-blue-600 focus:ring-blue-600/20',
+            focusRingForm: 'focus:ring-blue-600/20',
+            focusRingInput: 'focus:ring-blue-600',
+            focusBorderInput: 'focus:border-blue-600/50',
+            textSoftAccent: 'text-blue-600 bg-blue-50',
+            bgSoftLight: 'bg-blue-600/5',
+            hoverText: 'hover:text-blue-600'
+        };
+    }
+    // Default / hogar
+    return {
+        text: 'text-emerald-600',
+        bg: 'bg-emerald-600',
+        bgLight: 'bg-emerald-600/10',
+        borderLight: 'border-emerald-600/20',
+        hoverBg: 'hover:bg-emerald-600',
+        focusRing: 'focus:ring-emerald-600/10',
+        focusBorder: 'focus:border-emerald-600/30',
+        focusText: 'group-focus-within:text-emerald-600',
+        checkboxText: 'text-emerald-600 focus:ring-emerald-600/20',
+        focusRingForm: 'focus:ring-emerald-600/20',
+        focusRingInput: 'focus:ring-emerald-600',
+        focusBorderInput: 'focus:border-emerald-600/50',
+        textSoftAccent: 'text-emerald-600 bg-emerald-50',
+        bgSoftLight: 'bg-emerald-600/5',
+        hoverText: 'hover:text-emerald-600'
+    };
 });
 
 const showModal = ref(false);
@@ -273,30 +327,30 @@ const openCreateInstallment2Modal = (invoice) => {
             <!-- Header Section -->
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-energy-success/10 text-energy-success rounded-full text-[10px] font-black uppercase tracking-widest border border-energy-success/20">
+                    <div :class="['inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border', themeColors.bgLight, themeColors.text, themeColors.borderLight]">
                         <History :size="14" />
                         Historial Energético
                     </div>
                     <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Gestión de <span class="text-energy-success">Facturas</span>
+                        Gestión de <span :class="themeColors.text">Facturas</span>
                     </h1>
                     <p class="text-lg text-slate-500 font-medium">{{ entity.name }} — Control de consumos mensuales.</p>
                 </div>
                 
                 <div class="flex items-center gap-4">
                     <div class="relative group">
-                        <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-energy-success transition-colors" :size="18" />
+                        <Search :class="['absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 transition-colors', themeColors.focusText]" :size="18" />
                         <input 
                             v-model="searchQuery"
                             type="text" 
                             placeholder="Buscar por número o fecha..." 
-                            class="bg-white border-slate-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold shadow-xl shadow-slate-200/50 focus:ring-2 focus:ring-energy-success/10 focus:border-energy-success/30 transition-all w-64 md:w-80"
+                            :class="['bg-white border-slate-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold shadow-xl shadow-slate-200/50 focus:ring-2 transition-all w-64 md:w-80', themeColors.focusRing, themeColors.focusBorder]"
                         />
                     </div>
                     <button 
                         v-if="contracts.length > 0"
                         @click="openCreateModal"
-                        class="bg-slate-900 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl shadow-slate-300 hover:bg-energy-success transition-all hover:-translate-y-1"
+                        :class="['bg-slate-900 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl shadow-slate-300 transition-all hover:-translate-y-1', themeColors.hoverBg]"
                     >
                         <Plus :size="24" stroke-width="3" />
                     </button>
@@ -342,7 +396,7 @@ const openCreateInstallment2Modal = (invoice) => {
                 </div>
                 <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-2">Historial vacío</h3>
                 <p class="text-slate-400 font-medium max-w-sm mx-auto mb-10">Comience cargando sus facturas de electricidad para realizar el análisis de ahorro.</p>
-                <button @click="openCreateModal" class="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-energy-success transition-all shadow-xl shadow-slate-200">
+                <button @click="openCreateModal" :class="['bg-slate-900 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-slate-200', themeColors.hoverBg]">
                     Cargar Primera Factura
                 </button>
             </div>
@@ -414,14 +468,14 @@ const openCreateInstallment2Modal = (invoice) => {
                                         <button 
                                             v-if="invoice.installment_number === 1 && !hasPartner(invoice)"
                                             @click="openCreateInstallment2Modal(invoice)"
-                                            class="h-10 px-4 rounded-xl bg-energy-success/10 text-energy-success hover:bg-energy-success hover:text-white flex items-center gap-2 transition-all text-[10px] font-black uppercase tracking-widest"
+                                            :class="['h-10 px-4 rounded-xl flex items-center gap-2 transition-all text-[10px] font-black uppercase tracking-widest', themeColors.bgLight, themeColors.text, themeColors.hoverBg, 'hover:text-white']"
                                             title="Cargar Cuota 2 para este periodo"
                                         >
                                             <Plus :size="14" stroke-width="3" />
                                             Cargar Cuota 2
                                         </button>
                                         <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                                            <button @click="openEditModal(invoice)" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-energy-consumption hover:bg-energy-consumption/5 flex items-center justify-center transition-all">
+                                            <button @click="openEditModal(invoice)" :class="['w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center transition-all', themeColors.hoverText, themeColors.bgSoftLight]">
                                                 <Pencil :size="16" />
                                             </button>
                                             <button @click="deleteInvoice(invoice)" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-energy-critical hover:bg-energy-critical/5 flex items-center justify-center transition-all">
@@ -462,7 +516,7 @@ const openCreateInstallment2Modal = (invoice) => {
                         <div class="space-y-6">
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contrato de Suministro</label>
-                                <select v-model="form.contract_id" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-success/20 transition-all appearance-none">
+                                <select v-model="form.contract_id" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 transition-all appearance-none', themeColors.focusRingForm]">
                                     <option v-for="c in contracts" :key="c.id" :value="c.id">#{{ c.supply_number }} - {{ c.proveedor.name }}</option>
                                 </select>
                                 <p v-if="form.errors.contract_id" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.contract_id }}</p>
@@ -470,12 +524,12 @@ const openCreateInstallment2Modal = (invoice) => {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="space-y-2">
                                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">N° de Factura</label>
-                                    <input v-model="form.invoice_number" type="text" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-success/20 transition-all" />
+                                    <input v-model="form.invoice_number" type="text" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 transition-all', themeColors.focusRingForm]" />
                                     <p v-if="form.errors.invoice_number" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.invoice_number }}</p>
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tarifa</label>
-                                    <input v-model="form.tariff" type="text" placeholder="Ej: T1R2" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 focus:ring-energy-success/20 transition-all uppercase" />
+                                    <input v-model="form.tariff" type="text" placeholder="Ej: T1R2" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 transition-all uppercase', themeColors.focusRingForm]" />
                                     <p v-if="form.errors.tariff" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.tariff }}</p>
                                 </div>
                             </div>
@@ -485,17 +539,17 @@ const openCreateInstallment2Modal = (invoice) => {
                         <div class="space-y-6">
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Fecha de Emisión</label>
-                                <input v-model="form.issue_date" type="date" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-energy-success/20 transition-all" />
+                                <input v-model="form.issue_date" type="date" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 transition-all', themeColors.focusRingForm]" />
                                 <p v-if="form.errors.issue_date || form.errors.invoice_date" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.issue_date || form.errors.invoice_date }}</p>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div class="space-y-2">
                                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Inicia</label>
-                                    <input v-model="form.start_date" type="date" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-energy-success/20 transition-all" />
+                                    <input v-model="form.start_date" type="date" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold text-slate-900 focus:ring-2 transition-all', themeColors.focusRingForm]" />
                                 </div>
                                 <div class="space-y-2">
                                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Finaliza</label>
-                                    <input v-model="form.end_date" type="date" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold text-slate-900 focus:ring-2 focus:ring-energy-success/20 transition-all" />
+                                    <input v-model="form.end_date" type="date" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-xs font-bold text-slate-900 focus:ring-2 transition-all', themeColors.focusRingForm]" />
                                 </div>
                             </div>
                         </div>
@@ -508,14 +562,14 @@ const openCreateInstallment2Modal = (invoice) => {
                                 <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Total Energía ($)</label>
                                 <div class="relative">
                                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-600">$</span>
-                                    <input v-model="form.cost_for_energy" type="number" step="0.01" class="w-full bg-slate-800 border-none rounded-2xl pl-8 pr-4 py-4 text-xl font-black text-white focus:ring-1 focus:ring-energy-success transition-all" />
+                                    <input v-model="form.cost_for_energy" type="number" step="0.01" :class="['w-full bg-slate-800 border-none rounded-2xl pl-8 pr-4 py-4 text-xl font-black text-white focus:ring-1 transition-all', themeColors.focusRingInput]" />
                                 </div>
                             </div>
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Impuestos ($)</label>
                                 <div class="relative">
                                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-600">$</span>
-                                    <input v-model="form.taxes" type="number" step="0.01" class="w-full bg-slate-800 border-none rounded-2xl pl-8 pr-4 py-4 text-xl font-black text-white focus:ring-1 focus:ring-energy-success transition-all" />
+                                    <input v-model="form.taxes" type="number" step="0.01" :class="['w-full bg-slate-800 border-none rounded-2xl pl-8 pr-4 py-4 text-xl font-black text-white focus:ring-1 transition-all', themeColors.focusRingInput]" />
                                 </div>
                             </div>
                         </div>
@@ -523,8 +577,8 @@ const openCreateInstallment2Modal = (invoice) => {
                         <div class="pt-8 border-t border-slate-800">
                             <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Importe Final (Total a Pagar)</label>
                             <div class="relative mt-2">
-                                <span class="absolute left-6 top-1/2 -translate-y-1/2 text-3xl font-black text-energy-success">$</span>
-                                <input v-model="form.total_amount" type="number" step="0.01" class="w-full bg-slate-800 border-none rounded-2xl pl-14 pr-6 py-6 text-4xl font-black text-energy-success focus:ring-1 focus:ring-energy-success transition-all shadow-2xl shadow-energy-success/5" />
+                                <span :class="['absolute left-6 top-1/2 -translate-y-1/2 text-3xl font-black', themeColors.text]">$</span>
+                                <input v-model="form.total_amount" type="number" step="0.01" :class="['w-full bg-slate-800 border-none rounded-2xl pl-14 pr-6 py-6 text-4xl font-black focus:ring-1 transition-all shadow-2xl shadow-emerald-500/5', themeColors.text, themeColors.focusRingInput]" />
                             </div>
                             <p v-if="form.errors.total_amount" class="text-[9px] text-energy-critical font-bold mt-2">{{ form.errors.total_amount }}</p>
                         </div>
@@ -537,7 +591,7 @@ const openCreateInstallment2Modal = (invoice) => {
                             <p class="text-xs text-slate-400 font-medium ml-1">Valor expresado en kilovatios hora.</p>
                         </div>
                         <div class="relative w-full md:w-64">
-                            <input v-model="form.total_energy_consumed_kwh" type="number" step="0.1" class="w-full bg-white border-slate-200 rounded-2xl pl-6 pr-14 py-5 text-3xl font-black text-slate-900 focus:ring-2 focus:ring-energy-success/20 focus:border-energy-success/50 transition-all shadow-sm" />
+                            <input v-model="form.total_energy_consumed_kwh" type="number" step="0.1" :class="['w-full bg-white border-slate-200 rounded-2xl pl-6 pr-14 py-5 text-3xl font-black text-slate-900 focus:ring-2 transition-all shadow-sm', themeColors.focusRingForm, themeColors.focusBorderInput]" />
                             <span class="absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-300 uppercase">kWh</span>
                         </div>
                         <p v-if="form.errors.total_energy_consumed_kwh" class="text-[9px] text-energy-critical font-bold">{{ form.errors.total_energy_consumed_kwh }}</p>
@@ -611,7 +665,7 @@ const openCreateInstallment2Modal = (invoice) => {
                     <button 
                         @click="submit"
                         :disabled="form.processing"
-                        class="flex-1 bg-slate-900 text-white py-5 rounded-[24px] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-energy-success transition-all disabled:opacity-50"
+                        :class="['flex-1 bg-slate-900 text-white py-5 rounded-[24px] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 transition-all disabled:opacity-50', themeColors.hoverBg]"
                     >
                         {{ editingInvoice ? 'Actualizar Registro' : 'Confirmar Carga' }}
                     </button>

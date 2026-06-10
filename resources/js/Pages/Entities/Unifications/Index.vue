@@ -6,12 +6,9 @@ import {
     RefreshCw, 
     Calendar, 
     Zap, 
-    DollarSign, 
     CheckCircle2, 
     AlertCircle, 
     ArrowRight,
-    ChevronDown,
-    Building,
     Activity,
     Info,
     History
@@ -20,6 +17,51 @@ import {
 const props = defineProps({
     entity: Object,
     unifications: Array
+});
+
+const themeColors = computed(() => {
+    const type = props.entity?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            textLight: 'text-purple-200',
+            bg: 'bg-purple-600',
+            bgLight: 'bg-purple-600/10',
+            borderLight: 'border-purple-600/20',
+            hoverBg: 'hover:bg-purple-600',
+            hoverBorderLight: 'hover:border-purple-500/20',
+            tankCard: 'bg-purple-600 shadow-purple-900/10',
+            tankZap: 'text-purple-500',
+            progressbarBg: 'bg-purple-500'
+        };
+    }
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            textLight: 'text-blue-200',
+            bg: 'bg-blue-600',
+            bgLight: 'bg-blue-600/10',
+            borderLight: 'border-blue-600/20',
+            hoverBg: 'hover:bg-blue-600',
+            hoverBorderLight: 'hover:border-blue-500/20',
+            tankCard: 'bg-blue-600 shadow-blue-900/10',
+            tankZap: 'text-blue-500',
+            progressbarBg: 'bg-blue-500'
+        };
+    }
+    // Default / hogar
+    return {
+        text: 'text-emerald-600',
+        textLight: 'text-emerald-200',
+        bg: 'bg-emerald-600',
+        bgLight: 'bg-emerald-500/10',
+        borderLight: 'border-emerald-500/20',
+        hoverBg: 'hover:bg-emerald-600',
+        hoverBorderLight: 'hover:border-emerald-500/20',
+        tankCard: 'bg-emerald-600 shadow-emerald-900/10',
+        tankZap: 'text-emerald-500',
+        progressbarBg: 'bg-emerald-500'
+    };
 });
 
 const formatDate = (dateString) => {
@@ -47,12 +89,12 @@ const calculateDays = (start, end) => {
             <!-- Header Section -->
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-500/20">
+                    <div :class="['inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border', themeColors.bgLight, themeColors.text, themeColors.borderLight]">
                         <RefreshCw :size="14" class="animate-spin-slow" />
                         Consolidación de Datos
                     </div>
                     <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Unificaciones <span class="text-emerald-600">Bimestrales</span>
+                        Unificaciones <span :class="themeColors.text">Bimestrales</span>
                     </h1>
                     <p class="text-lg text-slate-500 font-medium">Control físico de consumos por medidor (60 días).</p>
                 </div>
@@ -67,7 +109,7 @@ const calculateDays = (start, end) => {
                 </div>
                 <h3 class="text-xl font-black text-slate-900 mb-2">No hay unificaciones todavía</h3>
                 <p class="text-slate-400 max-w-sm">Cargue facturas con modalidad de cuotas para que el sistema las unifique automáticamente por período.</p>
-                <Link :href="route('gestion.invoices')" class="mt-8 px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-600 transition-all">Cargar Facturas</Link>
+                <Link :href="route('gestion.invoices')" :class="['mt-8 px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all', themeColors.hoverBg]">Cargar Facturas</Link>
             </div>
 
             <div v-else class="grid grid-cols-1 gap-8">
@@ -84,7 +126,7 @@ const calculateDays = (start, end) => {
 
                 <!-- Unification List -->
                 <div v-for="period in unifications" :key="period.id" 
-                    class="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden group hover:border-emerald-500/20 transition-all">
+                    :class="['bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden group transition-all', themeColors.hoverBorderLight]">
                     <div class="p-10">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-10">
                             <!-- Period Info -->
@@ -138,7 +180,7 @@ const calculateDays = (start, end) => {
                                     </div>
                                     <div class="pt-3 border-t border-slate-200 flex items-center justify-between">
                                         <span class="text-xs font-black text-slate-900">Total Bimestre</span>
-                                        <span class="text-sm font-black text-emerald-600">${{ period.total_amount.toLocaleString('es-AR') }}</span>
+                                        <span :class="['text-sm font-black', themeColors.text]">${{ period.total_amount.toLocaleString('es-AR') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -153,12 +195,12 @@ const calculateDays = (start, end) => {
                                     </div>
                                     <div class="flex justify-between items-baseline">
                                         <span class="text-xs font-bold text-slate-500">Medición Física:</span>
-                                        <span class="text-xs font-black text-emerald-600">{{ period.real_bimonthly_kwh || period.total_kwh }} kWh</span>
+                                        <span :class="['text-xs font-black', themeColors.text]">{{ period.real_bimonthly_kwh || period.total_kwh }} kWh</span>
                                     </div>
                                     <!-- Progress Bar -->
                                     <div class="mt-4 h-2 w-full bg-slate-200 rounded-full overflow-hidden">
                                         <div 
-                                            class="h-full bg-emerald-500 rounded-full transition-all duration-1000" 
+                                            :class="['h-full rounded-full transition-all duration-1000', themeColors.progressbarBg]" 
                                             :style="{ width: (period.is_complete ? '100' : '50') + '%' }"
                                         ></div>
                                     </div>
@@ -169,9 +211,9 @@ const calculateDays = (start, end) => {
                             </div>
 
                             <!-- Tank Input Card -->
-                            <div class="p-6 bg-emerald-600 rounded-3xl text-white shadow-xl shadow-emerald-900/10 relative overflow-hidden">
-                                <Zap class="absolute -right-4 -bottom-4 text-emerald-500 opacity-20" :size="120" />
-                                <p class="text-[9px] font-black text-emerald-200 uppercase tracking-widest mb-4 relative z-10">Dato para el Motor</p>
+                            <div :class="['p-6 rounded-3xl text-white shadow-xl relative overflow-hidden', themeColors.tankCard]">
+                                <Zap :class="['absolute -right-4 -bottom-4 opacity-20', themeColors.tankZap]" :size="120" />
+                                <p class="text-[9px] font-black text-white/80 uppercase tracking-widest mb-4 relative z-10">Dato para el Motor</p>
                                 <div class="relative z-10">
                                     <h4 class="text-xs font-bold mb-1">Consumo Integrado</h4>
                                     <p class="text-2xl font-black tracking-tight mb-4">{{ (period.real_bimonthly_kwh || period.total_kwh).toLocaleString('es-AR') }} <span class="text-sm">kWh</span></p>

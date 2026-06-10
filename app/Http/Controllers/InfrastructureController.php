@@ -9,7 +9,6 @@ use App\Models\EquipmentType;
 use App\Models\Entity;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
 
 use App\Traits\HasActiveEntity;
  

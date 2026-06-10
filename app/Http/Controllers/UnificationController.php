@@ -2,12 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Invoice;
-use App\Models\Entity;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 use App\Traits\GroupsInvoices;
 
