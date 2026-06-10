@@ -65,7 +65,7 @@ const closeDeleteModal = () => {
 };
 
 const confirmDelete = () => {
-    if (!entityToDelete.value || deleteConfirmationText.value !== 'BORRAR') return;
+    if (!entityToDelete.value || deleteConfirmationText.value.trim().toUpperCase() !== 'BORRAR') return;
     
     router.delete(route('entities.destroy', entityToDelete.value.id), {
         onSuccess: () => {
@@ -205,7 +205,7 @@ const confirmDelete = () => {
                     <div class="flex flex-col gap-4">
                         <button 
                             @click="confirmDelete"
-                            :disabled="deleteConfirmationText !== 'BORRAR'"
+                            :disabled="deleteConfirmationText.trim().toUpperCase() !== 'BORRAR'"
                             class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black text-xs uppercase tracking-widest transition-all shadow-xl disabled:opacity-35 disabled:cursor-not-allowed enabled:hover:bg-energy-critical"
                         >
                             Confirmar y Eliminar
