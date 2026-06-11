@@ -4,17 +4,9 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
     Settings2, 
-    Zap, 
-    ArrowRight, 
-    Clock, 
-    CheckCircle2, 
     AlertCircle, 
     BarChart3, 
-    ChevronRight,
-    ArrowUpRight,
-    Loader2,
-    FileText,
-    Activity,
+    FileText, 
     Info,
     Search,
     Layers
@@ -26,21 +18,47 @@ const props = defineProps({
     flash: Object
 });
 
-const selectedUnificationId = ref(null);
-const processing = ref(false);
-
-const runCalibration = (unification) => {
-    selectedUnificationId.value = unification.id;
-    processing.value = true;
-    
-    router.post(route('analisis.usage.run'), {
-        contract_id: unification.contract_id,
-        start_date: unification.start_date,
-        end_date: unification.end_date
-    }, {
-        onFinish: () => processing.value = false,
-    });
-};
+const themeColors = computed(() => {
+    const type = props.entity?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            bg: 'bg-purple-600',
+            bgLight: 'bg-purple-600/5',
+            borderLight: 'border-purple-600/20',
+            hoverBorder: 'hover:border-purple-600/20',
+            focusRing: 'focus:ring-purple-600/10',
+            borderBottom: 'border-purple-600',
+            groupHoverText: 'group-hover:text-purple-600',
+            groupHoverBg: 'group-hover:bg-purple-600/5',
+        };
+    }
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            bg: 'bg-blue-600',
+            bgLight: 'bg-blue-600/5',
+            borderLight: 'border-blue-600/20',
+            hoverBorder: 'hover:border-blue-600/20',
+            focusRing: 'focus:ring-blue-600/10',
+            borderBottom: 'border-blue-600',
+            groupHoverText: 'group-hover:text-blue-600',
+            groupHoverBg: 'group-hover:bg-blue-600/5',
+        };
+    }
+    // Default / hogar (Emerald theme)
+    return {
+        text: 'text-emerald-600',
+        bg: 'bg-emerald-600',
+        bgLight: 'bg-emerald-600/5',
+        borderLight: 'border-emerald-600/20',
+        hoverBorder: 'hover:border-emerald-600/20',
+        focusRing: 'focus:ring-emerald-600/10',
+        borderBottom: 'border-emerald-600',
+        groupHoverText: 'group-hover:text-emerald-600',
+        groupHoverBg: 'group-hover:bg-emerald-600/5',
+    };
+});
 
 const getStatusClass = (unification) => {
     if (unification.is_calibrated) return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
@@ -63,7 +81,6 @@ const formatDateRange = (start, end) => {
 
 const searchQuery = ref('');
 
-/*
 const filteredUnifications = computed(() => {
     if (!searchQuery.value) return props.unifications;
     const q = searchQuery.value.toLowerCase();
@@ -74,8 +91,6 @@ const filteredUnifications = computed(() => {
         return range.includes(q) || name.includes(q) || status.includes(q);
     });
 });
-*/
-const filteredUnifications = computed(() => props.unifications);
 </script>
 
 <template>
@@ -91,7 +106,7 @@ const filteredUnifications = computed(() => props.unifications);
                         Calibración Física
                     </div>
                     <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Ajuste <span class="text-energy-solar">de Ciclos</span>
+                        Ajuste <span :class="themeColors.text">de Ciclos</span>
                     </h1>
                     <p class="text-xl text-slate-500 font-medium">Sincroniza tu Gemelo Digital con tus periodos unificados de consumo.</p>
                 </div>
@@ -116,8 +131,8 @@ const filteredUnifications = computed(() => props.unifications);
                 <div class="flex items-center justify-between px-4">
                     <h3 class="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">Periodos de Medición</h3>
                     <div class="relative group">
-                        <Search :size="12" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-energy-solar transition-colors" />
-                        <input type="text" v-model="searchQuery" placeholder="Buscar periodo..." class="bg-white border border-slate-100 rounded-full py-2 pl-8 pr-4 text-[10px] font-bold focus:ring-2 focus:ring-energy-solar/10 transition-all outline-none" />
+                        <Search :size="12" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 transition-colors" :class="themeColors.groupHoverText" />
+                        <input type="text" v-model="searchQuery" placeholder="Buscar periodo..." class="bg-white border border-slate-100 rounded-full py-2 pl-8 pr-4 text-[10px] font-bold focus:ring-2 transition-all outline-none" :class="themeColors.focusRing" />
                     </div>
                 </div>
 
@@ -125,10 +140,11 @@ const filteredUnifications = computed(() => props.unifications);
                     <div 
                         v-for="period in filteredUnifications" 
                         :key="period.id"
-                        class="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/30 p-8 flex flex-col lg:flex-row items-center justify-between gap-8 group hover:shadow-2xl hover:border-energy-solar/10 transition-all"
+                        class="bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/30 p-8 flex flex-col lg:flex-row items-center justify-between gap-8 group hover:shadow-2xl transition-all"
+                        :class="themeColors.hoverBorder"
                     >
                         <div class="flex items-center gap-8 w-full lg:w-auto">
-                            <div class="w-16 h-16 rounded-[24px] bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-energy-solar/5 transition-colors">
+                            <div class="w-16 h-16 rounded-[24px] bg-slate-50 flex items-center justify-center text-slate-400 transition-colors" :class="themeColors.groupHoverBg">
                                 <Layers :size="32" />
                             </div>
                             <div class="space-y-1">
@@ -180,8 +196,8 @@ const filteredUnifications = computed(() => props.unifications);
                                     <p class="text-xl font-black text-sky-500">{{ Math.round(period.tanks[2]) }}<span class="text-xs ml-1 text-sky-300">kWh</span></p>
                                 </div>
                                 <div>
-                                    <p class="text-[9px] font-black text-energy-solar/50 uppercase tracking-widest leading-none mb-2">T3 Variable</p>
-                                    <p class="text-xl font-black text-energy-solar">{{ Math.round(period.tanks[3]) }}<span class="text-xs ml-1 text-energy-solar/50">kWh</span></p>
+                                    <p class="text-[9px] font-black uppercase tracking-widest leading-none mb-2" :class="themeColors.text">T3 Variable</p>
+                                    <p class="text-xl font-black" :class="themeColors.text">{{ Math.round(period.tanks[3]) }}<span class="text-xs ml-1">kWh</span></p>
                                 </div>
                             </template>
 
@@ -220,7 +236,7 @@ const filteredUnifications = computed(() => props.unifications);
                             <h4 class="text-2xl font-black text-slate-900 tracking-tight">Sin periodos registrados</h4>
                             <p class="text-slate-400 font-medium max-w-sm mx-auto">Debes cargar y unificar facturas en la sección de **Gestión Física** antes de poder calibrar.</p>
                         </div>
-                        <Link :href="route('gestion.unifications')" class="text-xs font-black text-energy-solar uppercase tracking-widest border-b-2 border-energy-solar pb-1 mt-4">
+                        <Link :href="route('gestion.unifications')" class="text-xs font-black uppercase tracking-widest border-b-2 pb-1 mt-4" :class="[themeColors.text, themeColors.borderBottom]">
                             Ir a Unificaciones
                         </Link>
                     </div>

@@ -3,18 +3,12 @@ import { ref, computed } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
-    Zap, 
     ZapOff, 
-    ArrowRight, 
-    AlertCircle, 
     Radar,
-    Info,
-    TrendingDown,
     Activity,
     ShieldAlert,
     Plug,
     CheckCircle2,
-    Power,
     Lock
 } from 'lucide-vue-next';
 
@@ -33,15 +27,73 @@ const totalPotentialSavings = computed(() => props.analysis.totalPotentialSaving
 const totalRealizedSavings = computed(() => props.analysis.totalRealizedSavings || 0);
 const equipmentList = computed(() => props.analysis.equipmentList || []);
 
-// Agrupar por categoría
-const groupedEquipment = computed(() => {
-    const groups = {};
-    equipmentList.value.forEach(eq => {
-        const cat = eq.category?.name || 'Otros';
-        if (!groups[cat]) groups[cat] = [];
-        groups[cat].push(eq);
-    });
-    return groups;
+const themeColors = computed(() => {
+    const type = props.entity?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            bg: 'bg-purple-600',
+            hoverBg: 'hover:bg-purple-700',
+            shadow: 'shadow-purple-500/20',
+            bgLight: 'bg-purple-500/10',
+            borderLight: 'border-purple-500/20',
+            textLight: 'text-purple-400',
+            bgDark: 'bg-purple-950',
+            textDark: 'text-purple-950',
+            groupHoverText: 'group-hover:text-purple-600',
+            hoverShadow: 'hover:shadow-purple-500/10',
+            groupHoverBg: 'group-hover:bg-purple-600',
+            borderBottom: 'border-purple-600',
+            blurBg: 'bg-purple-500/10',
+            text100: 'text-purple-100',
+            text300: 'text-purple-300',
+            bg200Opacity: 'bg-purple-500/20',
+            shadowEmerald: 'shadow-purple-500/30'
+        };
+    }
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            bg: 'bg-blue-600',
+            hoverBg: 'hover:bg-blue-700',
+            shadow: 'shadow-blue-500/20',
+            bgLight: 'bg-blue-500/10',
+            borderLight: 'border-blue-500/20',
+            textLight: 'text-blue-400',
+            bgDark: 'bg-blue-950',
+            textDark: 'text-blue-950',
+            groupHoverText: 'group-hover:text-blue-600',
+            hoverShadow: 'hover:shadow-blue-500/10',
+            groupHoverBg: 'group-hover:bg-blue-600',
+            borderBottom: 'border-blue-600',
+            blurBg: 'bg-blue-500/10',
+            text100: 'text-blue-100',
+            text300: 'text-blue-300',
+            bg200Opacity: 'bg-blue-500/20',
+            shadowEmerald: 'shadow-blue-500/30'
+        };
+    }
+    // Default / hogar (Emerald theme)
+    return {
+        text: 'text-emerald-600',
+        bg: 'bg-emerald-600',
+        hoverBg: 'hover:bg-emerald-700',
+        shadow: 'shadow-emerald-500/20',
+        bgLight: 'bg-emerald-500/10',
+        borderLight: 'border-emerald-500/20',
+        textLight: 'text-emerald-400',
+        bgDark: 'bg-emerald-950',
+        textDark: 'text-emerald-950',
+        groupHoverText: 'group-hover:text-emerald-600',
+        hoverShadow: 'hover:shadow-emerald-500/10',
+        groupHoverBg: 'group-hover:bg-emerald-600',
+        borderBottom: 'border-emerald-600',
+        blurBg: 'bg-emerald-500/10',
+        text100: 'text-emerald-100',
+        text300: 'text-emerald-300',
+        bg200Opacity: 'bg-emerald-500/20',
+        shadowEmerald: 'shadow-emerald-500/30'
+    };
 });
 
 const toggleStandby = (id) => {
@@ -77,7 +129,7 @@ const getEquipmentStats = (eq) => {
                         Radar de Ineficiencia
                     </div>
                     <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Consumo <span class="text-energy-solar">Fantasma</span>
+                        Consumo <span :class="themeColors.text">Fantasma</span>
                     </h1>
                     <p class="text-lg text-slate-500 font-medium">Equipos que sangran energía mientras están "apagados" o en reposo.</p>
                 </div>
@@ -120,16 +172,16 @@ const getEquipmentStats = (eq) => {
                     <p class="text-xs text-slate-400 font-medium">Gasto adicional en tu factura por equipos en espera.</p>
                 </div>
 
-                <div class="bg-energy-success p-10 rounded-[32px] shadow-2xl shadow-emerald-500/30 text-white flex flex-col justify-between space-y-6 relative group overflow-hidden">
+                <div :class="[themeColors.bg, themeColors.shadowEmerald]" class="p-10 rounded-[32px] shadow-2xl text-white flex flex-col justify-between space-y-6 relative group overflow-hidden">
                     <CheckCircle2 :size="80" class="absolute -left-4 -bottom-4 text-white/20 -rotate-12 group-hover:rotate-0 transition-transform duration-700" />
                     <div>
                         <p class="text-[10px] font-black text-white/60 uppercase tracking-widest mb-2">{{ totalRealizedSavings > 0 ? 'Ahorro Logrado' : 'Ahorro Potencial' }}</p>
                         <div class="flex items-baseline gap-1">
                             <h4 class="text-5xl font-black text-white tracking-tighter">{{ formatMoney(totalRealizedSavings > 0 ? totalRealizedSavings : totalPotentialSavings) }}</h4>
-                            <span class="text-sm font-bold text-emerald-100">/ mes</span>
+                            <span :class="themeColors.text100" class="text-sm font-bold">/ mes</span>
                         </div>
                     </div>
-                    <p class="text-xs text-emerald-100 font-medium">
+                    <p :class="themeColors.text100" class="text-xs font-medium">
                         {{ totalRealizedSavings > 0 ? '¡Seguí así! Este es el monto que ya no pagás.' : 'Monto que podrías ahorrar desenchufando equipos.' }}
                     </p>
                 </div>
@@ -234,7 +286,7 @@ const getEquipmentStats = (eq) => {
                 </div>
 
                 <div v-if="equipmentList.length === 0" class="bg-white rounded-[48px] border border-slate-100 p-20 text-center space-y-4 shadow-xl">
-                    <div class="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-[36px] flex items-center justify-center mx-auto shadow-xl shadow-emerald-500/10">
+                    <div :class="[themeColors.bgLight, themeColors.text, themeColors.shadow]" class="w-24 h-24 rounded-[36px] flex items-center justify-center mx-auto shadow-xl">
                         <CheckCircle2 :size="48" />
                     </div>
                     <div class="space-y-2">
@@ -245,14 +297,14 @@ const getEquipmentStats = (eq) => {
             </div>
 
             <!-- Recommendation Alert -->
-            <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[32px] p-10 md:p-16 text-white grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative overflow-hidden">
-                <div class="absolute top-0 left-1/3 w-96 h-96 bg-energy-solar/10 rounded-full blur-[100px] pointer-events-none"></div>
+            <div :class="themeColors.bgDark" class="rounded-[32px] p-10 md:p-16 text-white grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative overflow-hidden shadow-2xl shadow-black/20">
+                <div :class="themeColors.blurBg" class="absolute top-0 left-1/3 w-96 h-96 rounded-full blur-[100px] pointer-events-none"></div>
                 <div class="space-y-6 relative z-10">
-                    <div class="w-12 h-12 backdrop-blur-md bg-white/10 border border-white/20 rounded-[24px] flex items-center justify-center text-energy-solar">
+                    <div :class="themeColors.textLight" class="w-12 h-12 backdrop-blur-md bg-white/10 border border-white/20 rounded-[24px] flex items-center justify-center">
                         <Activity :size="24" />
                     </div>
                     <h3 class="text-3xl font-black tracking-tight leading-tight">Automatiza la eficiencia</h3>
-                    <p class="text-slate-400 font-medium leading-relaxed">
+                    <p :class="themeColors.text100" class="font-medium leading-relaxed opacity-80">
                         No hace falta que desenchufes todo manualmente. Recomendamos usar un **Smart Plug** o un **Relé IOT** en tu centro de entretenimiento y oficina para cortar la energía automáticamente durante la noche.
                     </p>
                     <div class="flex items-center gap-6 pt-4">
@@ -273,7 +325,7 @@ const getEquipmentStats = (eq) => {
                         :key="tip"
                         class="bg-white/5 border border-white/10 p-5 rounded-2xl flex items-center gap-4 hover:bg-white/10 transition-colors"
                     >
-                        <CheckCircle2 :size="18" class="text-energy-success" />
+                        <CheckCircle2 :size="18" :class="themeColors.text" />
                         <span class="text-sm font-bold">{{ tip }}</span>
                     </div>
                 </div>

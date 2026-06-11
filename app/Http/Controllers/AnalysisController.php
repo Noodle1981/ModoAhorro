@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Entity;
 use App\Models\Invoice;
-use App\Models\Room;
 use App\Models\EquipmentUsage;
 use App\Services\ConsumptionAnalysisService;
 use Illuminate\Http\Request;
@@ -678,12 +677,6 @@ class AnalysisController extends Controller
         $hours = $equipment->avg_daily_use_hours ?? 0;
         
         return in_array($categoryName, $criticalCategories) || $hours >= 23.5;
-    }
-
-    private function getTopItemsForTank(array $items): array
-    {
-        usort($items, fn($a, $b) => ($b['kwh'] ?? 0) <=> ($a['kwh'] ?? 0));
-        return array_slice($items, 0, 5);
     }
 
 }

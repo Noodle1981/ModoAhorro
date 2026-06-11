@@ -1,17 +1,14 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
     Clock, 
     Zap, 
     TrendingDown, 
-    Calendar, 
     ArrowRight, 
     Info, 
     Sun, 
-    Moon,
-    Battery,
     Play,
     Timer,
     AlertTriangle,
@@ -45,6 +42,69 @@ const hourlyData = ref([
 
 // Recommendations are now coming from props
 const selectedTariff = ref(props.contract?.supply_type === 'trifasico' ? 'T1-G (Trifásica)' : 'T1-R (Simple)');
+
+const themeColors = computed(() => {
+    const type = props.entity?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            textMuted: 'text-purple-400',
+            textDark: 'text-purple-900',
+            textMedium: 'text-purple-700',
+            textLight: 'text-purple-100',
+            bg: 'bg-purple-600',
+            bg500: 'bg-purple-500',
+            bgLight: 'bg-purple-50',
+            borderLight: 'border-purple-100',
+            borderMuted: 'border-purple-200',
+            badgeBg: 'bg-purple-100',
+            gradient: 'from-purple-600 to-indigo-700',
+            hoverBg: 'hover:bg-purple-700',
+            shadow: 'shadow-purple-500/20',
+            buttonText: 'text-purple-600',
+            buttonBgHover: 'hover:bg-purple-50'
+        };
+    }
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            textMuted: 'text-blue-400',
+            textDark: 'text-blue-900',
+            textMedium: 'text-blue-700',
+            textLight: 'text-blue-100',
+            bg: 'bg-blue-600',
+            bg500: 'bg-blue-500',
+            bgLight: 'bg-blue-50',
+            borderLight: 'border-blue-100',
+            borderMuted: 'border-blue-200',
+            badgeBg: 'bg-blue-100',
+            gradient: 'from-blue-600 to-indigo-700',
+            hoverBg: 'hover:bg-blue-700',
+            shadow: 'shadow-blue-500/20',
+            buttonText: 'text-blue-600',
+            buttonBgHover: 'hover:bg-blue-50'
+        };
+    }
+    // Default / hogar (Emerald theme)
+    return {
+        text: 'text-emerald-600',
+        textMuted: 'text-emerald-400',
+        textDark: 'text-emerald-900',
+        textMedium: 'text-emerald-700',
+        textLight: 'text-emerald-100',
+        bg: 'bg-emerald-600',
+        bg500: 'bg-emerald-500',
+        bgLight: 'bg-emerald-50',
+        borderLight: 'border-emerald-100',
+        borderMuted: 'border-emerald-200',
+        badgeBg: 'bg-emerald-100',
+        gradient: 'from-emerald-600 to-teal-700',
+        hoverBg: 'hover:bg-emerald-700',
+        shadow: 'shadow-emerald-500/20',
+        buttonText: 'text-emerald-600',
+        buttonBgHover: 'hover:bg-emerald-50'
+    };
+});
 </script>
 
 <template>
@@ -55,12 +115,12 @@ const selectedTariff = ref(props.contract?.supply_type === 'trifasico' ? 'T1-G (
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
                 <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-100 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-200">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border" :class="[themeColors.badgeBg, themeColors.text, themeColors.borderMuted]">
                         <Timer :size="14" />
                         Smart Scheduling
                     </div>
                     <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Optimización <span class="text-indigo-600">de Horarios</span>
+                        Optimización <span :class="themeColors.text">de Horarios</span>
                     </h1>
                     <p class="text-lg text-slate-500 font-medium">Ajuste técnico para aprovechar tarifas diferenciales y evitar picos de carga.</p>
                 </div>
@@ -85,7 +145,7 @@ const selectedTariff = ref(props.contract?.supply_type === 'trifasico' ? 'T1-G (
                                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Base</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <div class="w-3 h-3 rounded-full bg-indigo-500 shadow-md"></div>
+                                <div class="w-3 h-3 rounded-full shadow-md" :class="themeColors.bg500"></div>
                                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pico</span>
                             </div>
                         </div>
@@ -96,7 +156,7 @@ const selectedTariff = ref(props.contract?.supply_type === 'trifasico' ? 'T1-G (
                         <div v-for="item in hourlyData" :key="item.hour" class="flex-1 group relative">
                             <div 
                                 class="w-full rounded-t-xl transition-all duration-500 hover:scale-x-110"
-                                :class="[item.peak ? 'bg-indigo-500 shadow-lg shadow-indigo-100' : 'bg-slate-100 group-hover:bg-slate-200']"
+                                :class="[item.peak ? [themeColors.bg500, 'shadow-lg', themeColors.shadow] : 'bg-slate-100 group-hover:bg-slate-200']"
                                 :style="{ height: `${item.level}%` }"
                             >
                                 <div v-if="item.peak" class="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[9px] font-black py-1 px-2 rounded-lg whitespace-nowrap z-10">
@@ -107,13 +167,13 @@ const selectedTariff = ref(props.contract?.supply_type === 'trifasico' ? 'T1-G (
                         </div>
                     </div>
 
-                    <div class="bg-indigo-50 rounded-3xl p-8 flex items-center gap-8 border border-indigo-100">
-                        <div class="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600 shrink-0">
+                    <div class="rounded-3xl p-8 flex items-center gap-8 border" :class="[themeColors.bgLight, themeColors.borderLight]">
+                        <div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" :class="[themeColors.badgeBg, themeColors.text]">
                             <TrendingDown :size="28" />
                         </div>
                         <div class="space-y-1">
-                            <h4 class="text-lg font-black text-indigo-900 tracking-tight">Oportunidad de Cambio</h4>
-                            <p class="text-sm text-indigo-700 font-medium leading-relaxed">
+                            <h4 class="text-lg font-black tracking-tight" :class="themeColors.textDark">Oportunidad de Cambio</h4>
+                            <p class="text-sm font-medium leading-relaxed" :class="themeColors.textMedium">
                                 Si mueves el uso de la **Bomba de Calor** de las 18h a las 02h, podrías calificar para una Tarifa Trihoraria y ahorrar un **15% adicional**.
                             </p>
                         </div>
@@ -144,8 +204,8 @@ const selectedTariff = ref(props.contract?.supply_type === 'trifasico' ? 'T1-G (
                             </div>
                             <ArrowRight :size="14" class="text-slate-300" />
                             <div class="text-center flex-1">
-                                <p class="text-[8px] font-black text-indigo-400 uppercase mb-1">Sugerido</p>
-                                <p class="text-sm font-black text-indigo-600 leading-none">{{ rec.suggested }}</p>
+                                <p class="text-[8px] font-black uppercase mb-1" :class="themeColors.textMuted">Sugerido</p>
+                                <p class="text-sm font-black leading-none" :class="themeColors.text">{{ rec.suggested }}</p>
                             </div>
                         </div>
 
@@ -155,12 +215,12 @@ const selectedTariff = ref(props.contract?.supply_type === 'trifasico' ? 'T1-G (
                     </div>
 
                     <!-- Upsell to Smart Meter -->
-                    <div class="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-[40px] p-8 text-white relative overflow-hidden">
+                    <div class="rounded-[40px] p-8 text-white relative overflow-hidden" :class="themeColors.gradient">
                         <ZapOff :size="80" class="absolute -right-4 -bottom-4 text-white/10 rotate-12" />
                         <div class="relative z-10 space-y-4">
                             <h4 class="text-xl font-black leading-tight">¿Quieres automatizar esto?</h4>
-                            <p class="text-xs text-indigo-100 font-medium leading-relaxed">Integra un medidor inteligente para que tus dispositivos se activen solos en horas valle.</p>
-                            <button class="bg-white text-indigo-600 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-50 transition-colors">
+                            <p class="text-xs font-medium leading-relaxed" :class="themeColors.textLight">Integra un medidor inteligente para que tus dispositivos se activen solos en horas valle.</p>
+                            <button class="bg-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-colors" :class="[themeColors.buttonText, themeColors.buttonBgHover]">
                                 Consultar Integraciones
                             </button>
                         </div>

@@ -3,10 +3,8 @@ import { ref, computed, watch } from 'vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
-    Settings2, 
     Zap, 
     ArrowLeft, 
-    CheckCircle2, 
     Save,
     Clock, 
     Activity,
@@ -19,9 +17,6 @@ import {
     Lock,
     AlertCircle,
     ChevronDown,
-    ChevronUp,
-    Loader2,
-    RotateCcw,
     Plus,
     Minus
 } from 'lucide-vue-next';
@@ -312,21 +307,59 @@ const handleMinuteSlider = (event, eqId) => {
     }
 };
 
+const themeColors = computed(() => {
+    const type = props.entity?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            bg: 'bg-purple-600',
+            hex: '#9333ea',
+            bgLight: 'bg-purple-600/5',
+            bgLight2: 'bg-purple-600/10',
+            borderLight: 'border-purple-600/20',
+            hoverBg: 'hover:bg-purple-600',
+            groupHoverText: 'group-hover:text-purple-600',
+            focusRing: 'focus:ring-purple-600/20',
+            bgMuted: 'bg-purple-600/5',
+            borderMuted: 'border-purple-600/20',
+        };
+    }
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            bg: 'bg-blue-600',
+            hex: '#2563eb',
+            bgLight: 'bg-blue-600/5',
+            bgLight2: 'bg-blue-600/10',
+            borderLight: 'border-blue-600/20',
+            hoverBg: 'hover:bg-blue-600',
+            groupHoverText: 'group-hover:text-blue-600',
+            focusRing: 'focus:ring-blue-600/20',
+            bgMuted: 'bg-blue-600/5',
+            borderMuted: 'border-blue-600/20',
+        };
+    }
+    // Default / hogar (Emerald theme)
+    return {
+        text: 'text-emerald-600',
+        bg: 'bg-emerald-600',
+        hex: '#059669',
+        bgLight: 'bg-emerald-600/5',
+        bgLight2: 'bg-emerald-600/10',
+        borderLight: 'border-emerald-600/20',
+        hoverBg: 'hover:bg-emerald-600',
+        groupHoverText: 'group-hover:text-emerald-600',
+        focusRing: 'focus:ring-emerald-600/20',
+        bgMuted: 'bg-emerald-600/5',
+        borderMuted: 'border-emerald-600/20',
+    };
+});
+
 // Smart Prompt Helpers
 const confirmCycleSuggestion = (eqId, suggestion) => {
     form.usages[eqId].cycles_per_week = suggestion;
     form.usages[eqId].has_defined_pattern = true;
     form.usages[eqId].cycle_confirmed = true;
-};
-
-const estimatedCyclesFromFrequency = (eqId) => {
-    const freq = form.usages[eqId].usage_frequency;
-    const totalDays = props.period.days;
-    const factorMap = {
-        'diario': 1.0, 'casi_frecuentemente': 0.85,
-        'frecuentemente': 0.60, 'ocasionalmente': 0.30, 'raramente': 0.10, 'nunca': 0.0
-    };
-    return Math.round(totalDays * (factorMap[freq] ?? 0.60));
 };
 
 // Acciones del formulario
@@ -355,7 +388,7 @@ const getTankColor = (key) => {
         case 1: return 'text-slate-900 bg-slate-50 border-slate-200'; // Certeza
         case 2: return 'text-sky-500 bg-sky-50 border-sky-100'; // Base
         case 3: return 'text-energy-water bg-energy-water/10 border-energy-water/20'; // Clima
-        case 4: return 'text-energy-solar bg-energy-solar/10 border-energy-solar/20'; // Variable
+        case 4: return `${themeColors.value.text} ${themeColors.value.bgLight2} ${themeColors.value.borderLight}`; // Variable
         default: return 'text-slate-500 bg-slate-50 border-slate-100';
     }
 };
@@ -365,7 +398,7 @@ const getTankColor = (key) => {
     <MainLayout>
         <Head title="Sintonía Fina - ModoAhorro" />
 
-        <div class="max-w-7xl mx-auto space-y-8 pb-32">
+        <div class="max-w-7xl mx-auto space-y-8 pb-32" :style="{ '--theme-color': themeColors.hex }">
             <!-- Header Section -->
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div class="space-y-2">
@@ -373,7 +406,7 @@ const getTankColor = (key) => {
                         <ArrowLeft :size="14" class="group-hover:-translate-x-1 transition-transform" /> Volver a Ajustes
                     </Link>
                     <h1 class="text-4xl font-black text-slate-900 tracking-tighter leading-none">
-                        Sintonía <span class="text-energy-solar">Fina</span>
+                        Sintonía <span :class="themeColors.text">Fina</span>
                     </h1>
                     <p class="text-slate-500 font-medium">Ajusta el uso real de tus equipos para este bimestre.</p>
                 </div>
@@ -473,13 +506,13 @@ const getTankColor = (key) => {
                             >
                                 <!-- Eq Info -->
                                 <div class="md:w-1/4 flex items-start gap-4">
-                                    <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 shrink-0 mt-1">
+                                    <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-300 shrink-0 mt-1" :class="!item.is_standby ? themeColors.groupHoverText : ''">
                                         <Zap :size="20" v-if="!item.is_standby" />
                                         <Activity :size="20" v-else class="text-rose-400" />
                                     </div>
                                     <div class="min-w-0 flex-1">
                                         <h4 class="font-black text-slate-900 tracking-tight text-base leading-tight break-words">{{ item.name }}</h4>
-                                        <p v-if="item.brand || item.model" class="text-[9px] font-bold text-energy-solar uppercase truncate mt-1">
+                                        <p v-if="item.brand || item.model" class="text-[9px] font-bold uppercase truncate mt-1" :class="themeColors.text">
                                             {{ item.brand }} {{ item.model }}
                                         </p>
                                         
@@ -580,7 +613,7 @@ const getTankColor = (key) => {
                                             <div class="flex items-center gap-3">
                                                 <button type="button" @click="form.usages[item.id].cycles_per_week = Math.max(0, parseFloat((form.usages[item.id].cycles_per_week - 0.5).toFixed(1)))" class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600"><Minus :size="14" /></button>
                                                 <input type="number" step="0.5" v-model.number="form.usages[item.id].cycles_per_week" class="flex-1 bg-slate-50 border-none rounded-lg text-center font-black py-1 focus:ring-0" />
-                                                <button type="button" @click="form.usages[item.id].cycles_per_week = parseFloat((form.usages[item.id].cycles_per_week + 0.5).toFixed(1))" class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white"><Plus :size="14" /></button>
+                                                <button type="button" @click="form.usages[item.id].cycles_per_week = parseFloat((form.usages[item.id].cycles_per_week + 0.5).toFixed(1))" class="w-8 h-8 rounded-lg flex items-center justify-center text-white" :class="themeColors.bg"><Plus :size="14" /></button>
                                             </div>
                                         </div>
                                     </template>
@@ -639,7 +672,7 @@ const getTankColor = (key) => {
                     <div class="bg-white rounded-[40px] border border-slate-100 shadow-2xl p-8 space-y-8">
                         <div class="space-y-4">
                             <h3 class="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                                <Activity :size="20" class="text-energy-solar" /> Resumen de Ajuste
+                                <Activity :size="20" :class="themeColors.text" /> Resumen de Ajuste
                             </h3>
                             <p class="text-xs text-slate-500 font-medium">Estás ajustando {{ Object.keys(form.usages).length }} equipos para el periodo unificado.</p>
                         </div>
@@ -724,7 +757,7 @@ const getTankColor = (key) => {
                                         <p class="text-[9px] font-black text-slate-400 truncate uppercase">{{ room.name }}</p>
                                         <p class="text-xs font-black text-slate-900">{{ Math.round(room.kwh) }} <span class="text-[8px] font-normal text-slate-400">kWh</span></p>
                                              <div class="h-1 w-full bg-slate-200 rounded-full overflow-hidden mt-1">
-                                            <div class="h-full bg-energy-solar" :style="{ width: (totalCalculatedKwh > 0 ? (room.kwh / totalCalculatedKwh) * 100 : 0) + '%' }"></div>
+                                            <div class="h-full" :class="themeColors.bg" :style="{ width: (totalCalculatedKwh > 0 ? (room.kwh / totalCalculatedKwh) * 100 : 0) + '%' }"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -738,7 +771,8 @@ const getTankColor = (key) => {
                                 v-model="form.notes"
                                 rows="3"
                                 placeholder="Ej: Invitados en casa, vacaciones..."
-                                class="w-full bg-slate-50 border-none rounded-[24px] text-xs font-medium focus:ring-2 focus:ring-energy-solar/20 p-4 outline-none"
+                                class="w-full bg-slate-50 border-none rounded-[24px] text-xs font-medium focus:ring-2 p-4 outline-none"
+                                :class="themeColors.focusRing"
                             ></textarea>
                         </div>
 
@@ -759,15 +793,16 @@ const getTankColor = (key) => {
                                 type="button"
                                 @click="submitCalibrate"
                                 :disabled="form.processing || !isWithinMargin"
-                                class="w-full py-6 bg-slate-900 text-white rounded-[32px] font-black text-xs uppercase tracking-widest hover:bg-energy-solar shadow-2xl flex items-center justify-center gap-3 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-900"
+                                class="w-full py-6 bg-slate-900 text-white rounded-[32px] font-black text-xs uppercase tracking-widest shadow-2xl flex items-center justify-center gap-3 transition-all outline-none disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-slate-900"
+                                :class="themeColors.hoverBg"
                             >
                                 <Zap :size="16" /> Sintonizar Motor →
                             </button>
                         </div>
                     </div>
 
-                    <div class="p-6 bg-energy-solar/5 border border-energy-solar/20 rounded-[32px] flex items-start gap-3">
-                        <Info :size="16" class="text-energy-solar shrink-0 mt-0.5" />
+                    <div class="p-6 border rounded-[32px] flex items-start gap-3" :class="[themeColors.bgMuted, themeColors.borderMuted]">
+                        <Info :size="16" class="shrink-0 mt-0.5" :class="themeColors.text" />
                         <p class="text-[10px] text-amber-900/60 font-medium leading-relaxed">
                             Al sintonizar, el motor de **ModoAhorro** calculará tu **Gemelo Digital** distribuyendo el consumo según tus nuevos parámetros.
                         </p>
@@ -792,6 +827,6 @@ input[type=range]::-webkit-slider-thumb {
     border: 2px solid white;
 }
 input[type=range]:hover::-webkit-slider-thumb {
-    background: #f59e0b; /* energy-solar */
+    background: var(--theme-color);
 }
 </style>

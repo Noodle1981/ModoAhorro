@@ -1,15 +1,12 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
     Activity, 
     History, 
     TrendingUp, 
-    Calendar,
-    LineChart as LineIcon,
     ArrowLeft,
-    Clock,
     Zap,
     ThermometerSun,
     Layers,
@@ -37,6 +34,71 @@ const props = defineProps({
     entity: { type: Object, required: true },
     periods: { type: Array, default: () => [] },
     evolution: { type: Array, default: () => [] }
+});
+
+const themeColors = computed(() => {
+    const type = props.entity?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            bg: 'bg-purple-600',
+            hoverBg: 'hover:bg-purple-700',
+            shadow: 'shadow-purple-500/20',
+            bgLight: 'bg-purple-500/10',
+            borderLight: 'border-purple-500/20',
+            textLight: 'text-purple-100',
+            bgDark: 'bg-purple-950',
+            groupHoverText: 'group-hover:text-purple-600',
+            groupHoverText500: 'group-hover:text-purple-500',
+            focusRing: 'focus:ring-purple-500/10',
+            hoverText: 'hover:text-purple-500',
+            text400: 'text-purple-400',
+            hex: '#9333ea',
+            rgba: 'rgba(147, 51, 234, 0.1)',
+            rgbaBilled: 'rgba(147, 51, 234, 0.75)'
+        };
+    }
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            bg: 'bg-blue-600',
+            hoverBg: 'hover:bg-blue-700',
+            shadow: 'shadow-blue-500/20',
+            bgLight: 'bg-blue-500/10',
+            borderLight: 'border-blue-500/20',
+            textLight: 'text-blue-100',
+            bgDark: 'bg-blue-950',
+            groupHoverText: 'group-hover:text-blue-600',
+            groupHoverText500: 'group-hover:text-blue-500',
+            focusRing: 'focus:ring-blue-500/10',
+            hoverText: 'hover:text-blue-500',
+            text400: 'text-blue-400',
+            hex: '#2563eb',
+            rgba: 'rgba(37, 99, 235, 0.1)',
+            rgbaBilled: 'rgba(37, 99, 235, 0.75)'
+        };
+    }
+    // Default / hogar (Emerald theme)
+    return {
+        text: 'text-emerald-600',
+        bg: 'bg-emerald-600',
+        hoverBg: 'hover:bg-emerald-700',
+        shadow: 'shadow-emerald-500/20',
+        bgLight: 'bg-emerald-500/10',
+        borderLight: 'border-emerald-500/20',
+        textLight: 'text-emerald-100',
+        bgDark: 'bg-emerald-950',
+        tableHoverBg: 'hover:bg-emerald-50/40',
+        tableActiveBg: 'bg-emerald-50/20',
+        groupHoverText: 'group-hover:text-emerald-600',
+        groupHoverText500: 'group-hover:text-emerald-500',
+        focusRing: 'focus:ring-emerald-500/10',
+        hoverText: 'hover:text-emerald-500',
+        text400: 'text-emerald-400',
+        hex: '#059669',
+        rgba: 'rgba(5, 150, 105, 0.1)',
+        rgbaBilled: 'rgba(5, 150, 105, 0.75)'
+    };
 });
 
 // 1. Chart: Engine Efficiency (Billed vs Theoretical vs Recommended)
@@ -67,13 +129,13 @@ const motorData = computed(() => {
             {
                 label: 'Recomendado',
                 data: data.map(d => d.recommended),
-                borderColor: '#6366f1',
-                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                borderColor: themeColors.value.hex,
+                backgroundColor: themeColors.value.rgba,
                 borderWidth: 4,
                 fill: true,
                 tension: 0.4,
                 pointRadius: 4,
-                pointBackgroundColor: '#6366f1'
+                pointBackgroundColor: themeColors.value.hex
             }
         ]
     };
@@ -218,8 +280,8 @@ const costsData = computed(() => {
             {
                 label: 'Costo Diario ($)',
                 data: data.map(d => d.costs.daily),
-                borderColor: '#10b981',
-                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderColor: themeColors.value.hex,
+                backgroundColor: themeColors.value.rgba,
                 fill: true,
                 tension: 0.4,
                 yAxisID: 'y'
@@ -312,7 +374,7 @@ const billedCostData = computed(() => {
             {
                 label: 'Gasto Bimestral ($)',
                 data: totals,
-                backgroundColor: 'rgba(99, 102, 241, 0.75)',
+                backgroundColor: themeColors.value.rgbaBilled,
                 borderRadius: 8,
                 yAxisID: 'y',
             },
@@ -421,7 +483,7 @@ const billedCostOptions = {
         <div class="max-w-7xl mx-auto space-y-10 pb-20">
             <!-- Breadcrumbs -->
             <div class="flex items-center gap-4 text-slate-400">
-                <Link :href="route('analisis.consumption')" class="hover:text-indigo-500 transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
+                <Link :href="route('analisis.consumption')" :class="themeColors.hoverText" class="transition-colors flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
                     <ArrowLeft :size="14" />
                     Volver a Consumo
                 </Link>
@@ -432,18 +494,18 @@ const billedCostOptions = {
             <!-- Header Section -->
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
                 <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/10 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-500/20">
+                    <div :class="[themeColors.bgLight, themeColors.text, themeColors.borderLight]" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border">
                         <History :size="14" />
                         Histórico Evolutivo
                     </div>
                     <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Análisis en el <span class="text-indigo-600">Tiempo</span>
+                        Análisis en el <span :class="themeColors.text">Tiempo</span>
                     </h1>
                     <p class="text-lg text-slate-500 font-medium">Visualización de tendencias y evolución de eficiencia energética.</p>
                 </div>
 
                 <div class="flex items-center gap-6">
-                    <Link :href="route('analisis.equipment-cost')" class="inline-flex items-center gap-3 px-8 py-4 bg-emerald-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-95">
+                    <Link :href="route('analisis.equipment-cost')" :class="[themeColors.bg, themeColors.hoverBg, themeColors.shadow]" class="inline-flex items-center gap-3 px-8 py-4 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-xl active:scale-95">
                         <DollarSign :size="16" />
                         Auditoría de Costos
                     </Link>
@@ -452,7 +514,7 @@ const billedCostOptions = {
                             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ciclos Analizados</p>
                             <p class="text-2xl font-black text-slate-900">{{ periods.length }}</p>
                         </div>
-                        <div class="w-12 h-12 bg-white rounded-2xl border border-slate-100 shadow-xl flex items-center justify-center text-indigo-500">
+                        <div :class="themeColors.text" class="w-12 h-12 bg-white rounded-2xl border border-slate-100 shadow-xl flex items-center justify-center">
                             <Activity :size="24" />
                         </div>
                     </div>
@@ -467,7 +529,7 @@ const billedCostOptions = {
                     <div class="flex items-center justify-between mb-8">
                         <div class="space-y-1">
                             <div class="flex items-center gap-2">
-                                <div class="p-2 bg-indigo-50 text-indigo-500 rounded-xl">
+                                <div :class="[themeColors.bgLight, themeColors.text]" class="p-2 rounded-xl">
                                     <Cpu :size="18" />
                                 </div>
                                 <h3 class="text-xl font-black text-slate-900 tracking-tight">Eficiencia del Motor</h3>
@@ -582,7 +644,7 @@ const billedCostOptions = {
                 <div class="flex items-center justify-between mb-8">
                     <div class="space-y-1">
                         <div class="flex items-center gap-2">
-                            <div class="p-2 bg-violet-50 text-violet-500 rounded-xl">
+                            <div :class="[themeColors.bgLight, themeColors.text]" class="p-2 rounded-xl">
                                 <DollarSign :size="18" />
                             </div>
                             <h3 class="text-xl font-black text-slate-900 tracking-tight">Gasto Bimestral en Pesos</h3>
@@ -596,17 +658,17 @@ const billedCostOptions = {
             </div>
 
             <!-- Bottom Insight -->
-            <div class="bg-slate-900 rounded-[48px] p-10 text-white overflow-hidden relative">
+            <div :class="themeColors.bgDark" class="rounded-[48px] p-10 text-white overflow-hidden relative shadow-2xl shadow-black/20">
                 <div class="absolute top-0 right-0 p-10 opacity-10">
                     <TrendingUp :size="120" />
                 </div>
                 <div class="relative z-10 flex flex-col md:flex-row items-center gap-8">
-                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-indigo-400 shrink-0">
+                    <div :class="themeColors.textLight" class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center shrink-0">
                         <Zap :size="32" />
                     </div>
                     <div class="space-y-2">
                         <h4 class="text-2xl font-black tracking-tight">Tendencia Detectada</h4>
-                        <p class="text-slate-400 font-medium leading-relaxed max-w-3xl">
+                        <p :class="themeColors.textLight" class="font-medium leading-relaxed max-w-3xl opacity-80">
                             Tu **Eficiencia del Motor** muestra una convergencia positiva en los últimos 3 periodos. 
                             La brecha entre lo facturado y lo recomendado se ha reducido un **14%**, lo que indica que tus ajustes de uso están siendo efectivos.
                         </p>

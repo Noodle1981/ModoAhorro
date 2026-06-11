@@ -120,6 +120,30 @@ const formatDate = (dateString) => {
     const [year, month, day] = dateString.split('T')[0].split('-');
     return `${day}/${month}/${year.slice(-2)}`;
 };
+
+const themeColors = computed(() => {
+    const type = props.entity?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            bg: 'bg-purple-600',
+            hoverBg: 'hover:bg-purple-600',
+        };
+    }
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            bg: 'bg-blue-600',
+            hoverBg: 'hover:bg-blue-600',
+        };
+    }
+    // Default / hogar (Emerald theme)
+    return {
+        text: 'text-emerald-600',
+        bg: 'bg-emerald-600',
+        hoverBg: 'hover:bg-emerald-600',
+    };
+});
 </script>
 
 <template>
@@ -138,7 +162,7 @@ const formatDate = (dateString) => {
                         <ArrowLeft :size="14" class="group-hover:-translate-x-1 transition-transform" /> Volver al Ajuste
                     </Link>
                     <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 rounded-[28px] bg-energy-solar flex items-center justify-center text-white shadow-xl shadow-energy-solar/20">
+                        <div class="w-16 h-16 rounded-[28px] flex items-center justify-center text-white shadow-xl" :class="themeColors.bg">
                             <Activity :size="32" />
                         </div>
                         <div>
@@ -173,7 +197,7 @@ const formatDate = (dateString) => {
                     <div class="bg-white rounded-[48px] border border-slate-100 shadow-2xl p-10 space-y-10">
                         <div class="flex items-center justify-between">
                             <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                                <LayoutGrid :size="24" class="text-energy-solar" /> Distribución de la Bolsa
+                                <LayoutGrid :size="24" :class="themeColors.text" /> Distribución de la Bolsa
                             </h2>
                             <div class="text-right">
                                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bolsa Total (Factura)</p>
@@ -329,7 +353,7 @@ const formatDate = (dateString) => {
                             </div>
                             <div class="flex justify-between items-center pt-4">
                                 <span class="text-sm font-bold text-white">Factura Real</span>
-                                <span class="text-3xl font-black text-energy-solar">{{ Math.round(engine.invoiced_kwh) }} kWh</span>
+                                <span class="text-3xl font-black" :class="themeColors.text">{{ Math.round(engine.invoiced_kwh) }} kWh</span>
                             </div>
                         </div>
 
@@ -398,7 +422,7 @@ const formatDate = (dateString) => {
                                 <ArrowRight :size="18" class="text-slate-300 group-hover:text-slate-900 transition-colors" />
                             </Link>
 
-                            <Link :href="route('home')" class="w-full p-6 bg-slate-900 text-white rounded-[28px] flex items-center justify-between group hover:bg-energy-solar transition-all">
+                            <Link :href="route('home')" class="w-full p-6 bg-slate-900 text-white rounded-[28px] flex items-center justify-between group transition-all" :class="themeColors.hoverBg">
                                 <div class="flex items-center gap-4">
                                     <div class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white">
                                         <CheckCircle2 :size="20" />

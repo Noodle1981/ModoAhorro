@@ -4,16 +4,11 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
     DollarSign, 
-    ArrowLeft, 
-    ChevronRight, 
     Zap, 
     Building, 
     Search,
-    TrendingUp,
     Clock,
-    Filter,
     Activity,
-    History,
     ChevronDown,
     ChevronUp
 } from 'lucide-vue-next';
@@ -74,7 +69,7 @@ const getSparklineData = (history) => {
         labels: history.map(h => h.days ? `${h.label} (${h.days}d)` : h.label),
         datasets: [{
             data: history.map(h => h.cost),
-            borderColor: '#10b981', // emerald-500
+            borderColor: themeColors.value.hex,
             borderWidth: 2,
             tension: 0.4,
             pointRadius: 0
@@ -98,7 +93,7 @@ const getDetailedChartData = (history) => {
             {
                 label: 'Coste ($)',
                 data: history.map(h => h.cost),
-                backgroundColor: '#10b981',
+                backgroundColor: themeColors.value.hex,
                 borderRadius: 4,
                 yAxisID: 'y'
             },
@@ -155,6 +150,69 @@ const totalKwh = computed(() => {
     // Si es promedio, sumamos los kWh de los equipos (que ya vienen promediados en equipmentData)
     return props.equipmentData.reduce((acc, d) => acc + d.kwh, 0);
 });
+
+const themeColors = computed(() => {
+    const type = props.entity?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            bg: 'bg-purple-600',
+            hoverBg: 'hover:bg-purple-700',
+            shadow: 'shadow-purple-500/20',
+            bgLight: 'bg-purple-500/10',
+            borderLight: 'border-purple-500/20',
+            textLight: 'text-purple-100',
+            bgDark: 'bg-purple-950',
+            tableHoverBg: 'hover:bg-purple-50/40',
+            tableActiveBg: 'bg-purple-50/20',
+            groupHoverText: 'group-hover:text-purple-600',
+            groupHoverText500: 'group-hover:text-purple-500',
+            focusRing: 'focus:ring-purple-500/10',
+            hoverText: 'hover:text-purple-500',
+            text400: 'text-purple-400',
+            hex: '#9333ea'
+        };
+    }
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            bg: 'bg-blue-600',
+            hoverBg: 'hover:bg-blue-700',
+            shadow: 'shadow-blue-500/20',
+            bgLight: 'bg-blue-500/10',
+            borderLight: 'border-blue-500/20',
+            textLight: 'text-blue-100',
+            bgDark: 'bg-blue-950',
+            tableHoverBg: 'hover:bg-blue-50/40',
+            tableActiveBg: 'bg-blue-50/20',
+            groupHoverText: 'group-hover:text-blue-600',
+            groupHoverText500: 'group-hover:text-blue-500',
+            focusRing: 'focus:ring-blue-500/10',
+            hoverText: 'hover:text-blue-500',
+            text400: 'text-blue-400',
+            hex: '#2563eb'
+        };
+    }
+    // Default / hogar (Emerald theme)
+    return {
+        text: 'text-emerald-600',
+        bg: 'bg-emerald-600',
+        hoverBg: 'hover:bg-emerald-700',
+        shadow: 'shadow-emerald-500/20',
+        bgLight: 'bg-emerald-500/10',
+        borderLight: 'border-emerald-500/20',
+        textLight: 'text-emerald-100',
+        bgDark: 'bg-emerald-950',
+        tableHoverBg: 'hover:bg-emerald-50/40',
+        tableActiveBg: 'bg-emerald-50/20',
+        groupHoverText: 'group-hover:text-emerald-600',
+        groupHoverText500: 'group-hover:text-emerald-500',
+        focusRing: 'focus:ring-emerald-500/10',
+        hoverText: 'hover:text-emerald-500',
+        text400: 'text-emerald-400',
+        hex: '#059669'
+    };
+});
 </script>
 
 <template>
@@ -166,13 +224,13 @@ const totalKwh = computed(() => {
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div class="flex flex-col gap-1">
                     <div class="flex items-center gap-2 text-slate-400 mb-1">
-                        <Link :href="route('analisis.consumption')" class="hover:text-emerald-500 transition-colors text-[10px] font-black uppercase tracking-widest">Auditoría</Link>
+                        <Link :href="route('analisis.consumption')" :class="themeColors.hoverText" class="transition-colors text-[10px] font-black uppercase tracking-widest">Auditoría</Link>
                         <span class="text-slate-200">/</span>
                         <span class="text-[10px] font-black uppercase tracking-widest text-slate-300">Coste por Equipo</span>
                     </div>
                     <h1 class="text-3xl font-black text-slate-900 tracking-tighter leading-none flex items-center gap-3">
-                        Impacto <span class="text-emerald-500">Económico</span>
-                        <span v-if="selectedPeriodId === 'all'" class="text-[10px] px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-md uppercase font-black tracking-widest mt-1">Promedio Histórico</span>
+                        Impacto <span :class="themeColors.text">Económico</span>
+                        <span v-if="selectedPeriodId === 'all'" :class="[themeColors.bgLight, themeColors.text]" class="text-[10px] px-2 py-0.5 rounded-md uppercase font-black tracking-widest mt-1">Promedio Histórico</span>
                     </h1>
                 </div>
 
@@ -180,7 +238,8 @@ const totalKwh = computed(() => {
                     <select 
                         :value="selectedPeriodId" 
                         @change="changePeriod($event.target.value)"
-                        class="w-full bg-white border border-slate-200 rounded-2xl py-3 px-5 text-sm font-bold text-slate-900 shadow-sm outline-none focus:ring-4 focus:ring-emerald-500/10 transition-all appearance-none pr-10"
+                        :class="themeColors.focusRing"
+                        class="w-full bg-white border border-slate-200 rounded-2xl py-3 px-5 text-sm font-bold text-slate-900 shadow-sm outline-none focus:ring-4 transition-all appearance-none pr-10"
                     >
                         <option value="all">Promedio Histórico (Global)</option>
                         <option v-for="p in periods" :key="p.id" :value="p.id">
@@ -209,12 +268,12 @@ const totalKwh = computed(() => {
                     <Activity :size="32" class="text-slate-100" />
                 </div>
 
-                <div class="bg-emerald-50 border border-emerald-100 rounded-3xl p-5 flex-1 min-w-[200px] flex items-center justify-between group">
+                <div :class="[themeColors.bgLight, themeColors.borderLight]" class="border rounded-3xl p-5 flex-1 min-w-[200px] flex items-center justify-between group">
                     <div>
-                        <p class="text-[9px] font-black text-emerald-600/60 uppercase tracking-[0.2em] mb-1">{{ selectedPeriodId === 'all' ? 'Consumo Promedio' : 'Consumo del Periodo' }}</p>
-                        <p class="text-xl font-black text-emerald-900">{{ Math.round(totalKwh).toLocaleString('es-AR') }} <span class="text-[10px] font-bold text-emerald-600/40 ml-1">kWh</span></p>
+                        <p :class="themeColors.text" class="text-[9px] font-black opacity-60 uppercase tracking-[0.2em] mb-1">{{ selectedPeriodId === 'all' ? 'Consumo Promedio' : 'Consumo del Periodo' }}</p>
+                        <p class="text-xl font-black text-slate-900">{{ Math.round(totalKwh).toLocaleString('es-AR') }} <span :class="themeColors.text" class="text-[10px] font-bold opacity-45 ml-1">kWh</span></p>
                     </div>
-                    <Zap :size="32" class="text-emerald-200 group-hover:scale-110 transition-transform" />
+                    <Zap :size="32" :class="themeColors.text" class="opacity-30 group-hover:scale-110 transition-transform" />
                 </div>
             </div>
 
@@ -231,7 +290,8 @@ const totalKwh = computed(() => {
                             v-model="searchQuery" 
                             type="text" 
                             placeholder="Filtrar por nombre, área o categoría..." 
-                            class="w-full bg-slate-50 border-none rounded-[24px] py-4 pl-14 pr-8 text-sm font-bold text-slate-900 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none placeholder:text-slate-300"
+                            :class="themeColors.focusRing"
+                            class="w-full bg-slate-50 border-none rounded-[24px] py-4 pl-14 pr-8 text-sm font-bold text-slate-900 focus:ring-4 transition-all outline-none placeholder:text-slate-300"
                         />
                     </div>
                 </div>
@@ -245,15 +305,15 @@ const totalKwh = computed(() => {
                                 <th class="px-6 lg:px-10 py-5 text-[10px] font-black text-slate-300 uppercase tracking-[0.15em] text-center">Uso/Día</th>
                                 <th class="px-6 lg:px-10 py-5 text-[10px] font-black text-slate-300 uppercase tracking-[0.15em] text-right">Consumo</th>
                                 <th class="px-6 lg:px-10 py-5 text-[10px] font-black text-slate-300 uppercase tracking-[0.15em] text-center">Tendencia</th>
-                                <th class="px-6 lg:px-10 py-5 text-[10px] font-black text-emerald-400 uppercase tracking-[0.15em] text-right">Impacto en Pesos</th>
+                                <th :class="themeColors.text400" class="px-6 lg:px-10 py-5 text-[10px] font-black uppercase tracking-[0.15em] text-right">Impacto en Pesos</th>
                                 <th class="px-4 lg:px-6 py-5"></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">
                             <template v-for="item in filteredData" :key="item.id">
-                                <tr @click="toggleRow(item.id)" class="group hover:bg-emerald-50/40 transition-all duration-300 cursor-pointer" :class="{ 'bg-emerald-50/20': expandedRow === item.id }">
+                                <tr @click="toggleRow(item.id)" :class="[themeColors.tableHoverBg, expandedRow === item.id ? themeColors.tableActiveBg : '']" class="group transition-all duration-300 cursor-pointer">
                                     <td class="px-4 py-4 lg:px-10 lg:py-6">
-                                        <p class="text-base font-black text-slate-900 tracking-tight group-hover:text-emerald-600 transition-colors" :class="{ 'text-emerald-600': expandedRow === item.id }">{{ item.name }}</p>
+                                        <p :class="[themeColors.groupHoverText, expandedRow === item.id ? themeColors.text : '']" class="text-base font-black text-slate-900 tracking-tight transition-colors">{{ item.name }}</p>
                                     </td>
                                     <td class="px-4 py-4 lg:px-10 lg:py-6">
                                         <div class="space-y-1">
@@ -284,20 +344,20 @@ const totalKwh = computed(() => {
                                     </td>
                                     <td class="px-4 py-4 lg:px-10 lg:py-6 text-right">
                                         <div class="flex flex-col items-end">
-                                            <span class="text-xl font-black text-slate-900 group-hover:text-emerald-600 transition-colors" :class="{ 'text-emerald-600': expandedRow === item.id }">${{ item.cost.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</span>
-                                            <div class="h-1 w-20 bg-emerald-100 rounded-full mt-2 overflow-hidden">
-                                                <div class="h-full bg-emerald-500" :style="{ width: (item.cost / filteredData[0].cost * 100) + '%' }"></div>
+                                            <span :class="[themeColors.groupHoverText, expandedRow === item.id ? themeColors.text : '']" class="text-xl font-black text-slate-900 transition-colors">${{ item.cost.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</span>
+                                            <div class="h-1 w-20 bg-slate-100 rounded-full mt-2 overflow-hidden">
+                                                <div :class="themeColors.bg" class="h-full" :style="{ width: (item.cost / filteredData[0].cost * 100) + '%' }"></div>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-4 py-4">
                                         <ChevronUp v-if="expandedRow === item.id" :size="20" />
-                                        <ChevronDown v-else :size="20" class="group-hover:text-emerald-500" />
+                                        <ChevronDown v-else :size="20" :class="themeColors.groupHoverText500" />
                                     </td>
                                 </tr>
                                 
                                 <!-- Expanded Details Row -->
-                                <tr v-if="expandedRow === item.id" class="bg-slate-50/50 border-b-2 border-emerald-500/10">
+                                <tr v-if="expandedRow === item.id" :class="[themeColors.borderLight]" class="bg-slate-50/50 border-b-2">
                                     <td colspan="7" class="px-10 py-10">
                                         <div class="bg-white rounded-[32px] p-8 border border-slate-100 shadow-xl shadow-slate-200/20 flex flex-col lg:flex-row gap-10">
                                             
@@ -311,7 +371,7 @@ const totalKwh = computed(() => {
                                                 <div class="grid grid-cols-2 gap-4">
                                                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                                                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Gasto Histórico Total</p>
-                                                        <p class="text-lg font-black text-emerald-600">${{ item.history?.reduce((acc, h) => acc + h.cost, 0).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || '0' }}</p>
+                                                        <p :class="themeColors.text" class="text-lg font-black">${{ item.history?.reduce((acc, h) => acc + h.cost, 0).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || '0' }}</p>
                                                     </div>
                                                     <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                                                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Consumo Total</p>
@@ -340,17 +400,17 @@ const totalKwh = computed(() => {
             </div>
 
             <!-- Audit Note -->
-            <div class="bg-emerald-900 rounded-[48px] p-12 text-white relative overflow-hidden shadow-2xl shadow-emerald-900/40">
+            <div :class="themeColors.bgDark" class="rounded-[48px] p-12 text-white relative overflow-hidden shadow-2xl shadow-black/20">
                 <div class="absolute -right-20 -bottom-20 opacity-10">
                     <DollarSign :size="300" />
                 </div>
                 <div class="relative z-10 flex flex-col md:flex-row items-center gap-12">
-                    <div class="w-20 h-20 bg-emerald-500 rounded-3xl flex items-center justify-center text-white shadow-2xl shadow-emerald-500/50 rotate-3 shrink-0">
+                    <div :class="[themeColors.bg, themeColors.shadow]" class="w-20 h-20 rounded-3xl flex items-center justify-center text-white shadow-2xl rotate-3 shrink-0">
                         <Activity :size="40" />
                     </div>
                     <div class="space-y-4">
                         <h4 class="text-3xl font-black tracking-tighter">Auditoría Cuántica de Gastos</h4>
-                        <p class="text-emerald-100 font-medium leading-relaxed max-w-4xl opacity-80">
+                        <p :class="themeColors.textLight" class="font-medium leading-relaxed max-w-4xl opacity-80">
                             Esta vista calcula el coste real de cada equipo multiplicando su consumo reconciliado por el precio por kWh promedio de este periodo. 
                             Es la herramienta definitiva para decidir **qué equipo reemplazar** o **dónde reducir horas de uso** para ver un impacto directo en tu próxima factura.
                         </p>

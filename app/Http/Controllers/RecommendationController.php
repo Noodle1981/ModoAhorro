@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Entity;
 use App\Models\Invoice;
 use App\Models\Equipment;
 use App\Services\SolarPowerService;

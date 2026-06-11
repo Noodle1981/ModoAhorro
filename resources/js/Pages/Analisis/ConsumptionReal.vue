@@ -4,20 +4,15 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
     Activity, 
-    TrendingUp, 
     PieChart as PieIcon, 
-    ArrowRight, 
-    History, 
-    ChevronLeft,
-    TrendingDown,
-    Zap,
-    AlertCircle,
-    Info,
-    Calendar,
-    ArrowUpRight,
-    Home
+    Zap, 
+    AlertCircle, 
+    Info, 
+    Calendar, 
+    Home,
+    DollarSign
 } from 'lucide-vue-next';
-import { Pie, Bar } from 'vue-chartjs';
+import { Pie } from 'vue-chartjs';
 import { 
     Chart as ChartJS, 
     Title, 
@@ -25,17 +20,13 @@ import {
     Legend, 
     ArcElement, 
     CategoryScale, 
-    LinearScale, 
-    BarElement,
-    PointElement,
-    LineElement
+    LinearScale
 } from 'chart.js';
 
 // Register ChartJS components
 ChartJS.register(
     Title, Tooltip, Legend, ArcElement, 
-    CategoryScale, LinearScale, BarElement, 
-    PointElement, LineElement
+    CategoryScale, LinearScale
 );
 
 const props = defineProps({
@@ -117,55 +108,38 @@ const pieOptions = {
     cutout: '70%'
 };
 
-// Bar Chart Data: 12 Month History
-const barData = computed(() => ({
-    labels: props.history.map(h => h.period),
-    datasets: [
-        {
-            label: 'Consumo Real (kWh)',
-            data: props.history.map(h => h.real),
-            backgroundColor: '#06b6d4',
-            borderRadius: 8,
-            barThickness: 20,
-        },
-        {
-            label: 'Consumo Teórico (kWh)',
-            data: props.history.map(h => h.theoretical),
-            backgroundColor: '#e2e8f0',
-            borderRadius: 8,
-            barThickness: 20,
-        }
-    ]
-}));
-
-const barOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-        legend: {
-            position: 'bottom',
-            labels: {
-                usePointStyle: true,
-                padding: 20,
-                font: { size: 10, weight: 'bold', family: 'Inter' }
-            }
-        }
-    },
-    scales: {
-        y: {
-            beginAtZero: true,
-            grid: { display: false },
-            ticks: { font: { size: 10 } }
-        },
-        x: {
-            grid: { display: false },
-            ticks: { font: { size: 10 } }
-        }
+const themeColors = computed(() => {
+    const type = props.entity?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            bg: 'bg-purple-600',
+            hoverBg: 'hover:bg-purple-700',
+            shadow: 'shadow-purple-500/20',
+            bgLight: 'bg-purple-500/10',
+            borderLight: 'border-purple-500/20',
+        };
     }
-};
-
-const totalRealKwh = computed(() => props.history.reduce((acc, h) => acc + h.real, 0));
-const avgMonthlyKwh = computed(() => props.history.length > 0 ? totalRealKwh.value / props.history.length : 0);
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            bg: 'bg-blue-600',
+            hoverBg: 'hover:bg-blue-700',
+            shadow: 'shadow-blue-500/20',
+            bgLight: 'bg-blue-500/10',
+            borderLight: 'border-blue-500/20',
+        };
+    }
+    // Default / hogar (Emerald theme)
+    return {
+        text: 'text-emerald-600',
+        bg: 'bg-emerald-600',
+        hoverBg: 'hover:bg-emerald-700',
+        shadow: 'shadow-emerald-500/20',
+        bgLight: 'bg-emerald-500/10',
+        borderLight: 'border-emerald-500/20',
+    };
+});
 
 // Lógica de Residual para la barra
 const residualAmount = computed(() => {
@@ -222,12 +196,12 @@ const getTankColor = (name) => {
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-energy-consumption/10 text-energy-consumption rounded-full text-[10px] font-black uppercase tracking-widest border border-energy-consumption/20">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border" :class="[themeColors.bgLight, themeColors.text, themeColors.borderLight]">
                         <Activity :size="14" />
                         Diagnóstico Activo
                     </div>
                     <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Consumo <span class="text-energy-consumption">Real</span>
+                        Consumo <span :class="themeColors.text">Real</span>
                     </h1>
                     <p class="text-lg text-slate-500 font-medium">Análisis profundo del gasto energético basado en facturas calibradas.</p>
                 </div>
@@ -250,7 +224,7 @@ const getTankColor = (name) => {
                     </div>
                 </div>
 
-                <Link :href="route('analisis.equipment-cost', { period_id: latestInvoice?.id })" class="inline-flex items-center gap-3 px-8 py-4 bg-emerald-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20 active:scale-95">
+                <Link :href="route('analisis.equipment-cost', { period_id: latestInvoice?.id })" class="inline-flex items-center gap-3 px-8 py-4 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-xl active:scale-95" :class="[themeColors.bg, themeColors.hoverBg, themeColors.shadow]">
                     <DollarSign :size="16" />
                     Impacto por Equipo
                 </Link>
@@ -332,7 +306,7 @@ const getTankColor = (name) => {
                             </ul>
                         </div>
                     </div>
-                    <Link :href="route('analisis.usage')" class="bg-slate-900 text-white px-8 py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-energy-solar transition-all shadow-xl shadow-slate-200 shrink-0">
+                    <Link :href="route('analisis.usage')" class="bg-slate-900 text-white px-8 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-slate-200 shrink-0" :class="themeColors.hoverBg">
                         Ajustar Ahora
                     </Link>
                 </div>
@@ -343,7 +317,7 @@ const getTankColor = (name) => {
             <div v-if="tankBreakdown && tankBreakdown.some(t => t.value > 0)" class="bg-white rounded-[48px] border border-slate-100 shadow-2xl shadow-slate-200/30 p-10 space-y-8">
                 <div class="flex items-center justify-between">
                     <div class="space-y-1">
-                        <h3 class="text-2xl font-black text-slate-800 tracking-tight">Distribución <span class="text-energy-solar">Teórica y Residual</span></h3>
+                        <h3 class="text-2xl font-black text-slate-800 tracking-tight">Distribución <span :class="themeColors.text">Teórica y Residual</span></h3>
                         <p class="text-sm text-slate-400 font-medium">Desglose técnico de la naturaleza de tu consumo frente a la factura real (<span class="text-slate-600 font-bold" v-if="latestInvoice">{{ formatInvoiceDate(latestInvoice.start_date) }} al {{ formatInvoiceDate(latestInvoice.end_date) }}</span>).</p>
                     </div>
                     <div class="p-3 bg-slate-50 rounded-2xl text-slate-400">
@@ -472,15 +446,15 @@ const getTankColor = (name) => {
 
 
             <!-- Insights / Anomalies -->
-            <div class="bg-energy-solar/5 border border-energy-solar/10 rounded-[48px] p-10 flex flex-col md:flex-row items-center gap-10">
-                <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center text-energy-solar shadow-xl shadow-energy-solar/10 shrink-0">
+            <div class="rounded-[48px] p-10 flex flex-col md:flex-row items-center gap-10 border" :class="[themeColors.bgLight, themeColors.borderLight]">
+                <div class="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-xl shrink-0" :class="themeColors.text">
                     <AlertCircle :size="36" />
                 </div>
                 <div class="flex-1 space-y-2">
                     <h4 class="text-2xl font-black text-slate-900 tracking-tight">Detección de Anomalías</h4>
                     <p class="text-slate-600 font-medium leading-relaxed">Hemos detectado un consumo inusual en **Julio 2026 (+22%)**. Esto suele estar relacionado con fallas en calefones eléctricos o filtraciones de aire en aberturas. Se recomienda ejecutar el **Asistente de Ajuste**.</p>
                 </div>
-                <Link :href="route('analisis.usage')" class="bg-slate-900 text-white px-8 py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-energy-solar transition-all shadow-xl shadow-slate-200 shrink-0">
+                <Link :href="route('analisis.usage')" class="bg-slate-900 text-white px-8 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-slate-200 shrink-0" :class="themeColors.hoverBg">
                     Ver Ajuste
                 </Link>
             </div>

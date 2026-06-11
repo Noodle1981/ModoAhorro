@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
-    Sun, Zap, Waves, Info, LayoutGrid, Users, Maximize2, TrendingDown, CheckCircle2, ChevronRight, ThermometerSun
+    Sun, Zap, Waves, LayoutGrid, TrendingDown, CheckCircle2, ChevronRight, ThermometerSun
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -13,8 +13,49 @@ const props = defineProps({
     filters: Object
 });
 
-const activeTab = ref('panels');
 const thermalFuelTab = ref('electric');
+
+const themeColors = computed(() => {
+    const type = props.entity?.type;
+    if (type === 'comercio') {
+        return {
+            text: 'text-purple-600',
+            bg: 'bg-purple-600',
+            bgLight: 'bg-purple-500/10',
+            borderLight: 'border-purple-500/20',
+            textLight: 'text-purple-400',
+            bgDark: 'bg-purple-950',
+            textDark: 'text-purple-950',
+            hoverBg: 'hover:bg-purple-600',
+            focusRing: 'focus:ring-purple-500/10'
+        };
+    }
+    if (type === 'oficina') {
+        return {
+            text: 'text-blue-600',
+            bg: 'bg-blue-600',
+            bgLight: 'bg-blue-500/10',
+            borderLight: 'border-blue-500/20',
+            textLight: 'text-blue-400',
+            bgDark: 'bg-blue-950',
+            textDark: 'text-blue-950',
+            hoverBg: 'hover:bg-blue-600',
+            focusRing: 'focus:ring-blue-500/10'
+        };
+    }
+    // Default / hogar (Emerald theme)
+    return {
+        text: 'text-emerald-600',
+        bg: 'bg-emerald-600',
+        bgLight: 'bg-emerald-500/10',
+        borderLight: 'border-emerald-500/20',
+        textLight: 'text-emerald-400',
+        bgDark: 'bg-emerald-950',
+        textDark: 'text-emerald-950',
+        hoverBg: 'hover:bg-emerald-600',
+        focusRing: 'focus:ring-emerald-500/10'
+    };
+});
 
 const localArea = ref(props.filters.available_area);
 const localPeople = ref(props.filters.people_count);
@@ -38,7 +79,7 @@ const waterData = computed(() => props.thermal.waterHeaterData);
     <MainLayout>
         <Head title="Solar" />
 
-        <div class="h-[calc(100vh-100px)] flex flex-col gap-3 overflow-hidden text-slate-900 px-2 pb-2">
+        <div class="lg:h-[calc(100vh-100px)] flex flex-col gap-3 lg:overflow-hidden overflow-y-auto text-slate-900 px-2 pb-2">
             <!-- Ultra Thin Header -->
             <div class="bg-slate-900 text-white rounded-3xl p-4 flex items-center justify-between shadow-2xl">
                 <div class="flex items-center gap-4">
@@ -194,12 +235,12 @@ const waterData = computed(() => props.thermal.waterHeaterData);
                             </div>
                         </div>
 
-                        <div class="mt-auto bg-indigo-900 text-white p-4 rounded-2xl flex items-center justify-between">
+                        <div :class="themeColors.bgDark" class="mt-auto text-white p-4 rounded-2xl flex items-center justify-between">
                             <div>
-                                <p class="text-[8px] font-black text-indigo-400 uppercase tracking-widest">Payback</p>
+                                <p :class="themeColors.textLight" class="text-[8px] font-black text-white/55 uppercase tracking-widest">Payback</p>
                                 <p class="text-lg font-black text-energy-solar leading-none">< 12 meses</p>
                             </div>
-                            <button class="bg-white text-indigo-900 px-5 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-energy-solar hover:text-white transition-all">
+                            <button :class="[themeColors.textDark, themeColors.hoverBg]" class="bg-white px-5 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:text-white transition-all">
                                 Solicitar Cotización <ChevronRight :size="12" class="inline ml-1" />
                             </button>
                         </div>
