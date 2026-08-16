@@ -75,7 +75,7 @@ const pieData = computed(() => ({
         data: props.categoryBreakdown.map(c => c.value),
         backgroundColor: colorPalette,
         borderWidth: 0,
-        hoverOffset: 20
+        hoverOffset: 12
     }]
 }));
 
@@ -83,15 +83,18 @@ const roomPieData = computed(() => ({
     labels: props.roomBreakdown.map(r => r.name),
     datasets: [{
         data: props.roomBreakdown.map(r => r.value),
-        backgroundColor: [...colorPalette].reverse(), // Invertimos para que no se vean idénticos si hay pocos items
+        backgroundColor: [...colorPalette].reverse(),
         borderWidth: 0,
-        hoverOffset: 20
+        hoverOffset: 12
     }]
 }));
 
 const pieOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+        padding: 18
+    },
     plugins: {
         legend: {
             display: false
@@ -100,8 +103,8 @@ const pieOptions = {
             backgroundColor: '#0f172a',
             padding: 12,
             titleFont: { size: 12, weight: 'bold' },
-            bodyFont: { size: 14 },
-            cornerRadius: 8,
+            bodyFont: { size: 13 },
+            cornerRadius: 10,
             displayColors: true
         }
     },
@@ -193,41 +196,36 @@ const getTankColor = (name) => {
         <Head title="Análisis de Consumo Real" />
 
         <div class="max-w-7xl mx-auto space-y-10" :key="latestInvoice?.id">
-            <!-- Header -->
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border" :class="[themeColors.bgLight, themeColors.text, themeColors.borderLight]">
-                        <Activity :size="14" />
-                        Diagnóstico Activo
-                    </div>
-                    <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Consumo <span :class="themeColors.text">Real</span>
-                    </h1>
-                    <p class="text-lg text-slate-500 font-medium">Análisis profundo del gasto energético basado en facturas calibradas.</p>
-                </div>
-                
-                <div v-if="latestInvoice" class="bg-white px-6 py-4 rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
-                        <Calendar :size="20" />
-                    </div>
-                    <div class="flex flex-col">
-                        <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-2">Periodo de Análisis</p>
-                        <select 
-                            @change="changePeriod($event.target.value)"
-                            :value="latestInvoice.id"
-                            class="text-sm font-black text-slate-700 bg-transparent border-none p-0 focus:ring-0 cursor-pointer"
-                        >
-                            <option v-for="inv in availableInvoices" :key="inv.id" :value="inv.id">
-                                {{ inv.name }} ({{ formatInvoiceDate(inv.start_date) }} - {{ formatInvoiceDate(inv.end_date) }})
-                            </option>
-                        </select>
-                    </div>
+            <!-- Action Toolbar (Period Selector & Navigation) -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="text-sm font-medium text-slate-500">
+                    <span>Análisis del gasto energético basado en facturas calibradas.</span>
                 </div>
 
-                <Link :href="route('analisis.equipment-cost', { period_id: latestInvoice?.id })" class="inline-flex items-center gap-3 px-8 py-4 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-xl active:scale-95" :class="[themeColors.bg, themeColors.hoverBg, themeColors.shadow]">
-                    <DollarSign :size="16" />
-                    Impacto por Equipo
-                </Link>
+                <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+                    <div v-if="latestInvoice" class="bg-white px-4 py-2 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+                            <Calendar :size="16" />
+                        </div>
+                        <div class="flex flex-col">
+                            <p class="text-[8px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Periodo</p>
+                            <select 
+                                @change="changePeriod($event.target.value)"
+                                :value="latestInvoice.id"
+                                class="text-xs font-black text-slate-700 bg-transparent border-none p-0 focus:ring-0 cursor-pointer"
+                            >
+                                <option v-for="inv in availableInvoices" :key="inv.id" :value="inv.id">
+                                    {{ inv.name }} ({{ formatInvoiceDate(inv.start_date) }} - {{ formatInvoiceDate(inv.end_date) }})
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <Link :href="route('analisis.equipment-cost', { period_id: latestInvoice?.id })" class="inline-flex items-center gap-2 px-5 py-2.5 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-sm active:scale-95 cursor-pointer" :class="[themeColors.bg, themeColors.hoverBg]">
+                        <DollarSign :size="15" />
+                        <span>Impacto por Equipo</span>
+                    </Link>
+                </div>
             </div>
 
             <!-- Intelligence Row -->

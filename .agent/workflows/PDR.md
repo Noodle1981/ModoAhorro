@@ -32,6 +32,7 @@ Este documento registra la evolución arquitectónica de **ModoAhorro** hacia un
 | v7 | Módulo Solar estático y desconectado | **Proyecto Solar Interactitvo**: Sliders dinámicos para área y habitantes. Cálculo de ahorro por tipo de combustible (Gas/Elec). Layout "Single-Page" (sin scroll). |
 | v8 | Visualización de exceso confusa y Consumo Fantasma sin interactividad | **Integración Visual de Exceso**: El exceso teórico se absorbe en Uso Variable (dos tonos). Eliminación del marcador FACTURADO. Gráficos de evolución temporal sincronizados. **Consumo Fantasma Interactivo**: Listado real de equipos agrupado por categoría con toggles funcionales. Tarjetas de ahorro potencial vs. ahorro logrado. Cumplimiento estricto de Tailwind v4 Design Rules. |
 | v9 | Expansión al sector comercial (B2B) - Caso Restaurantes/Oficinas | **Soporte Comercial (B2B)**: Inyección de perfiles de motor (`Gastronomy`, `Retail`, `Office`). Nuevas lógicas de cálculo: `TURNS_BASED` y `SERVICE_HOURS`. Adaptación de UI a perfiles industriales. |
+| v10 | Usabilidad en pantallas densas, precisión decimal y módulo de perfil | **Evolución UX Integral & Módulo Perfil**: (1) Creación de `ProfileController` y `Profile/Edit.vue` para gestión de usuario y seguridad. (2) Arquitectura Master-Detail de doble panel con scroll independiente en Infraestructura. (3) Podio Top 3, etiquetas fluidas (`flex-wrap`) y precisión de centavos en Coste por Equipo. (4) Normalización de fechas bimestrales y dropdown en Ajuste de Uso. (5) Panel KPI fijo y scroll aislado en Consumo Fantasma. (6) Alineación con Tarifa Valle en Optimización de Horarios. |
 
 ---
 
@@ -131,18 +132,19 @@ PASO 5 - Cálculo Residual:
 
 ---
 
-## 6. Correcciones Técnicas Aplicadas en v4
+## 6. Correcciones Técnicas Aplicadas en v4 - v10
 
 | Área | Corrección |
 |---|---|
 | Frontend | `calculateKwh()` wrapeado en `kwhMap` computed para garantizar reactividad al mover sliders |
 | Frontend | `has_defined_pattern` inicializado desde `item.usage.has_defined_pattern` (no del seeder) |
 | Frontend | Nombres largos de equipos usan `break-words` (no `truncate`) |
-| Frontend | Precisión de kWh: `toFixed(3)` para consumos < 1 kWh (evita mostrar "0.0") |
+| Frontend | Precisión de kWh y moneda: `formatCurrency` y `formatKwh` inteligentes con decimales en consumos bajos |
 | Backend | `ConsumptionAnalysisService`: `people_proportional` ahora multiplica por `frequency_factor` |
 | Backend | `getDaysByFrequency`: default corregido de 0.60 a 1.0 (diario = 100%) |
 | Backend | `calibrateAndShowResults`: guarda `has_defined_pattern` además de los datos de uso |
-| Backend | `Máquina de Afeitar`: `usage_unit` corregido a `hours` (era incorrecto `cycles`) |
+| Backend | `AnalysisController`: `round(..., 2)` en costes y kWh para evitar ceros artificiales |
+| Seguridad | `ProfileController`: Rutas de actualización de perfil y cambio de contraseña con validación |
 | Catálogo | `MasterCleanCatalogueSeeder`: Máquina de Afeitar → `usage_unit = 'hours'` |
 
 ---
@@ -157,6 +159,7 @@ PASO 5 - Cálculo Residual:
 - [x] Reactividad en tiempo real del consumo por slider.
 - [x] **v8 — Visualización de Exceso Absorbido**: Exceso teórico integrado al Tanque Variable en `EngineResults.vue`, `ConsumptionReal.vue` y `TimeAnalysis.vue` con lógica unificada.
 - [x] **v9 — Soporte Comercial (B2B)**: Implementación de perfiles `Gastronomy`, `Retail` y `Office`. Nuevas lógicas de cálculo industrial (`TURNS_BASED`, `SERVICE_HOURS`). Interfaz adaptativa (Azul Cobalto para B2B).
+- [x] **v10 — Módulo Perfil de Usuario & Pulido UX Global**: Controlador de perfil, gestión de contraseñas, arquitectura de 2 paneles en Infraestructura, podio Top 3 en Costes, filtros en nube sin scrollbar forzado, y KPI decks fijos en Consumo Fantasma.
 - [ ] **ARQUITECTURA TARGET**: Migrar `has_defined_pattern boolean` → `pattern_type ENUM('inamovible', 'periodico', 'volatil')` + CategoryCalculators enchufables (ver `rules.md § 7`).
 - [ ] Implementar curva de carga variable para equipos Inverter.
 - [ ] Crear Analizador de Capacidad (comparar frigorías vs m² de habitación).
@@ -165,4 +168,4 @@ PASO 5 - Cálculo Residual:
 
 ---
 
-**Estado del Proyecto (v8)**: Motor v5 funcional (**Teórico Puro**). Clasificación por comportamiento declarado + cálculo inamovible sin compresión artificial. Visualización mejorada: el exceso teórico se absorbe limpiamente en Uso Variable (sin zona roja externa), consistente en `EngineResults`, `ConsumptionReal` y `TimeAnalysis`. Módulo **Consumo Fantasma** restaurado con interactividad completa (toggle de equipos, ahorro logrado vs. potencial). Design Rules aplicadas globalmente (colores semánticos, gradientes, radios). Arquitectura target documentada para próxima sesión.
+**Estado del Proyecto (v10)**: Motor v5 funcional (**Teórico Puro**) con soporte B2C y B2B. Ecosistema de interfaz pulido: Módulo de **Perfil de Usuario** implementado, vista de **Infraestructura** con arquitectura Master-Detail, **Coste por Equipo** optimizado con Top 3 y decimales reales, **Consumo Fantasma** con feedback en vivo sin desborde de scroll, y sincronización automatizada de datos hacia NotebookLM mediante `app:export-notebook`.

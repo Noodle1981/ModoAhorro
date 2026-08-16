@@ -150,38 +150,29 @@ const themeColors = computed(() => {
     <Head title="Resultados del Motor - ModoAhorro" />
 
     <MainLayout>
-        <div class="max-w-[1400px] mx-auto px-6 py-12 space-y-12">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 space-y-6">
             
-            <!-- Header -->
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                <div class="space-y-4">
+            <!-- Action Toolbar -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
                     <Link 
                         :href="route('analisis.usage')" 
-                        class="inline-flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors group"
+                        class="inline-flex items-center gap-2 text-xs font-black text-slate-500 uppercase tracking-wider hover:text-slate-900 transition-colors group"
                     >
-                        <ArrowLeft :size="14" class="group-hover:-translate-x-1 transition-transform" /> Volver al Ajuste
+                        <ArrowLeft :size="15" class="group-hover:-translate-x-1 transition-transform" /> 
+                        <span>Volver al Ajuste</span>
                     </Link>
-                    <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 rounded-[28px] flex items-center justify-center text-white shadow-xl" :class="themeColors.bg">
-                            <Activity :size="32" />
-                        </div>
-                        <div>
-                            <h1 class="text-4xl font-black text-slate-900 tracking-tighter leading-none">Resultados de Calibración</h1>
-                            <p class="text-slate-500 font-bold mt-2 flex items-center gap-2">
-                                Periodo {{ formatDate(period.start_date) }} - {{ formatDate(period.end_date) }}
-                                <span class="w-1 h-1 rounded-full bg-slate-300"></span>
-                                {{ period.days }} días
-                            </p>
-                        </div>
-                    </div>
+                    <span class="text-slate-300">|</span>
+                    <p class="text-xs font-bold text-slate-500 flex items-center gap-2">
+                        Periodo {{ formatDate(period.start_date) }} - {{ formatDate(period.end_date) }} ({{ period.days }} días)
+                    </p>
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <div class="px-6 py-4 bg-energy-success/10 border border-energy-success/20 rounded-[32px] flex items-center gap-4">
-                        <CheckCircle2 class="text-energy-success" :size="24" />
+                    <div class="px-4 py-2 bg-energy-success/10 border border-energy-success/20 rounded-2xl flex items-center gap-2.5">
+                        <CheckCircle2 class="text-energy-success" :size="18" />
                         <div>
-                            <p class="text-[10px] font-black text-energy-success uppercase tracking-widest">Estado</p>
-                            <p class="text-lg font-black text-slate-900 leading-none">Calibrado con Éxito</p>
+                            <p class="text-xs font-black text-slate-900 leading-none">Calibrado con Éxito</p>
                         </div>
                     </div>
                 </div>

@@ -9,10 +9,9 @@ import {
     ArrowRight, 
     Info, 
     Sun, 
-    Play,
-    Timer,
-    AlertTriangle,
-    ZapOff
+    Play, 
+    Timer, 
+    ZapOff 
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -111,25 +110,18 @@ const themeColors = computed(() => {
     <MainLayout>
         <Head title="Optimización de Horarios" />
 
-        <div class="max-w-7xl mx-auto space-y-12">
-            <!-- Header -->
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border" :class="[themeColors.badgeBg, themeColors.text, themeColors.borderMuted]">
-                        <Timer :size="14" />
-                        Smart Scheduling
-                    </div>
-                    <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Optimización <span :class="themeColors.text">de Horarios</span>
-                    </h1>
-                    <p class="text-lg text-slate-500 font-medium">Ajuste técnico para aprovechar tarifas diferenciales y evitar picos de carga.</p>
+        <div class="max-w-7xl mx-auto space-y-6">
+            <!-- Action Toolbar -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="text-sm font-medium text-slate-500">
+                    <span>Ajuste técnico para aprovechar tarifas diferenciales y evitar picos de carga.</span>
                 </div>
 
-                <div class="flex items-center gap-2 bg-slate-900 text-white px-6 py-4 rounded-3xl shadow-xl shadow-slate-200">
-                    <Zap :size="18" class="text-energy-solar shadow-sm" />
+                <div class="flex items-center gap-2.5 bg-slate-900 text-white px-5 py-2.5 rounded-2xl shadow-sm">
+                    <Zap :size="16" class="text-energy-solar shadow-sm" />
                     <div class="text-left">
-                        <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Tarifa Actual</p>
-                        <p class="text-sm font-black leading-none">{{ selectedTariff }}</p>
+                        <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5">Tarifa Actual</p>
+                        <p class="text-xs font-black leading-none">{{ selectedTariff }}</p>
                     </div>
                 </div>
             </div>
@@ -167,14 +159,14 @@ const themeColors = computed(() => {
                         </div>
                     </div>
 
-                    <div class="rounded-3xl p-8 flex items-center gap-8 border" :class="[themeColors.bgLight, themeColors.borderLight]">
+                    <div class="rounded-3xl p-6 sm:p-8 flex items-center gap-6 border" :class="[themeColors.bgLight, themeColors.borderLight]">
                         <div class="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" :class="[themeColors.badgeBg, themeColors.text]">
                             <TrendingDown :size="28" />
                         </div>
                         <div class="space-y-1">
                             <h4 class="text-lg font-black tracking-tight" :class="themeColors.textDark">Oportunidad de Cambio</h4>
                             <p class="text-sm font-medium leading-relaxed" :class="themeColors.textMedium">
-                                Si mueves el uso de la **Bomba de Calor** de las 18h a las 02h, podrías calificar para una Tarifa Trihoraria y ahorrar un **15% adicional**.
+                                Aprovechá la **Tarifa Valle (18:00 a 06:00 y fines de semana)**: trasladar el uso de electrodomésticos de alta demanda a este horario te permite ahorrar hasta un **15% adicional** en tu factura.
                             </p>
                         </div>
                     </div>
@@ -209,7 +201,7 @@ const themeColors = computed(() => {
                             </div>
                         </div>
 
-                        <button class="w-full bg-slate-50 text-slate-400 font-black text-[10px] uppercase tracking-widest py-3 rounded-xl hover:bg-slate-900 hover:text-white transition-all">
+                        <button class="w-full bg-slate-50 text-slate-400 font-black text-[10px] uppercase tracking-widest py-3 rounded-xl hover:bg-slate-900 hover:text-white transition-all cursor-pointer">
                             Programar Aviso
                         </button>
                     </div>
@@ -220,24 +212,11 @@ const themeColors = computed(() => {
                         <div class="relative z-10 space-y-4">
                             <h4 class="text-xl font-black leading-tight">¿Quieres automatizar esto?</h4>
                             <p class="text-xs font-medium leading-relaxed" :class="themeColors.textLight">Integra un medidor inteligente para que tus dispositivos se activen solos en horas valle.</p>
-                            <button class="bg-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-colors" :class="[themeColors.buttonText, themeColors.buttonBgHover]">
+                            <button class="bg-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-colors cursor-pointer" :class="[themeColors.buttonText, themeColors.buttonBgHover]">
                                 Consultar Integraciones
                             </button>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Caution area -->
-            <div class="flex items-center gap-8 bg-slate-50 border border-slate-100 rounded-[40px] p-10">
-                <div class="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center text-rose-500 shrink-0">
-                    <AlertTriangle :size="32" />
-                </div>
-                <div class="space-y-1">
-                    <h5 class="text-lg font-black text-slate-900 tracking-tight leading-none mb-1">Sobre las Tarifas Diferenciales</h5>
-                    <p class="text-sm text-slate-500 font-medium leading-relaxed">
-                        Tenga en cuenta que el cambio a una tarifa bihoraria o trihoraria requiere un análisis de al menos 3 meses de consumo estable. No recomendamos el cambio si su consumo nocturno es inferior al 30% del total.
-                    </p>
                 </div>
             </div>
         </div>

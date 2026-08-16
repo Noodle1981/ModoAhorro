@@ -34,27 +34,20 @@ const getPriorityColor = (priority) => {
     <MainLayout>
         <Head title="Plan de Mantenimiento" />
 
-        <div class="max-w-7xl mx-auto space-y-12">
-            <!-- Header -->
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest">
-                        <Wrench :size="14" />
-                        Prevencón Activa
-                    </div>
-                    <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Mantenimiento <span class="text-energy-consumption">Preventivo</span>
-                    </h1>
-                    <p class="text-lg text-slate-500 font-medium">Tareas técnicas que aseguran que tus equipos operen al 100% de eficiencia.</p>
+        <div class="max-w-7xl mx-auto space-y-6">
+            <!-- Action Toolbar -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="text-sm font-medium text-slate-500">
+                    <span>Tareas técnicas que aseguran que tus equipos operen al 100% de eficiencia.</span>
                 </div>
 
-                <div class="bg-indigo-900 px-8 py-6 rounded-[32px] text-white flex items-center gap-6 shadow-xl shadow-indigo-900/20">
-                    <div class="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-energy-solar shrink-0">
-                        <Zap :size="28" />
+                <div class="bg-indigo-950 px-5 py-2.5 rounded-2xl text-white flex items-center gap-3 shadow-sm">
+                    <div class="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center text-energy-solar shrink-0">
+                        <Zap :size="16" />
                     </div>
                     <div>
-                        <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest leading-none mb-2">Ahorro por Mantenimiento</p>
-                        <p class="text-2xl font-black leading-none">Hasta 15%</p>
+                        <p class="text-[8px] font-black text-indigo-400 uppercase tracking-widest leading-none mb-0.5">Ahorro Estimado</p>
+                        <p class="text-base font-black leading-none">Hasta 15%</p>
                     </div>
                 </div>
             </div>

@@ -35,20 +35,7 @@ const formatMoney = (val) => {
     <MainLayout>
         <Head title="Modo Vacaciones" />
 
-        <div class="max-w-7xl mx-auto space-y-12">
-            <!-- Header -->
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-sky-100 text-sky-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-sky-200">
-                        <Palmtree :size="14" />
-                        Plan de Ausencia
-                    </div>
-                    <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Modo <span class="text-sky-500">Vacaciones</span>
-                    </h1>
-                    <p class="text-lg text-slate-500 font-medium">Maximiza el ahorro desconectando lo que no necesitas mientras no estás.</p>
-                </div>
-            </div>
+        <div class="max-w-7xl mx-auto space-y-6">
 
             <!-- Vacation Calculator Hero -->
             <div class="bg-slate-950 rounded-[64px] p-12 md:p-20 text-white overflow-hidden relative group">

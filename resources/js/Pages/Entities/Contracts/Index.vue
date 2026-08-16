@@ -199,37 +199,29 @@ const formatDate = (dateString) => {
     <MainLayout>
         <Head title="Gestión de Contratos" />
 
-        <div class="max-w-7xl mx-auto space-y-8">
-            <!-- Top Header & Search -->
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div class="space-y-4">
-                    <div :class="['inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border', themeColors.bgLight, themeColors.text, themeColors.borderLight]">
-                        <FileText :size="14" />
-                        Administración Técnica
-                    </div>
-                    <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Gestión de <span :class="themeColors.text">Contratos</span>
-                    </h1>
-                    <p v-if="activeEntity" class="text-lg text-slate-500 font-medium">
-                        Configurando suministros para <span class="text-slate-900 font-black">{{ activeEntity.name }}</span>
-                    </p>
+        <div class="max-w-7xl mx-auto space-y-6">
+            <!-- Action Toolbar (Search & Add Contract) -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="text-sm font-medium text-slate-500">
+                    <span v-if="activeEntity">Configurando suministros para <strong class="text-slate-900 font-bold">{{ activeEntity.name }}</strong></span>
                 </div>
                 
-                <div class="flex items-center gap-4">
-                    <div class="relative group">
-                        <Search :class="['absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 transition-colors', themeColors.focusText]" :size="18" />
+                <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                    <div class="relative group flex-1 sm:flex-initial">
+                        <Search :class="['absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 transition-colors', themeColors.focusText]" :size="16" />
                         <input 
                             v-model="searchQuery"
                             type="text" 
                             placeholder="Buscar propiedad o NIU..." 
-                            :class="['bg-white border-slate-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold shadow-xl shadow-slate-200/50 focus:ring-2 transition-all w-64 md:w-80', themeColors.focusRing, themeColors.focusBorder]"
+                            :class="['bg-white border-slate-200/80 rounded-2xl py-2.5 pl-10 pr-4 text-xs font-bold shadow-sm focus:ring-2 transition-all w-full sm:w-72', themeColors.focusRing, themeColors.focusBorder]"
                         />
                     </div>
                     <button 
                         @click="openCreateModal"
-                        :class="['bg-slate-900 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl shadow-slate-300 transition-all hover:-translate-y-1', themeColors.hoverBg]"
+                        :class="['bg-slate-900 text-white px-5 py-2.5 rounded-2xl flex items-center gap-2 font-black text-xs uppercase tracking-wider shadow-sm transition-all hover:scale-105 active:scale-95 shrink-0 cursor-pointer', themeColors.hoverBg]"
                     >
-                        <Plus :size="24" stroke-width="3" />
+                        <Plus :size="16" stroke-width="3" />
+                        <span>Nuevo Contrato</span>
                     </button>
                 </div>
             </div>

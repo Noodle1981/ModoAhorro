@@ -1,10 +1,9 @@
 <script setup>
-import { Head, useForm, Link } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { computed, watch } from 'vue';
 import { 
     MapPin, 
-    ChevronLeft, 
     Save, 
     Building, 
     Globe,
@@ -62,36 +61,16 @@ const isOficina   = computed(() => entityType.value === 'oficina');
 const isComercial = computed(() => entityType.value === 'comercio');
 const isB2B       = computed(() => isOficina.value || isComercial.value);
 
-// Label dinámico del tipo
-const entityLabel = computed(() => {
-    if (isComercial.value) return 'Comercio';
-    if (isOficina.value)   return 'Oficina';
-    return 'Casa';
-});
-const entitySubtitle = computed(() => {
-    if (isComercial.value) return 'Configuración comercial y logística de consumo';
-    if (isOficina.value)   return 'Configuración de oficina y contexto laboral';
-    return 'Configuración residencial y contexto bioclimático';
-});
 const accentColor = computed(() => {
     if (isComercial.value) return 'text-purple-600';
     if (isOficina.value)   return 'text-blue-600';
     return 'text-emerald-600';
 });
+
 const btnClass = computed(() => {
     if (isComercial.value) return 'bg-purple-600 shadow-purple-900/20 hover:bg-purple-500';
     if (isOficina.value)   return 'bg-blue-600 shadow-blue-900/20 hover:bg-blue-500';
     return 'bg-emerald-600 shadow-emerald-900/20 hover:bg-emerald-500';
-});
-const badgeClass = computed(() => {
-    if (isComercial.value) return 'bg-purple-100 text-purple-600 border-purple-200';
-    if (isOficina.value)   return 'bg-blue-100 text-blue-600 border-blue-200';
-    return 'bg-emerald-100 text-emerald-600 border-emerald-200';
-});
-const hoverBgClass = computed(() => {
-    if (isComercial.value) return 'hover:bg-purple-600';
-    if (isOficina.value)   return 'hover:bg-blue-600';
-    return 'hover:bg-emerald-600';
 });
 const blurBgClass = computed(() => {
     if (isComercial.value) return 'bg-purple-50';
@@ -172,52 +151,21 @@ const climateZoneColor = computed(() => {
     <MainLayout>
         <Head title="Perfil de Entidad" />
 
-        <div class="h-full flex flex-col gap-4">
-            <!-- Header Section -->
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <Link :href="route('home')" :class="['w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 hover:text-white transition-all shadow-sm', hoverBgClass]">
-                        <ChevronLeft :size="20" stroke-width="3" />
-                    </Link>
-                    <div>
-                        <div class="flex items-center gap-4">
-                            <h1 class="text-3xl font-black text-slate-900 tracking-tighter">
-                                Mi <span :class="accentColor">{{ entityLabel }}</span>
-                            </h1>
-                            <div :class="['px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border', badgeClass]">
-                                {{ isB2B ? 'Digital Twin B2B' : 'Digital Twin' }}
-                            </div>
-                        </div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                            {{ entitySubtitle }}
-                        </p>
-                    </div>
-                </div>
-
-                <button 
-                    @click="submit"
-                    :disabled="form.processing"
-                    :class="['px-6 py-3 text-white rounded-[20px] font-black text-xs uppercase tracking-widest flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg disabled:opacity-50', btnClass]"
-                >
-                    <Save :size="16" stroke-width="3" />
-                    {{ form.processing ? 'Guardando...' : 'Guardar Perfil' }}
-                </button>
-            </div>
-
+        <div class="h-full flex flex-col gap-3">
             <!-- Main Card -->
-            <div class="flex-1 bg-white rounded-[40px] border border-slate-100 shadow-2xl shadow-slate-200/20 p-8 relative overflow-hidden">
+            <div class="flex-1 bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/20 p-5 md:p-6 relative overflow-hidden flex flex-col">
                 <div :class="['absolute -right-20 -bottom-20 w-96 h-96 rounded-full blur-[100px] pointer-events-none opacity-50', blurBgClass]"></div>
                 
-                <form @submit.prevent="submit" class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 h-full min-h-0 overflow-y-auto pr-4 scrollbar-hide">
+                <form @submit.prevent="submit" class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-0 overflow-y-auto pr-2 scrollbar-hide">
                     
                     <!-- Left Body -->
-                    <div class="lg:col-span-7 space-y-6">
+                    <div class="lg:col-span-7 space-y-4">
                         <!-- Mixed Usage Logic — Solo para Hogar -->
                         <section v-if="isHogar">
-                            <h3 class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <h3 class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                                 <Briefcase :size="14" /> Actividad Adicional en el Hogar
                             </h3>
-                            <div class="bg-slate-50/50 p-6 rounded-[32px] border border-slate-100 space-y-4">
+                            <div class="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 space-y-3">
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <h4 class="text-xs font-black text-slate-900 uppercase tracking-widest">¿Tienes un negocio o taller en casa?</h4>
@@ -226,21 +174,21 @@ const climateZoneColor = computed(() => {
                                     <button 
                                         type="button"
                                         @click="form.has_business_activity = !form.has_business_activity"
-                                        :class="['w-14 h-8 rounded-full transition-colors relative flex items-center px-1', form.has_business_activity ? 'bg-emerald-600' : 'bg-slate-200']"
+                                        :class="['w-12 h-7 rounded-full transition-colors relative flex items-center px-1', form.has_business_activity ? 'bg-emerald-600' : 'bg-slate-200']"
                                     >
-                                        <div :class="['w-6 h-6 bg-white rounded-full transition-all shadow-sm', form.has_business_activity ? 'translate-x-6' : 'translate-x-0']"></div>
+                                        <div :class="['w-5 h-5 bg-white rounded-full transition-all shadow-sm', form.has_business_activity ? 'translate-x-5' : 'translate-x-0']"></div>
                                     </button>
                                 </div>
 
-                                <div v-if="form.has_business_activity" class="grid grid-cols-3 gap-3 pt-2">
+                                <div v-if="form.has_business_activity" class="grid grid-cols-3 gap-2.5 pt-1">
                                     <button 
                                         v-for="bt in businessTypes" :key="bt.id" type="button" @click="form.business_type = bt.id"
-                                        :class="['p-3 rounded-2xl border-2 transition-all text-center', form.business_type === bt.id ? 'border-emerald-500 bg-white shadow-sm' : 'border-transparent bg-white/50 hover:bg-white']"
+                                        :class="['p-2.5 rounded-xl border-2 transition-all text-center', form.business_type === bt.id ? 'border-emerald-500 bg-white shadow-sm' : 'border-transparent bg-white/50 hover:bg-white']"
                                     >
-                                        <div :class="['w-8 h-8 mx-auto rounded-lg flex items-center justify-center mb-2', form.business_type === bt.id ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400']">
-                                            <component :is="bt.icon" :size="16" />
+                                        <div :class="['w-7 h-7 mx-auto rounded-lg flex items-center justify-center mb-1.5', form.business_type === bt.id ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400']">
+                                            <component :is="bt.icon" :size="14" />
                                         </div>
-                                        <p :class="['text-[9px] font-black uppercase tracking-wider', form.business_type === bt.id ? 'text-emerald-700' : 'text-slate-400']">{{ bt.label }}</p>
+                                        <p :class="['text-[8px] font-black uppercase tracking-wider', form.business_type === bt.id ? 'text-emerald-700' : 'text-slate-400']">{{ bt.label }}</p>
                                     </button>
                                 </div>
                             </div>
@@ -248,49 +196,49 @@ const climateZoneColor = computed(() => {
 
                         <!-- Commercial Specific Config — Solo para Comercio -->
                         <section v-if="isComercial">
-                            <h3 class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <h3 class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2 flex items-center gap-2">
                                 <Store :size="14" /> Configuración Logística Comercial
                             </h3>
                             
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 p-6 rounded-[32px] border border-slate-100">
-                                <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                                <div class="space-y-3">
                                     <div>
-                                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Rubro del Comercio</label>
-                                        <select v-model="form.comercio_type" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans">
+                                        <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Rubro del Comercio</label>
+                                        <select v-model="form.comercio_type" class="w-full px-3.5 py-2.5 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans">
                                             <option value="gastronomia">Gastronomía (Restaurante / Bar)</option>
                                             <option value="retail">Retail / Venta al público</option>
                                             <option value="oficina">Oficina / Corporativo</option>
                                         </select>
                                     </div>
-                                    <div class="grid grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Apertura</label>
-                                            <input v-model="form.opens_at" type="time" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans"/>
+                                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Apertura</label>
+                                            <input v-model="form.opens_at" type="time" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans"/>
                                         </div>
                                         <div>
-                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Cierre</label>
-                                            <input v-model="form.closes_at" type="time" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans"/>
+                                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Cierre</label>
+                                            <input v-model="form.closes_at" type="time" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans"/>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="space-y-4">
-                                    <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-3">
+                                    <div class="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Personal (Staff)</label>
-                                            <input v-model="form.staff_count" type="number" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans" placeholder="0"/>
+                                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Personal (Staff)</label>
+                                            <input v-model="form.staff_count" type="number" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans" placeholder="0"/>
                                         </div>
                                         <div>
-                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
+                                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">
                                                 {{ form.comercio_type === 'gastronomia' ? 'Comensales / día' : (form.comercio_type === 'oficina' ? 'Visitantes / día' : 'Clientes / día') }}
                                             </label>
-                                            <input v-model="form.visitors_count" type="number" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans" placeholder="0"/>
+                                            <input v-model="form.visitors_count" type="number" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans" placeholder="0"/>
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Turnos de Servicio</label>
+                                        <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Turnos de Servicio</label>
                                         <div class="flex gap-2">
                                             <button v-for="n in 3" :key="n" type="button" @click="form.service_turns = n"
-                                                :class="['flex-1 py-3 rounded-2xl border-2 transition-all text-xs font-black uppercase tracking-widest', form.service_turns === n ? 'border-purple-500 bg-white text-purple-600' : 'border-transparent bg-white/50 text-slate-400']"
+                                                :class="['flex-1 py-2 rounded-xl border-2 transition-all text-[10px] font-black uppercase tracking-wider', form.service_turns === n ? 'border-purple-500 bg-white text-purple-600' : 'border-transparent bg-white/50 text-slate-400']"
                                             >
                                                 {{ n }} {{ n === 1 ? 'Turno' : 'Turnos' }}
                                             </button>
@@ -302,31 +250,31 @@ const climateZoneColor = computed(() => {
 
                         <!-- Office Specific Config — Solo para Oficina -->
                         <section v-if="isOficina">
-                            <h3 class="text-[10px] font-black uppercase tracking-widest mb-4 flex items-center gap-2" :class="accentColor">
+                            <h3 class="text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2" :class="accentColor">
                                 <Building :size="14" /> Configuración de Oficina
                             </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50/50 p-6 rounded-[32px] border border-slate-100">
-                                <div class="space-y-4">
-                                    <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                                <div class="space-y-3">
+                                    <div class="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Apertura</label>
-                                            <input v-model="form.opens_at" type="time" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans"/>
+                                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Apertura</label>
+                                            <input v-model="form.opens_at" type="time" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans"/>
                                         </div>
                                         <div>
-                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Cierre</label>
-                                            <input v-model="form.closes_at" type="time" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans"/>
+                                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Cierre</label>
+                                            <input v-model="form.closes_at" type="time" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans"/>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="space-y-4">
-                                    <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-3">
+                                    <div class="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Empleados</label>
-                                            <input v-model="form.staff_count" type="number" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans" placeholder="0"/>
+                                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Empleados</label>
+                                            <input v-model="form.staff_count" type="number" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans" placeholder="0"/>
                                         </div>
                                         <div>
-                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Visitantes / día</label>
-                                            <input v-model="form.visitors_count" type="number" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans" placeholder="0"/>
+                                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Visitantes / día</label>
+                                            <input v-model="form.visitors_count" type="number" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans" placeholder="0"/>
                                         </div>
                                     </div>
                                 </div>
@@ -334,27 +282,27 @@ const climateZoneColor = computed(() => {
                         </section>
 
                         <!-- Basic Attributes -->
-                        <section class="grid grid-cols-2 gap-6 pt-2">
-                            <div class="space-y-4">
+                        <section class="grid grid-cols-2 gap-4 pt-1">
+                            <div class="space-y-3">
                                 <div>
-                                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Nombre Descriptivo</label>
-                                    <input v-model="form.name" type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold font-sans"/>
+                                    <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Nombre Descriptivo</label>
+                                    <input v-model="form.name" type="text" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold font-sans"/>
                                 </div>
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Sup. Cubierta m²</label>
-                                        <input v-model="form.square_meters" type="number" step="0.1" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold font-sans"/>
+                                        <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Sup. Cubierta m²</label>
+                                        <input v-model="form.square_meters" type="number" step="0.1" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold font-sans"/>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">{{ isB2B ? 'Personas en Staff' : 'Habitantes' }}</label>
-                                        <input v-model="form.people_count" type="number" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold font-sans"/>
+                                        <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">{{ isB2B ? 'Staff' : 'Habitantes' }}</label>
+                                        <input v-model="form.people_count" type="number" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold font-sans"/>
                                     </div>
                                 </div>
                             </div>
-                            <div class="space-y-4">
+                            <div class="space-y-3">
                                 <div>
-                                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Era de Construcción</label>
-                                    <select v-model="form.construction_year" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold font-sans">
+                                    <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Era de Construcción</label>
+                                    <select v-model="form.construction_year" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold font-sans">
                                         <option value="" disabled>Seleccione era</option>
                                         <option v-for="era in constructionEras" :key="era.value" :value="era.value">{{ era.label }}</option>
                                     </select>
@@ -362,41 +310,41 @@ const climateZoneColor = computed(() => {
                             </div>
                         </section>
 
-                        <section class="pt-2">
-                            <h3 class="text-[10px] font-black uppercase tracking-widest mb-4 flex items-center gap-2" :class="accentColor">
+                        <section class="pt-1">
+                            <h3 class="text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2" :class="accentColor">
                                 <Zap :size="14" /> Servicios Avanzados
                             </h3>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div @click="form.has_gas = !form.has_gas" :class="['p-4 rounded-3xl border-2 cursor-pointer transition-all flex items-center gap-3', form.has_gas ? 'bg-orange-50 border-orange-200' : 'bg-slate-50 border-slate-100 opacity-60']">
-                                    <div :class="['w-9 h-9 rounded-xl flex items-center justify-center', form.has_gas ? 'bg-orange-500 text-white' : 'bg-white text-slate-300']"><Flame :size="18" /></div>
-                                    <p :class="['flex-1 text-[10px] font-black uppercase tracking-widest', form.has_gas ? 'text-orange-700' : 'text-slate-400']">Gas Natural</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div @click="form.has_gas = !form.has_gas" :class="['p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2.5', form.has_gas ? 'bg-orange-50 border-orange-200' : 'bg-slate-50 border-slate-100 opacity-60']">
+                                    <div :class="['w-8 h-8 rounded-xl flex items-center justify-center', form.has_gas ? 'bg-orange-500 text-white' : 'bg-white text-slate-300']"><Flame :size="16" /></div>
+                                    <p :class="['flex-1 text-[9px] font-black uppercase tracking-wider', form.has_gas ? 'text-orange-700' : 'text-slate-400']">Gas Natural</p>
                                 </div>
-                                <div @click="form.has_solar = !form.has_solar" :class="['p-4 rounded-3xl border-2 cursor-pointer transition-all flex items-center gap-3', form.has_solar ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-100 opacity-60']">
-                                    <div :class="['w-9 h-9 rounded-xl flex items-center justify-center', form.has_solar ? 'bg-emerald-600 text-white' : 'bg-white text-slate-300']"><Sun :size="18" /></div>
-                                    <p :class="['flex-1 text-[10px] font-black uppercase tracking-widest', form.has_solar ? 'text-emerald-700' : 'text-slate-400']">Energía Solar</p>
+                                <div @click="form.has_solar = !form.has_solar" :class="['p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-2.5', form.has_solar ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-100 opacity-60']">
+                                    <div :class="['w-8 h-8 rounded-xl flex items-center justify-center', form.has_solar ? 'bg-emerald-600 text-white' : 'bg-white text-slate-300']"><Sun :size="16" /></div>
+                                    <p :class="['flex-1 text-[9px] font-black uppercase tracking-wider', form.has_solar ? 'text-emerald-700' : 'text-slate-400']">Energía Solar</p>
                                 </div>
                             </div>
                         </section>
                     </div>
 
-                    <!-- Right Body: Location & Weather & BioProfile -->
-                    <div class="lg:col-span-5 space-y-6">
-                        <section class="bg-slate-50/50 p-6 rounded-[40px] border border-slate-100 space-y-6">
+                    <!-- Right Body: Location & Weather & BioProfile & Submit Button -->
+                    <div class="lg:col-span-5 space-y-3.5 flex flex-col justify-between">
+                        <section class="bg-slate-50/50 p-4 sm:p-5 rounded-3xl border border-slate-100 space-y-3.5">
                             <div>
-                                <h3 class="text-[10px] font-black uppercase tracking-widest mb-4 flex items-center gap-2" :class="accentColor">
+                                <h3 class="text-[10px] font-black uppercase tracking-widest mb-2.5 flex items-center gap-2" :class="accentColor">
                                     <MapPin :size="14" /> Ubicación Geográfica
                                 </h3>
-                                <div class="space-y-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                                     <div>
-                                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Provincia</label>
-                                        <select v-model="form.province_id" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans">
+                                        <label class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Provincia</label>
+                                        <select v-model="form.province_id" class="w-full px-3 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans">
                                             <option value="" disabled>Seleccione provincia</option>
                                             <option v-for="province in provinces" :key="province.id" :value="province.id">{{ province.name }}</option>
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Localidad</label>
-                                        <select v-model="form.locality_id" :disabled="!form.province_id" class="w-full px-4 py-3 bg-white border border-slate-100 rounded-2xl text-sm font-bold font-sans disabled:opacity-40">
+                                        <label class="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Localidad</label>
+                                        <select v-model="form.locality_id" :disabled="!form.province_id" class="w-full px-3 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans disabled:opacity-40">
                                             <option v-for="locality in filteredLocalities" :key="locality.id" :value="locality.id">{{ locality.name }}</option>
                                         </select>
                                     </div>
@@ -404,77 +352,87 @@ const climateZoneColor = computed(() => {
                             </div>
 
                             <!-- Weather API Monitor (Real Time) -->
-                            <div :class="['p-5 text-white rounded-[32px] shadow-lg relative overflow-hidden group transition-all', weatherBgClass]">
+                            <div :class="['p-3.5 text-white rounded-2xl shadow-md relative overflow-hidden group transition-all', weatherBgClass]">
                                 <div class="absolute right-0 top-0 opacity-10 translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
-                                    <Globe :size="120" />
+                                    <Globe :size="90" />
                                 </div>
                                 <div class="relative z-10 flex items-center justify-between">
                                     <div v-if="currentWeather?.success" class="flex flex-col">
-                                        <div class="flex items-center gap-1.5 mb-1">
-                                            <span class="text-xs font-black uppercase tracking-widest opacity-60">
+                                        <div class="flex items-center gap-1.5 mb-0.5">
+                                            <span class="text-[9px] font-black uppercase tracking-widest opacity-60">
                                                 {{ currentWeather.is_fallback ? 'Modo Estimado' : 'Tiempo Real' }}
                                             </span>
-                                            <div v-if="currentWeather.is_fallback" class="px-1.5 py-0.5 bg-amber-500 rounded text-[7px] font-black animate-pulse">OFFLINE</div>
+                                            <div v-if="currentWeather.is_fallback" class="px-1 py-0.5 bg-amber-500 rounded text-[7px] font-black animate-pulse">OFFLINE</div>
                                         </div>
-                                        <span class="text-3xl font-black tracking-tighter">{{ currentWeather.temp }}°c</span>
-                                        <span class="text-[9px] font-bold opacity-80 flex items-center gap-1 mt-1">
+                                        <span class="text-2xl font-black tracking-tighter leading-none">{{ currentWeather.temp }}°c</span>
+                                        <span class="text-[8px] font-bold opacity-80 flex items-center gap-1 mt-1">
                                             <component :is="weatherIcon" :size="10" /> {{ weatherDesc }}
                                         </span>
                                     </div>
                                     <div v-else class="flex flex-col">
-                                        <span class="text-xs font-black uppercase tracking-widest opacity-60 italic">Sincronizando...</span>
-                                        <span class="text-[9px] font-bold opacity-40">Conectando con la red</span>
+                                        <span class="text-[9px] font-black uppercase tracking-widest opacity-60 italic">Sincronizando...</span>
+                                        <span class="text-[8px] font-bold opacity-40">Conectando con la red</span>
                                     </div>
                                     <div class="flex flex-col items-end text-right">
-                                        <div :class="['w-8 h-8 rounded-lg flex items-center justify-center mb-1', currentWeather?.is_fallback ? 'bg-white/10' : 'bg-white/20']"><Wind :size="14" /></div>
-                                        <span class="text-[10px] font-black">{{ currentWeather?.windspeed || '--' }} km/h</span>
+                                        <div :class="['w-7 h-7 rounded-lg flex items-center justify-center mb-0.5', currentWeather?.is_fallback ? 'bg-white/10' : 'bg-white/20']"><Wind :size="12" /></div>
+                                        <span class="text-[9px] font-black">{{ currentWeather?.windspeed || '--' }} km/h</span>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Bioclimatic Profile (Characteristic Climate) -->
-                            <div v-if="climateProfile" class="p-6 bg-white rounded-[32px] border border-slate-100 shadow-sm space-y-4 relative overflow-hidden group">
+                            <div v-if="climateProfile" class="p-3.5 bg-white rounded-2xl border border-slate-100 shadow-xs space-y-2.5 relative overflow-hidden group">
                                 <div v-if="climateProfile.is_fallback" class="absolute top-0 right-0 p-2 opacity-5 scale-150 rotate-12 group-hover:scale-125 transition-transform pointer-events-none">
-                                    <AlertCircle :size="80" />
+                                    <AlertCircle :size="60" />
                                 </div>
 
                                 <div class="flex items-center justify-between">
                                     <div class="flex flex-col">
-                                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Perfil Bioclimático Característico</h4>
-                                        <span v-if="climateProfile.is_fallback" class="text-[8px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full inline-block mt-0.5 border border-amber-100 uppercase tracking-tighter">Normales Regionales</span>
+                                        <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Perfil Bioclimático</h4>
+                                        <span v-if="climateProfile.is_fallback" class="text-[7px] font-black text-amber-600 bg-amber-50 px-1 py-0.5 rounded-full inline-block mt-0.5 border border-amber-100 uppercase tracking-tighter">Normales Regionales</span>
                                     </div>
-                                    <div :class="['px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter border shadow-sm', climateZoneColor]">
+                                    <div :class="['px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-tighter border shadow-xs', climateZoneColor]">
                                         Zona {{ climateProfile.climate_zone }}
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="space-y-1">
-                                        <p class="text-[9px] font-bold text-slate-400 uppercase">Temp. Media Anual</p>
-                                        <div class="flex items-center gap-1.5">
-                                            <Thermometer :size="14" class="text-emerald-600" />
-                                            <span class="text-sm font-black text-slate-800">{{ climateProfile.avg_temperature }}°c</span>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="space-y-0.5">
+                                        <p class="text-[7px] font-bold text-slate-400 uppercase">Temp. Media Anual</p>
+                                        <div class="flex items-center gap-1">
+                                            <Thermometer :size="12" class="text-emerald-600" />
+                                            <span class="text-xs font-black text-slate-800">{{ climateProfile.avg_temperature }}°c</span>
                                         </div>
                                     </div>
-                                    <div class="space-y-1">
-                                        <p class="text-[9px] font-bold text-slate-400 uppercase">Severidad Invernal</p>
-                                        <div class="flex items-center gap-1.5">
-                                            <CloudSun :size="14" class="text-blue-500" />
-                                            <span class="text-sm font-black text-slate-800">HDD {{ Math.round(climateProfile.hdd || 0) }}</span>
+                                    <div class="space-y-0.5">
+                                        <p class="text-[7px] font-bold text-slate-400 uppercase">Severidad Invernal</p>
+                                        <div class="flex items-center gap-1">
+                                            <CloudSun :size="12" class="text-blue-500" />
+                                            <span class="text-xs font-black text-slate-800">HDD {{ Math.round(climateProfile.hdd || 0) }}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="pt-2 border-t border-slate-50">
-                                    <div class="flex items-center gap-2">
-                                        <Sun :size="12" class="text-amber-500" />
-                                        <p class="text-[9px] font-bold text-slate-500 leading-tight">
-                                            Recurso Solar: <span class="text-slate-800">{{ climateProfile.avg_radiation }} kWh/m²</span> anuales promedio.
+                                <div class="pt-1.5 border-t border-slate-50">
+                                    <div class="flex items-center gap-1.5">
+                                        <Sun :size="10" class="text-amber-500" />
+                                        <p class="text-[8px] font-bold text-slate-500 leading-tight">
+                                            Recurso Solar: <span class="text-slate-800 font-bold">{{ climateProfile.avg_radiation }} kWh/m²</span> anuales.
                                         </p>
                                     </div>
                                 </div>
                             </div>
                         </section>
+
+                        <!-- Submit Button in Right Body -->
+                        <button 
+                            type="submit"
+                            :disabled="form.processing"
+                            :class="['w-full py-3 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-95 transition-all shadow-md disabled:opacity-50 cursor-pointer', btnClass]"
+                        >
+                            <Save :size="15" stroke-width="3" />
+                            {{ form.processing ? 'Guardando...' : 'Guardar Perfil' }}
+                        </button>
                     </div>
                 </form>
             </div>

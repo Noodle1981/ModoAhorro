@@ -80,31 +80,21 @@ const waterData = computed(() => props.thermal.waterHeaterData);
         <Head title="Solar" />
 
         <div class="lg:h-[calc(100vh-100px)] flex flex-col gap-3 lg:overflow-hidden overflow-y-auto text-slate-900 px-2 pb-2">
-            <!-- Ultra Thin Header -->
-            <div class="bg-slate-900 text-white rounded-3xl p-4 flex items-center justify-between shadow-2xl">
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 bg-energy-solar rounded-2xl flex items-center justify-center text-slate-900 shadow-lg shadow-energy-solar/20">
-                        <Sun :size="20" stroke-width="3" />
-                    </div>
-                    <div>
-                        <h1 class="text-xl font-black tracking-tighter leading-none">Proyecto <span class="text-energy-solar italic">Solar</span></h1>
-                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">{{ entity.name }}</p>
-                    </div>
-                </div>
-
-                <div class="hidden lg:flex items-center gap-8 bg-white/5 px-6 py-2 rounded-2xl border border-white/10">
+            <!-- Parameters Toolbar -->
+            <div class="bg-slate-900 text-white rounded-3xl p-3.5 px-5 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+                <div class="flex items-center gap-6 bg-white/5 px-4 py-2 rounded-2xl border border-white/10">
                     <div class="space-y-0.5">
-                        <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest">Área Techo</p>
-                        <div class="flex items-center gap-3">
-                            <input type="range" v-model="localArea" min="4" max="200" step="2" @input="updateFilters" class="w-24 h-1 bg-white/10 rounded-full appearance-none accent-energy-solar">
+                        <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Área Techo</p>
+                        <div class="flex items-center gap-2.5">
+                            <input type="range" v-model="localArea" min="4" max="200" step="2" @input="updateFilters" class="w-24 h-1 bg-white/10 rounded-full appearance-none accent-energy-solar cursor-pointer">
                             <span class="text-xs font-black text-energy-solar">{{ localArea }}m²</span>
                         </div>
                     </div>
                     <div class="w-px h-6 bg-white/10"></div>
                     <div class="space-y-0.5">
-                        <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest">Habitantes</p>
-                        <div class="flex items-center gap-3">
-                            <input type="range" v-model="localPeople" min="1" max="12" step="1" @input="updateFilters" class="w-24 h-1 bg-white/10 rounded-full appearance-none accent-energy-solar">
+                        <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Habitantes</p>
+                        <div class="flex items-center gap-2.5">
+                            <input type="range" v-model="localPeople" min="1" max="12" step="1" @input="updateFilters" class="w-24 h-1 bg-white/10 rounded-full appearance-none accent-energy-solar cursor-pointer">
                             <span class="text-xs font-black text-energy-solar">{{ localPeople }}</span>
                         </div>
                     </div>
@@ -112,7 +102,7 @@ const waterData = computed(() => props.thermal.waterHeaterData);
 
                 <div class="flex items-center gap-3">
                     <div class="text-right">
-                        <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest">Ahorro Estimado</p>
+                        <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Ahorro Estimado</p>
                         <p class="text-lg font-black text-energy-success leading-none">~ 55%</p>
                     </div>
                     <div class="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-energy-solar">
@@ -238,7 +228,7 @@ const waterData = computed(() => props.thermal.waterHeaterData);
                         <div :class="themeColors.bgDark" class="mt-auto text-white p-4 rounded-2xl flex items-center justify-between">
                             <div>
                                 <p :class="themeColors.textLight" class="text-[8px] font-black text-white/55 uppercase tracking-widest">Payback</p>
-                                <p class="text-lg font-black text-energy-solar leading-none">< 12 meses</p>
+                                <p class="text-lg font-black text-energy-solar leading-none">&lt; 12 meses</p>
                             </div>
                             <button :class="[themeColors.textDark, themeColors.hoverBg]" class="bg-white px-5 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:text-white transition-all">
                                 Solicitar Cotización <ChevronRight :size="12" class="inline ml-1" />

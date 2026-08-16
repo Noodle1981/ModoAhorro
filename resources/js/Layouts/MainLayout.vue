@@ -26,6 +26,21 @@ import {
 } from 'lucide-vue-next';
 import { ref, computed, watchEffect } from 'vue';
 
+const props = defineProps({
+    title: {
+        type: String,
+        default: null,
+    },
+    subtitle: {
+        type: String,
+        default: null,
+    },
+    badge: {
+        type: String,
+        default: null,
+    },
+});
+
 const page = usePage();
 const auth = computed(() => page.props.auth);
 const currentEntity = computed(() => auth.value.current_entity);
@@ -156,15 +171,64 @@ const selectCategory = (name) => {
     isSidebarOpen.value = true;
 };
 
-// Función para verificar si un link está activo basado en el path relativo
-const isActive = (href) => {
+// Función para verificar si un link está activo basado en el path relativo o rutas hijas
+const isActive = (itemOrHref) => {
+    const href = typeof itemOrHref === 'string' ? itemOrHref : itemOrHref?.href;
+    const name = typeof itemOrHref === 'object' ? itemOrHref?.name : null;
+
+    if (!href || href === '#') return false;
+
+    // Desempeño Térmico cubre todas las rutas hijas /gestion/thermal/* (wizard, result, index)
+    if (name === 'Desempeño Térmico' || href.includes('/gestion/thermal')) {
+        if (page.url.startsWith('/gestion/thermal')) {
+            return true;
+        }
+    }
+
     try {
         const path = new URL(href, window.location.origin).pathname;
-        return page.url === path || page.url.startsWith(path + '/');
-    } catch (e) {
+        if (page.url === path) return true;
+        if (path !== '/' && path !== '/inicio' && (page.url.startsWith(path + '/') || page.url.startsWith(path))) {
+            return true;
+        }
+        return false;
+    } catch (_e) {
         return page.url.startsWith(href);
     }
 };
+
+const resolvedTitle = computed(() => {
+    if (props.title) return props.title;
+    if (page.url === '/inicio' || page.url === '/') {
+        return `Resumen de ${currentEntity.value?.name || 'Casa 27'}`;
+    }
+    for (const cat of navigation.value) {
+        for (const item of cat.items) {
+            if (isActive(item)) {
+                return item.name;
+            }
+        }
+    }
+    return currentEntity.value?.name ? `Resumen de ${currentEntity.value.name}` : 'Panel Principal';
+});
+
+const resolvedIcon = computed(() => {
+    if (page.url === '/inicio' || page.url === '/') {
+        return Home;
+    }
+    for (const cat of navigation.value) {
+        for (const item of cat.items) {
+            if (isActive(item)) {
+                return item.icon;
+            }
+        }
+    }
+    return Building;
+});
+
+const isHomeView = computed(() => {
+    return (page.url === '/inicio' || page.url === '/') && !props.title;
+});
 </script>
 
 <template>
@@ -208,11 +272,17 @@ const isActive = (href) => {
 
             <!-- Bottom Icons -->
             <div class="mt-auto flex flex-col gap-6 items-center">
-                <button class="p-3 rounded-2xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group relative">
+                <Link 
+                    :href="route('profile.edit')" 
+                    :class="[
+                        'p-3 rounded-2xl transition-all group relative',
+                        route().current('profile.*') ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    ]"
+                >
                     <User :size="24" />
-                    <span class="absolute left-full ml-4 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-50">Perfil</span>
-                </button>
-                <Link method="post" as="button" :href="route('logout')" class="p-3 rounded-2xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all group relative">
+                    <span class="absolute left-full ml-4 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-50">Mi Perfil</span>
+                </Link>
+                <Link method="post" as="button" :href="route('logout')" class="p-3 rounded-2xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all group relative cursor-pointer">
                     <LogOut :size="24" />
                     <span class="absolute left-full ml-4 px-2 py-1 bg-rose-600 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-50">Salir</span>
                 </Link>
@@ -274,19 +344,19 @@ const isActive = (href) => {
                         :href="item.href"
                         :class="[
                             'flex items-center justify-between p-2.5 rounded-2xl group transition-all',
-                            isActive(item.href) ? themeColors.activeMenuBg : 'hover:bg-slate-50'
+                            isActive(item) ? themeColors.activeMenuBg : 'hover:bg-slate-50'
                         ]"
                     >
                         <div class="flex items-center gap-3">
                             <div :class="[
                                 'p-2 rounded-xl transition-all duration-300',
-                                isActive(item.href) ? ['bg-white shadow-sm', themeColors.text] : ['text-slate-400 group-hover:bg-white group-hover:shadow-sm', themeColors.groupHoverText]
+                                isActive(item) ? ['bg-white shadow-sm', themeColors.text] : ['text-slate-400 group-hover:bg-white group-hover:shadow-sm', themeColors.groupHoverText]
                             ]">
                                 <component :is="item.icon" :size="18" />
                             </div>
-                            <span :class="['text-sm font-bold', isActive(item.href) ? themeColors.text : 'text-slate-600 group-hover:text-slate-900']">{{ item.name }}</span>
+                            <span :class="['text-sm font-bold', isActive(item) ? themeColors.text : 'text-slate-600 group-hover:text-slate-900']">{{ item.name }}</span>
                         </div>
-                        <ChevronRight :size="14" :class="['transition-all', isActive(item.href) ? themeColors.text : 'text-slate-300 group-hover:text-slate-500 opacity-0 group-hover:opacity-100']" />
+                        <ChevronRight :size="14" :class="['transition-all', isActive(item) ? themeColors.text : 'text-slate-300 group-hover:text-slate-500 opacity-0 group-hover:opacity-100']" />
                     </Link>
                 </nav>
 
@@ -315,20 +385,32 @@ const isActive = (href) => {
 
         <!-- Main Content -->
         <main class="flex-1 min-w-0 flex flex-col h-screen overflow-hidden">
-            <!-- Header (Mobile Toggle) -->
-            <header class="lg:hidden p-4 bg-white border-b border-slate-200 flex items-center justify-between z-[40] shrink-0">
-                <button @click="isSidebarOpen = !isSidebarOpen" class="p-2 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
-                    <Menu v-if="!isSidebarOpen" :size="24" />
-                    <X v-else :size="24" />
-                </button>
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white" :class="themeColors.bg">
-                        <Zap :size="16" stroke-width="3" />
+            <!-- Navbar Horizontal Estático Superior para Títulos -->
+            <header class="bg-white border-b border-slate-200/80 px-4 md:px-8 py-3 flex items-center justify-between z-30 shrink-0 min-h-[60px]">
+                <!-- Left: Sidebar Toggle (mobile) + Icono + Título -->
+                <div class="flex items-center gap-3 md:gap-3.5 overflow-hidden">
+                    <button 
+                        @click="isSidebarOpen = !isSidebarOpen" 
+                        class="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition-colors shrink-0"
+                    >
+                        <Menu v-if="!isSidebarOpen" :size="20" />
+                        <X v-else :size="20" />
+                    </button>
+
+                    <!-- Icono Normalizado de la Vista -->
+                    <div :class="['w-9 h-9 rounded-xl flex items-center justify-center border shadow-xs shrink-0', themeColors.bgLight, themeColors.text, themeColors.borderHover]">
+                        <component :is="resolvedIcon" :size="18" stroke-width="2.5" />
                     </div>
-                    <span class="font-black text-slate-900 tracking-tighter">ModoAhorro</span>
-                </div>
-                <div class="w-10 h-10 flex items-center justify-center">
-                    <User :size="20" class="text-slate-400" />
+
+                    <!-- Título Normalizado -->
+                    <h1 class="text-base md:text-lg font-black text-slate-900 tracking-tight leading-none truncate">
+                        <template v-if="isHomeView">
+                            Resumen de <span :class="themeColors.text">{{ currentEntity?.name || 'Casa 27' }}</span>
+                        </template>
+                        <template v-else>
+                            {{ resolvedTitle }}
+                        </template>
+                    </h1>
                 </div>
             </header>
 

@@ -33,6 +33,11 @@ Route::middleware(['auth'])->group(function () {
     // Inicio / Resumen de Entidad (Panel con Sidebar)
     Route::get('/inicio', 'App\Http\Controllers\DashboardController@home')->name('home');
 
+    // Perfil de Usuario
+    Route::get('/perfil', 'App\Http\Controllers\ProfileController@edit')->name('profile.edit');
+    Route::put('/perfil', 'App\Http\Controllers\ProfileController@update')->name('profile.update');
+    Route::put('/perfil/password', 'App\Http\Controllers\ProfileController@updatePassword')->name('profile.password');
+
     // Activar una entidad específica
     Route::get('/entidades/{entity}/activate', function ($entityId) {
         session(['active_entity_id' => $entityId]);

@@ -399,24 +399,19 @@ const getTankColor = (key) => {
         <Head title="Sintonía Fina - ModoAhorro" />
 
         <div class="max-w-7xl mx-auto space-y-8 pb-32" :style="{ '--theme-color': themeColors.hex }">
-            <!-- Header Section -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div class="space-y-2">
-                    <Link :href="route('analisis.usage')" class="flex items-center gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest hover:text-slate-900 transition-colors mb-4 group">
-                        <ArrowLeft :size="14" class="group-hover:-translate-x-1 transition-transform" /> Volver a Ajustes
-                    </Link>
-                    <h1 class="text-4xl font-black text-slate-900 tracking-tighter leading-none">
-                        Sintonía <span :class="themeColors.text">Fina</span>
-                    </h1>
-                    <p class="text-slate-500 font-medium">Ajusta el uso real de tus equipos para este bimestre.</p>
-                </div>
+            <!-- Action Toolbar (Back Navigation & Period Badge) -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <Link :href="route('analisis.usage')" class="flex items-center gap-2 text-slate-500 font-bold text-xs uppercase tracking-wider hover:text-slate-900 transition-colors group">
+                    <ArrowLeft :size="15" class="group-hover:-translate-x-1 transition-transform" /> 
+                    <span>Volver a Ajustes</span>
+                </Link>
 
-                <div class="flex items-center gap-4">
-                    <div class="bg-white border border-slate-100 p-4 rounded-[24px] shadow-sm flex flex-col justify-center">
-                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Periodo Unificado</p>
-                        <div class="flex items-end gap-2">
-                            <p class="text-sm font-bold text-slate-900">{{ period.days }} días</p>
-                            <span class="text-[10px] font-medium text-slate-400 mb-0.5">{{ formatDate(period.start) }} al {{ formatDate(period.end) }}</span>
+                <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+                    <div class="bg-white border border-slate-200/80 px-4 py-2 rounded-2xl shadow-sm flex flex-col justify-center">
+                        <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Periodo Unificado</p>
+                        <div class="flex items-baseline gap-2">
+                            <p class="text-xs font-black text-slate-900">{{ period.days }} días</p>
+                            <span class="text-[10px] font-medium text-slate-400">{{ formatDate(period.start) }} al {{ formatDate(period.end) }}</span>
                         </div>
                     </div>
 

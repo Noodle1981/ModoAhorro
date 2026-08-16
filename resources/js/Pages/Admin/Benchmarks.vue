@@ -20,14 +20,15 @@ const props = defineProps({
     <Head title="Benchmarks de Eficiencia" />
 
     <MainLayout>
-        <div class="max-w-7xl mx-auto">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-                <div>
-                    <h1 class="text-4xl font-black text-slate-900 tracking-tighter mb-2">Benchmarks de Referencia</h1>
-                    <p class="text-slate-500 font-medium">Equipos "Standard Gold" utilizados para comparativas y recomendaciones.</p>
+        <div class="max-w-7xl mx-auto space-y-6">
+            <!-- Action Toolbar -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="text-sm font-medium text-slate-500">
+                    <span>Equipos "Standard Gold" utilizados para comparativas y recomendaciones.</span>
                 </div>
-                <button class="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-3 hover:bg-emerald-600 transition-all shadow-xl shadow-slate-200">
-                    <Plus :size="20" /> Agregar Benchmark
+                <button class="bg-slate-900 text-white px-5 py-2.5 rounded-2xl font-black uppercase tracking-wider text-xs flex items-center gap-2 hover:bg-emerald-600 transition-all shadow-sm cursor-pointer">
+                    <Plus :size="16" stroke-width="3" />
+                    <span>Agregar Benchmark</span>
                 </button>
             </div>
 

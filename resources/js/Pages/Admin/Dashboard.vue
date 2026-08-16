@@ -21,27 +21,7 @@ defineProps({
     <Head title="Panel de Administración" />
 
     <MainLayout>
-        <div class="max-w-6xl mx-auto space-y-12">
-            <!-- Hero Section -->
-            <div class="relative overflow-hidden bg-slate-900 rounded-[3rem] p-12 text-white shadow-2xl">
-                <div class="relative z-10">
-                    <div class="flex items-center gap-3 mb-6 text-emerald-400">
-                        <ShieldCheck :size="24" />
-                        <span class="text-sm font-black uppercase tracking-[0.3em]">Acceso Super Admin</span>
-                    </div>
-                    <h1 class="text-6xl font-black tracking-tighter mb-6 leading-none">
-                        Torre de <br/><span class="text-emerald-500">Control</span>
-                    </h1>
-                    <p class="text-slate-400 text-xl max-w-xl font-medium leading-relaxed">
-                        Gestiona el cerebro de ModoAhorro. Calibra la física de los equipos, define estándares de eficiencia y supervisa el gemelo digital.
-                    </p>
-                </div>
-                
-                <!-- Background Decoration -->
-                <div class="absolute top-0 right-0 w-1/2 h-full opacity-10">
-                    <Zap :size="400" class="absolute -right-20 -top-20 text-emerald-500 rotate-12" />
-                </div>
-            </div>
+        <div class="max-w-6xl mx-auto space-y-6">
 
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

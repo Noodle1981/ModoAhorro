@@ -1,7 +1,7 @@
 id,name,room_id,category_id,type_id,nominal_power_w,is_standby,avg_daily_use_hours,use_days_per_week,is_active,created_at,updated_at,installed_at,removed_at,acquisition_year,energy_label,is_inverter,capacity,capacity_unit,usage_frequency,is_validated,intensity,has_defined_pattern,brand,model,serial_number,extra_attributes
-1,"Aire Grande",1,1,7,2500,1,0,,1,"2026-04-30 00:17:08","2026-05-06 23:07:02",,,,B,0,,,,0,,0,,,,
-2,"Ventilador de Techo",1,1,11,40,1,0,,1,"2026-04-30 00:17:08","2026-05-06 23:11:14",,,,A,0,,,,0,,0,,,,
-3,Microondas,1,4,16,1000,0,0.17,,1,"2026-04-30 00:17:08","2026-05-06 23:07:21",,,,B,0,,,,0,,0,,,,
+1,"Aire Grande",1,1,7,2500,0,0,,1,"2026-04-30 00:17:08","2026-08-16 00:51:22",,,,B,0,,,,0,,0,,,,
+2,"Ventilador de Techo",1,1,11,40,0,0,,1,"2026-04-30 00:17:08","2026-08-16 00:51:22",,,,A,0,,,,0,,0,,,,
+3,Microondas,1,4,16,1000,0,0.17,,1,"2026-04-30 00:17:08","2026-08-16 00:51:27",,,,B,0,,,,0,,0,,,,
 4,"Tubo Led Cocina",1,6,25,10,0,8,,1,"2026-04-30 00:17:08","2026-05-06 23:07:35",,,,A+++,0,,,,0,,0,,,,
 5,"Foco Ventilador 1",1,6,24,10,0,0.33,,1,"2026-04-30 00:17:08","2026-05-06 23:07:36",,,,A+++,0,,,ocasionalmente,0,,1,,,,
 6,"Foco Ventilador 2",1,6,24,10,0,0.33,,1,"2026-04-30 00:17:08","2026-05-06 23:07:37",,,,A+++,0,,,ocasionalmente,0,,1,,,,

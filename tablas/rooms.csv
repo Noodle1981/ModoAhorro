@@ -21,3 +21,5 @@ id,entity_id,name,square_meters,description,created_at,updated_at,is_estimated,r
 24,4,Salón,0,"Atención al público","2026-05-14 01:12:12","2026-05-14 01:12:12",1,
 25,4,"Depósito / Cámara",0,"Almacenamiento y refrigeración","2026-05-14 01:12:12","2026-05-14 01:12:12",1,
 26,4,"Baños / Servicios",0,"Áreas comunes","2026-05-14 01:12:12","2026-05-14 01:12:12",1,
+33,7,Portables,0,,"2026-06-10 22:54:35","2026-06-10 22:54:35",1,
+34,7,"Eventos / Tareas Extras",0,,"2026-06-10 22:54:35","2026-06-10 22:54:35",1,

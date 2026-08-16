@@ -323,163 +323,157 @@ const openCreateInstallment2Modal = (invoice) => {
     <MainLayout>
         <Head title="Gestión de Facturas" />
 
-        <div class="max-w-7xl mx-auto space-y-10">
-            <!-- Header Section -->
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div class="space-y-4">
-                    <div :class="['inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border', themeColors.bgLight, themeColors.text, themeColors.borderLight]">
-                        <History :size="14" />
-                        Historial Energético
-                    </div>
-                    <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Gestión de <span :class="themeColors.text">Facturas</span>
-                    </h1>
-                    <p class="text-lg text-slate-500 font-medium">{{ entity.name }} — Control de consumos mensuales.</p>
+        <div class="h-full flex flex-col gap-3.5 max-w-7xl mx-auto w-full min-h-0 overflow-hidden">
+            <!-- Action Toolbar (Search & Add Invoice) -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+                <div class="text-sm font-medium text-slate-500">
+                    <span>Control de consumos mensuales para <strong class="text-slate-900 font-bold">{{ entity.name }}</strong></span>
                 </div>
                 
-                <div class="flex items-center gap-4">
-                    <div class="relative group">
-                        <Search :class="['absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 transition-colors', themeColors.focusText]" :size="18" />
+                <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                    <div class="relative group flex-1 sm:flex-initial">
+                        <Search :class="['absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 transition-colors', themeColors.focusText]" :size="16" />
                         <input 
                             v-model="searchQuery"
                             type="text" 
                             placeholder="Buscar por número o fecha..." 
-                            :class="['bg-white border-slate-100 rounded-2xl py-4 pl-12 pr-6 text-sm font-bold shadow-xl shadow-slate-200/50 focus:ring-2 transition-all w-64 md:w-80', themeColors.focusRing, themeColors.focusBorder]"
+                            :class="['bg-white border-slate-200/80 rounded-2xl py-2 pl-10 pr-4 text-xs font-bold shadow-sm focus:ring-2 transition-all w-full sm:w-72', themeColors.focusRing, themeColors.focusBorder]"
                         />
                     </div>
                     <button 
                         v-if="contracts.length > 0"
                         @click="openCreateModal"
-                        :class="['bg-slate-900 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl shadow-slate-300 transition-all hover:-translate-y-1', themeColors.hoverBg]"
+                        :class="['bg-slate-900 text-white px-5 py-2 rounded-2xl flex items-center gap-2 font-black text-xs uppercase tracking-wider shadow-sm transition-all hover:scale-105 active:scale-95 shrink-0 cursor-pointer', themeColors.hoverBg]"
                     >
-                        <Plus :size="24" stroke-width="3" />
+                        <Plus :size="16" stroke-width="3" />
+                        <span>Cargar Factura</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Stats Bar -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40">
-                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Gasto Promedio</p>
-                    <h4 class="text-3xl font-black text-slate-900 leading-none">${{ stats.avgAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 }) }}</h4>
+            <!-- Stats Bar (Compact & Fixed) -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 shrink-0">
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Gasto Promedio</p>
+                    <h4 class="text-xl font-black text-slate-900 leading-none">${{ stats.avgAmount.toLocaleString('es-AR', { maximumFractionDigits: 0 }) }}</h4>
                 </div>
-                <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40">
-                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Consumo Promedio</p>
-                    <h4 class="text-3xl font-black text-slate-900 leading-none">{{ stats.avgConsumption.toLocaleString('es-AR', { maximumFractionDigits: 0 }) }} <span class="text-sm font-bold text-slate-300">kWh</span></h4>
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Consumo Promedio</p>
+                    <h4 class="text-xl font-black text-slate-900 leading-none">{{ stats.avgConsumption.toLocaleString('es-AR', { maximumFractionDigits: 0 }) }} <span class="text-xs font-bold text-slate-400">kWh</span></h4>
                 </div>
-                <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40 border-b-4 border-b-energy-success/30">
-                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Mínimo Facturado</p>
-                    <h4 class="text-3xl font-black text-energy-success leading-none">{{ stats.minConsumption.toLocaleString('es-AR', { maximumFractionDigits: 0 }) }} <span class="text-sm font-bold text-slate-200">kWh</span></h4>
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm border-b-2 border-b-energy-success">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Mínimo Facturado</p>
+                    <h4 class="text-xl font-black text-energy-success leading-none">{{ stats.minConsumption.toLocaleString('es-AR', { maximumFractionDigits: 0 }) }} <span class="text-xs font-bold text-slate-300">kWh</span></h4>
                 </div>
-                <div class="bg-white p-8 rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/40 border-b-4 border-b-energy-critical/30">
-                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-2">Máximo Facturado</p>
-                    <h4 class="text-3xl font-black text-energy-critical leading-none">{{ stats.maxConsumption.toLocaleString('es-AR', { maximumFractionDigits: 0 }) }} <span class="text-sm font-bold text-slate-200">kWh</span></h4>
+                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm border-b-2 border-b-energy-critical">
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Máximo Facturado</p>
+                    <h4 class="text-xl font-black text-energy-critical leading-none">{{ stats.maxConsumption.toLocaleString('es-AR', { maximumFractionDigits: 0 }) }} <span class="text-xs font-bold text-slate-300">kWh</span></h4>
                 </div>
             </div>
 
             <!-- No Contracts Warning -->
-            <div v-if="contracts.length === 0" class="bg-amber-50 rounded-[48px] p-20 text-center border border-dashed border-amber-200">
-                <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-8 shadow-sm">
-                    <AlertTriangle :size="40" class="text-amber-500" />
+            <div v-if="contracts.length === 0" class="flex-1 bg-amber-50 rounded-3xl p-12 text-center border border-dashed border-amber-200 flex flex-col items-center justify-center">
+                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                    <AlertTriangle :size="36" class="text-amber-500" />
                 </div>
-                <h3 class="text-2xl font-black text-amber-900 tracking-tight mb-2">Falta Contrato de Suministro</h3>
-                <p class="text-amber-700/70 font-medium max-w-sm mx-auto mb-10">No puede cargar facturas sin antes registrar un contrato o medidor activo para esta entidad.</p>
-                <Link :href="route('gestion.contracts')" class="bg-amber-600 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-amber-700 transition-all shadow-xl shadow-amber-200">
+                <h3 class="text-xl font-black text-amber-900 tracking-tight mb-2">Falta Contrato de Suministro</h3>
+                <p class="text-amber-700/70 font-medium max-w-sm mx-auto mb-8 text-xs">No puede cargar facturas sin antes registrar un contrato o medidor activo para esta entidad.</p>
+                <Link :href="route('gestion.contracts')" class="bg-amber-600 text-white px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-amber-700 transition-all shadow-md">
                     Configurar Contrato
                 </Link>
             </div>
 
             <!-- Empty State -->
-            <div v-else-if="filteredInvoices.length === 0" class="bg-white rounded-[48px] p-20 text-center border border-dashed border-slate-200 shadow-inner">
-                <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-8">
-                    <Receipt :size="40" class="text-slate-200" />
+            <div v-else-if="filteredInvoices.length === 0" class="flex-1 bg-white rounded-3xl p-12 text-center border border-dashed border-slate-200 shadow-inner flex flex-col items-center justify-center">
+                <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Receipt :size="36" class="text-slate-300" />
                 </div>
-                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-2">Historial vacío</h3>
-                <p class="text-slate-400 font-medium max-w-sm mx-auto mb-10">Comience cargando sus facturas de electricidad para realizar el análisis de ahorro.</p>
-                <button @click="openCreateModal" :class="['bg-slate-900 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-slate-200', themeColors.hoverBg]">
+                <h3 class="text-xl font-black text-slate-900 tracking-tight mb-2">Historial vacío</h3>
+                <p class="text-slate-400 font-medium max-w-sm mx-auto mb-8 text-xs">Comience cargando sus facturas de electricidad para realizar el análisis de ahorro.</p>
+                <button @click="openCreateModal" :class="['bg-slate-900 text-white px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-md', themeColors.hoverBg]">
                     Cargar Primera Factura
                 </button>
             </div>
 
-            <!-- Invoices Table -->
-            <div v-else class="bg-white rounded-[40px] border border-slate-100 shadow-2xl shadow-slate-200/30 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="bg-slate-50/50 border-b border-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                <th class="px-8 py-6">Factura / Fecha</th>
-                                <th class="px-8 py-6">Período de Consumo</th>
-                                <th class="px-8 py-6 text-center">Energía (kWh)</th>
-                                <th class="px-8 py-6 text-right">Monto Total</th>
-                                <th class="px-8 py-6 text-center">Estado</th>
-                                <th class="px-8 py-6 text-right">Acciones</th>
+            <!-- Invoices Table (Scrollable Container) -->
+            <div v-else class="flex-1 min-h-0 bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden flex flex-col">
+                <div class="flex-1 min-h-0 overflow-y-auto overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-slate-50 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest z-10">
+                            <tr>
+                                <th class="px-6 py-3.5">Factura / Fecha</th>
+                                <th class="px-6 py-3.5">Período de Consumo</th>
+                                <th class="px-6 py-3.5 text-center">Energía (kWh)</th>
+                                <th class="px-6 py-3.5 text-right">Monto Total</th>
+                                <th class="px-6 py-3.5 text-center">Estado</th>
+                                <th class="px-6 py-3.5 text-right">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-50">
-                            <tr v-for="invoice in filteredInvoices" :key="invoice.id" class="group hover:bg-slate-50/30 transition-colors">
-                                <td class="px-8 py-6">
+                            <tr v-for="invoice in filteredInvoices" :key="invoice.id" class="group hover:bg-slate-50/40 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex flex-col">
-                                        <span class="font-black text-slate-900">#{{ invoice.invoice_number }}</span>
+                                        <span class="font-black text-slate-900 text-sm">#{{ invoice.invoice_number }}</span>
                                         <span class="text-[10px] font-bold text-slate-400">{{ formatDate(invoice.invoice_date) }}</span>
                                     </div>
                                 </td>
-                                <td class="px-8 py-6">
-                                    <div class="space-y-1.5">
-                                        <div class="flex items-center gap-2">
-                                            <Calendar :size="12" class="text-slate-300" />
-                                            <div class="flex items-center gap-1.5 text-sm font-bold text-slate-700">
+                                <td class="px-6 py-4">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                                            <Calendar :size="12" class="text-slate-300 shrink-0" />
+                                            <div class="flex items-center gap-1.5 text-xs font-bold text-slate-700 whitespace-nowrap shrink-0">
                                                 <span>{{ formatDate(invoice.start_date) }}</span>
-                                                <ArrowRight :size="10" class="text-slate-300" />
+                                                <ArrowRight :size="10" class="text-slate-300 shrink-0" />
                                                 <span>{{ formatDate(invoice.end_date) }}</span>
                                             </div>
-                                            <span class="px-1.5 py-0.5 bg-slate-900/5 rounded text-[8px] font-black text-slate-500 uppercase tracking-tighter">
-                                                {{ calculateDays(invoice.start_date, invoice.end_date) }} Días
+                                            <span class="px-2 py-0.5 bg-slate-900/5 rounded-md text-[8px] font-black text-slate-500 uppercase tracking-tight whitespace-nowrap shrink-0 inline-flex items-center leading-none">
+                                                {{ calculateDays(invoice.start_date, invoice.end_date) }} días
                                             </span>
                                         </div>
                                         <div v-if="invoice.installment_number || invoice.tariff" class="flex items-center gap-3">
                                             <div v-if="invoice.installment_number" class="flex items-center gap-1">
                                                 <div class="w-1.5 h-1.5 rounded-full bg-energy-success/40"></div>
-                                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Cuota {{ invoice.installment_number }}/{{ invoice.total_installments }}</span>
+                                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Cuota {{ invoice.installment_number }}/{{ invoice.total_installments }}</span>
                                             </div>
                                             <div v-if="invoice.tariff" class="flex items-center gap-1">
                                                 <div class="w-1.5 h-1.5 rounded-full bg-slate-200"></div>
-                                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ invoice.tariff }}</span>
+                                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">{{ invoice.tariff }}</span>
                                             </div>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-8 py-6 text-center">
-                                    <span class="text-xl font-black text-slate-900">{{ Math.round(invoice.total_energy_consumed_kwh) }}</span>
+                                <td class="px-6 py-4 text-center whitespace-nowrap">
+                                    <span class="text-base font-black text-slate-900">{{ Math.round(invoice.total_energy_consumed_kwh) }}</span>
                                     <span class="text-[10px] font-bold text-slate-300 ml-1 uppercase">kWh</span>
                                 </td>
-                                <td class="px-8 py-6 text-right">
-                                    <span class="text-xl font-black text-energy-success">${{ parseFloat(invoice.total_amount).toLocaleString('es-AR', { maximumFractionDigits: 0 }) }}</span>
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <span class="text-base font-black text-energy-success">${{ parseFloat(invoice.total_amount).toLocaleString('es-AR', { maximumFractionDigits: 0 }) }}</span>
                                 </td>
-                                <td class="px-8 py-6 text-center">
-                                    <div v-if="invoice.usage_locked" class="inline-flex items-center gap-1.5 px-3 py-1 bg-energy-success/10 text-energy-success rounded-full text-[9px] font-black uppercase tracking-widest border border-energy-success/20">
-                                        <CheckCircle2 :size="12" /> Calibrado
+                                <td class="px-6 py-4 text-center whitespace-nowrap">
+                                    <div v-if="invoice.usage_locked" class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-energy-success/10 text-energy-success rounded-full text-[8px] font-black uppercase tracking-widest border border-energy-success/20">
+                                        <CheckCircle2 :size="11" /> Calibrado
                                     </div>
-                                    <div v-else class="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-400 rounded-full text-[9px] font-black uppercase tracking-widest border border-slate-200">
-                                        <Activity :size="12" /> Pendiente
+                                    <div v-else class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-slate-100 text-slate-400 rounded-full text-[8px] font-black uppercase tracking-widest border border-slate-200">
+                                        <Activity :size="11" /> Pendiente
                                     </div>
                                 </td>
-                                <td class="px-8 py-6 text-right">
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
                                     <div class="flex items-center justify-end gap-2">
                                         <button 
                                             v-if="invoice.installment_number === 1 && !hasPartner(invoice)"
                                             @click="openCreateInstallment2Modal(invoice)"
-                                            :class="['h-10 px-4 rounded-xl flex items-center gap-2 transition-all text-[10px] font-black uppercase tracking-widest', themeColors.bgLight, themeColors.text, themeColors.hoverBg, 'hover:text-white']"
+                                            :class="['h-8 px-3 rounded-lg flex items-center gap-1.5 transition-all text-[9px] font-black uppercase tracking-wider', themeColors.bgLight, themeColors.text, themeColors.hoverBg, 'hover:text-white']"
                                             title="Cargar Cuota 2 para este periodo"
                                         >
-                                            <Plus :size="14" stroke-width="3" />
+                                            <Plus :size="12" stroke-width="3" />
                                             Cargar Cuota 2
                                         </button>
-                                        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                                            <button @click="openEditModal(invoice)" :class="['w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center transition-all', themeColors.hoverText, themeColors.bgSoftLight]">
-                                                <Pencil :size="16" />
+                                        <div class="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all">
+                                            <button @click="openEditModal(invoice)" :class="['w-8 h-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center transition-all', themeColors.hoverText, themeColors.bgSoftLight]">
+                                                <Pencil :size="14" />
                                             </button>
-                                            <button @click="deleteInvoice(invoice)" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-energy-critical hover:bg-energy-critical/5 flex items-center justify-center transition-all">
-                                                <Trash2 :size="16" />
+                                            <button @click="deleteInvoice(invoice)" class="w-8 h-8 rounded-lg bg-slate-50 text-slate-400 hover:text-energy-critical hover:bg-energy-critical/5 flex items-center justify-center transition-all">
+                                                <Trash2 :size="14" />
                                             </button>
                                         </div>
                                     </div>

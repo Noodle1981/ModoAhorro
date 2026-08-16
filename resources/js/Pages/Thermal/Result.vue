@@ -3,7 +3,6 @@ import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { computed } from 'vue';
 import { 
-    ChevronLeft, 
     TrendingDown,
     Zap,
     Paintbrush,
@@ -100,24 +99,6 @@ const themeColors = computed(() => {
         <Head title="Diagnóstico Térmico" />
 
         <div class="h-full flex flex-col gap-4">
-            <!-- Header Section (Compact) -->
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <Link :href="route('dashboard')" :class="['w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 hover:text-white transition-all shadow-sm', themeColors.hoverBg]">
-                        <ChevronLeft :size="20" stroke-width="3" />
-                    </Link>
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <h1 class="text-3xl font-black text-slate-900 tracking-tighter">Resultado <span :class="themeColors.text">Térmico</span></h1>
-                            <div :class="['px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border', themeColors.bgLight, themeColors.text, themeColors.borderLight]">
-                                Diagnóstico Finalizado
-                            </div>
-                        </div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Entidad: {{ entity.name }}</p>
-                    </div>
-                </div>
-            </div>
-
             <!-- Main Grid Layout (Scroll-Free optimized) -->
             <div class="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4 min-h-0">
                 

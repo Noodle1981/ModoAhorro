@@ -44,32 +44,7 @@ const handleRoofTypeChange = () => {
     <MainLayout>
         <Head title="Diagnóstico Térmico" />
 
-        <div class="max-w-4xl mx-auto">
-            <!-- Header Section -->
-            <div class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-energy-warning/10 text-energy-warning rounded-full text-[10px] font-black uppercase tracking-widest border border-energy-warning/20">
-                        <Thermometer :size="14" />
-                        Módulo de Eficiencia Térmica
-                    </div>
-                    <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Salud <span class="text-energy-warning">Térmica</span>
-                    </h1>
-                    <p class="text-lg text-slate-500 font-medium max-w-xl">
-                        Analice la envolvente de <span class="text-slate-900 font-bold decoration-energy-warning/30 decoration-4 underline-offset-4 underline">{{ entity.name }}</span> para optimizar su confort.
-                    </p>
-                </div>
-                
-                <div class="hidden md:flex items-center gap-4 text-slate-300">
-                    <div class="flex flex-col items-end">
-                        <span class="text-[10px] font-black uppercase tracking-tighter">Entidad</span>
-                        <span class="text-sm font-bold text-slate-400">{{ entity.name }}</span>
-                    </div>
-                    <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
-                        <Home :size="20" />
-                    </div>
-                </div>
-            </div>
+        <div class="max-w-4xl mx-auto space-y-6">
 
             <form @submit.prevent="submit" class="space-y-10">
                 <!-- Section 1: Techo -->

@@ -93,29 +93,20 @@ const themeColors = computed(() => {
     <MainLayout>
         <Head title="Reemplazos Eficientes" />
 
-        <div class="max-w-7xl mx-auto space-y-12">
-            <!-- Header -->
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                <div class="space-y-4">
-                    <div :class="[themeColors.bgLight, themeColors.text, themeColors.borderLight]" class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border">
-                        <RefreshCcw :size="14" />
-                        Plan de Renovación
-                    </div>
-                    <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Reemplazos <span :class="themeColors.text">Eficientes</span>
-                    </h1>
-                    <p class="text-lg text-slate-500 font-medium">Equipos que generan un retorno de inversión real por su ahorro energético.</p>
+        <div class="max-w-7xl mx-auto space-y-6">
+            <!-- Action Toolbar -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="text-sm font-medium text-slate-500">
+                    <span>Equipos que generan un retorno de inversión real por su ahorro energético.</span>
                 </div>
 
-                <div class="flex flex-wrap gap-4">
-                    <div class="bg-white px-6 py-4 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 flex items-center gap-4">
-                        <div :class="[themeColors.bgLight, themeColors.text]" class="w-10 h-10 rounded-xl flex items-center justify-center">
-                            <TrendingDown :size="20" />
-                        </div>
-                        <div>
-                            <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest leading-none mb-1">Ahorro Máximo</p>
-                            <p class="text-lg font-black text-slate-900 leading-none">{{ formatMoney(opportunities.reduce((acc, o) => Math.max(acc, o.monthly_savings_amount), 0)) }}<span class="text-xs text-slate-400 font-bold ml-1">/ mes</span></p>
-                        </div>
+                <div class="bg-white px-5 py-2.5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-3">
+                    <div :class="[themeColors.bgLight, themeColors.text]" class="w-8 h-8 rounded-xl flex items-center justify-center">
+                        <TrendingDown :size="16" />
+                    </div>
+                    <div>
+                        <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5">Ahorro Máximo</p>
+                        <p class="text-base font-black text-slate-900 leading-none">{{ formatMoney(opportunities.reduce((acc, o) => Math.max(acc, o.monthly_savings_amount), 0)) }}<span class="text-[10px] text-slate-400 font-bold ml-1">/ mes</span></p>
                     </div>
                 </div>
             </div>

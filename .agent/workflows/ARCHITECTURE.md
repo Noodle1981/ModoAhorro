@@ -133,13 +133,24 @@ Cuando el Total Teórico supera a la Factura:
 - **Open/Closed**: Agregar un nuevo tipo de equipo o categoría no requiere modificar el código existente.
 - **Confianza (Testing)**: Cambios en el motor se validan con suite de pruebas para evitar derivas en la distribución.
 
-### Módulo Consumo Fantasma (Standby) — v8
+### Módulo Consumo Fantasma (Standby) — v8 / v10
 - **Ruta**: `GET /recomendaciones/consumo-fantasma` → `Standby.vue`
 - **Toggle Backend**: `POST /recomendaciones/consumo-fantasma/{equipment}/toggle` → `RecommendationController@toggleStandby` → `StandbyAnalysisService::toggleEquipmentStandby`.
-- **Vista**: Listado real de equipos agrupado por categoría. Cada fila tiene: nombre, ambiente, potencia standby, horas en espera, costo mensual, y un switch interactivo.
-- **Lógica de Ahorro**: La tarjeta KPI verde alterna dinámicamente entre "Ahorro Potencial" (si no se desenchufó nada) y "Ahorro Logrado" (si algún equipo está desenchufado), calculado desde `totalRealizedSavings`.
+- **Arquitectura de Interfaz**: Panel superior de KPI métricas fijas (`shrink-0`) con tarjetas dinámicas (*Consumo Actual*, *Costo Estimado*, *Ahorro Logrado/Potencial*) y cuadrícula de equipos con scroll vertical independiente (`overflow-y-auto`) para observar la reactividad en tiempo real al enchufar/desenchufar.
 - **Filtros de Inclusión**: `StandbyAnalysisService` excluye: iluminación, portátiles, equipos con `default_standby_power_w = 0`, y equipos inactivos.
 
+### Módulo Perfil de Usuario y Seguridad (v10)
+- **Rutas**:
+  - `GET /perfil` → `ProfileController@edit` → `Profile/Edit.vue`
+  - `PUT /perfil` → `ProfileController@update` (nombre, email con reglas de unicidad)
+  - `PUT /perfil/password` → `ProfileController@updatePassword` (validación de contraseña actual y confirmación)
+- **Componente**: `Profile/Edit.vue` con gestión de credenciales, avatar, rol (*Super Admin / Usuario*), feedback en vivo y resumen de entidades administradas. Conectado al botón de usuario en la barra lateral fija de `MainLayout.vue`.
+
+### Infraestructura — Arquitectura Master-Detail Split-View (v10)
+- **Ruta**: `GET /gestion/infraestructura` → `InfrastructureController@index` → `Entities/Infrastructure/Index.vue`
+- **Estructura**: Doble panel con alturas sincronizadas y scrolls independientes (`h-full min-h-0 overflow-hidden`):
+  - *Panel Izquierdo*: Cabecera fija con conteo de ambientes, listado vertical con scroll propio y tarjeta inferior fija del ambiente activo.
+  - *Panel Derecho*: Barra de acción fija (*+ Añadir Equipo*, nombre del ambiente) y grilla de equipos en scroll independiente.
 
 ---
 
@@ -148,3 +159,4 @@ Cuando el Total Teórico supera a la Factura:
 Ver `rules.md § 7` para el detalle completo.
 
 **Resumen**: Migrar `has_defined_pattern boolean` → `pattern_type ENUM('inamovible', 'periodico', 'volatil')` y formalizar los CategoryCalculators como clases independientes registradas en un dispatcher dentro de `EnergyEngineService`. Esto materializa el principio Open/Closed en código concreto.
+

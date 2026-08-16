@@ -25,14 +25,15 @@ const grouped = props.categories.map(cat => ({
     <Head title="Matriz de Eficiencia" />
 
     <MainLayout>
-        <div class="max-w-7xl mx-auto">
-            <div class="flex items-center justify-between mb-12">
-                <div>
-                    <h1 class="text-4xl font-black text-slate-900 tracking-tighter mb-2">Matriz de Eficiencia</h1>
-                    <p class="text-slate-500 font-medium">Define los multiplicadores de consumo para las etiquetas energéticas.</p>
+        <div class="max-w-7xl mx-auto space-y-6">
+            <!-- Action Toolbar -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="text-sm font-medium text-slate-500">
+                    <span>Define los multiplicadores de consumo para las etiquetas energéticas.</span>
                 </div>
-                <button class="bg-emerald-600 text-white px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-2 hover:bg-slate-900 transition-all shadow-lg shadow-emerald-200">
-                    <RefreshCw :size="18" /> Actualizar Matriz
+                <button class="bg-emerald-600 text-white px-5 py-2.5 rounded-2xl font-black uppercase tracking-wider text-xs flex items-center gap-2 hover:bg-slate-900 transition-all shadow-sm cursor-pointer">
+                    <RefreshCw :size="16" />
+                    <span>Actualizar Matriz</span>
                 </button>
             </div>
 

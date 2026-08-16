@@ -67,15 +67,9 @@ const startEdit = (type) => {
     <Head title="Catálogo Maestro" />
 
     <MainLayout>
-        <div class="max-w-7xl mx-auto">
-            <!-- Header Title -->
-            <div class="mb-8">
-                <h1 class="text-4xl font-black text-slate-900 tracking-tighter mb-2">Catálogo Maestro</h1>
-                <p class="text-slate-500 font-medium italic">Edita la física fundamental de los equipos de ModoAhorro.</p>
-            </div>
-
+        <div class="max-w-7xl mx-auto space-y-6">
             <!-- Toolbar Ribbon -->
-            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm mb-12 flex items-center gap-3">
+            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3">
                 <!-- Buscador -->
                 <div class="relative flex-1">
                     <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" :size="18" />

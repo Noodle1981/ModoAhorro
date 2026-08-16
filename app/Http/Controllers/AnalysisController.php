@@ -309,8 +309,8 @@ class AnalysisController extends Controller
                     'name' => $firstUsage->equipment->name ?? 'Desconocido',
                     'room' => $firstUsage->equipment->room->name ?? 'Sin área',
                     'category' => $firstUsage->equipment->category->name ?? 'Sin categoría',
-                    'kwh' => round($totalKwh / $periodCount, 1),
-                    'cost' => round($totalCost / $periodCount, 0),
+                    'kwh' => round($totalKwh / $periodCount, 2),
+                    'cost' => round($totalCost / $periodCount, 2),
                     'hours' => (float)$avgHours,
                     'history' => collect($history)->sortBy('end_date')->values()->toArray()
                 ];
@@ -339,8 +339,8 @@ class AnalysisController extends Controller
                     'name' => $firstUsage->equipment->name,
                     'room' => $firstUsage->equipment->room->name ?? 'Sin área',
                     'category' => $firstUsage->equipment->category->name ?? 'Sin categoría',
-                    'kwh' => round($totalKwh, 1),
-                    'cost' => round($totalKwh * $pricePerKwh, 0),
+                    'kwh' => round($totalKwh, 2),
+                    'cost' => round($totalKwh * $pricePerKwh, 2),
                     'hours' => round($h, 1),
                     'history' => $eqHistory
                 ];

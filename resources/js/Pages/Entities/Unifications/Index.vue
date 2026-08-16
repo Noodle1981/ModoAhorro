@@ -1,17 +1,15 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
-    RefreshCw, 
     Calendar, 
     Zap, 
     CheckCircle2, 
     AlertCircle, 
-    ArrowRight,
-    Activity,
-    Info,
-    History
+    ArrowRight, 
+    Activity, 
+    History 
 } from 'lucide-vue-next';
 
 const props = defineProps({
@@ -85,140 +83,115 @@ const calculateDays = (start, end) => {
     <MainLayout>
         <Head title="Unificaciones Bimestrales" />
 
-        <div class="max-w-7xl mx-auto space-y-10 pb-20">
-            <!-- Header Section -->
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div class="space-y-4">
-                    <div :class="['inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border', themeColors.bgLight, themeColors.text, themeColors.borderLight]">
-                        <RefreshCw :size="14" class="animate-spin-slow" />
-                        Consolidación de Datos
-                    </div>
-                    <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Unificaciones <span :class="themeColors.text">Bimestrales</span>
-                    </h1>
-                    <p class="text-lg text-slate-500 font-medium">Control físico de consumos por medidor (60 días).</p>
+        <div class="max-w-7xl mx-auto space-y-4 pb-12">
+            <!-- Empty State -->
+            <div v-if="unifications.length === 0" class="flex flex-col items-center justify-center py-28 text-center bg-white rounded-3xl border border-slate-100 p-8">
+                <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-5">
+                    <History :size="36" class="text-slate-300" />
                 </div>
-
-
+                <h3 class="text-lg font-black text-slate-900 mb-1.5">No hay unificaciones todavía</h3>
+                <p class="text-xs text-slate-400 max-w-sm">Cargue facturas con modalidad de cuotas para que el sistema las unifique automáticamente por período.</p>
+                <Link :href="route('gestion.invoices')" :class="['mt-6 px-6 py-3 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-md', themeColors.hoverBg]">Cargar Facturas</Link>
             </div>
 
-            <!-- Dashboard Content -->
-            <div v-if="unifications.length === 0" class="flex flex-col items-center justify-center py-40 text-center">
-                <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
-                    <History :size="48" class="text-slate-200" />
-                </div>
-                <h3 class="text-xl font-black text-slate-900 mb-2">No hay unificaciones todavía</h3>
-                <p class="text-slate-400 max-w-sm">Cargue facturas con modalidad de cuotas para que el sistema las unifique automáticamente por período.</p>
-                <Link :href="route('gestion.invoices')" :class="['mt-8 px-8 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all', themeColors.hoverBg]">Cargar Facturas</Link>
-            </div>
-
-            <div v-else class="grid grid-cols-1 gap-8">
-                <!-- Instruction Alert -->
-                <div class="p-6 bg-blue-50 border border-blue-100 rounded-[32px] flex items-center gap-6">
-                    <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-blue-600 shadow-sm">
-                        <Info :size="24" />
-                    </div>
-                    <div class="flex-1">
-                        <p class="text-sm font-bold text-blue-900 mb-1">Cálculo Físico para Motores de IA</p>
-                        <p class="text-xs text-blue-700 font-medium">Estos registros bimestrales son los que utilizan los "tanques" de cálculo para calibrar tu consumo. Unificar garantiza que la intensidad de uso sea real y no fraccionada.</p>
-                    </div>
-                </div>
-
+            <div v-else class="grid grid-cols-1 gap-4">
                 <!-- Unification List -->
                 <div v-for="period in unifications" :key="period.id" 
-                    :class="['bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden group transition-all', themeColors.hoverBorderLight]">
-                    <div class="p-10">
-                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-10">
+                    :class="['bg-white rounded-3xl border border-slate-100 shadow-md overflow-hidden group transition-all', themeColors.hoverBorderLight]">
+                    <div class="p-5 sm:p-6">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                             <!-- Period Info -->
-                            <div class="space-y-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="p-2.5 bg-slate-50 rounded-xl text-slate-400">
-                                        <Calendar :size="18" />
+                            <div class="space-y-1.5">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="p-2 bg-slate-50 rounded-xl text-slate-400 shrink-0">
+                                        <Calendar :size="16" />
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <h3 class="text-2xl font-black text-slate-900 tracking-tight">{{ formatDate(period.start_date) }}</h3>
-                                        <ArrowRight :size="14" class="text-slate-300" />
-                                        <h3 class="text-2xl font-black text-slate-900 tracking-tight">{{ formatDate(period.end_date) }}</h3>
+                                        <h3 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight">{{ formatDate(period.start_date) }}</h3>
+                                        <ArrowRight :size="14" class="text-slate-300 shrink-0" />
+                                        <h3 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight">{{ formatDate(period.end_date) }}</h3>
                                     </div>
                                 </div>
-                                <div class="flex items-center gap-3 ml-12">
-                                    <span class="px-2 py-0.5 bg-slate-100 rounded text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ calculateDays(period.start_date, period.end_date) }} Días de Medición</span>
+                                <div class="flex items-center gap-2.5 ml-9">
+                                    <span class="px-2 py-0.5 bg-slate-100 rounded-md text-[8px] font-black text-slate-500 uppercase tracking-tight whitespace-nowrap">{{ calculateDays(period.start_date, period.end_date) }} Días de Medición</span>
                                     <span class="w-1 h-1 bg-slate-200 rounded-full"></span>
-                                    <span class="text-xs font-bold text-slate-400">{{ period.contract_name }}</span>
+                                    <span class="text-xs font-bold text-slate-400 truncate">{{ period.contract_name }}</span>
                                 </div>
                             </div>
 
                             <!-- Status & Main KPI -->
-                            <div class="flex items-center gap-8">
+                            <div class="flex items-center gap-5 justify-end">
                                 <div class="text-right">
-                                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Consumo Real (Physical)</p>
+                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Consumo Real (Físico)</p>
                                     <div class="flex items-baseline justify-end gap-1">
-                                        <span class="text-4xl font-black text-slate-900 tracking-tighter">{{ (period.real_bimonthly_kwh || period.total_kwh).toLocaleString('es-AR', { maximumFractionDigits: 0 }) }}</span>
-                                        <span class="text-sm font-black text-slate-300 uppercase">kWh</span>
+                                        <span class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-none">{{ (period.real_bimonthly_kwh || period.total_kwh).toLocaleString('es-AR', { maximumFractionDigits: 0 }) }}</span>
+                                        <span class="text-xs font-black text-slate-400 uppercase">kWh</span>
                                     </div>
                                 </div>
-                                <div v-if="period.is_complete" class="w-20 h-20 rounded-full bg-emerald-50 flex flex-col items-center justify-center text-emerald-600 border border-emerald-100">
-                                    <CheckCircle2 :size="24" />
-                                    <span class="text-[8px] font-black uppercase mt-1">Completo</span>
+                                <div v-if="period.is_complete" class="w-12 h-12 rounded-2xl bg-emerald-50 flex flex-col items-center justify-center text-emerald-600 border border-emerald-100 shrink-0">
+                                    <CheckCircle2 :size="18" />
+                                    <span class="text-[7px] font-black uppercase mt-0.5">Completo</span>
                                 </div>
-                                <div v-else class="w-20 h-20 rounded-full bg-amber-50 flex flex-col items-center justify-center text-amber-600 border border-amber-100">
-                                    <AlertCircle :size="24" class="animate-pulse" />
-                                    <span class="text-[8px] font-black uppercase mt-1">Pendiente</span>
+                                <div v-else class="w-12 h-12 rounded-2xl bg-amber-50 flex flex-col items-center justify-center text-amber-600 border border-amber-100 shrink-0">
+                                    <AlertCircle :size="18" class="animate-pulse" />
+                                    <span class="text-[7px] font-black uppercase mt-0.5">Pendiente</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Installments Detail -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10 border-t border-slate-50">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-4 border-t border-slate-100">
                             <!-- Installments Sum -->
-                            <div class="p-6 bg-slate-50/50 rounded-3xl border border-slate-100/50">
-                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">Composición Financiera</p>
-                                <div class="space-y-3">
-                                    <div v-for="inv in period.invoices" :key="inv.id" class="flex items-center justify-between">
-                                        <span class="text-xs font-bold text-slate-500">Factura Cuota {{ inv.installment || '?' }}</span>
-                                        <span class="text-xs font-black text-slate-900">${{ inv.amount.toLocaleString('es-AR') }}</span>
+                            <div class="p-4 bg-slate-50/60 rounded-2xl border border-slate-100 space-y-2.5">
+                                <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Composición Financiera</p>
+                                <div class="space-y-1.5">
+                                    <div v-for="inv in period.invoices" :key="inv.id" class="flex items-center justify-between text-xs">
+                                        <span class="font-bold text-slate-500">Factura Cuota {{ inv.installment || '?' }}</span>
+                                        <span class="font-black text-slate-900">${{ inv.amount.toLocaleString('es-AR') }}</span>
                                     </div>
-                                    <div class="pt-3 border-t border-slate-200 flex items-center justify-between">
+                                    <div class="pt-2 border-t border-slate-200/80 flex items-center justify-between">
                                         <span class="text-xs font-black text-slate-900">Total Bimestre</span>
-                                        <span :class="['text-sm font-black', themeColors.text]">${{ period.total_amount.toLocaleString('es-AR') }}</span>
+                                        <span :class="['text-xs font-black', themeColors.text]">${{ period.total_amount.toLocaleString('es-AR') }}</span>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Consumption Breakdown -->
-                            <div class="p-6 bg-slate-50/50 rounded-3xl border border-slate-100/50">
-                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-4">Energía Facturada vs Real</p>
-                                <div class="space-y-2">
-                                    <div class="flex justify-between items-baseline">
-                                        <span class="text-xs font-bold text-slate-500">Suma Mensual:</span>
-                                        <span class="text-xs font-bold text-slate-900">{{ period.total_kwh }} kWh</span>
+                            <div class="p-4 bg-slate-50/60 rounded-2xl border border-slate-100 space-y-2">
+                                <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Energía Facturada vs Real</p>
+                                <div class="space-y-1">
+                                    <div class="flex justify-between items-baseline text-xs">
+                                        <span class="font-bold text-slate-500">Suma Mensual:</span>
+                                        <span class="font-bold text-slate-900">{{ period.total_kwh }} kWh</span>
                                     </div>
-                                    <div class="flex justify-between items-baseline">
-                                        <span class="text-xs font-bold text-slate-500">Medición Física:</span>
-                                        <span :class="['text-xs font-black', themeColors.text]">{{ period.real_bimonthly_kwh || period.total_kwh }} kWh</span>
+                                    <div class="flex justify-between items-baseline text-xs">
+                                        <span class="font-bold text-slate-500">Medición Física:</span>
+                                        <span :class="['font-black', themeColors.text]">{{ period.real_bimonthly_kwh || period.total_kwh }} kWh</span>
                                     </div>
                                     <!-- Progress Bar -->
-                                    <div class="mt-4 h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+                                    <div class="mt-2.5 h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
                                         <div 
                                             :class="['h-full rounded-full transition-all duration-1000', themeColors.progressbarBg]" 
                                             :style="{ width: (period.is_complete ? '100' : '50') + '%' }"
                                         ></div>
                                     </div>
-                                    <p class="text-[9px] text-slate-400 font-medium italic mt-2">
-                                        {{ period.is_complete ? 'Ciclo físico cerrado correctamente.' : 'Esperando carga de la segunda cuota para cerrar ciclo.' }}
+                                    <p class="text-[8px] text-slate-400 font-medium italic mt-1 leading-tight">
+                                        {{ period.is_complete ? 'Ciclo físico cerrado correctamente.' : 'Esperando carga de la 2da cuota.' }}
                                     </p>
                                 </div>
                             </div>
 
                             <!-- Tank Input Card -->
-                            <div :class="['p-6 rounded-3xl text-white shadow-xl relative overflow-hidden', themeColors.tankCard]">
-                                <Zap :class="['absolute -right-4 -bottom-4 opacity-20', themeColors.tankZap]" :size="120" />
-                                <p class="text-[9px] font-black text-white/80 uppercase tracking-widest mb-4 relative z-10">Dato para el Motor</p>
-                                <div class="relative z-10">
-                                    <h4 class="text-xs font-bold mb-1">Consumo Integrado</h4>
-                                    <p class="text-2xl font-black tracking-tight mb-4">{{ (period.real_bimonthly_kwh || period.total_kwh).toLocaleString('es-AR') }} <span class="text-sm">kWh</span></p>
-                                    <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 rounded-full text-[9px] font-black uppercase tracking-widest backdrop-blur-sm">
-                                        <Activity :size="12" /> Calibración Óptima
+                            <div :class="['p-4 rounded-2xl text-white shadow-md relative overflow-hidden flex flex-col justify-between', themeColors.tankCard]">
+                                <Zap :class="['absolute -right-3 -bottom-3 opacity-20', themeColors.tankZap]" :size="80" />
+                                <p class="text-[8px] font-black text-white/80 uppercase tracking-widest relative z-10 mb-1">Dato para el Motor</p>
+                                <div class="relative z-10 space-y-2">
+                                    <div>
+                                        <h4 class="text-[10px] font-bold opacity-80 leading-none">Consumo Integrado</h4>
+                                        <p class="text-xl font-black tracking-tight leading-tight mt-0.5">{{ (period.real_bimonthly_kwh || period.total_kwh).toLocaleString('es-AR') }} <span class="text-xs font-bold">kWh</span></p>
+                                    </div>
+                                    <div class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white/20 rounded-full text-[8px] font-black uppercase tracking-widest backdrop-blur-sm">
+                                        <Activity :size="10" /> Calibración Óptima
                                     </div>
                                 </div>
                             </div>

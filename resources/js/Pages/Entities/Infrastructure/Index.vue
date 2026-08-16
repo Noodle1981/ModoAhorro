@@ -297,184 +297,191 @@ const getCategoryIcon = (catName) => {
     <MainLayout>
         <Head title="Infraestructura y Equipos" />
 
-        <div class="max-w-7xl mx-auto space-y-10">
-            <!-- Header Section -->
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border" :class="[themeColors.bgLight, themeColors.text, themeColors.borderLight]">
-                        <Building2 :size="14" />
-                        Mapa de Activos
+        <div class="h-full flex flex-col md:flex-row gap-4 max-w-7xl mx-auto w-full min-h-0 overflow-hidden">
+            <!-- Left Pane: Rooms (Master List) -->
+            <aside class="w-full md:w-72 lg:w-80 shrink-0 flex flex-col bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden min-h-0 max-h-[38vh] md:max-h-full">
+                <!-- Rooms Header (Fixed) -->
+                <div class="p-4 border-b border-slate-100 flex items-center justify-between gap-2 shrink-0 bg-slate-50/50">
+                    <div class="flex items-center gap-2">
+                        <Building2 :size="16" class="text-slate-400" />
+                        <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">Ambientes</h3>
+                        <span class="px-2 py-0.5 bg-slate-200/80 rounded-full text-[9px] font-black text-slate-600 leading-none">
+                            {{ rooms.length }}
+                        </span>
                     </div>
-                    <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Infraestructura <span :class="themeColors.text">y Equipos</span>
-                    </h1>
-                    <p class="text-lg text-slate-500 font-medium">Gestione ambientes y el inventario eléctrico de {{ entity.name }}.</p>
+                    <button 
+                        @click="openRoomCreate" 
+                        class="h-7 px-2.5 rounded-lg flex items-center gap-1 font-black text-[9px] uppercase tracking-wider transition-all hover:text-white cursor-pointer shadow-xs" 
+                        :class="[themeColors.bgLight, themeColors.text, themeColors.hoverBg]"
+                        title="Crear nuevo ambiente"
+                    >
+                        <Plus :size="13" stroke-width="3" />
+                        <span>Nuevo</span>
+                    </button>
                 </div>
-            </div>
 
-            <div class="flex flex-col lg:flex-row gap-6 items-start">
-                
-                <!-- Sidebar: Rooms (Sticky & Compact) -->
-                <aside class="w-full lg:w-72 shrink-0 space-y-4 sticky top-6">
-                    <!-- Compact Room Info Card (NOW UP) -->
-                    <div v-if="selectedRoom" :class="[themeColors.roomBg, 'rounded-[24px] p-6 text-white space-y-4 relative overflow-hidden group shadow-xl border border-white/5']">
-                        <div class="absolute -right-2 -bottom-2 opacity-5 group-hover:scale-110 transition-transform duration-700">
-                            <Building2 :size="100" />
+                <!-- Rooms Scrollable List -->
+                <div class="flex-1 min-h-0 overflow-y-auto p-2 space-y-1.5 custom-scrollbar">
+                    <div v-if="rooms.length === 0" class="p-6 text-center text-slate-400 text-xs">
+                        <p>No hay ambientes registrados.</p>
+                        <button @click="openRoomCreate" class="mt-2 text-[10px] font-black uppercase text-slate-900 underline">Crear primero</button>
+                    </div>
+
+                    <button 
+                        v-for="room in rooms" 
+                        :key="room.id"
+                        @click="selectedRoomId = room.id"
+                        :class="[
+                            'w-full flex items-center justify-between p-3 rounded-2xl transition-all group text-left cursor-pointer',
+                            selectedRoomId === room.id ? 'bg-slate-900 text-white shadow-md' : 'hover:bg-slate-50 text-slate-700'
+                        ]"
+                    >
+                        <div class="flex items-center gap-2.5 min-w-0 pr-2">
+                            <div :class="['w-2 h-2 rounded-full shrink-0', selectedRoomId === room.id ? themeColors.bg : 'bg-slate-300']"></div>
+                            <span class="text-xs font-black truncate leading-tight">{{ room.name }}</span>
                         </div>
-                        <div class="relative z-10 space-y-4">
-                            <div class="flex items-center justify-between border-b border-white/10 pb-3">
-                                <div>
-                                    <p class="text-[8px] font-black uppercase tracking-widest mb-1" :class="themeColors.roomTextLight">Ambiente Activo</p>
-                                    <h4 class="text-sm font-black tracking-tight">{{ selectedRoom.name }}</h4>
-                                </div>
+                        <span :class="['text-[9px] font-black px-2 py-0.5 rounded-lg shrink-0', selectedRoomId === room.id ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-400']">
+                            {{ room.equipment_count }} {{ room.equipment_count === 1 ? 'eq.' : 'eqs.' }}
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Active Room Summary Footer (Fixed at Bottom of Left Pane) -->
+                <div v-if="selectedRoom" :class="[themeColors.roomBg, 'p-4 text-white shrink-0 relative overflow-hidden border-t border-white/10']">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-[8px] font-black uppercase tracking-widest opacity-60" :class="themeColors.roomTextLight">Ambiente Activo</span>
+                        <div class="flex items-center gap-1">
+                            <button @click="openRoomEdit(selectedRoom)" class="w-6 h-6 flex items-center justify-center rounded-md bg-white/10 text-white/60 hover:text-white hover:bg-white/20 transition-all cursor-pointer" title="Editar ambiente">
+                                <Pencil :size="11" />
+                            </button>
+                            <button @click="deleteRoom(selectedRoom)" class="w-6 h-6 flex items-center justify-center rounded-md bg-white/10 text-white/40 hover:text-rose-300 hover:bg-rose-500/20 transition-all cursor-pointer" title="Eliminar ambiente">
+                                <Trash2 :size="11" />
+                            </button>
+                        </div>
+                    </div>
+                    <h4 class="text-xs font-black truncate">{{ selectedRoom.name }}</h4>
+                    <p class="text-[9px] font-medium opacity-70 truncate mt-0.5" :title="selectedRoom.description">
+                        {{ selectedRoom.description || 'Sin descripción adicional.' }}
+                    </p>
+                </div>
+            </aside>
+
+            <!-- Right Pane: Equipment Details (Scrollable Main View) -->
+            <main class="flex-1 min-w-0 flex flex-col bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden min-h-0">
+                <div v-if="selectedRoom" class="flex-1 min-h-0 flex flex-col">
+                    <!-- Top Action Toolbar (Fixed) -->
+                    <div class="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between gap-3 shrink-0 bg-slate-50/40">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-9 h-9 rounded-xl bg-white border border-slate-100 shadow-xs flex items-center justify-center shrink-0" :class="themeColors.text">
+                                <LayoutGrid :size="16" />
+                            </div>
+                            <div class="min-w-0">
                                 <div class="flex items-center gap-2">
-                                    <button @click="openRoomEdit(selectedRoom)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-white/30 hover:text-white hover:bg-white/10 transition-all" title="Editar ambiente">
-                                        <Pencil :size="12" />
-                                    </button>
-                                    <button @click="deleteRoom(selectedRoom)" class="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-white/20 hover:text-rose-400 hover:bg-rose-500/10 transition-all" title="Eliminar ambiente">
-                                        <Trash2 :size="12" />
-                                    </button>
+                                    <h2 class="text-base font-black text-slate-900 tracking-tight truncate">{{ selectedRoom.name }}</h2>
+                                    <span class="px-2 py-0.5 bg-slate-200/80 rounded-md text-[8px] font-black text-slate-600 uppercase tracking-wider shrink-0">
+                                        {{ selectedRoom.equipment_count }} {{ selectedRoom.equipment_count === 1 ? 'Equipo' : 'Equipos' }}
+                                    </span>
                                 </div>
+                                <p class="text-[10px] text-slate-400 font-medium truncate">Inventario eléctrico asignado a este ambiente</p>
                             </div>
-                            <p class="text-[10px] font-medium leading-relaxed" :class="themeColors.roomTextMuted" :title="selectedRoom.description">
-                                {{ selectedRoom.description || 'Sin descripción adicional.' }}
-                            </p>
-
-                            <!-- Quick Action: Add Equipment -->
-                            <button 
-                                @click="openEqCreate" 
-                                class="w-full py-3 bg-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg"
-                                :class="themeColors.roomBtn"
-                            >
-                                <Plus :size="14" stroke-width="3" /> 
-                                Añadir Equipo
-                            </button>
                         </div>
+
+                        <button 
+                            @click="openEqCreate" 
+                            class="bg-slate-900 text-white px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-wider transition-all hover:scale-105 active:scale-95 shadow-sm shrink-0 flex items-center gap-1.5 cursor-pointer" 
+                            :class="themeColors.hoverBg"
+                        >
+                            <Plus :size="13" stroke-width="3" />
+                            <span>Añadir Equipo</span>
+                        </button>
                     </div>
 
-                    <div class="bg-white rounded-[24px] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
-                        <div class="p-4 border-b border-slate-50 flex items-center justify-between">
-                            <h3 class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Ambientes</h3>
-                            <button @click="openRoomCreate" class="w-7 h-7 rounded-lg flex items-center justify-center hover:text-white transition-all" :class="[themeColors.bgLight, themeColors.text, themeColors.hoverBg]">
-                                <Plus :size="14" />
-                            </button>
-                        </div>
-                        <div class="p-2 space-y-1">
-                            <button 
-                                v-for="room in rooms" 
-                                :key="room.id"
-                                @click="selectedRoomId = room.id"
-                                :class="[
-                                    'w-full flex items-center justify-between p-3 rounded-xl transition-all group',
-                                    selectedRoomId === room.id ? 'bg-slate-900 text-white shadow-lg' : 'hover:bg-slate-50 text-slate-600'
-                                ]"
-                            >
-                                <div class="flex items-center gap-3">
-                                    <div :class="['w-1.5 h-1.5 rounded-full', selectedRoomId === room.id ? themeColors.bg : 'bg-slate-200']"></div>
-                                    <span class="text-xs font-bold leading-none">{{ room.name }}</span>
-                                </div>
-                                <span :class="['text-[9px] font-black px-1.5 py-0.5 rounded-md', selectedRoomId === room.id ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-400']">
-                                    {{ room.equipment_count }}
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </aside>
- 
-                <!-- Main Grid: Equipment -->
-                <main class="flex-1 min-w-0">
-                    <div v-if="selectedRoom" class="space-y-6">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-white border border-slate-100 shadow-md flex items-center justify-center" :class="themeColors.text">
-                                    <LayoutGrid :size="18" />
-                                </div>
-                                <h2 class="text-xl font-black text-slate-900 tracking-tight">Equipos <span class="text-slate-300 font-medium ml-1">({{ selectedRoom.equipment_count }})</span></h2>
-                            </div>
-                            <button @click="openEqCreate" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl shadow-slate-200" :class="themeColors.hoverBg">
-                                <Plus :size="12" class="inline mr-1" stroke-width="3" /> Añadir Equipo
-                            </button>
-                        </div>
-
-                        <!-- Equipment Grid -->
-                        <div v-if="selectedRoom.equipment && selectedRoom.equipment.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Equipment Scrollable Grid -->
+                    <div class="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 custom-scrollbar">
+                        <div v-if="selectedRoom.equipment && selectedRoom.equipment.length > 0" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
                             <div 
                                 v-for="eq in selectedRoom.equipment" 
                                 :key="eq.id"
-                                class="bg-white rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/30 p-8 space-y-6 group hover:shadow-2xl transition-all"
+                                class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 space-y-3.5 group hover:shadow-md hover:border-slate-200 transition-all flex flex-col justify-between"
                             >
-                                <div class="flex items-start justify-between">
-                                    <div class="flex items-center gap-4">
-                                        <div class="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 transition-colors border border-slate-100" :class="themeColors.groupHoverText">
-                                            <component :is="getCategoryIcon(eq.category?.name || '')" :size="28" />
+                                <div class="space-y-2.5">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div class="flex items-center gap-2.5 min-w-0">
+                                            <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 shrink-0 border border-slate-100 transition-colors" :class="themeColors.groupHoverText">
+                                                <component :is="getCategoryIcon(eq.category?.name || '')" :size="20" />
+                                            </div>
+                                            <div class="min-w-0">
+                                                <h5 class="text-xs font-black text-slate-900 leading-tight truncate">{{ eq.name }}</h5>
+                                                <p v-if="eq.brand || eq.model" class="text-[8px] font-bold uppercase tracking-wider truncate mt-0.5" :class="themeColors.text">
+                                                    {{ eq.brand }} {{ eq.model }}
+                                                </p>
+                                                <p class="text-[8px] font-black text-slate-300 uppercase tracking-widest truncate">{{ eq.type?.name }}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h5 class="font-black text-slate-900 leading-tight">{{ eq.name }}</h5>
-                                            <p v-if="eq.brand || eq.model" class="text-[9px] font-bold uppercase tracking-wide" :class="themeColors.text">
-                                                {{ eq.brand }} {{ eq.model }}
+                                        <div class="flex items-center gap-1 shrink-0">
+                                            <div v-if="eq.is_inverter" class="p-1 bg-emerald-50 text-emerald-500 rounded-md border border-emerald-100" title="Tecnología Inverter">
+                                                <Sparkles :size="12" />
+                                            </div>
+                                            <div v-if="eq.is_standby" class="p-1 bg-amber-50 text-amber-500 rounded-md border border-amber-100" title="Consumo Vampiro (Standby)">
+                                                <Zap :size="12" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div class="bg-slate-50/70 p-2 rounded-xl border border-slate-100/60">
+                                            <p class="text-[7px] font-black text-slate-400 uppercase">Potencia</p>
+                                            <p class="text-xs font-black text-slate-800">{{ eq.nominal_power_w }}<span class="text-[8px] font-bold ml-0.5 text-slate-400">W</span></p>
+                                        </div>
+                                        <div class="bg-slate-50/70 p-2 rounded-xl border border-slate-100/60">
+                                            <p class="text-[7px] font-black text-slate-400 uppercase">Eficiencia</p>
+                                            <p class="text-xs font-black text-slate-800">
+                                                <span v-if="eq.energy_label" class="text-emerald-600">{{ eq.energy_label }}</span>
+                                                <span v-else class="text-slate-300 font-medium italic text-[10px]">N/A</span>
                                             </p>
-                                            <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest">{{ eq.type?.name }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <div v-if="eq.is_inverter" class="p-1.5 bg-emerald-50 text-emerald-500 rounded-lg border border-emerald-100" title="Tecnología Inverter">
-                                            <Sparkles :size="14" />
-                                        </div>
-                                        <div v-if="eq.is_standby" class="p-1.5 bg-amber-50 text-amber-500 rounded-lg border border-amber-100" title="Consumo Vampiro (Standby)">
-                                            <Zap :size="14" />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="bg-slate-50/50 p-3 rounded-xl border border-slate-100/50">
-                                        <p class="text-[8px] font-black text-slate-300 uppercase mb-1">Potencia</p>
-                                        <p class="text-sm font-black text-slate-700">{{ eq.nominal_power_w }}<span class="text-[9px] ml-0.5 font-bold">W</span></p>
-                                    </div>
-                                    <div class="bg-slate-50/50 p-3 rounded-xl border border-slate-100/50">
-                                        <p class="text-[8px] font-black text-slate-300 uppercase mb-1">Eficiencia</p>
-                                        <p class="text-sm font-black text-slate-700">
-                                            <span v-if="eq.energy_label" class="text-emerald-500">{{ eq.energy_label }}</span>
-                                            <span v-else class="text-slate-300 font-medium italic">N/A</span>
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center gap-2 pt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button @click="openEqEdit(eq)" class="flex-1 bg-slate-50 text-slate-400 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all" :class="themeColors.hoverText">
+                                <div class="flex items-center gap-1.5 pt-2 border-t border-slate-50">
+                                    <button @click="openEqEdit(eq)" class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-500 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer" :class="themeColors.hoverText">
                                         Editar
                                     </button>
-                                    <button @click="deleteEq(eq)" class="w-10 bg-slate-50 text-slate-300 hover:text-rose-500 py-2 rounded-xl transition-all">
-                                        <Trash2 :size="14" class="mx-auto" />
+                                    <button @click="deleteEq(eq)" class="w-8 bg-slate-50 hover:bg-rose-50 text-slate-300 hover:text-rose-500 py-1.5 rounded-lg transition-all cursor-pointer" title="Eliminar equipo">
+                                        <Trash2 :size="12" class="mx-auto" />
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Empty Equipment -->
-                        <div v-else class="bg-slate-50/50 rounded-[40px] p-20 text-center border-2 border-dashed border-slate-100">
-                            <div class="max-w-xs mx-auto space-y-4">
-                                <Zap :size="40" class="text-slate-100 mx-auto" />
-                                <h4 class="text-xl font-black text-slate-300">Habitación vacía</h4>
-                                <p class="text-sm text-slate-400 font-medium">Añada los equipos eléctricos de este ambiente para ver su impacto energético.</p>
-                                <button @click="openEqCreate" class="text-xs font-black uppercase tracking-widest border-b-2 pb-1" :class="[themeColors.text, themeColors.borderBottom]">
-                                    Añadir Primer Equipo
+                        <!-- Empty Equipment State -->
+                        <div v-else class="h-full min-h-[220px] flex flex-col items-center justify-center p-8 text-center bg-slate-50/40 rounded-2xl border-2 border-dashed border-slate-100">
+                            <div class="max-w-xs mx-auto space-y-3">
+                                <Zap :size="32" class="text-slate-300 mx-auto" />
+                                <div>
+                                    <h4 class="text-sm font-black text-slate-700">Sin equipos registrados</h4>
+                                    <p class="text-[11px] text-slate-400 font-medium mt-0.5">Añade los artefactos eléctricos de este ambiente para calcular su consumo.</p>
+                                </div>
+                                <button @click="openEqCreate" class="inline-flex items-center gap-1 px-4 py-2 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer" :class="themeColors.hoverBg">
+                                    <Plus :size="12" stroke-width="3" />
+                                    <span>Añadir Primer Equipo</span>
                                 </button>
                             </div>
                         </div>
                     </div>
-                    
-                    <div v-else class="flex flex-col items-center justify-center py-40 text-center space-y-6">
-                        <div class="w-24 h-24 bg-white rounded-[32px] shadow-2xl flex items-center justify-center text-slate-100 rotate-12">
-                            <Monitor :size="48" />
-                        </div>
-                        <div class="space-y-2">
-                            <h3 class="text-2xl font-black text-slate-900 tracking-tight">Selecciona un ambiente</h3>
-                            <p class="text-slate-400 font-medium">Elige una habitación de la izquierda para gestionar su inventario.</p>
-                        </div>
+                </div>
+                
+                <!-- No Room Selected -->
+                <div v-else class="flex-1 flex flex-col items-center justify-center p-12 text-center space-y-4">
+                    <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300">
+                        <Monitor :size="32" />
                     </div>
-                </main>
-            </div>
+                    <div class="space-y-1">
+                        <h3 class="text-base font-black text-slate-900">Selecciona un ambiente</h3>
+                        <p class="text-xs text-slate-400 max-w-xs">Elige un espacio del panel lateral para administrar su inventario de equipos.</p>
+                    </div>
+                </div>
+            </main>
         </div>
 
         <!-- Room Modal -->

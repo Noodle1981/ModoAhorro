@@ -47,20 +47,7 @@ const getInertiaLabel = (level) => {
     <MainLayout>
         <Head title="Salud Térmica" />
 
-        <div class="max-w-7xl mx-auto space-y-12">
-            <!-- Header -->
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                <div class="space-y-4">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-sky-100 text-sky-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-sky-200">
-                        <Thermometer :size="14" />
-                        Diagnóstico de Envolvente
-                    </div>
-                    <h1 class="text-5xl font-black text-slate-900 tracking-tighter leading-none">
-                        Salud <span class="text-sky-500">Térmica</span>
-                    </h1>
-                    <p class="text-lg text-slate-500 font-medium">Análisis de la capacidad de tu propiedad para retener temperatura y ahorrar en climatización.</p>
-                </div>
-            </div>
+        <div class="max-w-7xl mx-auto space-y-6">
 
             <!-- Profile Summary Card -->
             <div class="bg-slate-950 rounded-[64px] p-12 md:p-20 text-white overflow-hidden relative group">

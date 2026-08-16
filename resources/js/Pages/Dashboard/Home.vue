@@ -129,24 +129,6 @@ const climateZoneColor = computed(() => {
         <Head title="Inicio" />
         
         <div class="max-w-6xl mx-auto space-y-4 pb-4">
-            <!-- Hero / Welcome Section -->
-            <div class="relative overflow-hidden group flex items-center justify-between">
-                <div class="space-y-1 relative z-10">
-                    <div :class="['inline-flex items-center gap-2 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border', themeColors.bgLight, themeColors.text, themeColors.border]">
-                        <Activity :size="14" />
-                        Motor de Eficiencia v3.1
-                    </div>
-                    
-                    <h1 class="text-3xl font-black text-slate-900 tracking-tighter leading-none">
-                        Resumen de <span :class="themeColors.text">{{ currentEntity?.name || 'su Entidad' }}</span>
-                    </h1>
-                </div>
-                
-                <p class="hidden md:block text-[10px] text-slate-400 font-bold max-w-xs text-right uppercase tracking-widest leading-tight">
-                    Gemelo Digital centralizado.<br/>Optimizando consumo en tiempo real.
-                </p>
-            </div>
-
             <!-- Main Layout: Grid 12 for high density -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 
