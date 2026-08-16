@@ -1,10 +1,13 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up() {
+return new class extends Migration
+{
+    public function up()
+    {
         Schema::create('equipment_usages', function (Blueprint $table) {
             $table->id();
             $table->foreignId('invoice_id')->constrained('invoices')->onDelete('cascade');
@@ -17,7 +20,9 @@ return new class extends Migration {
             $table->timestamps();
         });
     }
-    public function down() {
+
+    public function down()
+    {
         Schema::dropIfExists('equipment_usages');
     }
 };

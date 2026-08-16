@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Entity;
 use App\Models\Locality;
+use App\Models\Province;
+use App\Services\ClimateService;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class EntityController extends Controller
@@ -14,11 +16,11 @@ class EntityController extends Controller
         $currentEntityId = session('active_entity_id');
         $entity = Entity::with('locality.province')->find($currentEntityId);
 
-        if (!$entity || $request->user()->cannot('update', $entity)) {
+        if (! $entity || $request->user()->cannot('update', $entity)) {
             abort(403);
         }
 
-        $provinces = \App\Models\Province::whereIn('name', ['San Juan', 'Mendoza', 'San Luis'])->get();
+        $provinces = Province::whereIn('name', ['San Juan', 'Mendoza', 'San Luis'])->get();
         $localityQuery = Locality::whereIn('province_id', $provinces->pluck('id'));
 
         $localitiesData = $localityQuery->get()->map(function ($l) {
@@ -33,7 +35,7 @@ class EntityController extends Controller
         $weather = null;
         $climateProfile = null;
         if ($entity->locality) {
-            $weatherService = app(\App\Services\ClimateService::class);
+            $weatherService = app(ClimateService::class);
             $weather = $weatherService->getCurrentWeather($entity->locality);
             $climateProfile = $weatherService->getLocalityClimateProfile($entity->locality);
         }
@@ -88,7 +90,7 @@ class EntityController extends Controller
         $businessRoom = $entity->rooms()->where('description', 'like', '%autogenerado%')->first();
 
         if ($entity->has_business_activity) {
-            $intendedName = match($entity->business_type) {
+            $intendedName = match ($entity->business_type) {
                 'almacen' => 'Almacén',
                 'taller' => 'Taller',
                 'venta' => 'Local / Venta',
@@ -104,7 +106,7 @@ class EntityController extends Controller
                 // Crear si no existe
                 $entity->rooms()->create([
                     'name' => $intendedName,
-                    'description' => $identifier
+                    'description' => $identifier,
                 ]);
             }
         } else {
@@ -116,6 +118,7 @@ class EntityController extends Controller
 
         return redirect()->route('home')->with('success', 'Perfil de la casa actualizado correctamente.');
     }
+
     /**
      * Store a new entity and link it to the user.
      */
@@ -136,7 +139,7 @@ class EntityController extends Controller
         }
 
         // Get a default locality
-        $defaultLocality = Locality::whereHas('province', fn($q) => $q->where('name', 'San Juan'))->first() ?? Locality::first();
+        $defaultLocality = Locality::whereHas('province', fn ($q) => $q->where('name', 'San Juan'))->first() ?? Locality::first();
 
         // 1. Create Entity
         $entity = Entity::create([

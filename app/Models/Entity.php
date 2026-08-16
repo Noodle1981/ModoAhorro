@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Services\ThermalProfileService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Entity extends Model
 {
@@ -34,10 +35,12 @@ class Entity extends Model
     {
         return $this->hasManyThrough(Invoice::class, Contract::class, 'entity_id', 'contract_id');
     }
+
     public function contracts()
     {
         return $this->hasMany(Contract::class);
     }
+
     protected $fillable = [
         'name',
         'type',
@@ -89,7 +92,6 @@ class Entity extends Model
         return $this->belongsTo(Locality::class);
     }
 
-
     public function rooms()
     {
         return $this->hasMany(Room::class);
@@ -100,15 +102,15 @@ class Entity extends Model
      */
     public function updateThermalLabel()
     {
-        $service = app(\App\Services\ThermalProfileService::class);
+        $service = app(ThermalProfileService::class);
         $result = $service->calculate($this->thermal_profile ?? []);
-        
+
         $currentProfile = $this->thermal_profile ?? [];
         $newProfile = array_merge($currentProfile, $result);
-        
+
         $this->thermal_profile = $newProfile;
         $this->save();
-        
+
         return $this;
     }
 }

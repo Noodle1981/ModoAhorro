@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -37,10 +38,10 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
         $entities = $user ? $user->entities()->with('locality')->get() : collect();
-        
+
         // Active entity logic: From session or first one available
         $currentEntityId = session('active_entity_id');
-        $currentEntity = $entities->isNotEmpty() 
+        $currentEntity = $entities->isNotEmpty()
             ? ($entities->where('id', $currentEntityId)->first() ?? $entities->first())
             : null;
 
@@ -51,8 +52,8 @@ class HandleInertiaRequests extends Middleware
                 'entities' => $entities,
                 'current_entity' => $currentEntity,
             ],
-            'ziggy' => fn() => [
-                ...(new \Tighten\Ziggy\Ziggy)->toArray(),
+            'ziggy' => fn () => [
+                ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
         ];

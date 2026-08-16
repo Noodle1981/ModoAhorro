@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('equipment_usages', 'kwh_reconciled')) {
+        if (! Schema::hasColumn('equipment_usages', 'kwh_reconciled')) {
             Schema::table('equipment_usages', function (Blueprint $table) {
                 $table->decimal('kwh_reconciled', 10, 4)->nullable();
                 $table->tinyInteger('tank_assignment')->nullable();

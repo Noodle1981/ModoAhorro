@@ -3,9 +3,9 @@
 namespace Database\Factories;
 
 use App\Models\Equipment;
-use App\Models\Room;
 use App\Models\EquipmentCategory;
 use App\Models\EquipmentType;
+use App\Models\Room;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class EquipmentFactory extends Factory

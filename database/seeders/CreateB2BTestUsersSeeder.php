@@ -2,10 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Entity;
-use App\Models\Plan;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class CreateB2BTestUsersSeeder extends Seeder

@@ -1,14 +1,15 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-
 class EquipmentHistory extends Model
 {
     protected $table = 'equipment_history';
+
     protected $fillable = [
-        'equipment_id', 'action', 'reason', 'action_date', 'user_id', 'old_equipment_id', 'new_equipment_id', 'replacement_date', 'invoice_id'
+        'equipment_id', 'action', 'reason', 'action_date', 'user_id', 'old_equipment_id', 'new_equipment_id', 'replacement_date', 'invoice_id',
     ];
 
     public function equipment()

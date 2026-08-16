@@ -10,8 +10,8 @@ class GridOptimizerService
     /**
      * Calculate potential savings by shifting usage to off-peak hours.
      *
-     * @param Collection $usages Collection of EquipmentUsage
-     * @param TariffScheme $tariffScheme The tariff scheme to compare against
+     * @param  Collection  $usages  Collection of EquipmentUsage
+     * @param  TariffScheme  $tariffScheme  The tariff scheme to compare against
      * @return array List of opportunities
      */
     public function calculateShiftSavings(Collection $usages, TariffScheme $tariffScheme): array
@@ -19,7 +19,7 @@ class GridOptimizerService
         // 1. Get Prices
         // Assuming the scheme has bands. We need to find the most expensive (Peak) and cheapest (Off-Peak).
         $bands = $tariffScheme->bands;
-        
+
         if ($bands->isEmpty()) {
             return [];
         }
@@ -33,7 +33,7 @@ class GridOptimizerService
 
         // Plan B: Shoulder Band (Resto)
         // Definition: Not Off-Peak, but price < Off-Peak * 1.20
-        $shoulderBand = $bands->filter(function($b) use ($offPeakBand) {
+        $shoulderBand = $bands->filter(function ($b) use ($offPeakBand) {
             return $b->id !== $offPeakBand->id && $b->price_per_kwh < ($offPeakBand->price_per_kwh * 1.20);
         })->first();
 
@@ -49,7 +49,7 @@ class GridOptimizerService
             // Check if equipment type is shiftable
             // We assume $usage->equipment->type is loaded or accessible
             $equipment = $usage->equipment;
-            if (!$equipment || !$equipment->type || !$equipment->type->is_shiftable) {
+            if (! $equipment || ! $equipment->type || ! $equipment->type->is_shiftable) {
                 continue;
             }
 
@@ -58,7 +58,9 @@ class GridOptimizerService
             // For now, let's use a fallback if kwh_reconciled is null.
             $kwhMonth = $usage->kwh_reconciled ?? ($usage->daily_kwh * 30); // Fallback to daily * 30
 
-            if ($kwhMonth <= 0) continue;
+            if ($kwhMonth <= 0) {
+                continue;
+            }
 
             // Potential Saving = Consumption * (PeakPrice - OffPeakPrice)
             // We assume the user is currently using it in Peak hours (Worst Case Scenario)
@@ -71,7 +73,7 @@ class GridOptimizerService
                     'current_cost' => $kwhMonth * $pricePeak,
                     'optimized_cost' => $kwhMonth * $priceOffPeak,
                     'potential_savings' => $saving,
-                    'suggestion' => "Úsalo entre las " . substr($offPeakBand->start_time, 0, 5) . " y " . substr($offPeakBand->end_time, 0, 5) . " hs",
+                    'suggestion' => 'Úsalo entre las '.substr($offPeakBand->start_time, 0, 5).' y '.substr($offPeakBand->end_time, 0, 5).' hs',
                     'peak_band_name' => $peakBand->name,
                     'off_peak_band_name' => $offPeakBand->name,
                 ];
@@ -80,9 +82,9 @@ class GridOptimizerService
                 if ($shoulderBand) {
                     $priceShoulder = $shoulderBand->price_per_kwh;
                     $savingShoulder = $kwhMonth * ($pricePeak - $priceShoulder);
-                    
+
                     if ($savingShoulder > 0) {
-                        $opp['suggestion_secondary'] = "O entre las " . substr($shoulderBand->start_time, 0, 5) . " y " . substr($shoulderBand->end_time, 0, 5) . " hs (Ahorras $" . number_format($savingShoulder, 0, ',', '.') . ")";
+                        $opp['suggestion_secondary'] = 'O entre las '.substr($shoulderBand->start_time, 0, 5).' y '.substr($shoulderBand->end_time, 0, 5).' hs (Ahorras $'.number_format($savingShoulder, 0, ',', '.').')';
                     }
                 }
 

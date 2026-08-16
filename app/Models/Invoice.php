@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -60,14 +61,15 @@ class Invoice extends Model
 
     public function equipmentUsages()
     {
-        return $this->hasMany(\App\Models\EquipmentUsage::class, 'invoice_id');
+        return $this->hasMany(EquipmentUsage::class, 'invoice_id');
     }
 
     public function getDaysInPeriodAttribute()
     {
         if ($this->start_date && $this->end_date) {
-            return \Carbon\Carbon::parse($this->start_date)->diffInDays(\Carbon\Carbon::parse($this->end_date)) + 1; // Inclusive
+            return Carbon::parse($this->start_date)->diffInDays(Carbon::parse($this->end_date)) + 1; // Inclusive
         }
+
         return 30; // Fallback
     }
 }

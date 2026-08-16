@@ -2,12 +2,12 @@
 
 namespace App\Services\Analytics;
 
-use App\Models\User;
 use App\Models\Entity;
-use App\Models\Room;
 use App\Models\Equipment;
 use App\Models\Invoice;
 use App\Models\Plan;
+use App\Models\Room;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class AdminAnalyticsService
@@ -58,14 +58,14 @@ class AdminAnalyticsService
     protected function getEntityMetrics(): array
     {
         $totalEntities = Entity::count();
-        
+
         $entitiesByType = Entity::select('type', DB::raw('count(*) as count'))
             ->groupBy('type')
             ->get()
             ->pluck('count', 'type')
             ->toArray();
 
-        $avgEntitiesPerUser = $totalEntities > 0 
+        $avgEntitiesPerUser = $totalEntities > 0
             ? round(DB::table('entity_user')->count() / User::count(), 2)
             : 0;
 
@@ -83,8 +83,8 @@ class AdminAnalyticsService
     {
         $totalRooms = Room::count();
         $totalEntities = Entity::count();
-        
-        $avgRoomsPerEntity = $totalEntities > 0 
+
+        $avgRoomsPerEntity = $totalEntities > 0
             ? round($totalRooms / $totalEntities, 2)
             : 0;
 
@@ -110,8 +110,8 @@ class AdminAnalyticsService
     {
         $totalEquipment = Equipment::count();
         $totalEntities = Entity::count();
-        
-        $avgEquipmentPerEntity = $totalEntities > 0 
+
+        $avgEquipmentPerEntity = $totalEntities > 0
             ? round($totalEquipment / $totalEntities, 2)
             : 0;
 
@@ -138,7 +138,7 @@ class AdminAnalyticsService
     {
         $totalConsumption = Invoice::sum('consumo_kwh') ?? 0;
         $totalInvoices = Invoice::count();
-        
+
         // Simplified savings calculation - based on invoices with data
         // This is a placeholder - you can enhance it later with actual recommendation logic
         $totalSavings = $totalConsumption * 0.15; // Assuming 15% potential savings
@@ -169,7 +169,7 @@ class AdminAnalyticsService
         $entitiesGrowth = [];
 
         foreach ($months as $month) {
-            $monthStart = $month . '-01';
+            $monthStart = $month.'-01';
             $monthEnd = date('Y-m-t', strtotime($monthStart));
 
             $usersGrowth[$month] = User::whereBetween('created_at', [$monthStart, $monthEnd])->count();
@@ -177,8 +177,8 @@ class AdminAnalyticsService
         }
 
         return [
-            'labels' => array_map(function($m) {
-                return date('M Y', strtotime($m . '-01'));
+            'labels' => array_map(function ($m) {
+                return date('M Y', strtotime($m.'-01'));
             }, $months),
             'users' => array_values($usersGrowth),
             'entities' => array_values($entitiesGrowth),

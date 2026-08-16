@@ -2,8 +2,8 @@
 
 namespace App\Services\Climate;
 
-use App\Models\Locality;
 use App\Models\Invoice;
+use App\Models\Locality;
 use App\Services\ClimateService;
 use Carbon\Carbon;
 

@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Traits\GroupsInvoices;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-
-use App\Traits\GroupsInvoices;
 
 class UnificationController extends Controller
 {
@@ -18,17 +17,17 @@ class UnificationController extends Controller
     {
         $user = $request->user();
         $activeEntityId = session('active_entity_id');
-        
+
         $entity = $user->entities()->where('entities.id', $activeEntityId)->first();
-        
-        if (!$entity) {
+
+        if (! $entity) {
             $entity = $user->entities()->first();
             if ($entity) {
                 session(['active_entity_id' => $entity->id]);
             }
         }
 
-        if (!$entity) {
+        if (! $entity) {
             return redirect()->route('dashboard')->with('error', 'Debes seleccionar una entidad.');
         }
 

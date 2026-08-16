@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -9,6 +10,7 @@ class Meter extends Model
     {
         return $this->hasMany(Invoice::class);
     }
+
     protected $fillable = [
         'serial_number',
         'company_id',

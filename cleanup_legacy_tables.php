@@ -1,11 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
-require __DIR__ . '/vendor/autoload.php';
-$app = require_once __DIR__ . '/bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+require __DIR__.'/vendor/autoload.php';
+$app = require_once __DIR__.'/bootstrap/app.php';
+$kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
 // Tablas que queremos CONSERVAR (ModoAhorro y Laravel Core)
@@ -52,7 +53,7 @@ $dropped = [];
 $skipped = [];
 
 foreach ($allTables as $table) {
-    if (!in_array($table->name, $tablesToKeep)) {
+    if (! in_array($table->name, $tablesToKeep)) {
         Schema::dropIfExists($table->name);
         $dropped[] = $table->name;
     } else {
@@ -61,9 +62,11 @@ foreach ($allTables as $table) {
 }
 
 echo "Limpieza finalizada.\n";
-echo "Tablas ELIMINADAS: " . count($dropped) . "\n";
-foreach($dropped as $t) echo " - $t\n";
-echo "Tablas CONSERVADAS: " . count($skipped) . "\n";
+echo 'Tablas ELIMINADAS: '.count($dropped)."\n";
+foreach ($dropped as $t) {
+    echo " - $t\n";
+}
+echo 'Tablas CONSERVADAS: '.count($skipped)."\n";
 
 // Ejecutar Vacuum para reclamar espacio
 DB::statement('VACUUM');

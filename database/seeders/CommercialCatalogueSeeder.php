@@ -13,13 +13,13 @@ class CommercialCatalogueSeeder extends Seeder
         // 1. CATEGORÍAS COMERCIALES
         $cats = [
             'GASTRO' => EquipmentCategory::firstOrCreate(['name' => 'Equipamiento Gastronómico'], [
-                'description' => 'Equipos industriales para cocción y preparación en restaurantes y bares.'
+                'description' => 'Equipos industriales para cocción y preparación en restaurantes y bares.',
             ]),
             'REFRIG_COMM' => EquipmentCategory::firstOrCreate(['name' => 'Refrigeración Comercial'], [
-                'description' => 'Cámaras de frío, exhibidoras y mesas refrigeradas industriales.'
+                'description' => 'Cámaras de frío, exhibidoras y mesas refrigeradas industriales.',
             ]),
             'EXTRACT' => EquipmentCategory::firstOrCreate(['name' => 'Extracción y Ventilación'], [
-                'description' => 'Sistemas de extracción de humos y ventilación forzada para cocinas industriales.'
+                'description' => 'Sistemas de extracción de humos y ventilación forzada para cocinas industriales.',
             ]),
         ];
 

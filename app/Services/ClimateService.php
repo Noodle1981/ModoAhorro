@@ -2,32 +2,34 @@
 
 namespace App\Services;
 
+use App\Models\ClimateData;
+use App\Models\Invoice;
+use App\Models\Locality;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
-use App\Models\ClimateData;
-use App\Models\Locality;
-use App\Models\Invoice;
 
 class ClimateService
 {
     // Temperaturas base de confort humano (Estándar Modo Ahorro v3)
     const BASE_TEMP_COOLING = 24; // Grados a partir de los cuales prendemos el Aire
+
     const BASE_TEMP_HEATING = 18; // Grados debajo de los cuales prendemos la Calefacción
-    
+
     private static $cache = [];
+
     private static $loadedInvoices = [];
 
     /**
      * Calcula los Grados-Día acumulados en un periodo para una localidad.
-     * Utiliza los campos existentes en la tabla climate_data pero recalculando 
+     * Utiliza los campos existentes en la tabla climate_data pero recalculando
      * con las bases físicas de v3.
-     * 
-     * @param float $latitude
-     * @param float $longitude
-     * @param string $fechaInicio (Y-m-d)
-     * @param string $fechaFin (Y-m-d)
+     *
+     * @param  float  $latitude
+     * @param  float  $longitude
+     * @param  string  $fechaInicio  (Y-m-d)
+     * @param  string  $fechaFin  (Y-m-d)
      * @return array
      */
     public function getDegreeDays($latitude, $longitude, $fechaInicio, $fechaFin)
@@ -37,10 +39,10 @@ class ClimateService
             ->where('longitude', $longitude)
             ->whereBetween('date', [$fechaInicio, $fechaFin])
             ->select(
-                DB::raw('SUM(CASE WHEN (temp_avg - ' . self::BASE_TEMP_COOLING . ') > 0 THEN (temp_avg - ' . self::BASE_TEMP_COOLING . ') ELSE 0 END) as cdd'), // Cooling Degree Days
-                DB::raw('SUM(CASE WHEN (' . self::BASE_TEMP_HEATING . ' - temp_avg) > 0 THEN (' . self::BASE_TEMP_HEATING . ' - temp_avg) ELSE 0 END) as hdd'),  // Heating Degree Days
-                DB::raw('COUNT(CASE WHEN temp_avg > ' . self::BASE_TEMP_COOLING . ' THEN 1 END) as hot_day_count'), // Count of hot days
-                DB::raw('COUNT(CASE WHEN temp_avg < ' . self::BASE_TEMP_HEATING . ' THEN 1 END) as cold_day_count')  // Count of cold days
+                DB::raw('SUM(CASE WHEN (temp_avg - '.self::BASE_TEMP_COOLING.') > 0 THEN (temp_avg - '.self::BASE_TEMP_COOLING.') ELSE 0 END) as cdd'), // Cooling Degree Days
+                DB::raw('SUM(CASE WHEN ('.self::BASE_TEMP_HEATING.' - temp_avg) > 0 THEN ('.self::BASE_TEMP_HEATING.' - temp_avg) ELSE 0 END) as hdd'),  // Heating Degree Days
+                DB::raw('COUNT(CASE WHEN temp_avg > '.self::BASE_TEMP_COOLING.' THEN 1 END) as hot_day_count'), // Count of hot days
+                DB::raw('COUNT(CASE WHEN temp_avg < '.self::BASE_TEMP_HEATING.' THEN 1 END) as cold_day_count')  // Count of cold days
             )
             ->first();
 
@@ -48,7 +50,7 @@ class ClimateService
             'cooling_days' => (float) ($data->cdd ?? 0),
             'heating_days' => (float) ($data->hdd ?? 0),
             'hot_day_count' => (int) ($data->hot_day_count ?? 0),
-            'cold_day_count' => (int) ($data->cold_day_count ?? 0)
+            'cold_day_count' => (int) ($data->cold_day_count ?? 0),
         ];
     }
 
@@ -80,20 +82,22 @@ class ClimateService
             $fechaFin
         );
     }
+
     /**
      * Obtiene datos climáticos históricos para un período y localidad
      */
-    public function fetchHistoricalData(\App\Models\Locality $locality, Carbon $startDate, Carbon $endDate): array
+    public function fetchHistoricalData(Locality $locality, Carbon $startDate, Carbon $endDate): array
     {
-        if (!$locality->latitude || !$locality->longitude) {
+        if (! $locality->latitude || ! $locality->longitude) {
             return ['success' => false, 'message' => 'La localidad no tiene coordenadas definidas.', 'data' => []];
         }
 
         try {
             return $this->fetchFromOpenMeteo($locality, $startDate, $endDate);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Error obteniendo datos climáticos: " . $e->getMessage());
-            return ['success' => false, 'message' => 'Error al obtener datos: ' . $e->getMessage(), 'data' => []];
+            Log::error('Error obteniendo datos climáticos: '.$e->getMessage());
+
+            return ['success' => false, 'message' => 'Error al obtener datos: '.$e->getMessage(), 'data' => []];
         }
     }
 
@@ -103,25 +107,25 @@ class ClimateService
     private function fetchFromOpenMeteo($locality, $startDate, $endDate): array
     {
         $url = 'https://archive-api.open-meteo.com/v1/archive';
-        
-        $response = \Illuminate\Support\Facades\Http::timeout(30)
-            ->when(app()->environment('local'), fn($h) => $h->withoutVerifying())
-            ->get($url, [
-            'latitude' => $locality->latitude,
-            'longitude' => $locality->longitude,
-            'start_date' => $startDate->format('Y-m-d'),
-            'end_date' => $endDate->format('Y-m-d'),
-            'daily' => 'temperature_2m_max,temperature_2m_min,temperature_2m_mean,precipitation_sum,wind_speed_10m_max,relative_humidity_2m_mean,cloudcover_mean,sunshine_duration,shortwave_radiation_sum',
-            'timezone' => 'auto',
-        ]);
 
-        if (!$response->successful()) {
-            return ['success' => false, 'message' => 'Error en la respuesta de Open-Meteo: ' . $response->status(), 'data' => []];
+        $response = Http::timeout(30)
+            ->when(app()->environment('local'), fn ($h) => $h->withoutVerifying())
+            ->get($url, [
+                'latitude' => $locality->latitude,
+                'longitude' => $locality->longitude,
+                'start_date' => $startDate->format('Y-m-d'),
+                'end_date' => $endDate->format('Y-m-d'),
+                'daily' => 'temperature_2m_max,temperature_2m_min,temperature_2m_mean,precipitation_sum,wind_speed_10m_max,relative_humidity_2m_mean,cloudcover_mean,sunshine_duration,shortwave_radiation_sum',
+                'timezone' => 'auto',
+            ]);
+
+        if (! $response->successful()) {
+            return ['success' => false, 'message' => 'Error en la respuesta de Open-Meteo: '.$response->status(), 'data' => []];
         }
 
         $data = $response->json();
 
-        if (!isset($data['daily']['time'])) {
+        if (! isset($data['daily']['time'])) {
             return ['success' => false, 'message' => 'Respuesta inválida de Open-Meteo', 'data' => []];
         }
 
@@ -134,7 +138,9 @@ class ClimateService
             $maxTemp = $dailyData['temperature_2m_max'][$i] ?? null;
             $minTemp = $dailyData['temperature_2m_min'][$i] ?? null;
 
-            if ($avgTemp === null) continue;
+            if ($avgTemp === null) {
+                continue;
+            }
 
             // Calcular CDD y HDD (base v3: 24°C / 18°C)
             $cdd = $this->calculateCDD($avgTemp);
@@ -187,7 +193,7 @@ class ClimateService
                     'shortwave_radiation_sum' => $dayData['shortwave_radiation_sum'],
                 ]
             );
-            
+
             $inserted++;
         }
 
@@ -204,8 +210,8 @@ class ClimateService
         }
 
         $locality = $invoice->contract->entity->locality ?? null;
-        
-        if (!$locality) {
+
+        if (! $locality) {
             return ['success' => false, 'message' => 'La entidad no tiene localidad asignada'];
         }
 
@@ -219,12 +225,13 @@ class ClimateService
 
         if ($exists) {
             self::$loadedInvoices[$invoice->id] = true;
+
             return ['success' => true, 'message' => 'Datos encontrados en base de datos', 'cached' => true];
         }
 
         $result = $this->fetchHistoricalData($locality, $startDate, $endDate);
-        
-        if (!$result['success']) {
+
+        if (! $result['success']) {
             return $result;
         }
 
@@ -245,20 +252,20 @@ class ClimateService
     public function loadDataForDateRange($entity, $startDate, $endDate): array
     {
         $locality = $entity->locality ?? null;
-        
-        if (!$locality) {
+
+        if (! $locality) {
             return [
-                'success' => false, 
+                'success' => false,
                 'message' => 'La entidad no tiene localidad asignada',
-                'is_fallback' => true
+                'is_fallback' => true,
             ];
         }
 
         // Delegar al motor de obtención de datos (soporta strings o Carbon)
         return $this->getOrFetchData(
-            $locality, 
-            (string)$startDate, 
-            (string)$endDate
+            $locality,
+            (string) $startDate,
+            (string) $endDate
         );
     }
 
@@ -277,7 +284,7 @@ class ClimateService
             ->where('longitude', $longitude)
             ->whereBetween('date', [$startDate->format('Y-m-d'), $endDate->format('Y-m-d')])
             ->get();
-        
+
         if ($data->isEmpty()) {
             $result = [
                 'avg_temp_max' => null,
@@ -288,9 +295,10 @@ class ClimateService
                 'total_days' => 0,
             ];
             self::$cache[$cacheKey] = $result;
+
             return $result;
         }
-        
+
         $totalTempMax = $data->sum('temp_max');
         $totalTempMin = $data->sum('temp_min');
         $totalTempAvg = $data->sum('temp_avg');
@@ -310,6 +318,7 @@ class ClimateService
         ];
 
         self::$cache[$cacheKey] = $result;
+
         return $result;
     }
 
@@ -320,7 +329,7 @@ class ClimateService
     {
         $oneYearAgo = Carbon::now()->subYear();
         $yesterday = Carbon::yesterday();
-        
+
         $count = ClimateData::where('latitude', $locality->latitude)
             ->where('longitude', $locality->longitude)
             ->where('date', '>=', $oneYearAgo->format('Y-m-d'))
@@ -333,7 +342,7 @@ class ClimateService
                     $this->saveWeatherData($locality, $fetchResult['data']);
                 }
             } catch (\Exception $e) {
-                Log::warning("No se pudo descargar histórica: " . $e->getMessage());
+                Log::warning('No se pudo descargar histórica: '.$e->getMessage());
             }
         }
 
@@ -349,12 +358,12 @@ class ClimateService
         $avgTemp = round($data->avg('temp_avg'), 1);
         $hdd = $data->sum('heating_degree_days');
 
-        $zone = match(true) {
-            $hdd < 700  => 'I (Muy Cálida)',
+        $zone = match (true) {
+            $hdd < 700 => 'I (Muy Cálida)',
             $hdd < 1400 => 'II (Cálida)',
             $hdd < 2400 => 'III (Templada)',
             $hdd < 3500 => 'IV (Fría)',
-            default     => 'V (Muy Fría)',
+            default => 'V (Muy Fría)',
         };
 
         return [
@@ -369,7 +378,7 @@ class ClimateService
             'total_days_analyzed' => $data->count(),
             'data_start_date' => $data->min('date'),
             'data_end_date' => $data->max('date'),
-            'is_fallback' => false
+            'is_fallback' => false,
         ];
     }
 
@@ -379,7 +388,7 @@ class ClimateService
     private function getRegionalFallbackProfile(Locality $locality): array
     {
         $province = $locality->province->name ?? '';
-        
+
         $presets = [
             'San Juan' => [
                 'zone' => 'III (Templada)',
@@ -418,7 +427,7 @@ class ClimateService
             'avg_sunshine_duration' => 8.5,
             'avg_radiation' => $p['rad'],
             'total_days_analyzed' => 365,
-            'is_fallback' => true
+            'is_fallback' => true,
         ];
     }
 
@@ -436,7 +445,7 @@ class ClimateService
             ->where('date', $startDate->format('Y-m-d'))
             ->exists();
 
-        if (!$exists) {
+        if (! $exists) {
             try {
                 $result = $this->fetchHistoricalData($locality, $startDate, $endDate);
                 if ($result['success']) {
@@ -446,12 +455,12 @@ class ClimateService
                 }
             } catch (\Exception $e) {
                 $isFallback = true;
-                Log::error("❌ Error fetch clima: " . $e->getMessage());
+                Log::error('❌ Error fetch clima: '.$e->getMessage());
             }
         }
 
         if ($isFallback) {
-             $stats = $this->getFallbackStats($startDate);
+            $stats = $this->getFallbackStats($startDate);
         } else {
             $stats = $this->getClimateStats($locality->latitude, $locality->longitude, $startDate, $endDate);
             if (($stats['total_days'] ?? 0) === 0) {
@@ -463,8 +472,8 @@ class ClimateService
         return [
             'cooling_days' => $stats['hot_days_count'] ?? 0,
             'heating_days' => $stats['cold_days_count'] ?? 0,
-            'avg_temp'     => $stats['avg_temp_avg'] ?? 20,
-            'is_fallback'  => $isFallback
+            'avg_temp' => $stats['avg_temp_avg'] ?? 20,
+            'is_fallback' => $isFallback,
         ];
     }
 
@@ -475,15 +484,15 @@ class ClimateService
     {
         $month = $date->month;
         $fallbackMap = [
-            1  => ['hot' => 25, 'cold' => 0,  'avg' => 26],
-            2  => ['hot' => 20, 'cold' => 0,  'avg' => 24],
-            3  => ['hot' => 12, 'cold' => 2,  'avg' => 21],
-            4  => ['hot' => 5,  'cold' => 10, 'avg' => 17],
-            5  => ['hot' => 0,  'cold' => 20, 'avg' => 13],
-            6  => ['hot' => 0,  'cold' => 28, 'avg' => 10],
-            7  => ['hot' => 0,  'cold' => 30, 'avg' => 9],
-            8  => ['hot' => 0,  'cold' => 25, 'avg' => 12],
-            9  => ['hot' => 2,  'cold' => 15, 'avg' => 15],
+            1 => ['hot' => 25, 'cold' => 0,  'avg' => 26],
+            2 => ['hot' => 20, 'cold' => 0,  'avg' => 24],
+            3 => ['hot' => 12, 'cold' => 2,  'avg' => 21],
+            4 => ['hot' => 5,  'cold' => 10, 'avg' => 17],
+            5 => ['hot' => 0,  'cold' => 20, 'avg' => 13],
+            6 => ['hot' => 0,  'cold' => 28, 'avg' => 10],
+            7 => ['hot' => 0,  'cold' => 30, 'avg' => 9],
+            8 => ['hot' => 0,  'cold' => 25, 'avg' => 12],
+            9 => ['hot' => 2,  'cold' => 15, 'avg' => 15],
             10 => ['hot' => 8,  'cold' => 8,  'avg' => 19],
             11 => ['hot' => 15, 'cold' => 3,  'avg' => 22],
             12 => ['hot' => 22, 'cold' => 0,  'avg' => 25],
@@ -495,7 +504,7 @@ class ClimateService
             'hot_days_count' => $data['hot'],
             'cold_days_count' => $data['cold'],
             'avg_temp_avg' => $data['avg'],
-            'total_days' => 30
+            'total_days' => 30,
         ];
     }
 
@@ -507,38 +516,40 @@ class ClimateService
         if ($locality->latitude && $locality->longitude) {
             try {
                 $response = Http::timeout(5)
-                    ->when(app()->environment('local'), fn($h) => $h->withoutVerifying())
+                    ->when(app()->environment('local'), fn ($h) => $h->withoutVerifying())
                     ->get('https://api.open-meteo.com/v1/forecast', [
-                    'latitude' => $locality->latitude,
-                    'longitude' => $locality->longitude,
-                    'current_weather' => true,
-                    'timezone' => 'auto',
-                ]);
+                        'latitude' => $locality->latitude,
+                        'longitude' => $locality->longitude,
+                        'current_weather' => true,
+                        'timezone' => 'auto',
+                    ]);
 
                 if ($response->successful()) {
                     $data = $response->json();
+
                     return [
                         'success' => true,
                         'temp' => $data['current_weather']['temperature'],
                         'windspeed' => $data['current_weather']['windspeed'],
                         'condition_code' => $data['current_weather']['weathercode'],
-                        'is_fallback' => false
+                        'is_fallback' => false,
                     ];
                 }
             } catch (\Exception $e) {
-                Log::warning("Fallo API Clima: " . $e->getMessage());
+                Log::warning('Fallo API Clima: '.$e->getMessage());
             }
         }
 
         // Fallback estacional si falla la API
         $stats = $this->getFallbackStats(now());
+
         return [
             'success' => true,
             'temp' => $stats['avg_temp_avg'],
             'windspeed' => 12,
             'condition_code' => 0,
             'is_fallback' => true,
-            'message' => 'Basado en promedio mensual'
+            'message' => 'Basado en promedio mensual',
         ];
     }
 }

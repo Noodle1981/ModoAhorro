@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Province extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'name',
     ];
@@ -16,5 +17,4 @@ class Province extends Model
     {
         return $this->hasMany(Locality::class);
     }
-
 }

@@ -2,14 +2,14 @@
 
 namespace Tests\Feature\Gestión_de_Consumo;
 
-use App\Models\User;
-use App\Models\Entity;
-use App\Models\Locality;
-use App\Models\Province;
-use App\Models\Plan;
 use App\Models\Contract;
-use App\Models\Proveedor;
+use App\Models\Entity;
 use App\Models\Invoice;
+use App\Models\Locality;
+use App\Models\Plan;
+use App\Models\Proveedor;
+use App\Models\Province;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -18,10 +18,15 @@ class InvoiceManagementTest extends TestCase
     use RefreshDatabase;
 
     protected $province;
+
     protected $locality;
+
     protected $plan;
+
     protected $user;
+
     protected $entity;
+
     protected $contract;
 
     protected function setUp(): void
@@ -35,14 +40,14 @@ class InvoiceManagementTest extends TestCase
             'province_id' => $this->province->id,
             'name' => 'Santa Lucía',
             'latitude' => -31.5375,
-            'longitude' => -68.5364
+            'longitude' => -68.5364,
         ]);
-        
+
         $this->plan = Plan::create([
             'name' => 'Premium',
             'max_entities' => 5,
             'allowed_entity_types' => ['hogar'],
-            'price' => 0
+            'price' => 0,
         ]);
 
         $this->user = User::factory()->create();
@@ -96,7 +101,7 @@ class InvoiceManagementTest extends TestCase
 
         $response->assertSessionHasErrors(['issue_date']);
         $this->assertEquals(
-            'La fecha de emisión debe ser posterior al cierre del período.', 
+            'La fecha de emisión debe ser posterior al cierre del período.',
             session('errors')->get('issue_date')[0]
         );
     }
@@ -108,7 +113,7 @@ class InvoiceManagementTest extends TestCase
             'invoice_number' => 'INV-OLD',
             'tariff' => 'T1R2',
             'invoice_date' => '2026-01-01',
-            'issue_date' => '2026-01-01', 
+            'issue_date' => '2026-01-01',
             'start_date' => '2024-12-01', // Error: 2026 - 2024 = 2 years difference
             'end_date' => '2024-12-31',
             'total_energy_consumed_kwh' => 250,
@@ -124,7 +129,7 @@ class InvoiceManagementTest extends TestCase
 
         $response->assertSessionHasErrors(['issue_date']);
         $this->assertEquals(
-            'El año de la factura no puede ser más de un año posterior al período de consumo.', 
+            'El año de la factura no puede ser más de un año posterior al período de consumo.',
             session('errors')->get('issue_date')[0]
         );
     }
@@ -158,7 +163,7 @@ class InvoiceManagementTest extends TestCase
             ->post(route('gestion.invoices.store'), $invoice2Data);
 
         $response->assertRedirect();
-        
+
         $this->assertDatabaseHas('invoices', [
             'invoice_number' => 'INV-002',
             'installment_number' => 2,

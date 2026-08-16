@@ -7,12 +7,13 @@ use App\Models\Equipment;
 abstract class AbstractCommercialProfile implements CommercialEngineProfile
 {
     /**
-     * Implementación centralizada para evitar DRY. 
+     * Implementación centralizada para evitar DRY.
      * Verifica si el equipo pertenece a las categorías de proceso de este perfil.
      */
     public function isCoreProcess(Equipment $equipment): bool
     {
         $category = $equipment->category?->name ?? '';
+
         return in_array($category, $this->getProcessCategories());
     }
 

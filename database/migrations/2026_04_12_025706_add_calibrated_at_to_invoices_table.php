@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('invoices', function (Blueprint $table) {
             $table->timestamp('calibrated_at')->nullable()->after('total_amount');
             // Aseguramos que recommended_kwh existe (podría estar en otra migración, pero por seguridad)
-            if (!Schema::hasColumn('invoices', 'recommended_kwh')) {
+            if (! Schema::hasColumn('invoices', 'recommended_kwh')) {
                 $table->decimal('recommended_kwh', 10, 3)->nullable()->after('calibrated_at');
             }
         });

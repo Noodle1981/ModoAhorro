@@ -31,7 +31,7 @@ return new class extends Migration
                 'heating_degree_days',
                 'precipitation_mm',
                 'wind_speed_kmh',
-                'humidity_percent'
+                'humidity_percent',
             ]);
         });
     }

@@ -3,16 +3,15 @@
 namespace App\Services;
 
 use App\Models\Entity;
-use App\Services\ClimateService;
 use App\Services\Solar\SolarPowerService;
+use Carbon\Carbon;
 
 class BudgetService
 {
     public function __construct(
         private ClimateService $climateService,
         private SolarPowerService $solarService
-    ) {
-    }
+    ) {}
 
     /**
      * Calculate complete budget data for an entity
@@ -32,7 +31,7 @@ class BudgetService
         $invoices = $entity->contracts()
             ->with('invoices.equipmentUsages')
             ->get()
-            ->flatMap(fn($contract) => $contract->invoices)
+            ->flatMap(fn ($contract) => $contract->invoices)
             ->sortByDesc('end_date');
 
         $latestInvoice = $invoices->first();
@@ -48,8 +47,8 @@ class BudgetService
         $invoiceData = null;
         if ($latestInvoice) {
             $latestConsumption = $latestInvoice->total_energy_consumed_kwh ?? $latestInvoice->equipmentUsages->sum('consumption_kwh');
-            $startDate = \Carbon\Carbon::parse($latestInvoice->start_date);
-            $endDate = \Carbon\Carbon::parse($latestInvoice->end_date);
+            $startDate = Carbon::parse($latestInvoice->start_date);
+            $endDate = Carbon::parse($latestInvoice->end_date);
             $periodDays = $startDate->diffInDays($endDate);
 
             $invoiceData = [
@@ -115,8 +114,8 @@ class BudgetService
                 $consumption = $invoice->total_energy_consumed_kwh ?? $invoice->equipmentUsages->sum('consumption_kwh');
                 $cost = $invoice->total_amount;
 
-                $startDate = \Carbon\Carbon::parse($invoice->start_date);
-                $endDate = \Carbon\Carbon::parse($invoice->end_date);
+                $startDate = Carbon::parse($invoice->start_date);
+                $endDate = Carbon::parse($invoice->end_date);
                 $days = $startDate->diffInDays($endDate);
 
                 if ($days > 0 && $consumption > 0) {
@@ -165,8 +164,8 @@ class BudgetService
 
         foreach ($invoices as $invoice) {
             $consumption = $invoice->total_energy_consumed_kwh ?? $invoice->equipmentUsages->sum('consumption_kwh');
-            $startDate = \Carbon\Carbon::parse($invoice->start_date);
-            $endDate = \Carbon\Carbon::parse($invoice->end_date);
+            $startDate = Carbon::parse($invoice->start_date);
+            $endDate = Carbon::parse($invoice->end_date);
             $days = $startDate->diffInDays($endDate);
 
             if ($days > 0) {

@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Entity;
-use App\Services\ClimateService;
 use App\Services\Solar\SolarWaterService;
 
 class SolarWaterHeaterService
@@ -11,8 +10,7 @@ class SolarWaterHeaterService
     public function __construct(
         private ClimateService $climateService,
         private SolarWaterService $waterService
-    ) {
-    }
+    ) {}
 
     /**
      * Calculate solar water heater data for an entity
@@ -35,7 +33,7 @@ class SolarWaterHeaterService
         $invoices = $entity->contracts()
             ->with('invoices')
             ->get()
-            ->flatMap(fn($contract) => $contract->invoices);
+            ->flatMap(fn ($contract) => $contract->invoices);
 
         $averageTariff = $this->calculateAverageTariff($invoices);
 

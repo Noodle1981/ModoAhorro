@@ -2,9 +2,18 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\{Entity, User, Contract, Invoice, Room, Equipment, EquipmentUsage, EquipmentType, EquipmentCategory, Locality};
+use App\Models\Contract;
+use App\Models\Entity;
+use App\Models\Equipment;
+use App\Models\EquipmentCategory;
+use App\Models\EquipmentType;
+use App\Models\Invoice;
+use App\Models\Locality;
+use App\Models\Proveedor;
+use App\Models\Province;
+use App\Models\Room;
 use App\Models\UtilityCompany;
+use Illuminate\Database\Seeder;
 
 class DatosOficinaSeeder extends Seeder
 {
@@ -17,7 +26,7 @@ class DatosOficinaSeeder extends Seeder
         $this->command->info('🏢 Creando Oficina de prueba...');
 
         // 1. Locality (San Juan Capital)
-        $sanJuanProvince = \App\Models\Province::where('name', 'San Juan')->first();
+        $sanJuanProvince = Province::where('name', 'San Juan')->first();
         $locality = Locality::firstOrCreate(
             ['name' => 'Capital', 'province_id' => $sanJuanProvince->id],
             ['postal_code' => '5400', 'latitude' => -31.5375, 'longitude' => -68.5364]
@@ -38,7 +47,7 @@ class DatosOficinaSeeder extends Seeder
         );
 
         // 3. Contract & Provider
-        $provider = \App\Models\Proveedor::firstOrCreate(['name' => 'Naturgy']);
+        $provider = Proveedor::firstOrCreate(['name' => 'Naturgy']);
         $company = UtilityCompany::firstOrCreate(['name' => 'Naturgy']);
 
         $contract = Contract::firstOrCreate(
@@ -178,8 +187,8 @@ class DatosOficinaSeeder extends Seeder
             }
         }
 
-        $this->command->info('✅ Oficina creada: ' . $entity->name);
-        $this->command->info('   Equipos: ' . Equipment::where('room_id', $rooms['Sala Principal']->id)->count());
-        $this->command->info('   Facturas: ' . count($createdInvoices));
+        $this->command->info('✅ Oficina creada: '.$entity->name);
+        $this->command->info('   Equipos: '.Equipment::where('room_id', $rooms['Sala Principal']->id)->count());
+        $this->command->info('   Facturas: '.count($createdInvoices));
     }
 }

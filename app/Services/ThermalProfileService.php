@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\Entity;
+
 class ThermalProfileService
 {
     /**
      * Calcula el Energy Label (A-E) y el Score Térmico basado en las respuestas del usuario.
-     * 
-     * @param array $profile Datos del thermal_profile de la entidad.
+     *
+     * @param  array  $profile  Datos del thermal_profile de la entidad.
      * @return array ['score' => int, 'label' => string]
      */
     public function calculate(array $profile)
@@ -78,24 +80,40 @@ class ThermalProfileService
             'energy_label' => $label,
             'score' => $score,
             'label' => $label,
-            'color' => $this->getColorFromScore($score)
+            'color' => $this->getColorFromScore($score),
         ];
     }
 
     protected function getColorFromScore($score)
     {
-        if ($score >= 80) return 'success';
-        if ($score >= 60) return 'info';
-        if ($score >= 40) return 'warning';
+        if ($score >= 80) {
+            return 'success';
+        }
+        if ($score >= 60) {
+            return 'info';
+        }
+        if ($score >= 40) {
+            return 'warning';
+        }
+
         return 'danger';
     }
 
     protected function getLabelFromScore($score)
     {
-        if ($score >= 85) return 'A';
-        if ($score >= 70) return 'B';
-        if ($score >= 50) return 'C';
-        if ($score >= 30) return 'D';
+        if ($score >= 85) {
+            return 'A';
+        }
+        if ($score >= 70) {
+            return 'B';
+        }
+        if ($score >= 50) {
+            return 'C';
+        }
+        if ($score >= 30) {
+            return 'D';
+        }
+
         return 'E';
     }
 
@@ -113,22 +131,24 @@ class ThermalProfileService
             'D' => 1.6,
             'E' => 1.8,
         ];
+
         return $map[strtoupper($label)] ?? 1.4;
     }
 
     /**
      * Helper para obtener el multiplicador directamente de una entidad.
      */
-    public function calculateMultiplier(\App\Models\Entity $entity): float
+    public function calculateMultiplier(Entity $entity): float
     {
         $profile = $entity->thermal_profile ?? [];
         // Si ya tiene etiqueta calculada, usala
         if (isset($profile['energy_label'])) {
             return $this->getMultiplierForScore($profile['energy_label']);
         }
-        
+
         // Si no, calcula al vuelo
         $result = $this->calculate($profile);
+
         return $this->getMultiplierForScore($result['energy_label']);
     }
 }

@@ -2,33 +2,35 @@
 
 namespace Tests\Feature\Analisis_y_Ahorro;
 
-use App\Models\User;
-use App\Models\Entity;
-use App\Models\Locality;
-use App\Models\Province;
-use App\Models\Plan;
-use App\Models\Invoice;
 use App\Models\Contract;
-use App\Models\UtilityCompany;
-use App\Models\Proveedor;
-use App\Models\Room;
+use App\Models\Entity;
 use App\Models\Equipment;
-use App\Models\EquipmentType;
 use App\Models\EquipmentCategory;
-use App\Models\EquipmentUsage;
+use App\Models\EquipmentType;
+use App\Models\Invoice;
+use App\Models\Locality;
+use App\Models\Plan;
+use App\Models\Proveedor;
+use App\Models\Province;
+use App\Models\Room;
+use App\Models\User;
+use App\Models\UtilityCompany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 
 class AdaptiveEnergyEngineTest extends TestCase
 {
     use RefreshDatabase;
 
     protected $user;
+
     protected $entity;
+
     protected $contract;
+
     protected $invoice;
+
     protected $equipment;
 
     protected function setUp(): void
@@ -41,14 +43,14 @@ class AdaptiveEnergyEngineTest extends TestCase
             'province_id' => $province->id,
             'name' => 'Santa Lucía',
             'latitude' => -31.5375,
-            'longitude' => -68.5364
+            'longitude' => -68.5364,
         ]);
 
         $plan = Plan::create([
             'name' => 'Premium',
             'max_entities' => 5,
             'allowed_entity_types' => ['hogar'],
-            'price' => 0
+            'price' => 0,
         ]);
 
         $this->user = User::factory()->create();
@@ -61,13 +63,13 @@ class AdaptiveEnergyEngineTest extends TestCase
         $utilityCompany = UtilityCompany::create([
             'province_id' => $province->id,
             'name' => 'Energía S.A.',
-            'type' => 'electricidad'
+            'type' => 'electricidad',
         ]);
 
         $proveedor = Proveedor::create([
             'name' => 'Distribuidora S.A.',
             'utility_company_id' => $utilityCompany->id,
-            'province_id' => $province->id
+            'province_id' => $province->id,
         ]);
 
         $this->contract = Contract::create([
@@ -75,7 +77,7 @@ class AdaptiveEnergyEngineTest extends TestCase
             'utility_company_id' => $utilityCompany->id,
             'proveedor_id' => $proveedor->id,
             'account_number' => '123456',
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         $this->invoice = Invoice::create([
@@ -93,12 +95,12 @@ class AdaptiveEnergyEngineTest extends TestCase
             'category_id' => $category->id,
             'name' => 'Lavarropas',
             'usage_unit' => 'cycles',
-            'energy_per_cycle' => 0.5
+            'energy_per_cycle' => 0.5,
         ]);
 
         $room = Room::create([
             'entity_id' => $this->entity->id,
-            'name' => 'Cocina'
+            'name' => 'Cocina',
         ]);
 
         $this->equipment = Equipment::create([
@@ -107,14 +109,14 @@ class AdaptiveEnergyEngineTest extends TestCase
             'type_id' => $type->id,
             'room_id' => $room->id,
             'name' => 'Lavarropas Test',
-            'nominal_power_w' => 500
+            'nominal_power_w' => 500,
         ]);
 
         $this->actingAs($this->user);
         session(['active_entity_id' => $this->entity->id]);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_can_save_usage_context_without_calibrating()
     {
         $payload = [
@@ -125,9 +127,9 @@ class AdaptiveEnergyEngineTest extends TestCase
                     'usage_frequency' => 'frecuentemente',
                     'cycles_per_period' => 12,
                     'is_standby' => false,
-                    'has_defined_pattern' => true
-                ]
-            ]
+                    'has_defined_pattern' => true,
+                ],
+            ],
         ];
 
         $response = $this->post(route('analisis.usage.save'), $payload);
@@ -137,14 +139,14 @@ class AdaptiveEnergyEngineTest extends TestCase
             'invoice_id' => $this->invoice->id,
             'equipment_id' => $this->equipment->id,
             'cycles_per_period' => 12,
-            'usage_frequency' => 'frecuentemente'
+            'usage_frequency' => 'frecuentemente',
         ]);
 
         $this->equipment->refresh();
         $this->assertTrue($this->equipment->has_defined_pattern);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_can_calibrate_and_redirect_to_results()
     {
         $payload = [
@@ -155,29 +157,29 @@ class AdaptiveEnergyEngineTest extends TestCase
                     'usage_frequency' => 'frecuentemente',
                     'cycles_per_period' => 15,
                     'is_standby' => false,
-                ]
-            ]
+                ],
+            ],
         ];
 
         $response = $this->post(route('analisis.usage.calibrate'), $payload);
 
         $response->assertRedirect(route('analisis.usage.results', ['invoice' => $this->invoice->id]));
-        
+
         $this->assertDatabaseHas('equipment_usages', [
             'invoice_id' => $this->invoice->id,
             'equipment_id' => $this->equipment->id,
-            'cycles_per_period' => 15
+            'cycles_per_period' => 15,
         ]);
 
         $this->assertTrue(session()->has('engine_result'));
         $engineResult = session('engine_result');
-        
+
         $this->assertArrayHasKey('tanks', $engineResult);
         $this->assertArrayHasKey('invoiced_kwh', $engineResult);
         $this->assertEquals(500, $engineResult['invoiced_kwh']);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function it_can_show_engine_results_page()
     {
         $engineResult = [
@@ -191,7 +193,7 @@ class AdaptiveEnergyEngineTest extends TestCase
                 ['key' => 3, 'label' => 'Clima', 'total_kwh' => 100, 'top_items' => []],
                 ['key' => 4, 'label' => 'Variable', 'total_kwh' => 150, 'top_items' => []],
             ],
-            'logs' => ['Log 1']
+            'logs' => ['Log 1'],
         ];
 
         session(['engine_result' => $engineResult]);

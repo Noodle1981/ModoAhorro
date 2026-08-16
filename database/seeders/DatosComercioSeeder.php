@@ -2,9 +2,19 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\{Entity, User, Contract, Invoice, Room, Equipment, EquipmentUsage, EquipmentType, EquipmentCategory, Locality};
+use App\Models\Contract;
+use App\Models\Entity;
+use App\Models\Equipment;
+use App\Models\EquipmentCategory;
+use App\Models\EquipmentType;
+use App\Models\EquipmentUsage;
+use App\Models\Invoice;
+use App\Models\Locality;
+use App\Models\Proveedor;
+use App\Models\Province;
+use App\Models\Room;
 use App\Models\UtilityCompany;
+use Illuminate\Database\Seeder;
 
 class DatosComercioSeeder extends Seeder
 {
@@ -17,7 +27,7 @@ class DatosComercioSeeder extends Seeder
         $this->command->info('☕ Creando Comercio de prueba...');
 
         // 1. Locality (San Juan Capital)
-        $sanJuanProvince = \App\Models\Province::where('name', 'San Juan')->first();
+        $sanJuanProvince = Province::where('name', 'San Juan')->first();
         $locality = Locality::firstOrCreate(
             ['name' => 'Capital', 'province_id' => $sanJuanProvince->id],
             ['postal_code' => '5400', 'latitude' => -31.5375, 'longitude' => -68.5364]
@@ -43,7 +53,7 @@ class DatosComercioSeeder extends Seeder
         );
 
         // 3. Contract & Provider
-        $provider = \App\Models\Proveedor::firstOrCreate(['name' => 'Naturgy']);
+        $provider = Proveedor::firstOrCreate(['name' => 'Naturgy']);
         $company = UtilityCompany::firstOrCreate(['name' => 'Naturgy']);
 
         $contract = Contract::firstOrCreate(
@@ -144,7 +154,6 @@ class DatosComercioSeeder extends Seeder
             ['room' => 'Cocina', 'category' => 'Equipamiento Gastronómico', 'type' => 'Freidora Eléctrica', 'name' => 'Freidora', 'power' => 3000, 'cantidad' => 1],
             ['room' => 'Cocina', 'category' => 'Extracción y Ventilación', 'type' => 'Campana Extractora', 'name' => 'Campana Cocina', 'power' => 750, 'cantidad' => 1],
 
-
             // Barra - Equipos de Café
             ['room' => 'Barra', 'category' => 'Cocina', 'type' => 'Cafetera', 'name' => 'Cafetera Profesional', 'power' => 2000, 'cantidad' => 1],
             ['room' => 'Barra', 'category' => 'Cocina', 'type' => 'Licuadora', 'name' => 'Licuadora Industrial', 'power' => 600, 'cantidad' => 1],
@@ -199,8 +208,8 @@ class DatosComercioSeeder extends Seeder
             }
         }
 
-        $this->command->info('✅ Comercio creado: ' . $entity->name);
-        $this->command->info('   Equipos: ' . Equipment::whereIn('room_id', array_column($rooms, 'id'))->count());
-        $this->command->info('   Facturas: ' . count($createdInvoices));
+        $this->command->info('✅ Comercio creado: '.$entity->name);
+        $this->command->info('   Equipos: '.Equipment::whereIn('room_id', array_column($rooms, 'id'))->count());
+        $this->command->info('   Facturas: '.count($createdInvoices));
     }
 }

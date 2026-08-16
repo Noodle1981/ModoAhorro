@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Models\Entity;
 use App\Models\Plan;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
     {
         // 1. Crear el usuario de prueba
         $user = User::updateOrCreate([
-            'email' => 'user@modoahorro.com'
+            'email' => 'user@modoahorro.com',
         ], [
             'name' => 'Usuario de Prueba',
             'password' => Hash::make('password'),
@@ -27,14 +27,15 @@ class UserSeeder extends Seeder
         // 2. Obtener el Plan Gratuito
         $plan = Plan::where('name', 'Gratuito')->first();
 
-        if (!$plan) {
+        if (! $plan) {
             $this->command->error('Plan Gratuito no encontrado. Asegúrate de correr PlanSeeder primero.');
+
             return;
         }
 
         // 3. Crear una Entidad de prueba (Casa)
         $entity = Entity::updateOrCreate([
-            'name' => 'Mi Casa en Córdoba'
+            'name' => 'Mi Casa en Córdoba',
         ], [
             'type' => 'hogar',
             'description' => 'Vivienda principal para pruebas térmicas',

@@ -2,15 +2,16 @@
 
 namespace Tests\Feature\Gestión_de_Consumo;
 
-use App\Models\User;
-use App\Models\Entity;
 use App\Models\Contract;
-use App\Models\Proveedor;
+use App\Models\Entity;
 use App\Models\Invoice;
 use App\Models\Locality;
-use App\Models\Province;
 use App\Models\Plan;
+use App\Models\Proveedor;
+use App\Models\Province;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class UnificationTest extends TestCase
@@ -18,7 +19,9 @@ class UnificationTest extends TestCase
     use RefreshDatabase;
 
     protected $user;
+
     protected $entity;
+
     protected $contract;
 
     protected function setUp(): void
@@ -31,14 +34,14 @@ class UnificationTest extends TestCase
             'province_id' => $province->id,
             'name' => 'Santa Lucía',
             'latitude' => -31.5375,
-            'longitude' => -68.5364
+            'longitude' => -68.5364,
         ]);
 
         $plan = Plan::create([
             'name' => 'Premium',
             'max_entities' => 5,
             'allowed_entity_types' => ['hogar'],
-            'price' => 0
+            'price' => 0,
         ]);
 
         $this->user = User::factory()->create();
@@ -55,7 +58,7 @@ class UnificationTest extends TestCase
         ]);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function unifications_index_groups_multiple_installments_correctly()
     {
         // Create 2 invoices for the same bimonthly period
@@ -92,7 +95,7 @@ class UnificationTest extends TestCase
         );
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function unifications_index_shows_pending_status_for_single_installment()
     {
         Invoice::factory()->create([

@@ -2,8 +2,6 @@
 
 namespace App\Services\Core;
 
-use App\Models\Invoice;
-
 class ValidationService
 {
     /**
@@ -14,7 +12,7 @@ class ValidationService
         $billed = is_object($invoice) ? ($invoice->total_energy_consumed_kwh ?? 0) : ($invoice['total_energy_consumed_kwh'] ?? 0);
         $deviation = abs($calculatedConsumption - $billed);
         $deviationPercent = $billed > 0 ? ($deviation / $billed) * 100 : 0;
-        
+
         return [
             'billed' => $billed,
             'calculated' => $calculatedConsumption,
@@ -23,19 +21,19 @@ class ValidationService
             'alert_level' => $this->getAlertLevel($deviationPercent),
         ];
     }
-    
+
     /**
      * Determina el nivel de alerta según la desviación
      */
     private function getAlertLevel(float $deviationPercent): string
     {
-        return match(true) {
+        return match (true) {
             $deviationPercent < 10 => 'success',  // ✅ Excelente
             $deviationPercent < 30 => 'warning',  // ⚠️ Revisar
             default => 'danger'                    // ❌ Crítico
         };
     }
-    
+
     /**
      * Genera sugerencias de ajuste
      */
@@ -44,7 +42,7 @@ class ValidationService
         $suggestions = [];
         $billed = is_object($invoice) ? ($invoice->total_energy_consumed_kwh ?? 0) : ($invoice['total_energy_consumed_kwh'] ?? 0);
         $diff = $billed - $calculatedConsumption;
-        
+
         // Si el calculado es mucho MENOR que el facturado (falta consumo)
         if ($diff > 50) {
             $suggestions[] = 'Revisa equipos de climatización (mayor impacto)';
@@ -53,10 +51,10 @@ class ValidationService
         }
         // Si el calculado es mucho MAYOR que el facturado (sobra consumo)
         elseif ($diff < -50) {
-             $suggestions[] = 'Revisa si cargaste horas de más en algún equipo';
-             $suggestions[] = 'Verifica la potencia de los equipos cargados';
+            $suggestions[] = 'Revisa si cargaste horas de más en algún equipo';
+            $suggestions[] = 'Verifica la potencia de los equipos cargados';
         }
-        
+
         return $suggestions;
     }
 }

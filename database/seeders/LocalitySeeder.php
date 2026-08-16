@@ -2,7 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Locality;
+use App\Models\Province;
 use Illuminate\Database\Seeder;
 
 class LocalitySeeder extends Seeder
@@ -13,7 +14,7 @@ class LocalitySeeder extends Seeder
     public function run(): void
     {
         // San Juan (Provincia del usuario)
-        $sanJuan = \App\Models\Province::where('name', 'San Juan')->first();
+        $sanJuan = Province::where('name', 'San Juan')->first();
         $localities = [
             ['name' => 'Capital', 'postal_code' => '5400', 'latitude' => -31.5375, 'longitude' => -68.5364],
             ['name' => 'Chimbas', 'postal_code' => '5413', 'latitude' => -31.4664, 'longitude' => -68.5347],
@@ -36,12 +37,12 @@ class LocalitySeeder extends Seeder
             ['name' => 'Zonda', 'postal_code' => '5403', 'latitude' => -31.5500, 'longitude' => -68.7500],
         ];
         foreach ($localities as $loc) {
-            \App\Models\Locality::updateOrCreate(
+            Locality::updateOrCreate(
                 ['name' => $loc['name'], 'province_id' => $sanJuan->id],
                 $loc
             );
         }
-        
+
         // Otras capitales provinciales principales (para futuro escalado)
         $provinces = [
             ['province' => 'Buenos Aires', 'localities' => [
@@ -67,12 +68,12 @@ class LocalitySeeder extends Seeder
                 ['name' => 'CABA', 'postal_code' => '1000', 'latitude' => -34.6037, 'longitude' => -58.3816],
             ]],
         ];
-        
+
         foreach ($provinces as $provData) {
-            $province = \App\Models\Province::where('name', $provData['province'])->first();
+            $province = Province::where('name', $provData['province'])->first();
             if ($province) {
                 foreach ($provData['localities'] as $loc) {
-                    \App\Models\Locality::updateOrCreate(
+                    Locality::updateOrCreate(
                         ['name' => $loc['name'], 'province_id' => $province->id],
                         $loc
                     );

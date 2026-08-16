@@ -2,7 +2,7 @@
 
 namespace App\Services\Commercial;
 
-use App\Models\Entity;
+use App\Models\Equipment;
 
 interface CommercialEngineProfile
 {
@@ -29,7 +29,7 @@ interface CommercialEngineProfile
     /**
      * Determina si un equipo debe ser procesado como proceso clave o térmico.
      */
-    public function isCoreProcess(\App\Models\Equipment $equipment): bool;
+    public function isCoreProcess(Equipment $equipment): bool;
 
     /**
      * Multiplicador base para el consumo vampiro/standby.

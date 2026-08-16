@@ -6,17 +6,13 @@ class ThermalAdviceEngine
 {
     /**
      * Generate recommendations based on thermal profile.
-     *
-     * @param array $profile
-     * @param int $score
-     * @return array
      */
     public function generateAdvice(array $profile, int $score): array
     {
         $advice = [];
 
         // A. Quick Wins (Low Cost)
-        if (!empty($profile['drafts_detected'])) {
+        if (! empty($profile['drafts_detected'])) {
             $advice[] = [
                 'title' => 'Detener Chifletes (Urgente)',
                 'problem' => 'Entra aire exterior por rendijas en puertas o ventanas.',
@@ -24,7 +20,7 @@ class ThermalAdviceEngine
                 'cost_level' => '$',
                 'impact' => 'Alto',
                 'icon' => 'Wind',
-                'color' => 'danger'
+                'color' => 'danger',
             ];
         }
 
@@ -37,7 +33,7 @@ class ThermalAdviceEngine
                 'cost_level' => '$$',
                 'impact' => 'Medio',
                 'icon' => 'Sun',
-                'color' => 'warning'
+                'color' => 'warning',
             ];
         }
 
@@ -50,7 +46,7 @@ class ThermalAdviceEngine
                 'cost_level' => '$$',
                 'impact' => 'Alto',
                 'icon' => 'Paintbrush',
-                'color' => 'warning'
+                'color' => 'warning',
             ];
         }
 
@@ -63,7 +59,7 @@ class ThermalAdviceEngine
                 'cost_level' => '$$$$',
                 'impact' => 'Muy Alto',
                 'icon' => 'Maximize',
-                'color' => 'info'
+                'color' => 'info',
             ];
         }
 

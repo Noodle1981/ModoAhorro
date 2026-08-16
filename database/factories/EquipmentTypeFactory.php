@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\EquipmentType;
 use App\Models\EquipmentCategory;
+use App\Models\EquipmentType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class EquipmentTypeFactory extends Factory

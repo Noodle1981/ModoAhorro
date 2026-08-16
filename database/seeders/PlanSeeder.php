@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Plan;
 use Illuminate\Database\Seeder;
 
 class PlanSeeder extends Seeder
@@ -12,8 +13,8 @@ class PlanSeeder extends Seeder
     public function run(): void
     {
         // Plan Gratuito - Solo hogar
-        \App\Models\Plan::updateOrCreate([
-            'name' => 'Gratuito'
+        Plan::updateOrCreate([
+            'name' => 'Gratuito',
         ], [
             'features' => 'Acceso a 1 entidad hogar',
             'price' => 0,
@@ -22,8 +23,8 @@ class PlanSeeder extends Seeder
         ]);
 
         // Plan Premium - Hogar, Oficina, Comercio (hasta 3)
-        \App\Models\Plan::updateOrCreate([
-            'name' => 'Premium'
+        Plan::updateOrCreate([
+            'name' => 'Premium',
         ], [
             'features' => 'Hasta 3 entidades (hogar, oficina, comercio)',
             'price' => 15.00,
@@ -32,8 +33,8 @@ class PlanSeeder extends Seeder
         ]);
 
         // Plan Enterprise - Ilimitado
-        \App\Models\Plan::updateOrCreate([
-            'name' => 'Enterprise'
+        Plan::updateOrCreate([
+            'name' => 'Enterprise',
         ], [
             'features' => 'Entidades ilimitadas, soporte prioritario',
             'price' => 50.00,

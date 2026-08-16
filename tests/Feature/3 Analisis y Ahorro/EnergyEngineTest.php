@@ -2,20 +2,22 @@
 
 namespace Tests\Feature\Gestión_de_Consumo;
 
-use App\Models\User;
 use App\Models\Entity;
-use App\Models\Locality;
-use App\Models\Province;
-use App\Models\Plan;
-use App\Models\Room;
 use App\Models\Equipment;
 use App\Models\EquipmentCategory;
 use App\Models\EquipmentType;
 use App\Models\Invoice;
+use App\Models\Locality;
+use App\Models\Plan;
+use App\Models\Proveedor;
+use App\Models\Province;
+use App\Models\Room;
+use App\Models\User;
+use App\Models\UtilityCompany;
 use App\Services\EnergyEngineService;
-use App\Services\ClimateService;
-use App\Services\ThermalProfileService;
+use Database\Seeders\CategoryRefinementSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class EnergyEngineTest extends TestCase
@@ -23,8 +25,11 @@ class EnergyEngineTest extends TestCase
     use RefreshDatabase;
 
     protected $user;
+
     protected $entity;
+
     protected $invoice;
+
     protected $service;
 
     protected function setUp(): void
@@ -37,14 +42,14 @@ class EnergyEngineTest extends TestCase
             'province_id' => $province->id,
             'name' => 'Santa Lucía',
             'latitude' => -31.5375,
-            'longitude' => -68.5364
+            'longitude' => -68.5364,
         ]);
 
         $plan = Plan::create([
             'name' => 'Premium',
             'max_entities' => 5,
             'allowed_entity_types' => ['hogar'],
-            'price' => 0
+            'price' => 0,
         ]);
 
         $this->user = User::factory()->create();
@@ -54,24 +59,24 @@ class EnergyEngineTest extends TestCase
             'subscribed_at' => now(),
         ]);
 
-        $utilityCompany = \App\Models\UtilityCompany::create([
+        $utilityCompany = UtilityCompany::create([
             'id' => 1,
             'province_id' => $province->id,
             'name' => 'Naturgy',
-            'type' => 'gas'
+            'type' => 'gas',
         ]);
 
-        $proveedor = \App\Models\Proveedor::create([
+        $proveedor = Proveedor::create([
             'name' => 'Distribuidora S.A.',
             'utility_company_id' => $utilityCompany->id,
-            'province_id' => $province->id
+            'province_id' => $province->id,
         ]);
 
         $contract = $this->entity->contracts()->create([
             'utility_company_id' => $utilityCompany->id,
             'proveedor_id' => $proveedor->id,
             'account_number' => '123456',
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         $this->invoice = Invoice::create([
@@ -87,22 +92,22 @@ class EnergyEngineTest extends TestCase
         $this->service = app(EnergyEngineService::class);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function engine_correctly_assigns_equipment_to_tanks_based_on_new_categories()
     {
         // 0. Asegurar que las categorías existan antes de empezar
-        $this->seed(\Database\Seeders\CategoryRefinementSeeder::class);
+        $this->seed(CategoryRefinementSeeder::class);
 
         $room = Room::factory()->create(['entity_id' => $this->entity->id]);
 
         // 1. Heladera (Refrigeración) -> Should be Tank 2
         $catRef = EquipmentCategory::where('name', 'Refrigeración')->first();
         $typeRef = EquipmentType::factory()->create([
-            'category_id' => $catRef->id, 
-            'name' => 'Heladera con Freezer', 
+            'category_id' => $catRef->id,
+            'name' => 'Heladera con Freezer',
             'default_power_watts' => 150,
             'consumption_logic' => 'BASE_LOAD',
-            'is_climatization' => false
+            'is_climatization' => false,
         ]);
         $eqRef = Equipment::create([
             'room_id' => $room->id,
@@ -111,17 +116,17 @@ class EnergyEngineTest extends TestCase
             'name' => 'Mi Heladera',
             'nominal_power_w' => 150,
             'avg_daily_use_hours' => 24, // Heladeras son 24h
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         // 2. Aire Acondicionado (Climatización) -> Should be Tank 3
         $catCli = EquipmentCategory::where('name', 'Climatización')->first();
         $typeCli = EquipmentType::factory()->create([
-            'category_id' => $catCli->id, 
-            'name' => 'Aire Split', 
+            'category_id' => $catCli->id,
+            'name' => 'Aire Split',
             'consumption_logic' => 'CLIMATE_DEPENDENT',
             'is_thermal_sensitive' => true,
-            'is_climatization' => true
+            'is_climatization' => true,
         ]);
         $eqCli = Equipment::create([
             'room_id' => $room->id,
@@ -130,16 +135,16 @@ class EnergyEngineTest extends TestCase
             'name' => 'Aire Living',
             'nominal_power_w' => 2000,
             'avg_daily_use_hours' => 5,
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         // 3. Lavarropas (Lavado y Limpieza) -> Should be Tank 4
         $catLav = EquipmentCategory::where('name', 'Lavado y Limpieza')->first();
         $typeLav = EquipmentType::factory()->create([
-            'category_id' => $catLav->id, 
+            'category_id' => $catLav->id,
             'name' => 'Lavarropas Automático',
             'consumption_logic' => 'CONSTANT_ELASTIC',
-            'is_climatization' => false
+            'is_climatization' => false,
         ]);
         $eqLav = Equipment::create([
             'room_id' => $room->id,
@@ -148,7 +153,7 @@ class EnergyEngineTest extends TestCase
             'name' => 'Mi Lavarropas',
             'nominal_power_w' => 2500,
             'avg_daily_use_hours' => 1,
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         // Run the engine

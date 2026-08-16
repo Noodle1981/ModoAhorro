@@ -12,7 +12,7 @@ class TariffBand extends Model
         'start_time',
         'end_time',
         'price_per_kwh',
-        'is_weekend_applicable'
+        'is_weekend_applicable',
     ];
 
     public function scheme()

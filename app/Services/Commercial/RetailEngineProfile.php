@@ -2,16 +2,13 @@
 
 namespace App\Services\Commercial;
 
-use App\Models\Entity;
-use App\Models\Equipment;
-
 class RetailEngineProfile extends AbstractCommercialProfile
 {
     public function getCriticalCategories(): array
     {
         return [
             'Conectividad y Seguridad',
-            'Refrigeración Comercial' // Por si es un mini-market
+            'Refrigeración Comercial', // Por si es un mini-market
         ];
     }
 
@@ -19,7 +16,7 @@ class RetailEngineProfile extends AbstractCommercialProfile
     {
         return [
             'Iluminación Comercial',
-            'Publicidad y Cartelería'
+            'Publicidad y Cartelería',
         ];
     }
 

@@ -2,27 +2,27 @@
 
 namespace Tests\Feature\Analisis_y_Ahorro;
 
-use App\Models\User;
-use App\Models\Entity;
-use App\Models\Locality;
-use App\Models\Province;
-use App\Models\Plan;
-use App\Models\Invoice;
 use App\Models\Contract;
-use App\Models\UtilityCompany;
+use App\Models\Entity;
+use App\Models\Invoice;
+use App\Models\Locality;
+use App\Models\Plan;
 use App\Models\Proveedor;
+use App\Models\Province;
+use App\Models\User;
+use App\Models\UtilityCompany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
-use Carbon\Carbon;
-use App\Http\Controllers\AnalysisController;
-use Illuminate\Http\Request;
 
 class UsageAdjustmentTest extends TestCase
 {
     use RefreshDatabase;
 
     protected $user;
+
     protected $entity;
+
     protected $contract;
 
     protected function setUp(): void
@@ -35,14 +35,14 @@ class UsageAdjustmentTest extends TestCase
             'province_id' => $province->id,
             'name' => 'Santa Lucía',
             'latitude' => -31.5375,
-            'longitude' => -68.5364
+            'longitude' => -68.5364,
         ]);
 
         $plan = Plan::create([
             'name' => 'Premium',
             'max_entities' => 5,
             'allowed_entity_types' => ['hogar'],
-            'price' => 0
+            'price' => 0,
         ]);
 
         $this->user = User::factory()->create();
@@ -56,13 +56,13 @@ class UsageAdjustmentTest extends TestCase
             'id' => 1,
             'province_id' => $province->id,
             'name' => 'Naturgy',
-            'type' => 'gas'
+            'type' => 'gas',
         ]);
 
         $proveedor = Proveedor::create([
             'name' => 'Distribuidora S.A.',
             'utility_company_id' => $utilityCompany->id,
-            'province_id' => $province->id
+            'province_id' => $province->id,
         ]);
 
         $this->contract = Contract::create([
@@ -70,11 +70,11 @@ class UsageAdjustmentTest extends TestCase
             'utility_company_id' => $utilityCompany->id,
             'proveedor_id' => $proveedor->id,
             'account_number' => '123456',
-            'is_active' => true
+            'is_active' => true,
         ]);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function bimonthly_invoice_without_installments_is_considered_complete()
     {
         // Factura bimestral única (sin cuotas, installment_number = null, total = 2)
@@ -87,25 +87,25 @@ class UsageAdjustmentTest extends TestCase
             'total_energy_consumed_kwh' => 624,
             'total_amount' => 10000,
             'installment_number' => null,
-            'total_installments' => 2
+            'total_installments' => 2,
         ]);
 
         $this->actingAs($this->user);
         session(['active_entity_id' => $this->entity->id]);
 
         $response = $this->get(route('analisis.usage'));
-        
+
         $response->assertStatus(200);
-        
+
         // Obtenemos los datos pasados a Inertia
         $page = $response->viewData('page');
         $unifications = $page['props']['unifications'];
-        
+
         $this->assertCount(1, $unifications);
         $this->assertTrue($unifications[0]['is_complete'], 'El periodo bimestral unificado debe estar completo.');
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function partial_monthly_invoice_is_considered_incomplete()
     {
         // Factura mensual que es parte de un bimestre (installment = 1, total = 2)
@@ -118,24 +118,24 @@ class UsageAdjustmentTest extends TestCase
             'total_energy_consumed_kwh' => 300,
             'total_amount' => 5000,
             'installment_number' => 1,
-            'total_installments' => 2
+            'total_installments' => 2,
         ]);
 
         $this->actingAs($this->user);
         session(['active_entity_id' => $this->entity->id]);
 
         $response = $this->get(route('analisis.usage'));
-        
+
         $response->assertStatus(200);
-        
+
         $page = $response->viewData('page');
         $unifications = $page['props']['unifications'];
-        
+
         $this->assertCount(1, $unifications);
         $this->assertFalse($unifications[0]['is_complete'], 'El periodo mensual 1 de 2 debe estar incompleto.');
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function multiple_monthly_invoices_complete_the_period_if_they_match_total_installments()
     {
         // Cuota 1
@@ -144,11 +144,11 @@ class UsageAdjustmentTest extends TestCase
             'invoice_number' => 'INV-MONTHLY-1',
             'issue_date' => '2025-02-15',
             'start_date' => '2025-01-15',
-            'end_date' => '2025-02-15',
+            'end_date' => '2025-03-20',
             'total_energy_consumed_kwh' => 300,
             'total_amount' => 5000,
             'installment_number' => 1,
-            'total_installments' => 2
+            'total_installments' => 2,
         ]);
 
         // Cuota 2
@@ -156,16 +156,27 @@ class UsageAdjustmentTest extends TestCase
             'contract_id' => $this->contract->id,
             'invoice_number' => 'INV-MONTHLY-2',
             'issue_date' => '2025-03-15',
-            'start_date' => '2025-02-16',
+            'start_date' => '2025-01-15',
             'end_date' => '2025-03-20',
             'total_energy_consumed_kwh' => 324,
             'total_amount' => 5000,
             'installment_number' => 2,
-            'total_installments' => 2
+            'total_installments' => 2,
         ]);
 
-        // Para agruparlos correctamente en el Test, GroupsInvoices trait agrupa por start_date y end_date de la cuota 1?
-        // En tu sistema, si las fechas difieren, NO se agrupan por defecto a menos que el trait las combine de otra forma.
-        // Pero vamos a probar el comportamiento base actual del sistema.
+        $this->actingAs($this->user);
+        session(['active_entity_id' => $this->entity->id]);
+
+        $response = $this->get(route('analisis.usage'));
+
+        $response->assertStatus(200);
+
+        $page = $response->viewData('page');
+        $unifications = $page['props']['unifications'];
+
+        $this->assertCount(1, $unifications);
+        $this->assertTrue($unifications[0]['is_complete'], 'El periodo con todas sus cuotas completas debe ser considerado completo.');
+        $this->assertEquals(624, $unifications[0]['total_kwh']);
+        $this->assertEquals(10000, $unifications[0]['total_amount']);
     }
 }

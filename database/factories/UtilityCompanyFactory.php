@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\UtilityCompany;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UtilityCompany>
+ * @extends Factory<UtilityCompany>
  */
 class UtilityCompanyFactory extends Factory
 {
@@ -17,7 +18,7 @@ class UtilityCompanyFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->company() . ' Group ' . $this->faker->unique()->randomNumber(5),
+            'name' => $this->faker->unique()->company().' Group '.$this->faker->unique()->randomNumber(5),
         ];
     }
 }

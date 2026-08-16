@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -21,7 +19,7 @@ return new class extends Migration
                 ->where('type_id', $typeInverter->id)
                 ->update([
                     'type_id' => $typeOnOff->id,
-                    'is_inverter' => true
+                    'is_inverter' => true,
                 ]);
 
             // 2. Eliminar el tipo Inverter

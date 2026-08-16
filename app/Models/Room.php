@@ -2,16 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Room extends Model
 {
     use HasFactory;
+
     public function equipment()
     {
-        return $this->hasMany(\App\Models\Equipment::class, 'room_id');
+        return $this->hasMany(Equipment::class, 'room_id');
     }
+
     protected $fillable = [
         'entity_id',
         'name',
@@ -44,7 +46,7 @@ class Room extends Model
      */
     public function getSystemDescription(): ?string
     {
-        return match($this->name) {
+        return match ($this->name) {
             'Portátiles' => 'Equipos móviles que se trasladan entre diferentes ambientes.',
             'Temporales' => 'Gastos y consumos ocasionales, eventos, reparaciones o trabajos temporales.',
             default => $this->description

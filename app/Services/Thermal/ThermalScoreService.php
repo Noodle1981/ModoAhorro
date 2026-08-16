@@ -6,9 +6,6 @@ class ThermalScoreService
 {
     /**
      * Calculate thermal score (0-100) and label (A-G).
-     *
-     * @param array $profile
-     * @return array
      */
     public function calculate(array $profile): array
     {
@@ -16,12 +13,15 @@ class ThermalScoreService
 
         // 1. Roof (30%)
         switch ($profile['roof_type'] ?? '') {
-            case 'sheet_metal': $score -= 20; break;
-            case 'concrete_slab': $score -= 10; break;
-            case 'wood_tiles': $score += 5; break;
+            case 'sheet_metal': $score -= 20;
+                break;
+            case 'concrete_slab': $score -= 10;
+                break;
+            case 'wood_tiles': $score += 5;
+                break;
         }
 
-        if (!empty($profile['roof_insulation'])) {
+        if (! empty($profile['roof_insulation'])) {
             $score += 15;
         }
 
@@ -34,7 +34,7 @@ class ThermalScoreService
             $score += 5;
         }
 
-        if (!empty($profile['drafts_detected'])) {
+        if (! empty($profile['drafts_detected'])) {
             $score -= 15;
         }
 
@@ -47,11 +47,11 @@ class ThermalScoreService
             case 'este_oeste':
                 $score -= 10; // Hard to control: Low sun in morning/afternoon causing overheating
                 break;
-            // 'diagonal' or others get 0 change
+                // 'diagonal' or others get 0 change
         }
 
         // South Window (Cross Ventilation / Cooling)
-        if (!empty($profile['south_window'])) {
+        if (! empty($profile['south_window'])) {
             $score += 10;
         }
 
@@ -80,19 +80,37 @@ class ThermalScoreService
 
     private function getLabel(int $score): string
     {
-        if ($score >= 90) return 'A';
-        if ($score >= 75) return 'B';
-        if ($score >= 60) return 'C';
-        if ($score >= 40) return 'D';
+        if ($score >= 90) {
+            return 'A';
+        }
+        if ($score >= 75) {
+            return 'B';
+        }
+        if ($score >= 60) {
+            return 'C';
+        }
+        if ($score >= 40) {
+            return 'D';
+        }
+
         return 'E';
     }
 
     private function getColor(int $score): string
     {
-        if ($score >= 90) return 'success'; // Green
-        if ($score >= 75) return 'success'; // Light Green
-        if ($score >= 60) return 'warning'; // Yellow
-        if ($score >= 40) return 'warning'; // Orange
+        if ($score >= 90) {
+            return 'success';
+        } // Green
+        if ($score >= 75) {
+            return 'success';
+        } // Light Green
+        if ($score >= 60) {
+            return 'warning';
+        } // Yellow
+        if ($score >= 40) {
+            return 'warning';
+        } // Orange
+
         return 'danger';  // Red
     }
 }

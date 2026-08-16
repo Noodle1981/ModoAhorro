@@ -6,7 +6,7 @@ use App\Models\Province;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Province>
+ * @extends Factory<Province>
  */
 class ProvinceFactory extends Factory
 {
@@ -18,7 +18,7 @@ class ProvinceFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->word() . ' ' . $this->faker->unique()->randomNumber(5),
+            'name' => $this->faker->unique()->word().' '.$this->faker->unique()->randomNumber(5),
         ];
     }
 }

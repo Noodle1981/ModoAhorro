@@ -3,13 +3,14 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -59,7 +60,7 @@ class User extends Authenticatable
     /**
      * Get the current active plan for the user
      */
-    public function currentPlan(): ?\App\Models\Plan
+    public function currentPlan(): ?Plan
     {
         // Obtener la relación entity_user más reciente que no haya expirado
         $pivot = \DB::table('entity_user')
@@ -72,10 +73,10 @@ class User extends Authenticatable
             ->first();
 
         if ($pivot && $pivot->plan_id) {
-            return \App\Models\Plan::find($pivot->plan_id);
+            return Plan::find($pivot->plan_id);
         }
 
         // Fallback: Plan Gratuito por defecto
-        return \App\Models\Plan::where('name', 'Gratuito')->first();
+        return Plan::where('name', 'Gratuito')->first();
     }
 }

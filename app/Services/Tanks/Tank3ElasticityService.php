@@ -2,7 +2,6 @@
 
 namespace App\Services\Tanks;
 
-use App\Models\Equipment;
 use Illuminate\Support\Collection;
 
 class Tank3ElasticityService
@@ -31,26 +30,26 @@ class Tank3ElasticityService
             } else {
                 $hours = $eq->avg_daily_use_hours ?? $eq->use_time_hours ?? $opContext['daily_hours'];
                 $activeDays = ($eq->use_time_hours == 24) ? $opContext['total_days'] : $opContext['work_days'];
-                
+
                 $isSeasonal = $eq->type?->consumption_logic === 'SEASONAL_HABIT';
                 $coolingDays = $opContext['cooling_days'] ?? 0;
-                
+
                 if ($isSeasonal && $coolingDays <= 0) {
                     $periodKwh = 0;
-                    $eq->audit_logs = ["Anulado (0 kWh). Fuera de temporada estacional."];
+                    $eq->audit_logs = ['Anulado (0 kWh). Fuera de temporada estacional.'];
                 } else {
                     $loadFactor = $eq->type->load_factor ?? 1.0;
                     $logic = $eq->type?->consumption_logic ?? '';
                     $powerW = $eq->nominal_power_w ?? $eq->type->default_power_watts ?? 0;
 
                     if ($logic === 'TURNS_BASED') {
-                        $commercialLoad = isset($opContext['commercial_profile']) && $opContext['commercial_profile'] 
-                            ? $opContext['commercial_profile']->calculateOperationalLoad($opContext) 
+                        $commercialLoad = isset($opContext['commercial_profile']) && $opContext['commercial_profile']
+                            ? $opContext['commercial_profile']->calculateOperationalLoad($opContext)
                             : ($opContext['service_turns'] ?? 1);
                         $dailyKwh = ($powerW * $commercialLoad * $hours * $loadFactor) / 1000;
                     } elseif ($logic === 'SERVICE_HOURS') {
                         $commercialLoad = isset($opContext['commercial_profile']) && $opContext['commercial_profile']
-                            ? $opContext['commercial_profile']->calculateOperationalLoad($opContext) 
+                            ? $opContext['commercial_profile']->calculateOperationalLoad($opContext)
                             : 1.0;
                         $dailyHours = $opContext['daily_hours'] ?? 12;
                         $dailyKwh = ($powerW * $dailyHours * $commercialLoad * $loadFactor) / 1000;
@@ -65,24 +64,24 @@ class Tank3ElasticityService
             // Asignación Directa del Teórico Puro
             $eq->calculated_consumption_kwh = $periodKwh;
             $eq->tank_assignment = 4;
-            
+
             // Mensaje en Log dependiendo del tipo de unidad
             if ($eq->type?->usage_unit === 'cycles') {
                 $cyclesUsed = $eq->cycles_per_period ?? 0;
-                $eq->audit_logs = ["Asignación Teórica: " . number_format($periodKwh, 1) . " kWh ($cyclesUsed ciclos declarados)"];
+                $eq->audit_logs = ['Asignación Teórica: '.number_format($periodKwh, 1)." kWh ($cyclesUsed ciclos declarados)"];
             } else {
-                $eq->audit_logs = ["Asignación Teórica: " . number_format($periodKwh, 1) . " kWh (Uso Variable Calculado)"];
+                $eq->audit_logs = ['Asignación Teórica: '.number_format($periodKwh, 1).' kWh (Uso Variable Calculado)'];
             }
 
             $tankConsumption += $periodKwh;
         }
 
-        $logs[] = "[Tanque 4] Se han procesado " . $targetEquipments->count() . " equipos variables, totalizando " . number_format($tankConsumption, 1) . " kWh según horas declaradas.";
+        $logs[] = '[Tanque 4] Se han procesado '.$targetEquipments->count().' equipos variables, totalizando '.number_format($tankConsumption, 1).' kWh según horas declaradas.';
 
         return [
             'consumption' => $tankConsumption,
             'logs' => $logs,
-            'processed_count' => $targetEquipments->count()
+            'processed_count' => $targetEquipments->count(),
         ];
     }
 }

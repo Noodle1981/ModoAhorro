@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Equipment;
-use App\Models\MaintenanceTask;
 use App\Models\MaintenanceLog;
 use Carbon\Carbon;
 
@@ -11,18 +10,15 @@ class MaintenanceService
 {
     /**
      * Verifica el estado de mantenimiento de un equipo.
-     * 
-     * @param Equipment $equipment
-     * @return array
      */
     public function checkStatus(Equipment $equipment): array
     {
         $type = $equipment->type;
-        if (!$type) {
+        if (! $type) {
             return [
                 'health_score' => 100,
                 'pending_tasks' => [],
-                'penalty_factor' => 1.0
+                'penalty_factor' => 1.0,
             ];
         }
 
@@ -40,7 +36,7 @@ class MaintenanceService
 
             // 1. Verificación por Frecuencia (Días)
             if ($task->frequency_days) {
-                if (!$lastLog) {
+                if (! $lastLog) {
                     // Si no hay log, asumimos vencido si el equipo tiene cierta antigüedad (ej: 1 mes)
                     // Para simplificar, si no hay log y hay frecuencia, está pendiente/vencido.
                     $isOverdue = true;
@@ -61,8 +57,8 @@ class MaintenanceService
                         ->where('maintenance_task_id', $task->id)
                         ->whereYear('completed_at', Carbon::now()->year)
                         ->exists();
-                    
-                    if (!$logThisYear) {
+
+                    if (! $logThisYear) {
                         $isOverdue = true;
                     }
                 }
@@ -71,8 +67,8 @@ class MaintenanceService
             if ($isOverdue) {
                 $pendingTasks[] = [
                     'task' => $task->title,
-                    'impact' => $task->efficiency_impact * 100 . '%',
-                    'due_date' => $lastLog ? Carbon::parse($lastLog->completed_at)->addDays($task->frequency_days)->format('d/m/Y') : 'Inmediato'
+                    'impact' => $task->efficiency_impact * 100 .'%',
+                    'due_date' => $lastLog ? Carbon::parse($lastLog->completed_at)->addDays($task->frequency_days)->format('d/m/Y') : 'Inmediato',
                 ];
                 $totalPenalty += $task->efficiency_impact;
                 $maxScore -= ($task->efficiency_impact * 100); // 10% impact = -10 points
@@ -82,19 +78,17 @@ class MaintenanceService
         return [
             'health_score' => max(0, $maxScore),
             'pending_tasks' => $pendingTasks,
-            'penalty_factor' => 1.0 + $totalPenalty
+            'penalty_factor' => 1.0 + $totalPenalty,
         ];
     }
 
     /**
      * Obtiene solo el factor de penalización para cálculos rápidos.
-     * 
-     * @param Equipment $equipment
-     * @return float
      */
     public function getPenaltyFactor(Equipment $equipment): float
     {
         $status = $this->checkStatus($equipment);
+
         return $status['penalty_factor'];
     }
 }

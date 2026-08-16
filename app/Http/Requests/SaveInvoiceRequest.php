@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
 use Carbon\Carbon;
+use Illuminate\Foundation\Http\FormRequest;
 
 class SaveInvoiceRequest extends FormRequest
 {
@@ -12,7 +12,7 @@ class SaveInvoiceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // La autorización de propiedad de la entidad se sigue manejando en el controlador 
+        // La autorización de propiedad de la entidad se sigue manejando en el controlador
         // a través de políticas, para mayor flexibilidad.
         return true;
     }
@@ -49,7 +49,7 @@ class SaveInvoiceRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $data = $this->all();
-            
+
             $issue_date = Carbon::parse($data['issue_date'] ?? $data['invoice_date']);
             $end_date = Carbon::parse($data['end_date']);
             $start_date = Carbon::parse($data['start_date']);
@@ -71,7 +71,7 @@ class SaveInvoiceRequest extends FormRequest
     {
         if (empty($this->issue_date)) {
             $this->merge([
-                'issue_date' => $this->invoice_date
+                'issue_date' => $this->invoice_date,
             ]);
         }
     }

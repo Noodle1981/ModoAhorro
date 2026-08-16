@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Gestión_Física;
 
-use App\Models\User;
 use App\Models\Entity;
 use App\Models\Locality;
-use App\Models\Province;
 use App\Models\Plan;
+use App\Models\Province;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,9 +15,13 @@ class ThermalComfortTest extends TestCase
     use RefreshDatabase;
 
     protected $user;
+
     protected $entity;
+
     protected $province;
+
     protected $locality;
+
     protected $plan;
 
     protected function setUp(): void
@@ -30,20 +34,20 @@ class ThermalComfortTest extends TestCase
             'province_id' => $this->province->id,
             'name' => 'Santa Lucía',
             'latitude' => -31.5375,
-            'longitude' => -68.5364
+            'longitude' => -68.5364,
         ]);
 
         $this->plan = Plan::create([
             'name' => 'Premium',
             'max_entities' => 5,
             'allowed_entity_types' => ['hogar'],
-            'price' => 0
+            'price' => 0,
         ]);
 
         $this->user = User::factory()->create();
         $this->entity = Entity::factory()->create([
             'locality_id' => $this->locality->id,
-            'type' => 'hogar'
+            'type' => 'hogar',
         ]);
 
         $this->user->entities()->attach($this->entity->id, [
@@ -65,7 +69,7 @@ class ThermalComfortTest extends TestCase
             'drafts_detected' => false,
             'south_window' => true,
             'thermal_score' => 65,
-            'energy_label' => 'C'
+            'energy_label' => 'C',
         ];
 
         $this->entity->update(['thermal_profile' => $profile]);

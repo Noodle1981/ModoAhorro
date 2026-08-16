@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -14,13 +13,13 @@ class ProfileController extends Controller
     public function edit(Request $request)
     {
         $user = $request->user()->load(['entities']);
-        
+
         return Inertia::render('Profile/Edit', [
             'userData' => [
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'is_super_admin' => (bool)$user->is_super_admin,
+                'is_super_admin' => (bool) $user->is_super_admin,
                 'created_at' => $user->created_at ? $user->created_at->format('d/m/Y') : null,
                 'entities_count' => $user->entities->count(),
             ],

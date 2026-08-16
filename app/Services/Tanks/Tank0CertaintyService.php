@@ -22,26 +22,26 @@ class Tank0CertaintyService
             // Y que NO sean ni de Refrigeración/Conectividad (-> Tank Crítico)
             // NI de Climatización (-> Tank Climático)
             return $eq->has_defined_pattern === true
-                && !$this->isCritical($eq, $opContext)
-                && !($eq->type?->is_thermal_sensitive);
+                && ! $this->isCritical($eq, $opContext)
+                && ! ($eq->type?->is_thermal_sensitive);
         });
 
         foreach ($targetEquipments as $eq) {
             $periodKwh = $eq->_theo_kwh ?? 0;
             $eq->calculated_consumption_kwh = $periodKwh;
             $eq->tank_assignment = 1;
-            $eq->audit_logs = ["Fijado en " . number_format($periodKwh, 1) . " kWh (Tanque 1 - Certeza (Patrón Fijo declarado))"];
-            
+            $eq->audit_logs = ['Fijado en '.number_format($periodKwh, 1).' kWh (Tanque 1 - Certeza (Patrón Fijo declarado))'];
+
             $tankConsumption += $periodKwh;
             $remainingKwh -= $periodKwh;
-            
-            $logs[] = "[Tanque 1] {$eq->name}: " . number_format($periodKwh, 1) . " kWh";
+
+            $logs[] = "[Tanque 1] {$eq->name}: ".number_format($periodKwh, 1).' kWh';
         }
 
         return [
             'consumption' => $tankConsumption,
             'logs' => $logs,
-            'processed_count' => $targetEquipments->count()
+            'processed_count' => $targetEquipments->count(),
         ];
     }
 

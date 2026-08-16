@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('temp_min', 4, 1)->comment('Temperatura mínima del día (°C)');
             $table->decimal('temp_avg', 4, 1)->nullable()->comment('Temperatura promedio (°C)');
             $table->timestamps();
-            
+
             // Evitar duplicados por fecha y ubicación
             $table->unique(['date', 'latitude', 'longitude']);
             $table->index('date');

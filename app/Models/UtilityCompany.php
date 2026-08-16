@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class UtilityCompany extends Model
 {
     use HasFactory;
+
     /**
      * The table associated with the model.
      *

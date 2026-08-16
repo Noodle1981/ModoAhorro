@@ -10,12 +10,12 @@ return new class extends Migration
     {
         Schema::table('equipment_types', function (Blueprint $table) {
             $table->decimal('energy_per_cycle', 8, 3)->nullable()->after('default_power_watts')
-                  ->comment('Consumo en kWh por cada ciclo de uso (ej: 1.5 kWh por lavado)');
+                ->comment('Consumo en kWh por cada ciclo de uso (ej: 1.5 kWh por lavado)');
         });
 
         Schema::table('equipment_usages', function (Blueprint $table) {
             $table->decimal('cycles_per_period', 8, 2)->nullable()->after('usage_count')
-                  ->comment('Cantidad de ciclos realizados en el periodo de la factura');
+                ->comment('Cantidad de ciclos realizados en el periodo de la factura');
         });
     }
 

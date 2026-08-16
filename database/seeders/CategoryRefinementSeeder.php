@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\EquipmentCategory;
 use App\Models\EquipmentType;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class CategoryRefinementSeeder extends Seeder
 {
@@ -65,12 +64,12 @@ class CategoryRefinementSeeder extends Seeder
                 foreach ($keywords as $keyword) {
                     if (str_contains($name, $keyword)) {
                         $type->category_id = $catModels[$catName]->id;
-                        
+
                         // Lógica de flags de Tanques
                         if ($catName === 'Climatización') {
                             $type->is_climatization = true;
                         }
-                        
+
                         $type->save();
                         $foundMapping = true;
                         $count++;
@@ -84,13 +83,13 @@ class CategoryRefinementSeeder extends Seeder
         // Pero vamos a unificar 'Oficina' con 'Informática y Oficina' si existe la vieja
         $oldOficina = EquipmentCategory::where('name', 'Oficina')->first();
         if ($oldOficina && $oldOficina->name !== 'Informática y Oficina') {
-             EquipmentType::where('category_id', $oldOficina->id)->update(['category_id' => $catModels['Informática y Oficina']->id]);
+            EquipmentType::where('category_id', $oldOficina->id)->update(['category_id' => $catModels['Informática y Oficina']->id]);
         }
 
         $oldElectro = EquipmentCategory::where('name', 'Electrodomésticos')->first();
         if ($oldElectro) {
-             // Los que quedaron en Electrodomésticos sin mapeo van a Cocina por defecto
-             EquipmentType::where('category_id', $oldElectro->id)->update(['category_id' => $catModels['Cocina y Preparación']->id]);
+            // Los que quedaron en Electrodomésticos sin mapeo van a Cocina por defecto
+            EquipmentType::where('category_id', $oldElectro->id)->update(['category_id' => $catModels['Cocina y Preparación']->id]);
         }
 
         echo "\nSe han re-clasificado {$count} tipos de equipos con éxito.\n";

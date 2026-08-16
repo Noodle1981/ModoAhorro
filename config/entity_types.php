@@ -22,17 +22,17 @@ return [
         'tailwind_bg' => 'bg-emerald-100',
         'tailwind_text' => 'text-emerald-600',
         'route_prefix' => 'entities.home',
-        
+
         // Labels específicos
         'rooms_label' => 'Áreas',
         'rooms_icon' => 'bi-door-open',
         'people_label' => 'Personas',
         'people_icon' => 'bi-people',
-        
+
         // Comportamiento
         'has_business_hours' => false,
         'default_rooms' => ['Portátiles', 'Temporales'],
-        
+
         // Módulos de recomendaciones habilitados
         'recommendations' => [
             'solar_panels' => [
@@ -110,17 +110,17 @@ return [
         'tailwind_bg' => 'bg-blue-100',
         'tailwind_text' => 'text-blue-600',
         'route_prefix' => 'entities.office',
-        
+
         // Labels específicos
         'rooms_label' => 'Áreas',
         'rooms_icon' => 'bi-grid',
         'people_label' => 'Empleados',
         'people_icon' => 'bi-person-badge',
-        
+
         // Comportamiento
         'has_business_hours' => true,
         'default_rooms' => ['Recepción', 'Área de trabajo', 'Portátiles', 'Temporales'],
-        
+
         // Módulos de recomendaciones habilitados
         'recommendations' => [
             'solar_panels' => [
@@ -190,17 +190,17 @@ return [
         'tailwind_bg' => 'bg-purple-100',
         'tailwind_text' => 'text-purple-600',
         'route_prefix' => 'entities.trade',
-        
+
         // Labels específicos
         'rooms_label' => 'Áreas',
         'rooms_icon' => 'bi-layout-split',
         'people_label' => 'Capacidad',
         'people_icon' => 'bi-person-standing',
-        
+
         // Comportamiento
         'has_business_hours' => true,
         'default_rooms' => ['Salón Principal', 'Depósito', 'Portátiles', 'Temporales'],
-        
+
         // Módulos de recomendaciones habilitados
         'recommendations' => [
             'solar_panels' => [

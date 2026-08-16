@@ -4,8 +4,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
-    public function up() {
+return new class extends Migration
+{
+    public function up()
+    {
         Schema::create('equipment_history', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('equipment_id')->nullable();
@@ -26,7 +28,9 @@ return new class extends Migration {
             $table->foreign('invoice_id')->references('id')->on('invoices')->onDelete('set null');
         });
     }
-    public function down() {
+
+    public function down()
+    {
         Schema::dropIfExists('equipment_history');
     }
 };

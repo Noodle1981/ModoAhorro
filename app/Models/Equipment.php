@@ -1,17 +1,18 @@
 <?php
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Equipment extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'name', 'brand', 'model', 'serial_number', 'category_id', 'type_id', 'nominal_power_w', 'is_standby', 'avg_daily_use_hours', 'has_defined_pattern', 'usage_frequency', 'use_days_per_week', 'is_active', 'room_id', 'is_validated', 'intensity',
         'installed_at', 'removed_at',
-        'acquisition_year', 'energy_label', 'is_inverter', 'capacity', 'capacity_unit', 'extra_attributes'
+        'acquisition_year', 'energy_label', 'is_inverter', 'capacity', 'capacity_unit', 'extra_attributes',
     ];
 
     protected $casts = [
@@ -22,6 +23,7 @@ class Equipment extends Model
         'removed_at' => 'date',
         'extra_attributes' => 'array',
     ];
+
     public function room()
     {
         return $this->belongsTo(Room::class);

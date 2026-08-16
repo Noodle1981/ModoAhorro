@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\EquipmentType;
 use App\Models\MaintenanceTask;
+use Illuminate\Database\Seeder;
 
 class MaintenanceSeeder extends Seeder
 {

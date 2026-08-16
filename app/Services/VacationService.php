@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Entity;
-use App\Models\Equipment;
 use App\Models\Invoice;
 use Carbon\Carbon;
 
@@ -39,18 +38,18 @@ class VacationService
         }
 
         $startDate = Carbon::now();
-        $endDate   = Carbon::now()->addDays($days);
+        $endDate = Carbon::now()->addDays($days);
 
         $invoices = Invoice::whereHas('contract', function ($query) use ($entity) {
-                $query->where('entity_id', $entity->id);
-            })
+            $query->where('entity_id', $entity->id);
+        })
             ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])
-                      ->orWhereBetween('end_date', [$startDate, $endDate])
-                      ->orWhere(function ($q) use ($startDate, $endDate) {
-                          $q->where('start_date', '<=', $startDate)
+                    ->orWhereBetween('end_date', [$startDate, $endDate])
+                    ->orWhere(function ($q) use ($startDate, $endDate) {
+                        $q->where('start_date', '<=', $startDate)
                             ->where('end_date', '>=', $endDate);
-                      });
+                    });
             })
             ->get();
 
@@ -58,7 +57,7 @@ class VacationService
         foreach ($invoices as $invoice) {
             $invoice->update([
                 'is_representative' => false,
-                'anomaly_reason'    => 'VACATION_MODE'
+                'anomaly_reason' => 'VACATION_MODE',
             ]);
             $count++;
         }
@@ -71,39 +70,39 @@ class VacationService
      */
     public function generateChecklist(Entity $entity, int $days): array
     {
-        $tariff   = $this->getRealTariff($entity);
-        $checklist    = [];
+        $tariff = $this->getRealTariff($entity);
+        $checklist = [];
         $totalSavings = 0;
 
         $connectivity = $this->checkConnectivityRule($entity, $days, $tariff);
-        $checklist[]  = $connectivity;
+        $checklist[] = $connectivity;
         $totalSavings += $connectivity['savings'] ?? 0;
 
         $refrigeration = $this->checkRefrigerationRule($entity, $days, $tariff);
         if ($refrigeration) {
-            $checklist[]  = $refrigeration;
+            $checklist[] = $refrigeration;
             $totalSavings += $refrigeration['savings'] ?? 0;
         }
 
         $waterHeater = $this->checkWaterHeaterRule($entity, $days, $tariff);
         if ($waterHeater) {
-            $checklist[]  = $waterHeater;
+            $checklist[] = $waterHeater;
             $totalSavings += $waterHeater['savings'] ?? 0;
         }
 
         $vampires = $this->checkVampireRule($entity, $days, $tariff);
         if ($vampires) {
-            $checklist[]  = $vampires;
+            $checklist[] = $vampires;
             $totalSavings += $vampires['savings'] ?? 0;
         }
 
-        $lighting    = $this->checkLightingRule($entity);
+        $lighting = $this->checkLightingRule($entity);
         $checklist[] = $lighting;
 
         return [
-            'checklist'    => $checklist,
+            'checklist' => $checklist,
             'total_savings' => round($totalSavings, 0),
-            'tariff_used'  => $tariff,
+            'tariff_used' => $tariff,
         ];
     }
 
@@ -112,6 +111,7 @@ class VacationService
         $hasSecurity = $entity->rooms->flatMap->equipment->contains(function ($eq) {
             $name = strtolower($eq->name);
             $type = strtolower($eq->type->name ?? '');
+
             return str_contains($name, 'cámara') || str_contains($name, 'camara') ||
                    str_contains($name, 'alarma') || str_contains($name, 'sensor') ||
                    str_contains($type, 'cámara') || str_contains($type, 'camara') ||
@@ -120,32 +120,33 @@ class VacationService
 
         if ($hasSecurity) {
             return [
-                'category'    => 'security',
-                'title'       => 'Router Wi-Fi',
-                'action'      => 'NO TOCAR',
+                'category' => 'security',
+                'title' => 'Router Wi-Fi',
+                'action' => 'NO TOCAR',
                 'description' => 'Tus cámaras y sensores dependen del Wi-Fi. No lo desconectes.',
-                'icon'        => 'bi-router-fill',
-                'color'       => 'danger',
-                'savings'     => 0,
+                'icon' => 'bi-router-fill',
+                'color' => 'danger',
+                'savings' => 0,
             ];
         }
 
-        $router   = $entity->rooms->flatMap->equipment->first(function ($eq) {
+        $router = $entity->rooms->flatMap->equipment->first(function ($eq) {
             $name = strtolower($eq->name);
+
             return str_contains($name, 'modem') || str_contains($name, 'router');
         });
-        $powerW      = $router ? ($router->nominal_power_w ?? 10) : 10;
-        $savingsKwh  = ($powerW * 24 * $days) / 1000;
+        $powerW = $router ? ($router->nominal_power_w ?? 10) : 10;
+        $savingsKwh = ($powerW * 24 * $days) / 1000;
         $savingsMoney = round($savingsKwh * $tariff, 0);
 
         return [
-            'category'    => 'savings',
-            'title'       => 'Router Wi-Fi',
-            'action'      => 'DESCONECTAR',
-            'description' => "Sin equipos de seguridad, apagarlo ahorra " . number_format($savingsKwh, 1) . " kWh en {$days} días.",
-            'icon'        => 'bi-router',
-            'color'       => 'success',
-            'savings'     => $savingsMoney,
+            'category' => 'savings',
+            'title' => 'Router Wi-Fi',
+            'action' => 'DESCONECTAR',
+            'description' => 'Sin equipos de seguridad, apagarlo ahorra '.number_format($savingsKwh, 1)." kWh en {$days} días.",
+            'icon' => 'bi-router',
+            'color' => 'success',
+            'savings' => $savingsMoney,
         ];
     }
 
@@ -153,44 +154,47 @@ class VacationService
     {
         $fridge = $entity->rooms->flatMap->equipment->first(function ($eq) {
             $name = strtolower($eq->name);
+
             return str_contains($name, 'heladera') || str_contains($name, 'freezer');
         });
 
-        if (!$fridge) return null;
+        if (! $fridge) {
+            return null;
+        }
 
         if ($days < 20) {
             // En modo eco (temperatura mínima) se ahorra ~30% del consumo normal
-            $powerW       = $fridge->nominal_power_w ?? 150;
-            $loadFactor   = 0.35; // compresor corre ~35% del tiempo
-            $ecoSaving    = 0.30; // modo eco reduce ~30%
-            $savingsKwh   = ($powerW * 24 * $loadFactor * $ecoSaving * $days) / 1000;
+            $powerW = $fridge->nominal_power_w ?? 150;
+            $loadFactor = 0.35; // compresor corre ~35% del tiempo
+            $ecoSaving = 0.30; // modo eco reduce ~30%
+            $savingsKwh = ($powerW * 24 * $loadFactor * $ecoSaving * $days) / 1000;
             $savingsMoney = round($savingsKwh * $tariff, 0);
 
             return [
-                'category'    => 'recommendation',
-                'title'       => 'Heladera / Freezer',
-                'action'      => 'MODO ECO (Temperatura mínima)',
-                'description' => "No la desconectes para viajes cortos. Subí la temperatura al mínimo y vaciá los perecederos. Ahorrás ~" . number_format($savingsKwh, 1) . " kWh en {$days} días.",
-                'icon'        => 'bi-snow',
-                'color'       => 'warning',
-                'savings'     => $savingsMoney,
+                'category' => 'recommendation',
+                'title' => 'Heladera / Freezer',
+                'action' => 'MODO ECO (Temperatura mínima)',
+                'description' => 'No la desconectes para viajes cortos. Subí la temperatura al mínimo y vaciá los perecederos. Ahorrás ~'.number_format($savingsKwh, 1)." kWh en {$days} días.",
+                'icon' => 'bi-snow',
+                'color' => 'warning',
+                'savings' => $savingsMoney,
             ];
         }
 
         // Viaje largo > 20 días: conviene desconectarla
-        $powerW      = $fridge->nominal_power_w ?? 150;
-        $loadFactor  = 0.35; // El compresor corre ~35% del tiempo
-        $savingsKwh  = ($powerW * 24 * $loadFactor * $days) / 1000;
+        $powerW = $fridge->nominal_power_w ?? 150;
+        $loadFactor = 0.35; // El compresor corre ~35% del tiempo
+        $savingsKwh = ($powerW * 24 * $loadFactor * $days) / 1000;
         $savingsMoney = round($savingsKwh * $tariff, 0);
 
         return [
-            'category'    => 'critical',
-            'title'       => 'Heladera / Freezer',
-            'action'      => 'DESCONECTAR Y DEJAR PUERTA ABIERTA',
-            'description' => "Más de 20 días: vaciala, desconectala y dejá la puerta entreabierta. Ahorrás " . number_format($savingsKwh, 1) . " kWh.",
-            'icon'        => 'bi-snow2',
-            'color'       => 'danger',
-            'savings'     => $savingsMoney,
+            'category' => 'critical',
+            'title' => 'Heladera / Freezer',
+            'action' => 'DESCONECTAR Y DEJAR PUERTA ABIERTA',
+            'description' => 'Más de 20 días: vaciala, desconectala y dejá la puerta entreabierta. Ahorrás '.number_format($savingsKwh, 1).' kWh.',
+            'icon' => 'bi-snow2',
+            'color' => 'danger',
+            'savings' => $savingsMoney,
         ];
     }
 
@@ -198,24 +202,27 @@ class VacationService
     {
         $heater = $entity->rooms->flatMap->equipment->first(function ($eq) {
             $name = strtolower($eq->name);
+
             return str_contains($name, 'termotanque') || str_contains($name, 'calefón') || str_contains($name, 'calefon');
         });
 
-        if (!$heater) return null;
+        if (! $heater) {
+            return null;
+        }
 
         // Un termotanque eléctrico pierde ~1 kWh/día solo manteniendo la temperatura
         $dailyLossKwh = 1.0;
-        $savingsKwh   = $dailyLossKwh * $days;
+        $savingsKwh = $dailyLossKwh * $days;
         $savingsMoney = round($savingsKwh * $tariff, 0);
 
         return [
-            'category'    => 'critical',
-            'title'       => 'Termotanque Eléctrico',
-            'action'      => 'DESCONECTAR',
-            'description' => "Mantener agua caliente sin nadie en casa gasta ~{$dailyLossKwh} kWh/día. En {$days} días son " . number_format($savingsKwh, 1) . " kWh innecesarios.",
-            'icon'        => 'bi-droplet-half',
-            'color'       => 'danger',
-            'savings'     => $savingsMoney,
+            'category' => 'critical',
+            'title' => 'Termotanque Eléctrico',
+            'action' => 'DESCONECTAR',
+            'description' => "Mantener agua caliente sin nadie en casa gasta ~{$dailyLossKwh} kWh/día. En {$days} días son ".number_format($savingsKwh, 1).' kWh innecesarios.',
+            'icon' => 'bi-droplet-half',
+            'color' => 'danger',
+            'savings' => $savingsMoney,
         ];
     }
 
@@ -223,53 +230,56 @@ class VacationService
     {
         $vampires = $entity->rooms->flatMap->equipment->filter(function ($eq) {
             $standbyW = $eq->type->default_standby_power_w ?? 0;
+
             return $standbyW > 0 &&
-                   !str_contains(strtolower($eq->name), 'modem') &&
-                   !str_contains(strtolower($eq->name), 'router');
+                   ! str_contains(strtolower($eq->name), 'modem') &&
+                   ! str_contains(strtolower($eq->name), 'router');
         });
 
-        if ($vampires->isEmpty()) return null;
+        if ($vampires->isEmpty()) {
+            return null;
+        }
 
         $totalDailyStandbyKwh = 0;
         $equipmentNames = [];
         foreach ($vampires as $v) {
             $standbyW = $v->type->default_standby_power_w;
             // Standby ocurre las horas que el equipo NO está en uso
-            $activeHours  = $v->avg_daily_use_hours ?? 2;
+            $activeHours = $v->avg_daily_use_hours ?? 2;
             $standbyHours = max(0, 24 - $activeHours);
             $totalDailyStandbyKwh += ($standbyW * $standbyHours) / 1000;
             $equipmentNames[] = $v->name;
         }
 
-        $savingsKwh   = round($totalDailyStandbyKwh * $days, 1);
+        $savingsKwh = round($totalDailyStandbyKwh * $days, 1);
         $savingsMoney = round($savingsKwh * $tariff, 0);
 
         $nameList = implode(', ', array_slice($equipmentNames, 0, 3));
         if (count($equipmentNames) > 3) {
-            $nameList .= ' y ' . (count($equipmentNames) - 3) . ' más';
+            $nameList .= ' y '.(count($equipmentNames) - 3).' más';
         }
 
         return [
-            'category'    => 'critical',
-            'title'       => 'Consumo Fantasma (' . count($equipmentNames) . ' equipos)',
-            'action'      => 'DESCONECTAR DE LA PARED',
+            'category' => 'critical',
+            'title' => 'Consumo Fantasma ('.count($equipmentNames).' equipos)',
+            'action' => 'DESCONECTAR DE LA PARED',
             'description' => "{$nameList}. Desenchufados de la pared ahorrás {$savingsKwh} kWh y los protegés de tormentas eléctricas.",
-            'icon'        => 'bi-plug-fill',
-            'color'       => 'danger',
-            'savings'     => $savingsMoney,
+            'icon' => 'bi-plug-fill',
+            'color' => 'danger',
+            'savings' => $savingsMoney,
         ];
     }
 
     private function checkLightingRule(Entity $entity): array
     {
         return [
-            'category'    => 'security',
-            'title'       => 'Iluminación',
-            'action'      => 'USAR TIMER O FOTOCÉLULA',
+            'category' => 'security',
+            'title' => 'Iluminación',
+            'action' => 'USAR TIMER O FOTOCÉLULA',
             'description' => 'No dejes luces fijas 24h — delata que no estás. Usá un timer para que se prendan de 20 a 23hs.',
-            'icon'        => 'bi-lightbulb',
-            'color'       => 'info',
-            'savings'     => 0,
+            'icon' => 'bi-lightbulb',
+            'color' => 'info',
+            'savings' => 0,
         ];
     }
 }

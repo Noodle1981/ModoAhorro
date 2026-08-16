@@ -2,16 +2,17 @@
 
 namespace Tests\Feature\Gestión_Física;
 
-use App\Models\User;
 use App\Models\Entity;
-use App\Models\Locality;
-use App\Models\Province;
-use App\Models\Plan;
-use App\Models\Room;
 use App\Models\Equipment;
 use App\Models\EquipmentCategory;
 use App\Models\EquipmentType;
+use App\Models\Locality;
+use App\Models\Plan;
+use App\Models\Province;
+use App\Models\Room;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class InfrastructureTest extends TestCase
@@ -19,9 +20,13 @@ class InfrastructureTest extends TestCase
     use RefreshDatabase;
 
     protected $user;
+
     protected $entity;
+
     protected $province;
+
     protected $locality;
+
     protected $plan;
 
     protected function setUp(): void
@@ -34,14 +39,14 @@ class InfrastructureTest extends TestCase
             'province_id' => $this->province->id,
             'name' => 'Santa Lucía',
             'latitude' => -31.5375,
-            'longitude' => -68.5364
+            'longitude' => -68.5364,
         ]);
 
         $this->plan = Plan::create([
             'name' => 'Premium',
             'max_entities' => 5,
             'allowed_entity_types' => ['hogar'],
-            'price' => 0
+            'price' => 0,
         ]);
 
         $this->user = User::factory()->create();
@@ -52,7 +57,7 @@ class InfrastructureTest extends TestCase
         ]);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function user_can_access_infrastructure_index()
     {
         $response = $this->actingAs($this->user)
@@ -68,7 +73,7 @@ class InfrastructureTest extends TestCase
         );
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function user_can_manage_rooms()
     {
         // 1. Create Room
@@ -76,7 +81,7 @@ class InfrastructureTest extends TestCase
             ->post(route('gestion.rooms.store'), [
                 'entity_id' => $this->entity->id,
                 'name' => 'Living Comedor',
-                'description' => 'Ambiente principal'
+                'description' => 'Ambiente principal',
             ]);
 
         $response->assertRedirect();
@@ -87,7 +92,7 @@ class InfrastructureTest extends TestCase
         $this->actingAs($this->user)
             ->put(route('gestion.rooms.update', $room->id), [
                 'name' => 'Living Master',
-                'description' => 'Actualizado'
+                'description' => 'Actualizado',
             ]);
 
         $this->assertEquals('Living Master', $room->fresh()->name);
@@ -99,7 +104,7 @@ class InfrastructureTest extends TestCase
         $this->assertDatabaseMissing('rooms', ['id' => $room->id]);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function user_can_manage_equipment_and_batch_create()
     {
         $room = Room::factory()->create(['entity_id' => $this->entity->id]);
@@ -115,7 +120,7 @@ class InfrastructureTest extends TestCase
             'nominal_power_w' => 12,
             'avg_daily_use_hours' => 5,
             'is_standby' => false,
-            'cantidad' => 3
+            'cantidad' => 3,
         ];
 
         $response = $this->actingAs($this->user)
@@ -138,7 +143,7 @@ class InfrastructureTest extends TestCase
                 'nominal_power_w' => 15,
                 'avg_daily_use_hours' => 6,
                 'is_standby' => true,
-                'is_active' => false
+                'is_active' => false,
             ]);
 
         $this->assertEquals('Lámpara Led Pro', $equipment->fresh()->name);

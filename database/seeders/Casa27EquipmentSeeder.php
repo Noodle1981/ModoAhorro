@@ -120,8 +120,9 @@ class Casa27EquipmentSeeder extends Seeder
             foreach ($equipments as $eq) {
                 $type = EquipmentType::where('name', $eq['type'])->first();
 
-                if (!$type) {
+                if (! $type) {
                     $this->command->warn("Tipo no encontrado: [{$eq['type']}] para equipo [{$eq['name']}]. Saltando.");
+
                     continue;
                 }
 
@@ -129,13 +130,13 @@ class Casa27EquipmentSeeder extends Seeder
                     ['name' => $eq['name'], 'room_id' => $room->id]
                 );
 
-                $equip->type_id             = $type->id;
-                $equip->category_id         = $type->category_id;
-                $equip->nominal_power_w     = $eq['watts'];
+                $equip->type_id = $type->id;
+                $equip->category_id = $type->category_id;
+                $equip->nominal_power_w = $eq['watts'];
                 $equip->avg_daily_use_hours = $eq['hours'];
                 $equip->has_defined_pattern = $eq['pattern'];
-                $equip->energy_label        = $eq['label'];
-                $equip->is_active           = true;
+                $equip->energy_label = $eq['label'];
+                $equip->is_active = true;
                 $equip->save();
             }
         }

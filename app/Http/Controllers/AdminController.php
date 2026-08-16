@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\EquipmentType;
-use App\Models\EquipmentCategory;
 use App\Models\EnergyLabelCoefficient;
 use App\Models\EquipmentBenchmark;
-use Illuminate\Http\Request;
+use App\Models\EquipmentCategory;
+use App\Models\EquipmentType;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -14,7 +13,7 @@ class AdminController extends Controller
 {
     private function checkAdmin()
     {
-        if (!Auth::user() || !Auth::user()->is_super_admin) {
+        if (! Auth::user() || ! Auth::user()->is_super_admin) {
             abort(403, 'No tienes permisos de administrador.');
         }
     }
@@ -22,18 +21,20 @@ class AdminController extends Controller
     public function index()
     {
         $this->checkAdmin();
+
         return Inertia::render('Admin/Dashboard', [
             'stats' => [
                 'total_types' => EquipmentType::count(),
                 'total_benchmarks' => EquipmentBenchmark::count(),
                 'total_coefficients' => EnergyLabelCoefficient::count(),
-            ]
+            ],
         ]);
     }
 
     public function equipmentTypes()
     {
         $this->checkAdmin();
+
         return Inertia::render('Admin/EquipmentTypes', [
             'equipmentTypes' => EquipmentType::with('category')->get(),
             'categories' => EquipmentCategory::all(),
@@ -43,6 +44,7 @@ class AdminController extends Controller
     public function efficiencyLabels()
     {
         $this->checkAdmin();
+
         return Inertia::render('Admin/EfficiencyLabels', [
             'coefficients' => EnergyLabelCoefficient::with('category')->get(),
             'categories' => EquipmentCategory::all(),
@@ -52,6 +54,7 @@ class AdminController extends Controller
     public function benchmarks()
     {
         $this->checkAdmin();
+
         return Inertia::render('Admin/Benchmarks', [
             'benchmarks' => EquipmentBenchmark::with('category')->get(),
             'categories' => EquipmentCategory::all(),

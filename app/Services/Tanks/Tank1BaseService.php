@@ -32,24 +32,24 @@ class Tank1BaseService
             // --- SPLIT 70/30 para BASE_THERMAL_LOSS (Termotanques) ---
             if ($eq->type?->consumption_logic === 'BASE_THERMAL_LOSS') {
                 $periodKwh = $periodKwh * 0.70;
-                $eq->audit_logs = ["Asignado 70% como Base Inmutable (" . number_format($periodKwh, 1) . " kWh)"];
+                $eq->audit_logs = ['Asignado 70% como Base Inmutable ('.number_format($periodKwh, 1).' kWh)'];
                 $eq->tank_assignment = null; // No lo bloqueamos, T3 debe procesar el resto
             } else {
                 $eq->tank_assignment = 2;
-                $eq->audit_logs = ["Fijado en " . number_format($periodKwh, 1) . " kWh (Tank Crítico (Fijo + 24h ó Refrigeración/Conectividad))"];
+                $eq->audit_logs = ['Fijado en '.number_format($periodKwh, 1).' kWh (Tank Crítico (Fijo + 24h ó Refrigeración/Conectividad))'];
             }
-            
+
             $tankConsumption += $periodKwh;
             $remainingKwh -= $periodKwh;
             $eq->calculated_consumption_kwh = ($eq->calculated_consumption_kwh ?? 0) + $periodKwh;
-            
-            $logs[] = "[Tanque 2] {$eq->name}: " . number_format($periodKwh, 1) . " kWh";
+
+            $logs[] = "[Tanque 2] {$eq->name}: ".number_format($periodKwh, 1).' kWh';
         }
 
         return [
             'consumption' => $tankConsumption,
             'logs' => $logs,
-            'processed_count' => $targetEquipments->count()
+            'processed_count' => $targetEquipments->count(),
         ];
     }
 
@@ -58,13 +58,14 @@ class Tank1BaseService
         // Si es crítico, SIEMPRE entra al Tanque 2 (Base Crítica),
         // independientemente de si tiene patrón fijo o no.
         $isContinuous = $eq->type?->consumption_logic === 'CONTINUOUS_COMMERCIAL';
+
         return $this->isCritical($eq, $opContext) || $isContinuous;
     }
 
     public function isCritical(Equipment $eq, array $opContext): bool
     {
         $criticalCategories = ['Refrigeración', 'Conectividad y Seguridad'];
-        
+
         // Si hay un perfil comercial, sobreescribimos las categorías críticas
         if (isset($opContext['commercial_profile'])) {
             $criticalCategories = $opContext['commercial_profile']->getCriticalCategories();
@@ -72,7 +73,7 @@ class Tank1BaseService
 
         $categoryName = $eq->category->name ?? $eq->type?->category?->name ?? '';
         $hours = $eq->avg_daily_use_hours ?? 0;
-        
+
         // Es crítico si pertenece a una categoría esencial O si se usa las 24hs
         return in_array($categoryName, $criticalCategories) || $hours >= 23.5;
     }

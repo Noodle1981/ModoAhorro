@@ -1,9 +1,10 @@
 <?php
+
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Province;
 use App\Models\Company;
+use App\Models\Province;
+use Illuminate\Database\Seeder;
 
 class CompanySeeder extends Seeder
 {

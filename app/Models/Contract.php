@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Contract extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'entity_id',
         'proveedor_id',
@@ -54,7 +55,6 @@ class Contract extends Model
     {
         return $this->belongsTo(UtilityCompany::class);
     }
-
 
     public function proveedor()
     {

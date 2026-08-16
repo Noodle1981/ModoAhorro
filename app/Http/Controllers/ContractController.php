@@ -6,8 +6,8 @@ use App\Models\Contract;
 use App\Models\Entity;
 use App\Models\Proveedor;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class ContractController extends Controller
 {
@@ -17,18 +17,18 @@ class ContractController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        
+
         $entities = $user->entities()->with('locality')->get();
         $currentEntityId = session('active_entity_id');
         $currentEntity = $entities->where('id', $currentEntityId)->first() ?? $entities->first();
 
         // Si no hay entidades, enviamos vacío
-        if (!$currentEntity) {
+        if (! $currentEntity) {
             return Inertia::render('Entities/Contracts/Index', [
                 'contracts' => [],
                 'entities' => [],
                 'proveedores' => [],
-                'active_entity_id' => null
+                'active_entity_id' => null,
             ]);
         }
 
@@ -47,7 +47,7 @@ class ContractController extends Controller
             'contracts' => $contracts,
             'entities' => $entities,
             'proveedores' => $proveedores,
-            'active_entity_id' => $currentEntity->id
+            'active_entity_id' => $currentEntity->id,
         ]);
     }
 
@@ -70,11 +70,11 @@ class ContractController extends Controller
             'contracted_power_kw_p3' => 'nullable|numeric|min:0',
             'is_active' => 'required|boolean',
         ], [
-            'contract_number.unique' => 'Este número de contrato ya se encuentra registrado en el sistema.'
+            'contract_number.unique' => 'Este número de contrato ya se encuentra registrado en el sistema.',
         ]);
 
         $entity = Entity::findOrFail($validated['entity_id']);
-        
+
         // Security check: Ensure user owns the entity
         if ($request->user()->cannot('update', $entity)) {
             abort(403);
@@ -101,10 +101,10 @@ class ContractController extends Controller
             'supply_number' => 'required|string|max:255',
             'meter_number' => 'nullable|string|max:255',
             'contract_number' => [
-                'nullable', 
-                'string', 
-                'max:255', 
-                Rule::unique('contracts', 'contract_number')->ignore($contract->id)
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('contracts', 'contract_number')->ignore($contract->id),
             ],
             'rate_name' => 'required|string|max:255',
             'start_date' => 'nullable|date',
@@ -114,11 +114,11 @@ class ContractController extends Controller
             'contracted_power_kw_p3' => 'nullable|numeric|min:0',
             'is_active' => 'required|boolean',
         ], [
-            'contract_number.unique' => 'Este número de contrato ya pertenece a otro registro.'
+            'contract_number.unique' => 'Este número de contrato ya pertenece a otro registro.',
         ]);
 
         // Security check: Ensure user owns the current and target entity
-        if ($request->user()->cannot('update', $contract->entity) || 
+        if ($request->user()->cannot('update', $contract->entity) ||
             $request->user()->cannot('update', Entity::find($validated['entity_id']))) {
             abort(403);
         }
@@ -159,12 +159,12 @@ class ContractController extends Controller
             abort(403);
         }
 
-        if (!$contract->is_active) {
+        if (! $contract->is_active) {
             // Deactivate others for the same entity
             Contract::where('entity_id', $contract->entity_id)
                 ->where('id', '!=', $contract->id)
                 ->update(['is_active' => false]);
-            
+
             $contract->update(['is_active' => true]);
         } else {
             $contract->update(['is_active' => false]);

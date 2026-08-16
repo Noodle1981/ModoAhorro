@@ -2,14 +2,16 @@
 
 namespace Tests\Feature\Perfil_Entidad;
 
-use App\Models\User;
 use App\Models\Entity;
 use App\Models\Locality;
-use App\Models\Province;
 use App\Models\Plan;
+use App\Models\Province;
 use App\Models\Room;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class EntityProfileTest extends TestCase
@@ -17,9 +19,13 @@ class EntityProfileTest extends TestCase
     use RefreshDatabase;
 
     protected $user;
+
     protected $entity;
+
     protected $province;
+
     protected $locality;
+
     protected $plan;
 
     protected function setUp(): void
@@ -33,21 +39,21 @@ class EntityProfileTest extends TestCase
             'province_id' => $this->province->id,
             'name' => 'Santa Lucía',
             'latitude' => -31.5375,
-            'longitude' => -68.5364
+            'longitude' => -68.5364,
         ]);
 
         $this->plan = Plan::create([
             'name' => 'Premium',
             'max_entities' => 5,
             'allowed_entity_types' => ['hogar'],
-            'price' => 0
+            'price' => 0,
         ]);
 
         $this->user = User::factory()->create();
         $this->entity = Entity::factory()->create([
             'locality_id' => $this->locality->id,
             'type' => 'hogar',
-            'has_business_activity' => false
+            'has_business_activity' => false,
         ]);
 
         $this->user->entities()->attach($this->entity->id, [
@@ -74,14 +80,14 @@ class EntityProfileTest extends TestCase
         ];
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
-    #[\PHPUnit\Framework\Attributes\DataProvider('entityTypeProvider')]
+    #[Test]
+    #[DataProvider('entityTypeProvider')]
     public function can_access_entity_edit_page($type, $usage)
     {
         $entity = Entity::factory()->create([
             'locality_id' => $this->locality->id,
             'type' => $type,
-            'usage_type' => $usage
+            'usage_type' => $usage,
         ]);
         $this->user->entities()->attach($entity->id, ['plan_id' => $this->plan->id, 'subscribed_at' => now()]);
 
@@ -96,14 +102,14 @@ class EntityProfileTest extends TestCase
         );
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
-    #[\PHPUnit\Framework\Attributes\DataProvider('entityTypeProvider')]
+    #[Test]
+    #[DataProvider('entityTypeProvider')]
     public function can_update_entity_profile($type, $usage)
     {
         $entity = Entity::factory()->create([
             'locality_id' => $this->locality->id,
             'type' => $type,
-            'usage_type' => $usage
+            'usage_type' => $usage,
         ]);
         $this->user->entities()->attach($entity->id, ['plan_id' => $this->plan->id, 'subscribed_at' => now()]);
 
@@ -128,25 +134,25 @@ class EntityProfileTest extends TestCase
         $this->assertDatabaseHas('entities', [
             'id' => $entity->id,
             'name' => "Perfil Actualizado de $type",
-            'has_solar' => 1
+            'has_solar' => 1,
         ]);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function entity_update_creates_business_room_when_enabled()
     {
         // Setup a Hogar entity without business
         $entity = Entity::factory()->create([
             'locality_id' => $this->locality->id,
             'type' => 'hogar',
-            'has_business_activity' => false
+            'has_business_activity' => false,
         ]);
         $this->user->entities()->attach($entity->id, ['plan_id' => $this->plan->id, 'subscribed_at' => now()]);
 
         $updateData = [
             'name' => $entity->name,
             'usage_type' => 'residencial',
-            'has_business_activity' => true, 
+            'has_business_activity' => true,
             'business_type' => 'venta',
             'square_meters' => 100,
         ];
@@ -159,18 +165,18 @@ class EntityProfileTest extends TestCase
         $this->assertDatabaseHas('rooms', [
             'entity_id' => $entity->id,
             'name' => 'Local / Venta',
-            'description' => 'Ambiente autogenerado para soporte de actividad económica en el hogar.'
+            'description' => 'Ambiente autogenerado para soporte de actividad económica en el hogar.',
         ]);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function entity_update_synchronizes_room_name_when_business_type_changes()
     {
         $entity = Entity::factory()->create([
             'locality_id' => $this->locality->id,
             'type' => 'hogar',
             'has_business_activity' => true,
-            'business_type' => 'venta'
+            'business_type' => 'venta',
         ]);
         $this->user->entities()->attach($entity->id, ['plan_id' => $this->plan->id, 'subscribed_at' => now()]);
 
@@ -178,13 +184,13 @@ class EntityProfileTest extends TestCase
         $room = Room::create([
             'entity_id' => $entity->id,
             'name' => 'Local / Venta',
-            'description' => 'Ambiente autogenerado para soporte de actividad económica en el hogar.'
+            'description' => 'Ambiente autogenerado para soporte de actividad económica en el hogar.',
         ]);
 
         $updateData = [
             'name' => $entity->name,
             'usage_type' => 'residencial',
-            'has_business_activity' => true, 
+            'has_business_activity' => true,
             'business_type' => 'taller', // Changing to taller
             'square_meters' => 100,
         ];
@@ -196,18 +202,18 @@ class EntityProfileTest extends TestCase
         // Verify room name updated
         $this->assertDatabaseHas('rooms', [
             'id' => $room->id,
-            'name' => 'Taller'
+            'name' => 'Taller',
         ]);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function entity_update_deletes_business_room_when_activity_is_disabled()
     {
         $entity = Entity::factory()->create([
             'locality_id' => $this->locality->id,
             'type' => 'hogar',
             'has_business_activity' => true,
-            'business_type' => 'venta'
+            'business_type' => 'venta',
         ]);
         $this->user->entities()->attach($entity->id, ['plan_id' => $this->plan->id, 'subscribed_at' => now()]);
 
@@ -215,7 +221,7 @@ class EntityProfileTest extends TestCase
         Room::create([
             'entity_id' => $entity->id,
             'name' => 'Local / Venta',
-            'description' => 'Ambiente autogenerado para soporte de actividad económica en el hogar.'
+            'description' => 'Ambiente autogenerado para soporte de actividad económica en el hogar.',
         ]);
 
         $updateData = [
@@ -232,7 +238,7 @@ class EntityProfileTest extends TestCase
         // Verify room is deleted
         $this->assertDatabaseMissing('rooms', [
             'entity_id' => $entity->id,
-            'description' => 'Ambiente autogenerado para soporte de actividad económica en el hogar.'
+            'description' => 'Ambiente autogenerado para soporte de actividad económica en el hogar.',
         ]);
     }
 
@@ -248,12 +254,12 @@ class EntityProfileTest extends TestCase
         $response->assertStatus(403);
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function authorized_user_can_delete_entity()
     {
         $entity = Entity::factory()->create([
             'locality_id' => $this->locality->id,
-            'type' => 'hogar'
+            'type' => 'hogar',
         ]);
         $this->user->entities()->attach($entity->id, ['plan_id' => $this->plan->id, 'subscribed_at' => now()]);
 
@@ -263,12 +269,12 @@ class EntityProfileTest extends TestCase
 
         $response->assertRedirect(route('dashboard'));
         $this->assertDatabaseMissing('entities', [
-            'id' => $entity->id
+            'id' => $entity->id,
         ]);
         $this->assertNull(session('active_entity_id'));
     }
 
-    #[\PHPUnit\Framework\Attributes\Test]
+    #[Test]
     public function unauthorized_user_cannot_delete_other_user_entity()
     {
         $otherUser = User::factory()->create();
@@ -279,7 +285,7 @@ class EntityProfileTest extends TestCase
 
         $response->assertStatus(403);
         $this->assertDatabaseHas('entities', [
-            'id' => $otherEntity->id
+            'id' => $otherEntity->id,
         ]);
     }
 }

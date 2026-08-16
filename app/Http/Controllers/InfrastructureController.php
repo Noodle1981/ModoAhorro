@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Room;
+use App\Models\Entity;
 use App\Models\Equipment;
 use App\Models\EquipmentCategory;
 use App\Models\EquipmentType;
-use App\Models\Entity;
+use App\Models\Room;
+use App\Traits\HasActiveEntity;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-use App\Traits\HasActiveEntity;
- 
 class InfrastructureController extends Controller
 {
     use HasActiveEntity;
@@ -22,8 +21,8 @@ class InfrastructureController extends Controller
     public function index(Request $request)
     {
         $entity = $this->getActiveEntity($request);
- 
-        if (!$entity) {
+
+        if (! $entity) {
             return redirect()->route('dashboard')->with('error', 'Debes crear una entidad antes de gestionar su infraestructura.');
         }
 
@@ -100,7 +99,6 @@ class InfrastructureController extends Controller
     /**
      * Manage Equipment
      */
-
     public function storeEquipment(Request $request)
     {
         $validated = $request->validate([
@@ -116,7 +114,7 @@ class InfrastructureController extends Controller
             'model' => 'nullable|string|max:255',
             'serial_number' => 'nullable|string|max:255',
             'energy_label' => 'nullable|string|max:10',
-            'cantidad' => 'integer|min:1', 
+            'cantidad' => 'integer|min:1',
         ]);
 
         $validated['avg_daily_use_hours'] = $validated['avg_daily_use_hours'] ?? 0;
@@ -128,17 +126,17 @@ class InfrastructureController extends Controller
         }
 
         $cantidad = $request->input('cantidad', 1);
-        
+
         for ($i = 0; $i < $cantidad; $i++) {
             $name = $validated['name'];
             if ($cantidad > 1) {
-                $name .= ' ' . ($i + 1);
+                $name .= ' '.($i + 1);
             }
-            
+
             Equipment::create(array_merge($validated, [
                 'name' => $name,
                 'is_active' => true,
-                'is_validated' => true
+                'is_validated' => true,
             ]));
         }
 

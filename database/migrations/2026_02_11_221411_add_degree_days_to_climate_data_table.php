@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasColumn('climate_data', 'cooling_degree_days')) {
+        if (! Schema::hasColumn('climate_data', 'cooling_degree_days')) {
             Schema::table('climate_data', function (Blueprint $table) {
                 $table->decimal('cooling_degree_days', 8, 2)->nullable();
             });
         }
 
-        if (!Schema::hasColumn('climate_data', 'heating_degree_days')) {
+        if (! Schema::hasColumn('climate_data', 'heating_degree_days')) {
             Schema::table('climate_data', function (Blueprint $table) {
                 $table->decimal('heating_degree_days', 8, 2)->nullable();
             });

@@ -20,7 +20,7 @@ trait HasActiveEntity
             $entity = $user->entities()->where('entities.id', $activeEntityId)->first();
         }
 
-        if (!$entity) {
+        if (! $entity) {
             $entity = $user->entities()->first();
             if ($entity) {
                 session(['active_entity_id' => $entity->id]);

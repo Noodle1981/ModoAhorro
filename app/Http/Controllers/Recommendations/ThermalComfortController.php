@@ -1,19 +1,21 @@
 <?php
+
 namespace App\Http\Controllers\Recommendations;
 
 use App\Http\Controllers\Controller;
 use App\Models\Entity;
-use App\Services\Thermal\ThermalScoreService;
 use App\Services\Thermal\ThermalAdviceEngine;
+use App\Services\ThermalProfileService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ThermalComfortController extends Controller
 {
     protected $profileService;
+
     protected $adviceEngine;
 
-    public function __construct(\App\Services\ThermalProfileService $profileService, ThermalAdviceEngine $adviceEngine)
+    public function __construct(ThermalProfileService $profileService, ThermalAdviceEngine $adviceEngine)
     {
         $this->profileService = $profileService;
         $this->adviceEngine = $adviceEngine;
@@ -28,6 +30,7 @@ class ThermalComfortController extends Controller
         if ($entity->thermal_profile) {
             return redirect()->route('gestion.thermal.result', $entity);
         }
+
         return redirect()->route('gestion.thermal.wizard', $entity);
     }
 
@@ -38,9 +41,10 @@ class ThermalComfortController extends Controller
         }
 
         $config = config("entity_types.{$entity->type}", []);
+
         return Inertia::render('Thermal/Wizard', [
             'entity' => $entity,
-            'config' => $config
+            'config' => $config,
         ]);
     }
 
@@ -64,16 +68,16 @@ class ThermalComfortController extends Controller
         $validated['south_window'] = $request->has('south_window');
 
         $result = $this->profileService->calculate($validated);
-        
+
         $profile = array_merge($validated, [
             'thermal_score' => $result['thermal_score'],
-            'energy_label' => $result['energy_label']
+            'energy_label' => $result['energy_label'],
         ]);
 
         $entity->update(['thermal_profile' => $profile]);
 
         return redirect()->route('gestion.thermal.result', $entity)
-            ->with('success', "Diagnóstico completado. Tu casa es Categoría " . $result['energy_label']);
+            ->with('success', 'Diagnóstico completado. Tu casa es Categoría '.$result['energy_label']);
     }
 
     public function result(Request $request, Entity $entity)
@@ -83,7 +87,7 @@ class ThermalComfortController extends Controller
         }
 
         $config = config("entity_types.{$entity->type}", []);
-        if (!$entity->thermal_profile) {
+        if (! $entity->thermal_profile) {
             return redirect()->route('gestion.thermal.wizard', $entity);
         }
 
@@ -96,7 +100,7 @@ class ThermalComfortController extends Controller
             'profile' => $profile,
             'scoreResult' => $scoreResult,
             'recommendations' => $recommendations,
-            'config' => $config
+            'config' => $config,
         ]);
     }
 }

@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Proveedor;
+use App\Models\Province;
+use App\Models\UtilityCompany;
 use Illuminate\Database\Seeder;
 
 class UtilityCompanySeeder extends Seeder
@@ -13,10 +15,10 @@ class UtilityCompanySeeder extends Seeder
     public function run(): void
     {
         // Obtener ID de San Juan u otra provincia por defecto
-        $sanJuan = \App\Models\Province::where('name', 'San Juan')->first();
+        $sanJuan = Province::where('name', 'San Juan')->first();
         $provinceId = $sanJuan ? $sanJuan->id : 1;
 
-        \App\Models\Proveedor::updateOrCreate(['name' => 'Naturgy'], [
+        Proveedor::updateOrCreate(['name' => 'Naturgy'], [
             'name' => 'Naturgy',
             'cuit' => '30-50000000-1',
             'address' => 'Av. Libertador Gral. San Martín 3000, San Juan',
@@ -25,7 +27,7 @@ class UtilityCompanySeeder extends Seeder
             'province_id' => $provinceId,
         ]);
 
-        \App\Models\Proveedor::updateOrCreate(['name' => 'Distribuidora Caucete'], [
+        Proveedor::updateOrCreate(['name' => 'Distribuidora Caucete'], [
             'name' => 'Distribuidora Caucete',
             'cuit' => '30-60000000-2',
             'address' => 'Diag. Sarmiento 500, Caucete, San Juan',
@@ -34,7 +36,7 @@ class UtilityCompanySeeder extends Seeder
             'province_id' => $provinceId,
         ]);
 
-        \App\Models\UtilityCompany::updateOrCreate(['name' => 'Naturgy Energía'], [
+        UtilityCompany::updateOrCreate(['name' => 'Naturgy Energía'], [
             'name' => 'Naturgy Energía',
         ]);
     }

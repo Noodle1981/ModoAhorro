@@ -2,14 +2,13 @@
 
 namespace Tests\Feature\Gestión_Física;
 
-use App\Models\User;
+use App\Models\Contract;
 use App\Models\Entity;
 use App\Models\Locality;
-use App\Models\Province;
 use App\Models\Plan;
 use App\Models\Proveedor;
-use App\Models\Contract;
-use App\Models\UtilityCompany;
+use App\Models\Province;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -18,8 +17,11 @@ class ContractManagementTest extends TestCase
     use RefreshDatabase;
 
     protected $provinceSJ;
+
     protected $provinceMZ;
+
     protected $localitySJ;
+
     protected $plan;
 
     protected function setUp(): void
@@ -29,15 +31,15 @@ class ContractManagementTest extends TestCase
         // Crear provincias
         $this->provinceSJ = Province::create(['name' => 'San Juan']);
         $this->provinceMZ = Province::create(['name' => 'Mendoza']);
-        
+
         // Crear localidad en San Juan
-        $this->localitySJ = new Locality();
+        $this->localitySJ = new Locality;
         $this->localitySJ->forceFill([
             'id' => 1,
             'province_id' => $this->provinceSJ->id,
             'name' => 'Santa Lucía',
             'latitude' => -31.5375,
-            'longitude' => -68.5364
+            'longitude' => -68.5364,
         ]);
         $this->localitySJ->save();
 
@@ -46,7 +48,7 @@ class ContractManagementTest extends TestCase
             'name' => 'Premium',
             'max_entities' => 5,
             'allowed_entity_types' => ['hogar'],
-            'price' => 0
+            'price' => 0,
         ]);
     }
 
@@ -57,6 +59,7 @@ class ContractManagementTest extends TestCase
             'plan_id' => $this->plan->id,
             'subscribed_at' => now(),
         ]);
+
         return $entity;
     }
 
@@ -124,12 +127,12 @@ class ContractManagementTest extends TestCase
             ->post(route('gestion.contracts.store'), $contractData);
 
         $response->assertRedirect();
-        
+
         $this->assertDatabaseHas('contracts', [
             'contract_number' => 'CONT-777',
             'meter_number' => 'SERIE-999',
             'supply_number' => 'NIU-12345',
-            'is_three_phase' => 1
+            'is_three_phase' => 1,
         ]);
     }
 
@@ -138,7 +141,7 @@ class ContractManagementTest extends TestCase
         $user = User::factory()->create();
         $entity = $this->createEntityForUser($user);
         $provider = Proveedor::factory()->create();
-        
+
         // Crear un contrato previo
         Contract::factory()->create(['contract_number' => 'DUPLICADO-123']);
 
@@ -159,7 +162,7 @@ class ContractManagementTest extends TestCase
 
         $response->assertSessionHasErrors(['contract_number']);
         $this->assertEquals(
-            'Este número de contrato ya se encuentra registrado en el sistema.', 
+            'Este número de contrato ya se encuentra registrado en el sistema.',
             session('errors')->get('contract_number')[0]
         );
     }
@@ -169,11 +172,11 @@ class ContractManagementTest extends TestCase
         $user = User::factory()->create();
         $entity = $this->createEntityForUser($user);
         $provider = Proveedor::factory()->create();
-        
+
         // Crear un contrato activo previo
         $oldContract = Contract::factory()->create([
             'entity_id' => $entity->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         $newContractData = [
@@ -199,7 +202,7 @@ class ContractManagementTest extends TestCase
     {
         $user = User::factory()->create();
         $entity = $this->createEntityForUser($user);
-        
+
         $contract1 = Contract::factory()->create(['entity_id' => $entity->id, 'is_active' => true]);
         $contract2 = Contract::factory()->create(['entity_id' => $entity->id, 'is_active' => false]);
 
@@ -239,7 +242,7 @@ class ContractManagementTest extends TestCase
         $this->assertDatabaseHas('contracts', [
             'id' => $contract->id,
             'supply_number' => 'NIU-UPDATED',
-            'rate_name' => 'T1-R2'
+            'rate_name' => 'T1-R2',
         ]);
     }
 

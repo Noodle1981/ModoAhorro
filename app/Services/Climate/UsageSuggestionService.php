@@ -2,27 +2,23 @@
 
 namespace App\Services\Climate;
 
-use App\Models\Invoice;
 use App\Models\Equipment;
+use App\Models\Invoice;
 use App\Services\ClimateService;
 use Carbon\Carbon;
 
 class UsageSuggestionService
 {
     private ClimateService $climateService;
-    
+
     public function __construct(ClimateService $climateService)
     {
         $this->climateService = $climateService;
     }
-    
+
     /**
      * Sugiere horas de uso para equipos de climatización basándose en datos climáticos
-     * 
-     * @param Equipment $equipment
-     * @param Invoice $invoice
-     * @param float $latitude
-     * @param float $longitude
+     *
      * @return array ['suggested_hours_per_day', 'effective_days', 'confidence', 'explanation']
      */
     public function suggestClimateUsage(Equipment $equipment, Invoice $invoice, float $latitude, float $longitude): array
@@ -35,7 +31,7 @@ class UsageSuggestionService
             'suggested_hours_per_day' => 0,
             'effective_days' => 0,
             'confidence' => 'low',
-            'explanation' => 'No es equipo de climatización o no se pudo calcular ajuste.'
+            'explanation' => 'No es equipo de climatización o no se pudo calcular ajuste.',
         ];
 
         if ($category !== 'Climatización') {
@@ -68,7 +64,7 @@ class UsageSuggestionService
             // El cálculo debe usar la potencia nominal en watts y convertir a kW
             $powerKw = ($equipment->nominal_power_w ?? 0) / 1000;
             $loadFactor = $equipment->type->load_factor ?? 1.0;
-            
+
             // ✅ CORREGIDO: Sin división por efficiency (igual que ConsumptionAnalysisService)
             $originalConsumption = $powerKw * ($suggestion['suggested_hours_per_day'] ?? 0) * $effectiveDays * $loadFactor;
             $adjustedConsumption = $originalConsumption * ($usageAdjustmentPercent / 100);
@@ -76,13 +72,13 @@ class UsageSuggestionService
             $result = array_merge([
                 'equipment_id' => $equipment->id,
                 'usage_adjustment_percent' => $usageAdjustmentPercent,
-                'adjusted_consumption' => $adjustedConsumption
+                'adjusted_consumption' => $adjustedConsumption,
             ], $suggestion);
         }
 
         return $result;
     }
-    
+
     /**
      * Sugiere horas de uso para aire acondicionado
      */
@@ -97,7 +93,7 @@ class UsageSuggestionService
                 'suggested_hours_per_day' => 0,
                 'effective_days' => 0,
                 'confidence' => 'high',
-                'explanation' => 'No hubo días con temperatura promedio superior a 28°C en este período.'
+                'explanation' => 'No hubo días con temperatura promedio superior a 28°C en este período.',
             ];
         }
 
@@ -128,10 +124,10 @@ class UsageSuggestionService
             'suggested_hours_per_day' => $hoursPerDay,
             'effective_days' => $hotDays,
             'confidence' => $hotDays >= 10 ? 'high' : 'medium',
-            'explanation' => $explanation
+            'explanation' => $explanation,
         ];
     }
-    
+
     /**
      * Sugiere horas de uso para calefacción
      */
@@ -140,22 +136,22 @@ class UsageSuggestionService
         $coldDays = $stats['cold_days_count'];
         $totalDays = $stats['total_days'];
         $avgTempMin = $stats['avg_temp_min'];
-        
+
         if ($coldDays == 0) {
             return [
                 'suggested_hours_per_day' => 0,
                 'effective_days' => 0,
                 'confidence' => 'high',
-                'explanation' => 'No hubo días con temperatura inferior a 15°C en este período.'
+                'explanation' => 'No hubo días con temperatura inferior a 15°C en este período.',
             ];
         }
-        
+
         // Calcular horas basadas en temperatura promedio mínima
         // Temp < 10°C → 8h/día
         // Temp 10-15°C → 4-6h/día
         // Temp > 15°C → 0h/día
         $hoursPerDay = 0;
-        
+
         if ($avgTempMin <= 10) {
             $hoursPerDay = 8;
         } elseif ($avgTempMin <= 12) {
@@ -163,22 +159,22 @@ class UsageSuggestionService
         } elseif ($avgTempMin <= 15) {
             $hoursPerDay = 4;
         }
-        
+
         $explanation = sprintf(
             'Se detectaron %d días de frío (temp. min ≤15°C) de %d días totales. Temperatura mínima promedio: %.1f°C',
             $coldDays,
             $totalDays,
             $avgTempMin
         );
-        
+
         return [
             'suggested_hours_per_day' => $hoursPerDay,
             'effective_days' => $coldDays,
             'confidence' => $coldDays >= 10 ? 'high' : 'medium',
-            'explanation' => $explanation
+            'explanation' => $explanation,
         ];
     }
-    
+
     /**
      * Determina si el equipo es aire acondicionado
      */
@@ -186,13 +182,14 @@ class UsageSuggestionService
     {
         $name = strtolower($equipment->name);
         $typeName = strtolower($equipment->type->name ?? '');
+
         // Considerar aire acondicionado y ventiladores como equipos de climatización
         return str_contains($name, 'aire')
             || str_contains($typeName, 'aire acondicionado')
             || str_contains($name, 'ventilador')
             || str_contains($typeName, 'ventilador');
     }
-    
+
     /**
      * Determina si el equipo es calefacción
      */
@@ -200,15 +197,15 @@ class UsageSuggestionService
     {
         $name = strtolower($equipment->name);
         $typeName = strtolower($equipment->type->name ?? '');
-        
+
         $heatingKeywords = ['caloventor', 'estufa', 'radiador', 'panel calefactor', 'calefactor'];
-        
+
         foreach ($heatingKeywords as $keyword) {
             if (str_contains($name, $keyword) || str_contains($typeName, $keyword)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 }

@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Invoice;
+use App\Http\Requests\SaveInvoiceRequest;
 use App\Models\Contract;
+use App\Models\Invoice;
+use App\Traits\HasActiveEntity;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-
-use App\Traits\HasActiveEntity;
 
 class InvoiceController extends Controller
 {
     use HasActiveEntity;
+
     /**
      * Display a listing of the invoices for the active entity.
      */
@@ -19,7 +20,7 @@ class InvoiceController extends Controller
     {
         $entity = $this->getActiveEntity($request);
 
-        if (!$entity) {
+        if (! $entity) {
             return redirect()->route('dashboard')->with('error', 'Debes crear una entidad antes de gestionar facturas.');
         }
 
@@ -42,11 +43,11 @@ class InvoiceController extends Controller
     /**
      * Store a newly created invoice in storage.
      */
-    public function store(\App\Http\Requests\SaveInvoiceRequest $request)
+    public function store(SaveInvoiceRequest $request)
     {
         $validated = $request->validated();
         $contract = Contract::findOrFail($validated['contract_id']);
-        
+
         // Security check: Ensure user owns the entity associated with the contract
         if ($request->user()->cannot('update', $contract->entity)) {
             abort(403);
@@ -60,7 +61,7 @@ class InvoiceController extends Controller
     /**
      * Update the specified invoice in storage.
      */
-    public function update(\App\Http\Requests\SaveInvoiceRequest $request, Invoice $invoice)
+    public function update(SaveInvoiceRequest $request, Invoice $invoice)
     {
         // Security check
         if ($request->user()->cannot('update', $invoice->contract->entity)) {

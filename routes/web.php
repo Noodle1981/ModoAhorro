@@ -1,7 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -9,10 +10,12 @@ Route::get('/', function () {
         if (Auth::user()->is_super_admin) {
             return redirect()->route('sistema.admin');
         }
+
         return redirect()->route('dashboard');
     }
+
     return Inertia::render('Welcome', [
-        'laravelVersion' => \Illuminate\Foundation\Application::VERSION,
+        'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
 });
@@ -41,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
     // Activar una entidad específica
     Route::get('/entidades/{entity}/activate', function ($entityId) {
         session(['active_entity_id' => $entityId]);
+
         return redirect()->route('home');
     })->name('entities.activate');
 
@@ -52,7 +56,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/contratos/{contract}', 'App\Http\Controllers\ContractController@update')->name('contracts.update');
         Route::delete('/contratos/{contract}', 'App\Http\Controllers\ContractController@destroy')->name('contracts.destroy');
         Route::patch('/contratos/{contract}/toggle', 'App\Http\Controllers\ContractController@toggleActive')->name('contracts.toggle');
-        
+
         // Módulo Térmico
         Route::prefix('thermal')->name('thermal.')->group(function () {
             Route::get('/{entity}', 'App\Http\Controllers\Recommendations\ThermalComfortController@index')->name('index');
@@ -68,16 +72,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/unificaciones', 'App\Http\Controllers\UnificationController@index')->name('unifications');
 
         Route::get('/infraestructura', 'App\Http\Controllers\InfrastructureController@index')->name('infrastructure');
-        
+
         // Perfil de la Entidad (Mi Casa)
         Route::get('/entidad/perfil', 'App\Http\Controllers\EntityController@edit')->name('entity.edit');
         Route::put('/entidad/perfil', 'App\Http\Controllers\EntityController@update')->name('entity.update');
-        
+
         // Rooms
         Route::post('/ambientes', 'App\Http\Controllers\InfrastructureController@storeRoom')->name('rooms.store');
         Route::put('/ambientes/{room}', 'App\Http\Controllers\InfrastructureController@updateRoom')->name('rooms.update');
         Route::delete('/ambientes/{room}', 'App\Http\Controllers\InfrastructureController@destroyRoom')->name('rooms.destroy');
-        
+
         // Equipment
         Route::post('/equipos', 'App\Http\Controllers\InfrastructureController@storeEquipment')->name('equipment.store');
         Route::put('/equipos/{equipment}', 'App\Http\Controllers\InfrastructureController@updateEquipment')->name('equipment.update');
