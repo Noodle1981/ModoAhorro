@@ -61,6 +61,8 @@ class Entity extends Model
         'operating_days',
         'thermal_profile',
         'comercio_type',
+        'business_category',
+        'business_subcategory',
         'staff_count',
         'visitors_count',
         'service_turns',

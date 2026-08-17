@@ -2,12 +2,10 @@
 
 namespace App\Services;
 
+use App\Domain\Commercial\Registry\CommercialProfileRegistry;
 use App\Models\Entity;
 use App\Models\Invoice;
 use App\Services\Commercial\CommercialEngineProfile;
-use App\Services\Commercial\GastronomyEngineProfile;
-use App\Services\Commercial\OfficeEngineProfile;
-use App\Services\Commercial\RetailEngineProfile;
 use App\Services\Tanks\Tank0CertaintyService;
 use App\Services\Tanks\Tank1BaseService;
 use App\Services\Tanks\Tank2ClimateService;
@@ -29,6 +27,8 @@ class EnergyEngineService
 
     protected Tank3ElasticityService $tank3;
 
+    protected CommercialProfileRegistry $commercialRegistry;
+
     protected ?CommercialEngineProfile $commercialProfile = null;
 
     protected array $lastClimateDays = [];
@@ -41,7 +41,8 @@ class EnergyEngineService
         Tank0CertaintyService $tank0,
         Tank1BaseService $tank1,
         Tank2ClimateService $tank2,
-        Tank3ElasticityService $tank3
+        Tank3ElasticityService $tank3,
+        ?CommercialProfileRegistry $commercialRegistry = null
     ) {
         $this->climateService = $climateService;
         $this->thermalService = $thermalService;
@@ -49,6 +50,7 @@ class EnergyEngineService
         $this->tank1 = $tank1;
         $this->tank2 = $tank2;
         $this->tank3 = $tank3;
+        $this->commercialRegistry = $commercialRegistry ?? new CommercialProfileRegistry();
     }
 
     /**
@@ -155,20 +157,7 @@ class EnergyEngineService
 
     protected function getCommercialProfile(Entity $entity): ?CommercialEngineProfile
     {
-        if ($entity->type === 'oficina') {
-            return new OfficeEngineProfile;
-        }
-
-        if ($entity->type !== 'comercio') {
-            return null;
-        }
-
-        return match ($entity->comercio_type) {
-            'gastronomia' => new GastronomyEngineProfile,
-            'retail' => new RetailEngineProfile,
-            'oficina' => new OfficeEngineProfile,
-            default => null,
-        };
+        return $this->commercialRegistry->resolveForEntity($entity);
     }
 
     /**
