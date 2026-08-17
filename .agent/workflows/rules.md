@@ -25,6 +25,7 @@
 - **Ubicación de Documentación Central**: Todos los documentos maestros de arquitectura y progreso residen en la carpeta `doc/`:
   - `doc/ARCHITECTURE.md`: Documento de arquitectura, patrones, stack y lógica de tanques.
   - `doc/PDR.md`: Registro de desarrollo de producto, changelog de decisiones, rutas y estado de tests.
+  - `doc/visual.md`: Guía de identidad visual, reglas de UI/UX, paleta semántica y layout.
   - `doc/notebook_sync.md`: Guía y pasos de sincronización para NotebookLM.
   - `tablas/`: Directorio con los CSVs crudos de base de datos (`entities.csv`, `rooms.csv`, `equipment.csv`, etc.).
 - **Planificación**: Antes de cambios grandes, siempre lee `doc/PDR.md` y `doc/ARCHITECTURE.md`.
