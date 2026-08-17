@@ -84,10 +84,7 @@
             <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
                 <!-- Logo Brand -->
                 <a href="/" class="flex items-center gap-3 group">
-                    <img src="/images/landing/logo.png" alt="ModoAhorro Logo" class="h-10 w-auto object-contain transition-transform group-hover:scale-105" />
-                    <span class="text-xl font-extrabold tracking-tight text-slate-900">
-                        Modo<span class="text-emerald-600">Ahorro</span>
-                    </span>
+                    <img src="/images/landing/modo_ahorro_banner.png" alt="ModoAhorro Logo" class="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105" />
                 </a>
 
                 <!-- Navigation Links -->
@@ -113,15 +110,15 @@
 
                     @if (Route::has('login'))
                         @auth
-                            <a href="{{ url('/dashboard') }}" class="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-md shadow-emerald-600/20 transition-all hover:-translate-y-0.5">
+                            <a href="{{ url('/dashboard') }}" class="inline-flex items-center justify-center bg-[#009966] hover:bg-[#008055] text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-md shadow-[#009966]/20 transition-all hover:-translate-y-0.5">
                                 Ir al panel →
                             </a>
                         @else
-                            <a href="{{ route('login') }}" class="text-sm font-bold text-slate-700 hover:text-emerald-600 transition-colors px-4 py-2">
+                            <a href="{{ route('login') }}" class="text-sm font-bold text-slate-700 hover:text-[#009966] transition-colors px-4 py-2">
                                 Iniciar sesión
                             </a>
                             @if (Route::has('register'))
-                                <a href="{{ Route::has('register') ? route('register') : route('login') }}" class="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-md shadow-emerald-600/20 transition-all hover:-translate-y-0.5">
+                                <a href="{{ Route::has('register') ? route('register') : route('login') }}" class="inline-flex items-center justify-center bg-[#009966] hover:bg-[#008055] text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-md shadow-[#009966]/20 transition-all hover:-translate-y-0.5">
                                     Registrarme gratis
                                 </a>
                             @endif
@@ -134,19 +131,19 @@
         <main class="flex-1">
 
             <!-- 2. HERO SECTION (High Impact Split Layout) -->
-            <section class="bg-white py-16 lg:py-24 border-b border-slate-100 overflow-hidden relative">
+            <section class="bg-gradient-to-b from-[#009966]/10 via-white to-slate-50/40 py-16 lg:py-24 border-b border-slate-100/80 overflow-hidden relative">
                 <div class="max-w-6xl mx-auto px-6">
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
                         
                         <!-- Left Column: Copy & CTAs -->
                         <div class="lg:col-span-7 text-left">
-                            <span class="text-xs font-black uppercase tracking-widest text-emerald-600 block mb-4">
+                            <span class="text-xs font-black uppercase tracking-widest text-[#009966] block mb-4">
                                 Control Total de Consumo
                             </span>
 
                             <h1 class="text-4xl sm:text-5xl lg:text-[3.25rem] font-black text-slate-900 tracking-tight leading-[1.12]">
                                 Dejá de adivinar por qué vino alta tu factura. <br class="hidden sm:inline" />
-                                <span class="text-emerald-600">Sabé qué equipo consumió cada peso.</span>
+                                <span class="text-[#009966]">Sabé qué equipo consumió cada peso.</span>
                             </h1>
 
                             <p class="mt-6 text-base sm:text-lg text-slate-600 font-medium leading-relaxed max-w-xl">
@@ -156,11 +153,11 @@
                             <!-- CTAs -->
                             <div class="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                                 @if (Route::has('register'))
-                                    <a href="{{ Route::has('register') ? route('register') : route('login') }}" class="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base px-8 py-4 rounded-2xl shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5 text-center">
+                                    <a href="{{ Route::has('register') ? route('register') : route('login') }}" class="inline-flex items-center justify-center bg-[#009966] hover:bg-[#008055] text-white font-bold text-base px-8 py-4 rounded-2xl shadow-lg shadow-[#009966]/25 transition-all hover:-translate-y-0.5 text-center">
                                         Registrarme gratis →
                                     </a>
                                 @else
-                                    <a href="{{ route('login') }}" class="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base px-8 py-4 rounded-2xl shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5 text-center">
+                                    <a href="{{ route('login') }}" class="inline-flex items-center justify-center bg-[#009966] hover:bg-[#008055] text-white font-bold text-base px-8 py-4 rounded-2xl shadow-lg shadow-[#009966]/25 transition-all hover:-translate-y-0.5 text-center">
                                         Ingresar a la plataforma →
                                     </a>
                                 @endif
@@ -471,17 +468,18 @@
 
 
             <!-- 6. CAPTURAS REALES DEL SISTEMA (GRAN CARRUSEL) -->
-            <section id="capturas-sistema" class="py-20 lg:py-28 bg-white border-b border-slate-100 overflow-hidden">
-                <div class="max-w-6xl mx-auto px-6">
+            <section id="capturas-sistema" class="py-20 lg:py-28 bg-slate-950 text-white border-b border-slate-900 overflow-hidden relative">
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,_var(--tw-gradient-stops))] from-[#009966]/15 via-transparent to-transparent pointer-events-none"></div>
+                <div class="max-w-6xl mx-auto px-6 relative z-10">
                     
                     <div class="text-center max-w-3xl mx-auto mb-16">
-                        <span class="text-xs font-black uppercase tracking-widest text-emerald-600 block mb-3">
+                        <span class="text-xs font-black uppercase tracking-widest text-[#009966] block mb-3">
                             Experiencia de Usuario
                         </span>
-                        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
                             Un panel diseñado para la claridad
                         </h2>
-                        <p class="mt-4 text-slate-600 font-medium text-base sm:text-lg">
+                        <p class="mt-4 text-slate-400 font-medium text-base sm:text-lg">
                             Sin sobrecarga de información. Deslizá por las vistas principales de la plataforma en alta resolución.
                         </p>
                     </div>
@@ -552,11 +550,11 @@
 
                         <!-- Botones de Navegación del Gran Carrusel -->
                         <div class="flex items-center justify-between mt-6 px-2">
-                            <button id="screenshots-prev" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-emerald-600 hover:text-white text-slate-700 font-bold text-sm transition-all shadow-xs cursor-pointer">
+                            <button id="screenshots-prev" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-[#009966] text-slate-200 hover:text-white border border-slate-700 font-bold text-sm transition-all cursor-pointer">
                                 ← Anterior
                             </button>
                             <span class="text-xs font-bold text-slate-400 uppercase tracking-widest hidden sm:inline">Deslizá para explorar vistas</span>
-                            <button id="screenshots-next" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-emerald-600 hover:text-white text-slate-700 font-bold text-sm transition-all shadow-xs cursor-pointer">
+                            <button id="screenshots-next" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-[#009966] text-slate-200 hover:text-white border border-slate-700 font-bold text-sm transition-all cursor-pointer">
                                 Siguiente →
                             </button>
                         </div>
@@ -778,27 +776,28 @@
 
 
             <!-- 9. PROGRAMA PILOTO / ACCESO ANTICIPADO -->
-            <section class="py-20 lg:py-28 bg-slate-50">
-                <div class="max-w-4xl mx-auto px-6">
-                    <div class="bg-white rounded-3xl p-8 sm:p-14 border border-slate-200 shadow-sm text-center relative overflow-hidden">
+            <section class="py-20 lg:py-28 bg-[#009966] text-white relative overflow-hidden">
+                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-400/20 via-transparent to-transparent pointer-events-none"></div>
+                <div class="max-w-4xl mx-auto px-6 relative z-10">
+                    <div class="bg-white/10 backdrop-blur-md rounded-3xl p-8 sm:p-14 border border-white/20 shadow-2xl text-center">
                         
-                        <span class="text-xs font-black uppercase tracking-widest text-emerald-600 block mb-4">
+                        <span class="text-xs font-black uppercase tracking-widest text-emerald-200 block mb-4">
                             Acceso Anticipado
                         </span>
 
-                        <h2 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                        <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
                             Probá la plataforma en tus espacios
                         </h2>
 
-                        <p class="mt-6 text-slate-600 text-base sm:text-lg font-medium leading-relaxed max-w-2xl mx-auto">
+                        <p class="mt-6 text-emerald-50 text-base sm:text-lg font-medium leading-relaxed max-w-2xl mx-auto">
                             El sistema está operativo y en validación continua. Al sumarte al programa de adopción temprana, contás con acceso a las herramientas de análisis y soporte prioritario.
                         </p>
 
                         <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <a href="{{ route('login') }}" class="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base px-8 py-4 rounded-2xl shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5">
+                            <a href="{{ route('login') }}" class="inline-flex items-center justify-center bg-white hover:bg-emerald-50 text-[#009966] font-extrabold text-base px-8 py-4 rounded-2xl shadow-xl transition-all hover:-translate-y-0.5">
                                 Ingresar a la plataforma →
                             </a>
-                            <a href="https://wa.me/5492644533704?text=Hola!%20Me%20gustaria%20solicitar%20un%20acceso%20beta%20a%20ModoAhorro" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center border border-slate-200 hover:border-slate-300 bg-white text-slate-700 font-bold text-base px-7 py-4 rounded-2xl shadow-xs transition-all hover:bg-slate-50">
+                            <a href="https://wa.me/5492644533704?text=Hola!%20Me%20gustaria%20solicitar%20un%20acceso%20beta%20a%20ModoAhorro" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center border border-white/40 hover:border-white bg-white/10 hover:bg-white/20 text-white font-bold text-base px-7 py-4 rounded-2xl backdrop-blur-xs transition-all">
                                 Solicitar invitación
                             </a>
                         </div>
