@@ -50,7 +50,7 @@ class EnergyEngineService
         $this->tank1 = $tank1;
         $this->tank2 = $tank2;
         $this->tank3 = $tank3;
-        $this->commercialRegistry = $commercialRegistry ?? new CommercialProfileRegistry();
+        $this->commercialRegistry = $commercialRegistry ?? new CommercialProfileRegistry;
     }
 
     /**

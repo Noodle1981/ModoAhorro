@@ -16,7 +16,7 @@ class CommercialProfileRegistryTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->registry = new CommercialProfileRegistry();
+        $this->registry = new CommercialProfileRegistry;
     }
 
     public function test_it_registers_default_commercial_profiles(): void

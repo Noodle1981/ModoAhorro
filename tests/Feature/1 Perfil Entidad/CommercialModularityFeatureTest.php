@@ -3,6 +3,7 @@
 namespace Tests\Feature\Perfil_Entidad;
 
 use App\Domain\Commercial\Profiles\Gastronomy\IceCreamShopProfile;
+use App\Domain\Commercial\Registry\CommercialProfileRegistry;
 use App\Models\Entity;
 use App\Models\Locality;
 use App\Models\Plan;
@@ -17,9 +18,13 @@ class CommercialModularityFeatureTest extends TestCase
     use RefreshDatabase;
 
     protected $user;
+
     protected $entity;
+
     protected $province;
+
     protected $locality;
+
     protected $plan;
 
     protected function setUp(): void
@@ -119,7 +124,7 @@ class CommercialModularityFeatureTest extends TestCase
         ]);
 
         $engine = app(EnergyEngineService::class);
-        $registry = app(\App\Domain\Commercial\Registry\CommercialProfileRegistry::class);
+        $registry = app(CommercialProfileRegistry::class);
 
         $resolvedProfile = $registry->resolveForEntity($this->entity);
 

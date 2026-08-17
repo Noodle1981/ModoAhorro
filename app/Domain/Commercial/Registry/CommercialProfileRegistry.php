@@ -29,12 +29,12 @@ class CommercialProfileRegistry
      */
     protected function registerDefaults(): void
     {
-        $this->register(new IceCreamShopProfile());
-        $this->register(new PizzeriaProfile());
-        $this->register(new CoffeeShopProfile());
-        $this->register(new RestaurantProfile());
-        $this->register(new RetailShopProfile());
-        $this->register(new CorporateOfficeProfile());
+        $this->register(new IceCreamShopProfile);
+        $this->register(new PizzeriaProfile);
+        $this->register(new CoffeeShopProfile);
+        $this->register(new RestaurantProfile);
+        $this->register(new RetailShopProfile);
+        $this->register(new CorporateOfficeProfile);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Commercial\Registry\CommercialProfileRegistry;
 use App\Models\Entity;
 use App\Models\Locality;
 use App\Models\Province;
@@ -40,7 +41,7 @@ class EntityController extends Controller
             $climateProfile = $weatherService->getLocalityClimateProfile($entity->locality);
         }
 
-        $commercialCatalog = app(\App\Domain\Commercial\Registry\CommercialProfileRegistry::class)->getHierarchicalCatalog();
+        $commercialCatalog = app(CommercialProfileRegistry::class)->getHierarchicalCatalog();
 
         return Inertia::render('Entity/Edit', [
             'entity' => $entity,
