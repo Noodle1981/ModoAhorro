@@ -24,4 +24,5 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 .mcp_config.json
+.agent/mcp_config.json
 

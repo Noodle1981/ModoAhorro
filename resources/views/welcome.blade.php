@@ -358,15 +358,18 @@
                                 <div class="w-16 h-16 rounded-2xl bg-white border border-purple-100 shadow-xs flex items-center justify-center mb-6">
                                     <img src="/images/entities/logo_comercio.png" alt="Gestión de energía en Comercios" class="w-12 h-12 object-contain" loading="lazy" decoding="async" />
                                 </div>
-                                <span class="text-xs font-bold text-purple-600 uppercase tracking-wider">Comercial</span>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-bold text-purple-600 uppercase tracking-wider">Comercial</span>
+                                    <span class="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 tracking-wider">Beta Privada</span>
+                                </div>
                                 <h3 class="text-2xl font-black text-slate-900 mt-1">Tu comercio</h3>
                                 <p class="mt-3 text-slate-600 text-sm font-medium leading-relaxed">
-                                    El sistema entiende tu rubro. Una heladería no consume igual que una tienda o ferretería. El motor adapta sus tanques a tu actividad comercial.
+                                    El sistema entiende tu rubro. Diseñamos perfiles a medida según tu actividad comercial (gastronomía, cámaras de frío, servicios).
                                 </p>
                             </div>
                             <div class="mt-8 pt-6 border-t border-slate-200/60">
-                                <a href="{{ Route::has('register') ? route('register') : route('login') }}" class="inline-flex items-center text-sm font-bold text-purple-600 hover:text-purple-800 transition-colors">
-                                    Empezar en mi comercio →
+                                <a href="https://wa.me/5492644533704?text=Hola!%20Me%20interesa%20solicitar%20un%20perfil%20a%20medida%20para%20mi%20comercio%20en%20ModoAhorro" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-sm font-bold text-purple-600 hover:text-purple-800 transition-colors">
+                                    Consultar por mi rubro →
                                 </a>
                             </div>
                         </div>
@@ -702,7 +705,7 @@
                             El sistema entiende tu negocio
                         </h2>
                         <p class="mt-4 text-slate-600 font-medium text-base sm:text-lg">
-                            No todos los comercios consumen igual. El motor de ModoAhorro tiene perfiles específicos por rubro.
+                            No todos los comercios consumen igual. Con el motor de ModoAhorro podemos diseñar perfiles específicos por rubro.
                         </p>
                     </div>
 
@@ -791,16 +794,13 @@
                             El sistema está operativo y en validación continua. Al sumarte al programa de adopción temprana, contás con acceso a las herramientas de análisis y soporte prioritario.
                         </p>
 
-                        <div class="mt-10">
-                            @if (Route::has('register'))
-                                <a href="{{ Route::has('register') ? route('register') : route('login') }}" class="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base px-8 py-4 rounded-2xl shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5">
-                                    Solicitar acceso →
-                                </a>
-                            @else
-                                <a href="{{ route('login') }}" class="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base px-8 py-4 rounded-2xl shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5">
-                                    Ingresar a la plataforma →
-                                </a>
-                            @endif
+                        <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                            <a href="{{ route('login') }}" class="inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base px-8 py-4 rounded-2xl shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5">
+                                Ingresar a la plataforma →
+                            </a>
+                            <a href="https://wa.me/5492644533704?text=Hola!%20Me%20gustaria%20solicitar%20un%20acceso%20beta%20a%20ModoAhorro" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center border border-slate-200 hover:border-slate-300 bg-white text-slate-700 font-bold text-base px-7 py-4 rounded-2xl shadow-xs transition-all hover:bg-slate-50">
+                                Solicitar invitación
+                            </a>
                         </div>
 
                     </div>
