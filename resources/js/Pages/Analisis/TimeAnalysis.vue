@@ -4,9 +4,9 @@ import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
     Activity, 
-    History, 
+     
     TrendingUp, 
-    ArrowLeft,
+    
     Zap,
     ThermometerSun,
     Layers,

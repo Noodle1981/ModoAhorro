@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
-    Sun, Zap, Waves, LayoutGrid, TrendingDown, CheckCircle2, ChevronRight, ThermometerSun
+     Zap, Waves, LayoutGrid, TrendingDown, CheckCircle2, ChevronRight, ThermometerSun
 } from 'lucide-vue-next';
 
 const props = defineProps({

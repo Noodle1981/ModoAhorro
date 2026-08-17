@@ -80,11 +80,6 @@ const totalBarSpace = computed(() => {
     return Math.max(props.engine?.invoiced_kwh || 0, calibratedTotal.value);
 });
 
-const invoicePercent = computed(() => {
-    if (totalBarSpace.value === 0) return 0;
-    return (props.engine.invoiced_kwh / totalBarSpace.value) * 100;
-});
-
 const getTankIcon = (key) => {
     switch (key) {
         case 1: return ShieldCheck;

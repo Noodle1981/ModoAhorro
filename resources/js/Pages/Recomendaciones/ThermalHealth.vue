@@ -2,25 +2,25 @@
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
-    Thermometer, 
+     
     ThermometerSnowflake, 
-    Home, 
-    ShieldCheck, 
+     
+     
     ArrowRight, 
-    AlertCircle, 
-    Wind, 
-    CheckCircle2,
-    Activity,
+     
+     
+    
+    
     Info,
-    LayoutGrid,
-    TrendingDown,
-    Map,
+    
+    
+    
     AirVent, 
     Layers,
     Waves
 } from 'lucide-vue-next';
 
-const props = defineProps({
+defineProps({
     entity: Object,
     profile: Object
 });
@@ -29,17 +29,6 @@ const getScoreColor = (score) => {
     if (score >= 80) return 'text-energy-success';
     if (score >= 50) return 'text-energy-solar';
     return 'text-energy-critical';
-};
-
-const getInertiaLabel = (level) => {
-    const labels = {
-        'A': 'Excelente (Alta Inercia)',
-        'B': 'Muy Buena',
-        'C': 'Regular',
-        'D': 'Deficiente',
-        'E': 'Crítica (Pérdidas Masivas)'
-    };
-    return labels[level] || 'No diagnosticado';
 };
 </script>
 

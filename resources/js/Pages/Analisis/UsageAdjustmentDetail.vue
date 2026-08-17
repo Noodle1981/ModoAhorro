@@ -1,6 +1,6 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
     Zap, 
@@ -11,12 +11,9 @@ import {
     Info,
     LayoutGrid,
     ThermometerSun,
-    ShieldCheck,
-    Gamepad2,
     DoorOpen,
     Lock,
     AlertCircle,
-    ChevronDown,
     Plus,
     Minus
 } from 'lucide-vue-next';
@@ -371,26 +368,6 @@ const submitSave = () => {
 
 const submitCalibrate = () => {
     form.post(route('analisis.usage.calibrate'));
-};
-
-const getTankIcon = (key) => {
-    switch (key) {
-        case 1: return ShieldCheck;
-        case 2: return ThermometerSun;
-        case 3: return Gamepad2;
-        case 4: return Zap;
-        default: return Zap;
-    }
-};
-
-const getTankColor = (key) => {
-    switch (key) {
-        case 1: return 'text-slate-900 bg-slate-50 border-slate-200'; // Certeza
-        case 2: return 'text-sky-500 bg-sky-50 border-sky-100'; // Base
-        case 3: return 'text-energy-water bg-energy-water/10 border-energy-water/20'; // Clima
-        case 4: return `${themeColors.value.text} ${themeColors.value.bgLight2} ${themeColors.value.borderLight}`; // Variable
-        default: return 'text-slate-500 bg-slate-50 border-slate-100';
-    }
 };
 </script>
 

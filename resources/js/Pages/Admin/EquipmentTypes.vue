@@ -1,15 +1,12 @@
 <script setup>
 import MainLayout from '@/Layouts/MainLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import { 
     Plus, 
     Search, 
     Edit2, 
-    Trash2, 
     Zap, 
-    ShieldAlert,
-    ChevronDown,
-    Save
+    ShieldAlert
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 

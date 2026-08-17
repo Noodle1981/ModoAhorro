@@ -14,7 +14,7 @@ import {
     AlertTriangle
 } from 'lucide-vue-next';
 
-const props = defineProps({
+defineProps({
     user: Object,
     plan: Object,
     entitiesByType: Array,
@@ -102,15 +102,15 @@ const confirmDelete = () => {
         <!-- Header / Perfil -->
         <header class="bg-white border-b border-slate-100 py-4 px-6 sm:px-12 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-4">
-                <div class="w-10 h-10 bg-energy-consumption rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-100 font-black">
-                    MA
-                </div>
+                <Link href="/" class="transition-transform hover:scale-105">
+                    <img src="/images/landing/logo.png" alt="ModoAhorro Logo" class="w-10 h-10 object-contain drop-shadow-sm" />
+                </Link>
                 <div>
                     <h2 class="text-sm font-black text-slate-900 leading-tight">{{ user.name }}</h2>
-                    <p class="text-[10px] font-black text-energy-consumption uppercase tracking-widest leading-none mt-1">Plan {{ plan.name }}</p>
+                    <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest leading-none mt-1">Plan {{ plan.name }}</p>
                 </div>
             </div>
-            <Link :href="route('logout')" method="post" as="button" class="text-[10px] font-black text-slate-400 hover:text-energy-critical uppercase tracking-widest transition-colors flex items-center gap-2">
+            <Link :href="route('logout')" method="post" as="button" class="text-[10px] font-black text-slate-400 hover:text-rose-600 uppercase tracking-widest transition-colors flex items-center gap-2 cursor-pointer" title="Cerrar sesión completamente y salir a la portada">
                 <LogOut :size="14" />
                 Cerrar Sesión
             </Link>
@@ -121,7 +121,7 @@ const confirmDelete = () => {
                 <h1 class="text-4xl font-black text-slate-900 tracking-tight leading-tight">
                     Bienvenido, {{ user.name.split(' ')[0] }}
                 </h1>
-                <p class="text-slate-500 font-medium mt-2">Gestione la eficiencia de sus <span class="text-energy-consumption font-bold">Entidades</span>.</p>
+                <p class="text-slate-500 font-medium mt-2">Gestione la eficiencia de sus <span class="text-emerald-600 font-bold">Entidades</span>.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">

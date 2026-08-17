@@ -1,5 +1,5 @@
 <script setup>
-import { Link, Head, usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { 
     FileText, 
     Activity, 
@@ -11,6 +11,7 @@ import {
     Zap,
     Briefcase,
     Building,
+    ShoppingBag,
     BarChart3,
     Sliders,
     Clock,
@@ -49,6 +50,22 @@ const entities = computed(() => auth.value.entities);
 const isSidebarOpen = ref(true);
 const isEntityMenuOpen = ref(false);
 const activeCategory = ref(auth.value?.user?.is_super_admin ? 'Sistema' : 'Gestión Física');
+
+const entityLogoPath = computed(() => {
+    const type = currentEntity.value?.type;
+    if (type === 'hogar') return '/images/entities/logo_hogar.png';
+    if (type === 'oficina') return '/images/entities/logo_oficina.png';
+    if (type === 'comercio') return '/images/entities/logo_comercio.png';
+    return null;
+});
+
+const currentEntityIcon = computed(() => {
+    const type = currentEntity.value?.type;
+    if (type === 'hogar') return Home;
+    if (type === 'comercio') return ShoppingBag;
+    if (type === 'oficina') return Building;
+    return Building;
+});
 
 const themeColors = computed(() => {
     const type = currentEntity.value?.type;
@@ -192,7 +209,7 @@ const isActive = (itemOrHref) => {
             return true;
         }
         return false;
-    } catch (_e) {
+    } catch {
         return page.url.startsWith(href);
     }
 };
@@ -243,7 +260,10 @@ const isHomeView = computed(() => {
         <!-- Level 1: Slim Sidebar (Central Icons) -->
         <aside class="hidden lg:flex w-20 bg-slate-900 flex flex-col items-center py-6 z-[90] border-r border-white/5 shrink-0">
             <!-- Brand Logo -->
-            <Link :href="route('dashboard')" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg mb-10 hover:scale-105 transition-transform" :class="themeColors.logoBg">
+            <Link v-if="entityLogoPath" :href="route('dashboard')" class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center p-1.5 shadow-lg mb-10 hover:scale-105 transition-transform block">
+                <img :src="entityLogoPath" :alt="currentEntity?.type" class="w-full h-full object-contain" />
+            </Link>
+            <Link v-else :href="route('dashboard')" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg mb-10 hover:scale-105 transition-transform" :class="themeColors.logoBg">
                 <Zap :size="24" stroke-width="3" />
             </Link>
 
@@ -282,9 +302,9 @@ const isHomeView = computed(() => {
                     <User :size="24" />
                     <span class="absolute left-full ml-4 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-50">Mi Perfil</span>
                 </Link>
-                <Link method="post" as="button" :href="route('logout')" class="p-3 rounded-2xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all group relative cursor-pointer">
+                <Link :href="route('dashboard')" class="p-3 rounded-2xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group relative cursor-pointer">
                     <LogOut :size="24" />
-                    <span class="absolute left-full ml-4 px-2 py-1 bg-rose-600 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-50">Salir</span>
+                    <span class="absolute left-full ml-4 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-50">Cambiar Entidad</span>
                 </Link>
             </div>
         </aside>
@@ -310,7 +330,7 @@ const isHomeView = computed(() => {
                     >
                         <div class="flex items-center gap-3 text-left overflow-hidden">
                             <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm border border-slate-100" :class="themeColors.text">
-                                <Building :size="16" />
+                                <component :is="currentEntityIcon" :size="16" />
                             </div>
                             <div class="truncate">
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Entidad</p>

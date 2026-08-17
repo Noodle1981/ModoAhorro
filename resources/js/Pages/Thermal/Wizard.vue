@@ -2,8 +2,8 @@
 import { Head, useForm } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
-    Thermometer, 
-    Home, 
+     
+     
     Wind, 
     Sun, 
     ArrowRight,

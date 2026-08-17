@@ -1,22 +1,21 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
     PenTool, 
     CheckCircle2, 
     Calendar, 
-    Plus, 
+     
     TrendingDown, 
     Zap, 
     Clock, 
-    ChevronRight,
-    AlertCircle,
+    
+    
     Settings,
-    Activity,
-    Wrench
+    Activity
 } from 'lucide-vue-next';
 
-const props = defineProps({
+defineProps({
     entity: Object,
     tasks: Array
 });

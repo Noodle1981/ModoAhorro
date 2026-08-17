@@ -24,12 +24,12 @@ const submit = () => {
     <div class="min-h-screen bg-linear-to-br from-indigo-50 via-white to-orange-50 flex items-center justify-center p-6">
         <div class="max-w-md w-full">
             <!-- Logo / Título -->
-            <div class="text-center mb-10">
-                <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl text-white shadow-xl mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                </div>
-                <h1 class="text-4xl font-black text-gray-900 tracking-tight">Bienvenido</h1>
-                <p class="text-gray-500 font-medium mt-2">Ingresa a tu cuenta de ModoAhorro</p>
+            <div class="text-center mb-8">
+                <Link href="/" class="inline-block transition-transform hover:scale-105">
+                    <img src="/images/landing/logo.png" alt="ModoAhorro Logo" class="w-20 h-20 mx-auto mb-3 object-contain drop-shadow-md" />
+                </Link>
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Bienvenido</h1>
+                <p class="text-slate-500 font-medium text-sm mt-1">Ingresá a tu cuenta de <span class="text-emerald-600 font-bold">ModoAhorro</span></p>
             </div>
 
             <div v-if="status" class="mb-6 p-4 bg-emerald-50 text-emerald-700 rounded-2xl text-sm font-bold border border-emerald-100">
@@ -43,7 +43,7 @@ const submit = () => {
                         v-model="form.email"
                         type="email" 
                         required
-                        class="block w-full rounded-2xl border-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-4 bg-gray-50 font-medium"
+                        class="block w-full rounded-2xl border-gray-100 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-4 bg-gray-50 font-medium"
                         placeholder="tu@correo.com"
                         autocomplete="username"
                     />
@@ -55,13 +55,13 @@ const submit = () => {
                 <div>
                     <div class="flex items-center justify-between mb-2">
                         <label class="block text-sm font-bold text-gray-700">Contraseña</label>
-                        <a href="#" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors uppercase tracking-widest">¿La olvidaste?</a>
+                        <a href="#" class="text-xs font-bold text-emerald-600 hover:text-emerald-800 transition-colors uppercase tracking-widest">¿La olvidaste?</a>
                     </div>
                     <input 
                         v-model="form.password"
                         type="password" 
                         required
-                        class="block w-full rounded-2xl border-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-4 bg-gray-50 font-medium"
+                        class="block w-full rounded-2xl border-gray-100 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-4 bg-gray-50 font-medium"
                         placeholder="••••••••"
                         autocomplete="current-password"
                     />
@@ -71,21 +71,21 @@ const submit = () => {
                 </div>
 
                 <div class="flex items-center">
-                    <input v-model="form.remember" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                    <input v-model="form.remember" type="checkbox" class="h-5 w-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
                     <span class="ml-3 text-sm font-bold text-gray-600 uppercase tracking-wide">Recordarme</span>
                 </div>
 
                 <button 
                     type="submit" 
                     :disabled="form.processing"
-                    class="w-full bg-indigo-600 text-white py-4 px-6 rounded-2xl font-black text-lg shadow-xl shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0"
+                    class="w-full bg-emerald-600 text-white py-4 px-6 rounded-2xl font-black text-lg shadow-xl shadow-emerald-200 hover:bg-emerald-700 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:translate-y-0 cursor-pointer"
                 >
                     {{ form.processing ? 'Verificando...' : 'Entrar' }}
                 </button>
             </form>
 
-            <p class="text-center mt-10 text-gray-400 font-bold uppercase tracking-widest text-xs">
-                ¿No tienes cuenta? <a href="#" class="text-indigo-600 hover:text-orange-500 transition-colors">Empezar gratis</a>
+            <p class="text-center mt-8 text-slate-500 font-medium text-xs">
+                ¿No tienes cuenta? <span class="text-emerald-600 font-bold">Registro por invitación (fase beta)</span>
             </p>
         </div>
     </div>

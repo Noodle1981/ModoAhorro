@@ -6,7 +6,7 @@ import {
     CreditCard, 
     Globe, 
     ChevronRight,
-    PlayCircle,
+    
     ShieldCheck
 } from 'lucide-vue-next';
 

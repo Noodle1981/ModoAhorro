@@ -1,16 +1,16 @@
 <script setup>
 import MainLayout from '@/Layouts/MainLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { 
-    TrendingUp, 
+     
     Plus, 
     Star, 
-    Zap, 
+     
     ArrowUpRight,
     Award
 } from 'lucide-vue-next';
 
-const props = defineProps({
+defineProps({
     benchmarks: Array,
     categories: Array
 });

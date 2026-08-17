@@ -98,15 +98,6 @@ const themeColors = computed(() => {
 
 const selectedRoomId = ref(props.rooms.length > 0 ? props.rooms[0].id : null);
 const selectedRoom = computed(() => props.rooms.find(r => r.id === selectedRoomId.value));
-const equipmentList = ref([]);
-
-// Fetch equipment for selected room
-watch(selectedRoomId, async (newId) => {
-    if (!newId) return;
-    // In a real Inertia app, we might use manual data fetching or reload
-    // For this implementation, we'll assume rooms.equipment is loaded or we handle it via router.reload
-    // Let's use router.reload with partial data if possible, or just expect it in the props
-}, { immediate: true });
 
 // Modals State
 const showRoomModal = ref(false);
@@ -197,7 +188,7 @@ const submitRoom = () => {
         });
     } else {
         roomForm.post(route('gestion.rooms.store'), {
-            onSuccess: (page) => {
+            onSuccess: () => {
                 showRoomModal.value = false;
                 // Auto-seleccionar el ambiente más reciente (el último creado)
                 if (props.rooms.length > 0) {

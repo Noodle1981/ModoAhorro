@@ -6,7 +6,7 @@ import {
     Zap, 
     ArrowRight,
     Leaf,
-    Activity,
+    
     DollarSign,
     CheckCircle2,
     Lock,

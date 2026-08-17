@@ -1,18 +1,18 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
-    Palmtree, 
-    ArrowRight, 
+     
+     
     TrendingDown, 
-    Zap, 
+     
     ZapOff, 
-    Calendar, 
+     
     CheckCircle2, 
     ShieldCheck,
-    Info,
-    ArrowUpRight,
+    
+    
     Plane,
     Map
 } from 'lucide-vue-next';

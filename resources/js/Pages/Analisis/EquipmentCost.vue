@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
     DollarSign, 
@@ -11,9 +11,7 @@ import {
     Activity,
     ChevronDown,
     ChevronUp,
-    Trophy,
-    SlidersHorizontal,
-    Layers
+    Trophy
 } from 'lucide-vue-next';
 import { Line, Bar } from 'vue-chartjs';
 import { 

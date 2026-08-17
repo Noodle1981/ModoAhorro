@@ -6,10 +6,8 @@ import {
     Database, 
     TrendingUp, 
     Zap, 
-    ShieldCheck, 
-    ArrowRight,
-    Users,
-    FileText
+     
+    ArrowRight
 } from 'lucide-vue-next';
 
 defineProps({

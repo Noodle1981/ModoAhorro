@@ -1,12 +1,12 @@
 <script setup>
-import { ref, computed } from 'vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { Head, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
     ZapOff, 
-    Radar,
+    
     Activity,
-    ShieldAlert,
+    
     Plug,
     CheckCircle2,
     Lock

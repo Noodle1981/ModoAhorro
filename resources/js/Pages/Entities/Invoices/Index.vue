@@ -7,7 +7,7 @@ import {
     Plus, 
     Calendar, 
     Activity, 
-    History, 
+     
     ArrowRight, 
     Pencil, 
     Trash2, 

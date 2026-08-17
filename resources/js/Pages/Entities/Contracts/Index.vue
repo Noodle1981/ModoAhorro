@@ -187,12 +187,6 @@ const stats = computed(() => {
         power: props.contracts.filter(c => c.is_active).reduce((acc, c) => acc + parseFloat(c.contracted_power_kw_p1), 0)
     };
 });
-
-const formatDate = (dateString) => {
-    if (!dateString) return '--/--';
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
-};
 </script>
 
 <template>

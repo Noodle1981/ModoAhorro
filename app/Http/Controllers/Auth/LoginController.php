@@ -50,6 +50,10 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        if ($request->header('X-Inertia')) {
+            return Inertia::location('/');
+        }
+
         return redirect('/');
     }
 }
