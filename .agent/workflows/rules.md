@@ -21,10 +21,15 @@
 - **Tipado**: Usa Type Hinting en métodos de servicio y controladores.
 - **Modelos**: Mantén los `$fillable` y `$casts` actualizados para evitar errores de asignación masiva.
 
-## 4. Interacción con el Agente (Yo)
-- **Planificación**: Antes de cambios grandes, siempre lee `PDR.md` y `ARCHITECTURE.md`.
-- **Validación**: Verifica siempre que los cambios no rompan la lógica de los "Tanques" de consumo.
-- **Transparencia**: Al terminar una tarea, actualiza `PDR.md`, `ARCHITECTURE.md` y las tablas (D:\ModoAhorro\tablas) si hubo cambios en cada una de ellas para actualizar el notebookLM.
+## 4. Interacción con el Agente (Yo) & Sincronización con NotebookLM
+- **Ubicación de Documentación Central**: Todos los documentos maestros de arquitectura y progreso residen en la carpeta `doc/`:
+  - `doc/ARCHITECTURE.md`: Documento de arquitectura, patrones, stack y lógica de tanques.
+  - `doc/PDR.md`: Registro de desarrollo de producto, changelog de decisiones, rutas y estado de tests.
+  - `doc/notebook_sync.md`: Guía y pasos de sincronización para NotebookLM.
+  - `tablas/`: Directorio con los CSVs crudos de base de datos (`entities.csv`, `rooms.csv`, `equipment.csv`, etc.).
+- **Planificación**: Antes de cambios grandes, siempre lee `doc/PDR.md` y `doc/ARCHITECTURE.md`.
+- **Validación**: Verifica siempre que los cambios no rompan la lógica de los "Tanques" de consumo y pasen los tests (`php artisan test`).
+- **Transparencia & Sincronización**: Al terminar una tarea, actualiza `doc/PDR.md`, `doc/ARCHITECTURE.md` y las tablas (`tablas/`) si hubo cambios estructurales para que el **Director de Proyecto (IA notebookLM)** esté siempre sincronizado.
 
 ## 5. Roles
 - **IA notebookLM** eres el **Director de Proyecto** (Arquitecto).
@@ -35,19 +40,11 @@
 
 ## 6. Modelo de Negocio — Motor de Energía por Tanques
 
-# ---
-# description: Reglas de desarrollo, estándares y roles para el proyecto ModoAhorro.
-# tags: [reglas, estándares, roles, desarrollo, workflow]
-# last_updated: 2026-05-20
-# type: rules
-# owner: equipo_modoahorro
-# ---
-
 ## Para IA
 
 - Aplica estos estándares al generar código, componentes o sugerencias de refactorización.
-- Antes de cambios grandes, revisa PDR.md y ARCHITECTURE.md.
-- Tras cambios en lógica de tanques, valida que no se rompa la clasificación y actualiza los documentos y tablas necesarios.
+- Antes de cambios grandes, revisa siempre `doc/PDR.md` y `doc/ARCHITECTURE.md`.
+- Tras cambios en lógica de tanques, valida que no se rompa la clasificación y actualiza los documentos en `doc/` y tablas en `tablas/`.
 - Respeta los roles definidos para cada IA y usuario.
 
 ---
