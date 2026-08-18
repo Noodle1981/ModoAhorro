@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\EfficiencyBenchmark;
 use App\Models\Entity;
+use App\Models\EquipmentBenchmark;
 use App\Models\EquipmentUsage;
 use App\Models\Invoice;
 
@@ -32,8 +32,15 @@ class ReplacementService
                 continue;
             }
 
-            // Buscar benchmark para este tipo de equipo
-            $benchmark = EfficiencyBenchmark::where('equipment_type_id', $type->id)->first();
+            // Buscar benchmark para este tipo de equipo o categoría
+            $benchmark = EquipmentBenchmark::where('equipment_type_id', $type->id)
+                ->orWhere(function ($q) use ($type) {
+                    $q->whereNull('equipment_type_id')
+                        ->where('category_id', $type->category_id);
+                })
+                ->orderByRaw('equipment_type_id IS NULL ASC')
+                ->first();
+
             if (! $benchmark) {
                 continue;
             }

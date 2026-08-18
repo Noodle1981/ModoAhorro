@@ -85,13 +85,39 @@ Certeza / Standby   Línea Base         Climatización      Proceso /          V
 - `equipment`: Artefactos físicos instalados con potencias, horas de uso y patrones.
 - `equipment_types`: Catálogo maestro de tipos de equipos y tanques por defecto.
 - `equipment_categories`: Agrupaciones lógicas de artefactos.
+- `equipment_models`: Modelos comerciales homologados y aportes de comunidad con autocompletado.
+- `equipment_benchmarks`: Modelos de mercado de referencia para cálculo de ROI y recomendaciones.
+- `energy_label_coefficients`: Multiplicadores de etiquetas de eficiencia energética (A+++ a G).
+- `plans`: Planes SaaS (`Gratuito`, `Premium`, `Enterprise`) con precios, cupos de entidades y tipos permitidos.
+- `password_reset_tokens`: Tokens de 64 caracteres para recuperación asistida de cuentas.
 - `contracts`: Contratos de suministro eléctrico con distribuidoras.
 - `invoices`: Facturas eléctricas vinculadas con consumo en kWh, cargos fijos y períodos.
 - `equipment_usages`: Registro histórico conciliado por artefacto y tanque asignado.
 
 ---
 
-## 5. Preparación Futura: Multi-Vector (Luz + Gas) e IoT
+## 5. Arquitectura del Panel de Super Administrador (Segmentos & SaaS)
+
+La consola de administración para usuarios con `is_super_admin = true` está estructurada en **4 Segmentos Independientes**:
+
+1. **Dashboard (`LayoutDashboard`):** Monitoreo global de la red, cantidad de cuentas, tipos de equipos cargados y MRR mensual.
+2. **Configuración & Catálogos (`Settings`):**
+   - **Catálogo Maestro:** Edición de potencias nominales, penalidades térmicas y tanques por defecto.
+   - **Modelos Oficiales & Clientes:** Bandeja de aportes comunitarios para homologación.
+   - **Matriz de Eficiencia:** Curvas y coeficientes IRAM de consumo.
+   - **Benchmarks & ROI:** Modelos de reposición eficiente y enlaces monetizables.
+3. **Gestión de Usuarios (`Users`):**
+   - **Cuentas & Roles:** Control de usuarios, reseteo de claves y permisos de Super Admin.
+   - **Reseteos de Clave:** Generación asistida de enlaces temporales de acceso y forzado directo de contraseñas.
+   - **Pagos & Suscripciones:** Modelo 100% centrado en el usuario (`1 Usuario = 1 Plan`) con control de cupos de entidades (`max_entities`) y extensiones manuales de vigencia.
+4. **APIs & Conectores (`KeyRound`):**
+   - Conectores externos con Mercado Libre (búsqueda y precios), CAMMESA/ENRE (tarifas mayoristas) y Open-Meteo (grados-día).
+   - Gestión de claves públicas y secretos de Webhooks.
+
+---
+
+## 6. Preparación Futura: Multi-Vector (Luz + Gas) e IoT
 
 - **Multi-Vector:** Estructura preparada para el enum `EnergySource` (`ELECTRICITY` en kWh, `NATURAL_GAS` en m³, `SOLAR`).
 - **IoT & Medidores Inteligentes:** La arquitectura permite que los tanques sustituyan o calibren su cálculo matemático con telemetría real proveniente de APIs de sensores externos.
+

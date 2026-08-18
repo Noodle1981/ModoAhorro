@@ -19,12 +19,18 @@ import {
     RefreshCw,
     Ghost,
     Settings,
-    TrendingUp,
     ChevronDown,
     Home,
     Thermometer,
     DollarSign,
-    ShieldCheck
+    ShieldCheck,
+    Sparkles,
+    LayoutDashboard,
+    Users,
+    Layers,
+    Award,
+    KeyRound,
+    CreditCard
 } from 'lucide-vue-next';
 import { ref, computed, watchEffect } from 'vue';
 
@@ -116,13 +122,20 @@ const themeColors = computed(() => {
 // Sincronizar categoría activa con la URL actual
 watchEffect(() => {
     const url = page.url;
-    if (url.startsWith('/sistema')) activeCategory.value = 'Sistema';
-    else if (url.startsWith('/analisis')) activeCategory.value = 'Análisis';
-    else if (url.startsWith('/recomendaciones')) activeCategory.value = 'Recomendaciones';
-    else activeCategory.value = auth.value?.user?.is_super_admin ? 'Sistema' : 'Gestión Física';
+    if (auth.value?.user?.is_super_admin) {
+        if (url.startsWith('/sistema/usuarios')) activeCategory.value = 'Usuarios';
+        else if (url.startsWith('/sistema/apis')) activeCategory.value = 'APIs & Conectores';
+        else if (url.startsWith('/sistema/catalogo') || url.startsWith('/sistema/modelos') || url.startsWith('/sistema/eficiencia') || url.startsWith('/sistema/benchmarks')) activeCategory.value = 'Configuración';
+        else activeCategory.value = 'Dashboard';
+    } else {
+        if (url.startsWith('/analisis')) activeCategory.value = 'Análisis';
+        else if (url.startsWith('/recomendaciones')) activeCategory.value = 'Recomendaciones';
+        else activeCategory.value = 'Gestión Física';
+    }
 });
 
 const navigation = computed(() => [
+    // --- VISTAS DE USUARIOS REGULARES ---
     {
         name: 'Gestión Física',
         icon: Building,
@@ -164,17 +177,51 @@ const navigation = computed(() => [
             { name: 'Optimización Horarios', icon: Clock, href: route('recomendaciones.grid-optimization') },
         ]
     },
+
+    // --- SEGMENTOS DE SUPER ADMINISTRADOR ---
     {
-        name: 'Sistema',
-        icon: Settings,
-        color: 'text-slate-400',
-        bgColor: 'bg-slate-400',
+        name: 'Dashboard',
+        icon: LayoutDashboard,
+        color: 'text-emerald-500',
+        bgColor: 'bg-emerald-600',
         hidden: !auth.value?.user?.is_super_admin,
         items: [
-            { name: 'Dashboard Admin', icon: Settings, href: route('sistema.admin') },
-            { name: 'Catálogo Maestro', icon: Briefcase, href: route('sistema.catalogue') },
+            { name: 'Panel Principal', icon: LayoutDashboard, href: route('sistema.admin') },
+        ]
+    },
+    {
+        name: 'Configuración',
+        icon: Settings,
+        color: 'text-slate-400',
+        bgColor: 'bg-slate-700',
+        hidden: !auth.value?.user?.is_super_admin,
+        items: [
+            { name: 'Catálogo Maestro', icon: Layers, href: route('sistema.catalogue') },
+            { name: 'Modelos & Clientes', icon: Sparkles, href: route('sistema.models') },
             { name: 'Matriz Eficiencia', icon: Sliders, href: route('sistema.efficiency') },
-            { name: 'Benchmarks', icon: TrendingUp, href: route('sistema.benchmarks') },
+            { name: 'Benchmarks & ROI', icon: Award, href: route('sistema.benchmarks') },
+        ]
+    },
+    {
+        name: 'Usuarios',
+        icon: Users,
+        color: 'text-purple-500',
+        bgColor: 'bg-purple-600',
+        hidden: !auth.value?.user?.is_super_admin,
+        items: [
+            { name: 'Cuentas & Roles', icon: Users, href: route('sistema.users') },
+            { name: 'Reseteos de Clave', icon: KeyRound, href: route('sistema.users.resets') },
+            { name: 'Pagos & Suscripciones', icon: CreditCard, href: route('sistema.users.payments') },
+        ]
+    },
+    {
+        name: 'APIs & Conectores',
+        icon: KeyRound,
+        color: 'text-sky-500',
+        bgColor: 'bg-sky-600',
+        hidden: !auth.value?.user?.is_super_admin,
+        items: [
+            { name: 'APIs & Integraciones', icon: KeyRound, href: route('sistema.apis') },
         ]
     }
 ]);

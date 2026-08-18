@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Entity;
 use App\Models\Equipment;
 use App\Models\EquipmentCategory;
+use App\Models\EquipmentModel;
 use App\Models\EquipmentType;
 use App\Models\Room;
 use App\Traits\HasActiveEntity;
@@ -23,7 +24,7 @@ class InfrastructureController extends Controller
         $entity = $this->getActiveEntity($request);
 
         if (! $entity) {
-            return redirect()->route('dashboard')->with('error', 'Debes crear una entidad antes de gestionar su infraestructura.');
+            return redirect()->route('dashboard')->with('warning', 'Debes seleccionar una entidad activa.');
         }
 
         $rooms = Room::where('entity_id', $entity->id)
@@ -32,7 +33,7 @@ class InfrastructureController extends Controller
             ->get();
 
         $categories = EquipmentCategory::orderBy('name')->get();
-        $types = EquipmentType::orderBy('name')->get();
+        $types = EquipmentType::where('is_active', true)->orderBy('name')->get();
 
         return Inertia::render('Entities/Infrastructure/Index', [
             'entity' => $entity,
@@ -112,6 +113,7 @@ class InfrastructureController extends Controller
             'is_inverter' => 'nullable|boolean',
             'brand' => 'nullable|string|max:255',
             'model' => 'nullable|string|max:255',
+            'model_id' => 'nullable|exists:equipment_models,id',
             'serial_number' => 'nullable|string|max:255',
             'energy_label' => 'nullable|string|max:10',
             'cantidad' => 'integer|min:1',
@@ -119,6 +121,17 @@ class InfrastructureController extends Controller
 
         $validated['avg_daily_use_hours'] = $validated['avg_daily_use_hours'] ?? 0;
         $validated['is_inverter'] = $validated['is_inverter'] ?? false;
+
+        // Auto vincular a modelo verificado si coincide la marca y modelo
+        if (empty($validated['model_id']) && !empty($validated['brand']) && !empty($validated['model'])) {
+            $matchingModel = EquipmentModel::where('is_verified', true)
+                ->whereRaw('LOWER(TRIM(brand)) = ?', [strtolower(trim($validated['brand']))])
+                ->whereRaw('LOWER(TRIM(model)) = ?', [strtolower(trim($validated['model']))])
+                ->first();
+            if ($matchingModel) {
+                $validated['model_id'] = $matchingModel->id;
+            }
+        }
 
         $room = Room::findOrFail($validated['room_id']);
         if ($request->user()->cannot('update', $room->entity)) {
@@ -156,6 +169,7 @@ class InfrastructureController extends Controller
             'is_inverter' => 'nullable|boolean',
             'brand' => 'nullable|string|max:255',
             'model' => 'nullable|string|max:255',
+            'model_id' => 'nullable|exists:equipment_models,id',
             'serial_number' => 'nullable|string|max:255',
             'energy_label' => 'nullable|string|max:10',
             'is_active' => 'required|boolean',
@@ -163,6 +177,17 @@ class InfrastructureController extends Controller
 
         $validated['avg_daily_use_hours'] = $validated['avg_daily_use_hours'] ?? $equipment->avg_daily_use_hours;
         $validated['is_inverter'] = $validated['is_inverter'] ?? false;
+
+        // Auto vincular a modelo verificado si coincide la marca y modelo
+        if (empty($validated['model_id']) && !empty($validated['brand']) && !empty($validated['model'])) {
+            $matchingModel = EquipmentModel::where('is_verified', true)
+                ->whereRaw('LOWER(TRIM(brand)) = ?', [strtolower(trim($validated['brand']))])
+                ->whereRaw('LOWER(TRIM(model)) = ?', [strtolower(trim($validated['model']))])
+                ->first();
+            if ($matchingModel) {
+                $validated['model_id'] = $matchingModel->id;
+            }
+        }
 
         if ($request->user()->cannot('update', $equipment->room->entity)) {
             abort(403);

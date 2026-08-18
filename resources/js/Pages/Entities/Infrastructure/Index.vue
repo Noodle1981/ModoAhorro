@@ -118,6 +118,7 @@ const eqForm = useForm({
     room_id: '',
     category_id: '',
     type_id: '',
+    model_id: null,
     name: '',
     nominal_power_w: '',
     avg_daily_use_hours: '',
@@ -137,6 +138,52 @@ const filteredTypes = computed(() => {
     if (!eqForm.category_id) return [];
     return props.types.filter(t => t.category_id === eqForm.category_id);
 });
+
+// Autocompletado de Modelos Oficiales Verificados
+const modelSuggestions = ref([]);
+const isSearchingModels = ref(false);
+const showModelDropdown = ref(false);
+let searchDebounceTimer = null;
+
+const onBrandOrModelInput = () => {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(async () => {
+        const query = (eqForm.brand + ' ' + eqForm.model).trim();
+        if (query.length < 2) {
+            modelSuggestions.value = [];
+            showModelDropdown.value = false;
+            return;
+        }
+        try {
+            isSearchingModels.value = true;
+            const res = await fetch(`/sistema/api/modelos-autocompletar?q=${encodeURIComponent(query)}`);
+            if (res.ok) {
+                const data = await res.json();
+                modelSuggestions.value = data;
+                showModelDropdown.value = data.length > 0;
+            }
+        } catch (e) {
+            console.error('Error buscando modelos oficiales:', e);
+        } finally {
+            isSearchingModels.value = false;
+        }
+    }, 250);
+};
+
+const selectModelSuggestion = (m) => {
+    eqForm.brand = m.brand;
+    eqForm.model = m.model;
+    eqForm.model_id = m.id;
+    if (m.category_id) eqForm.category_id = m.category_id;
+    if (m.type_id) eqForm.type_id = m.type_id;
+    if (m.nominal_power_w) eqForm.nominal_power_w = m.nominal_power_w;
+    if (m.is_inverter !== undefined) eqForm.is_inverter = m.is_inverter;
+    if (m.energy_label) eqForm.energy_label = m.energy_label;
+    if (!eqForm.name || eqForm.name.trim() === '') {
+        eqForm.name = `${m.brand} ${m.model}`;
+    }
+    showModelDropdown.value = false;
+};
 
 // Auto-fill defaults when type changes
 watch(() => eqForm.type_id, (newTypeId) => {
@@ -551,16 +598,73 @@ const getCategoryIcon = (catName) => {
 
                     <!-- Row 2: Asset Details -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
-                        <div class="space-y-4">
+                        <div class="space-y-4 relative">
                             <div class="space-y-1.5">
-                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Marca</label>
-                                <input v-model="eqForm.brand" type="text" placeholder="Ej: Samsung, Philips..." class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all focus:ring-2" :class="themeColors.focusRingForm" />
+                                <div class="flex items-center justify-between">
+                                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Marca</label>
+                                    <span v-if="eqForm.model_id" class="text-[9px] font-black text-emerald-600 uppercase tracking-wider flex items-center gap-1">
+                                        <Sparkles :size="10" /> Modelo Oficial
+                                    </span>
+                                </div>
+                                <input 
+                                    v-model="eqForm.brand" 
+                                    @input="onBrandOrModelInput"
+                                    type="text" 
+                                    placeholder="Ej: Samsung, Philips, LG..." 
+                                    class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all focus:ring-2" 
+                                    :class="themeColors.focusRingForm" 
+                                />
                             </div>
-                            <div class="space-y-1.5">
+                            <div class="space-y-1.5 relative">
                                 <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Modelo / N° Serie</label>
                                 <div class="flex gap-2">
-                                    <input v-model="eqForm.model" type="text" placeholder="Modelo" class="flex-1 bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all focus:ring-2" :class="themeColors.focusRingForm" />
-                                    <input v-model="eqForm.serial_number" type="text" placeholder="S/N" class="w-1/3 bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all focus:ring-2" :class="themeColors.focusRingForm" />
+                                    <input 
+                                        v-model="eqForm.model" 
+                                        @input="onBrandOrModelInput"
+                                        type="text" 
+                                        placeholder="Ej: RT38, Inverter..." 
+                                        class="flex-1 bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all focus:ring-2" 
+                                        :class="themeColors.focusRingForm" 
+                                    />
+                                    <input 
+                                        v-model="eqForm.serial_number" 
+                                        type="text" 
+                                        placeholder="S/N" 
+                                        class="w-1/3 bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all focus:ring-2" 
+                                        :class="themeColors.focusRingForm" 
+                                    />
+                                </div>
+
+                                <!-- Floating Autocomplete Suggestions -->
+                                <div 
+                                    v-if="showModelDropdown && modelSuggestions.length > 0"
+                                    class="absolute left-0 right-0 top-full mt-2 z-50 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 space-y-1 max-h-56 overflow-y-auto"
+                                >
+                                    <div class="px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-50 flex items-center justify-between">
+                                        <span>Modelos Oficiales Homologados</span>
+                                        <button type="button" @click="showModelDropdown = false" class="text-slate-400 hover:text-slate-600">✕</button>
+                                    </div>
+                                    <button 
+                                        type="button"
+                                        v-for="sug in modelSuggestions" 
+                                        :key="sug.id"
+                                        @click="selectModelSuggestion(sug)"
+                                        class="w-full text-left p-2.5 rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-between group cursor-pointer"
+                                    >
+                                        <div>
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="text-xs font-black text-slate-900 group-hover:text-emerald-600">{{ sug.brand }} {{ sug.model }}</span>
+                                                <span v-if="sug.is_inverter" class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[8px] font-black uppercase">Inverter</span>
+                                            </div>
+                                            <p class="text-[10px] font-bold text-slate-400">
+                                                {{ sug.type?.name || sug.category?.name }} · {{ sug.nominal_power_w }}W
+                                                <span v-if="sug.energy_label"> · Etiqueta {{ sug.energy_label }}</span>
+                                            </p>
+                                        </div>
+                                        <span class="text-[10px] font-black text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-wider">
+                                            Auto-completar →
+                                        </span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
