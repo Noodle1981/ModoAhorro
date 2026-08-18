@@ -23,7 +23,8 @@ import {
     ChevronDown,
     Home,
     Thermometer,
-    DollarSign
+    DollarSign,
+    ShieldCheck
 } from 'lucide-vue-next';
 import { ref, computed, watchEffect } from 'vue';
 
@@ -260,16 +261,16 @@ const isHomeView = computed(() => {
         <!-- Level 1: Slim Sidebar (Central Icons) -->
         <aside class="hidden lg:flex w-20 bg-slate-900 flex flex-col items-center py-6 z-[90] border-r border-white/5 shrink-0">
             <!-- Brand Logo -->
-            <Link v-if="entityLogoPath" :href="route('dashboard')" class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center p-1.5 shadow-lg mb-10 hover:scale-105 transition-transform block">
+            <Link v-if="entityLogoPath && !auth?.user?.is_super_admin" :href="route('dashboard')" class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center p-1.5 shadow-lg mb-10 hover:scale-105 transition-transform block">
                 <img :src="entityLogoPath" :alt="currentEntity?.type" class="w-full h-full object-contain" />
             </Link>
-            <Link v-else :href="route('dashboard')" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg mb-10 hover:scale-105 transition-transform" :class="themeColors.logoBg">
+            <Link v-else :href="auth?.user?.is_super_admin ? route('sistema.admin') : route('dashboard')" class="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg mb-10 hover:scale-105 transition-transform" :class="auth?.user?.is_super_admin ? 'bg-slate-800 shadow-slate-950/50' : themeColors.logoBg">
                 <Zap :size="24" stroke-width="3" />
             </Link>
 
             <!-- Main Nav Icons -->
             <nav class="flex-1 flex flex-col gap-4 w-full items-center">
-                <Link :href="route('dashboard')" class="p-3 rounded-2xl text-slate-400 hover:bg-white/5 transition-all group relative">
+                <Link :href="auth?.user?.is_super_admin ? route('sistema.admin') : route('dashboard')" class="p-3 rounded-2xl text-slate-400 hover:bg-white/5 transition-all group relative">
                     <Home :size="24" />
                     <span class="absolute left-full ml-4 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-50">Inicio</span>
                 </Link>
@@ -302,9 +303,22 @@ const isHomeView = computed(() => {
                     <User :size="24" />
                     <span class="absolute left-full ml-4 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-50">Mi Perfil</span>
                 </Link>
-                <Link :href="route('dashboard')" class="p-3 rounded-2xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group relative cursor-pointer">
-                    <LogOut :size="24" />
+                <Link 
+                    v-if="!auth?.user?.is_super_admin" 
+                    :href="route('dashboard')" 
+                    class="p-3 rounded-2xl text-slate-400 hover:text-white hover:bg-white/5 transition-all group relative cursor-pointer"
+                >
+                    <RefreshCw :size="24" />
                     <span class="absolute left-full ml-4 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-50">Cambiar Entidad</span>
+                </Link>
+                <Link 
+                    :href="route('logout')" 
+                    method="post" 
+                    as="button" 
+                    class="p-3 rounded-2xl text-slate-400 hover:text-rose-400 hover:bg-white/5 transition-all group relative cursor-pointer"
+                >
+                    <LogOut :size="24" />
+                    <span class="absolute left-full ml-4 px-2 py-1 bg-slate-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none transition-opacity z-50">Cerrar Sesión</span>
                 </Link>
             </div>
         </aside>
@@ -321,8 +335,8 @@ const isHomeView = computed(() => {
                     <h1 class="text-2xl font-black text-slate-900 tracking-tighter">{{ activeCategory }}</h1>
                 </div>
 
-                <!-- Entity Selector Inside Panel -->
-                <div class="p-6 relative">
+                <!-- Entity Selector Inside Panel (Only for users with entities) -->
+                <div v-if="!auth?.user?.is_super_admin" class="p-6 relative">
                     <button 
                         @click="isEntityMenuOpen = !isEntityMenuOpen"
                         class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between group transition-all"
@@ -352,6 +366,19 @@ const isHomeView = computed(() => {
                                 <div class="w-2 h-2 rounded-full" :class="entity.id === currentEntity?.id ? themeColors.bg : 'bg-slate-200'"></div>
                                 <span :class="['text-xs font-bold', entity.id === currentEntity?.id ? 'text-slate-900' : 'text-slate-500']">{{ entity.name }}</span>
                             </Link>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Super Admin Status Banner Inside Panel -->
+                <div v-else class="px-6 py-4">
+                    <div class="p-4 bg-slate-900 rounded-2xl flex items-center gap-3 text-white shadow-md">
+                        <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-emerald-400">
+                            <ShieldCheck :size="18" />
+                        </div>
+                        <div class="truncate">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Rol Global</p>
+                            <p class="text-xs font-bold text-white truncate">Super Administrador</p>
                         </div>
                     </div>
                 </div>
