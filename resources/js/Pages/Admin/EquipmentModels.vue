@@ -15,7 +15,8 @@ import {
     ShieldCheck, 
     ArrowRight
 } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { shallowRef, computed } from 'vue';
+import Modal from '@/Components/Modal.vue';
 
 const props = defineProps({
     verifiedModels: Array,
@@ -25,13 +26,13 @@ const props = defineProps({
 });
 
 // Pestaña activa principal
-const mainTab = ref('community'); // 'community' | 'verified'
+const mainTab = shallowRef('community'); // 'community' | 'verified'
 
 // Filtros para Modelos Verificados
-const searchQuery = ref('');
-const selectedCategory = ref('all');
-const selectedType = ref('all');
-const selectedInverter = ref('all');
+const searchQuery = shallowRef('');
+const selectedCategory = shallowRef('all');
+const selectedType = shallowRef('all');
+const selectedInverter = shallowRef('all');
 
 const filteredVerifiedModels = computed(() => {
     return props.verifiedModels.filter(m => {
@@ -51,12 +52,12 @@ const filteredVerifiedModels = computed(() => {
 });
 
 // Modales
-const isModalOpen = ref(false);
-const isEditing = ref(false);
-const currentModelId = ref(null);
+const isModalOpen = shallowRef(false);
+const isEditing = shallowRef(false);
+const currentModelId = shallowRef(null);
 
-const isDeleteModalOpen = ref(false);
-const modelToDelete = ref(null);
+const isDeleteModalOpen = shallowRef(false);
+const modelToDelete = shallowRef(null);
 
 const form = useForm({
     category_id: '',
@@ -446,8 +447,8 @@ const confirmDelete = () => {
         </div>
 
         <!-- MODAL DE CREACIÓN / APROBACIÓN / EDICIÓN -->
-        <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs overflow-y-auto">
-            <div class="relative w-full max-w-xl bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
+        <Modal :show="isModalOpen" max-width="xl" @close="isModalOpen = false">
+            <div class="relative w-full overflow-hidden">
                 
                 <div class="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50">
                     <div>
@@ -608,13 +609,12 @@ const confirmDelete = () => {
                         </button>
                     </div>
                 </form>
-
             </div>
-        </div>
+        </Modal>
 
         <!-- MODAL DE CONFIRMACIÓN DE BORRADO -->
-        <div v-if="isDeleteModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-            <div class="relative w-full max-w-md bg-white rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 space-y-6 animate-in fade-in zoom-in-95 duration-200">
+        <Modal :show="isDeleteModalOpen" max-width="md" @close="isDeleteModalOpen = false">
+            <div class="p-8 space-y-6">
                 <div class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
                     <AlertTriangle :size="28" />
                 </div>
@@ -641,7 +641,7 @@ const confirmDelete = () => {
                     </button>
                 </div>
             </div>
-        </div>
+        </Modal>
 
     </MainLayout>
 </template>

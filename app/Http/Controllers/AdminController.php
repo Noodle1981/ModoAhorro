@@ -498,10 +498,12 @@ class AdminController extends Controller
             'is_super_admin' => 'boolean',
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
-        $validated['is_super_admin'] = $validated['is_super_admin'] ?? false;
-
-        User::create($validated);
+        $user = new User();
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->password = Hash::make($validated['password']);
+        $user->is_super_admin = $validated['is_super_admin'] ?? false;
+        $user->save();
 
         return redirect()->back()->with('success', "Usuario '{$validated['name']}' creado exitosamente.");
     }
@@ -517,13 +519,18 @@ class AdminController extends Controller
             'is_super_admin' => 'boolean',
         ]);
 
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+
         if (! empty($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
+            $user->password = Hash::make($validated['password']);
         }
 
-        $user->update($validated);
+        if (isset($validated['is_super_admin'])) {
+            $user->is_super_admin = (bool) $validated['is_super_admin'];
+        }
+
+        $user->save();
 
         return redirect()->back()->with('success', "Usuario '{$user->name}' actualizado correctamente.");
     }

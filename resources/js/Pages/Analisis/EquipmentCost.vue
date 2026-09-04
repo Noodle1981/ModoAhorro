@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { shallowRef, computed } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { 
@@ -37,9 +37,11 @@ const props = defineProps({
     pricePerKwh: Number
 });
 
-const searchQuery = ref('');
-const selectedCategory = ref('all');
-const showAll = ref(false);
+const searchQuery = shallowRef('');
+const selectedCategory = shallowRef('all');
+const showAll = shallowRef(false);
+
+const consumingEquipmentCount = computed(() => (props.equipmentData || []).filter(d => (d.cost || 0) > 0).length);
 
 const changePeriod = (id) => {
     router.get(route('analisis.equipment-cost'), { period_id: id }, { preserveState: true });
@@ -125,7 +127,7 @@ const visibleData = computed(() => {
 });
 
 // Lógica de Historial (Sparklines & Expanded)
-const expandedRow = ref(null);
+const expandedRow = shallowRef(null);
 
 const toggleRow = (id) => {
     expandedRow.value = expandedRow.value === id ? null : id;
@@ -450,7 +452,7 @@ const themeColors = computed(() => {
                             ]"
                         >
                             <span>Con Consumo</span>
-                            <span class="opacity-60 text-[9px]">({{ equipmentData.filter(d => (d.cost || 0) > 0).length }})</span>
+                            <span class="opacity-60 text-[9px]">({{ consumingEquipmentCount }})</span>
                         </button>
 
                         <button 

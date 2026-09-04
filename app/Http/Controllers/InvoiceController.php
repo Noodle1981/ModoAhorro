@@ -46,6 +46,10 @@ class InvoiceController extends Controller
     public function store(SaveInvoiceRequest $request)
     {
         $validated = $request->validated();
+        if (empty($validated['issue_date'])) {
+            $validated['issue_date'] = $validated['invoice_date'];
+        }
+
         $contract = Contract::findOrFail($validated['contract_id']);
 
         // Security check: Ensure user owns the entity associated with the contract
@@ -53,7 +57,7 @@ class InvoiceController extends Controller
             abort(403);
         }
 
-        Invoice::create($request->all()); // Los datos ya fueron preparados por el Request
+        Invoice::create($validated);
 
         return redirect()->back()->with('success', 'Factura cargada correctamente.');
     }
@@ -68,7 +72,12 @@ class InvoiceController extends Controller
             abort(403);
         }
 
-        $invoice->update($request->all());
+        $validated = $request->validated();
+        if (empty($validated['issue_date'])) {
+            $validated['issue_date'] = $validated['invoice_date'];
+        }
+
+        $invoice->update($validated);
 
         return redirect()->back()->with('success', 'Factura actualizada correctamente.');
     }

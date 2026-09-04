@@ -1,7 +1,9 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { shallowRef, computed } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import Modal from '@/Components/Modal.vue';
+import ConfirmDeleteModal from '@/Components/ConfirmDeleteModal.vue';
 import { 
     FileText, 
     Plus, 
@@ -24,8 +26,8 @@ const props = defineProps({
     flash: Object
 });
 
-const showModal = ref(false);
-const editingContract = ref(null);
+const showModal = shallowRef(false);
+const editingContract = shallowRef(null);
 
 const form = useForm({
     id: null,
@@ -162,13 +164,27 @@ const toggleActive = (contract) => {
     router.patch(route('gestion.contracts.toggle', contract.id));
 };
 
+const contractToDelete = shallowRef(null);
+const isDeletingContract = shallowRef(false);
+
 const deleteContract = (contract) => {
-    if (confirm('¿Estás seguro de eliminar este contrato? Se perderá el acceso histórico a las facturas asociadas.')) {
-        router.delete(route('gestion.contracts.destroy', contract.id));
-    }
+    contractToDelete.value = contract;
 };
 
-const searchQuery = ref('');
+const confirmDeleteContract = () => {
+    if (!contractToDelete.value) return;
+    isDeletingContract.value = true;
+    router.delete(route('gestion.contracts.destroy', contractToDelete.value.id), {
+        onSuccess: () => {
+            contractToDelete.value = null;
+        },
+        onFinish: () => {
+            isDeletingContract.value = false;
+        },
+    });
+};
+
+const searchQuery = shallowRef('');
 const filteredContracts = computed(() => {
     if (!searchQuery.value) return props.contracts;
     const query = searchQuery.value.toLowerCase();
@@ -339,12 +355,10 @@ const stats = computed(() => {
         </div>
 
         <!-- Modal -->
-        <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-6 sm:p-12">
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" @click="closeModal"></div>
-            
-            <div class="relative bg-white w-full max-w-2xl rounded-[48px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-                <div class="absolute right-8 top-8">
-                    <button @click="closeModal" class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-all">
+        <Modal :show="showModal" max-width="2xl" @close="closeModal">
+            <div class="relative w-full overflow-hidden">
+                <div class="absolute right-8 top-8 z-10">
+                    <button @click="closeModal" class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-all cursor-pointer">
                         <X :size="20" />
                     </button>
                 </div>
@@ -469,16 +483,26 @@ const stats = computed(() => {
                     <button 
                         @click="submit"
                         :disabled="form.processing"
-                        :class="['flex-1 bg-slate-900 text-white py-5 rounded-[24px] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 transition-all disabled:opacity-50', themeColors.hoverBg]"
+                        :class="['flex-1 bg-slate-900 text-white py-5 rounded-[24px] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 transition-all disabled:opacity-50 cursor-pointer', themeColors.hoverBg]"
                     >
                         {{ editingContract ? 'Aplicar Cambios' : 'Confirmar Registro' }}
                     </button>
-                    <button @click="closeModal" class="px-8 py-5 rounded-[24px] font-black text-xs uppercase tracking-widest text-slate-400 hover:bg-white transition-all text-[10px]">
+                    <button @click="closeModal" class="px-8 py-5 rounded-[24px] font-black text-xs uppercase tracking-widest text-slate-400 hover:bg-white transition-all text-[10px] cursor-pointer">
                         Cancelar
                     </button>
                 </div>
             </div>
-        </div>
+        </Modal>
+
+        <!-- Delete Confirmation Modal -->
+        <ConfirmDeleteModal
+            :show="!!contractToDelete"
+            title="¿Eliminar contrato?"
+            message="¿Estás seguro de eliminar este contrato? Se perderá el acceso histórico a las facturas asociadas."
+            :processing="isDeletingContract"
+            @close="contractToDelete = null"
+            @confirm="confirmDeleteContract"
+        />
     </MainLayout>
 </template>
 

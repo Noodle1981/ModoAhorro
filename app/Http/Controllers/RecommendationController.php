@@ -92,8 +92,12 @@ class RecommendationController extends Controller
     /**
      * Alternar estado de standby de un equipo
      */
-    public function toggleStandby(Equipment $equipment, StandbyAnalysisService $service)
+    public function toggleStandby(Request $request, Equipment $equipment, StandbyAnalysisService $service)
     {
+        if ($request->user()->cannot('update', $equipment->room->entity)) {
+            abort(403);
+        }
+
         $service->toggleEquipmentStandby($equipment->id);
 
         return back();

@@ -1,7 +1,8 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, shallowRef, computed, watch } from 'vue';
 import { Head, useForm, router, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import Modal from '@/Components/Modal.vue';
 import { 
     Receipt, 
     Plus, 
@@ -84,12 +85,12 @@ const themeColors = computed(() => {
     };
 });
 
-const showModal = ref(false);
-const showDeleteModal = ref(false);
-const showAdvanced = ref(false);
-const editingInvoice = ref(null);
-const invoiceToDelete = ref(null);
-const isGuidedInstallment2 = ref(false);
+const showModal = shallowRef(false);
+const showDeleteModal = shallowRef(false);
+const showAdvanced = shallowRef(false);
+const editingInvoice = shallowRef(null);
+const invoiceToDelete = shallowRef(null);
+const isGuidedInstallment2 = shallowRef(false);
 
 const form = useForm({
     id: null,
@@ -486,12 +487,10 @@ const openCreateInstallment2Modal = (invoice) => {
         </div>
 
         <!-- Modal -->
-        <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-6 sm:p-12">
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" @click="closeModal"></div>
-            
-            <div class="relative bg-white w-full max-w-2xl rounded-[48px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-                <div class="absolute right-8 top-8">
-                    <button @click="closeModal" class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-all">
+        <Modal :show="showModal" max-width="2xl" @close="closeModal">
+            <div class="relative w-full overflow-hidden">
+                <div class="absolute right-8 top-8 z-10">
+                    <button @click="closeModal" class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 hover:text-slate-900 transition-all cursor-pointer">
                         <X :size="20" />
                     </button>
                 </div>
@@ -659,22 +658,21 @@ const openCreateInstallment2Modal = (invoice) => {
                     <button 
                         @click="submit"
                         :disabled="form.processing"
-                        :class="['flex-1 bg-slate-900 text-white py-5 rounded-[24px] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 transition-all disabled:opacity-50', themeColors.hoverBg]"
+                        :class="['flex-1 bg-slate-900 text-white py-5 rounded-[24px] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 transition-all disabled:opacity-50 cursor-pointer', themeColors.hoverBg]"
                     >
                         {{ editingInvoice ? 'Actualizar Registro' : 'Confirmar Carga' }}
                     </button>
-                    <button @click="closeModal" class="px-8 py-5 rounded-[24px] font-black text-xs uppercase tracking-widest text-slate-400 hover:bg-white transition-all">
+                    <button @click="closeModal" class="px-8 py-5 rounded-[24px] font-black text-xs uppercase tracking-widest text-slate-400 hover:bg-white transition-all cursor-pointer">
                         Cancelar
                     </button>
                 </div>
             </div>
-        </div>
+        </Modal>
+
         <!-- Delete Confirmation Modal -->
-        <div v-if="showDeleteModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300" @click="showDeleteModal = false"></div>
-            
-            <div class="relative bg-white rounded-[40px] shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-100">
-                <div class="p-12 text-center">
+        <Modal :show="showDeleteModal" max-width="lg" @close="showDeleteModal = false">
+            <div class="relative w-full overflow-hidden">
+                <div class="p-8 sm:p-12 text-center">
                     <div class="mb-8 flex justify-center">
                         <div class="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center relative">
                             <AlertTriangle :size="48" class="text-energy-critical relative z-10" />
@@ -703,20 +701,20 @@ const openCreateInstallment2Modal = (invoice) => {
                     <div class="flex flex-col gap-4">
                         <button 
                             @click="confirmDelete"
-                            class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-energy-critical transition-all shadow-xl shadow-red-200/20"
+                            class="w-full bg-slate-900 text-white py-5 rounded-3xl font-black text-xs uppercase tracking-widest hover:bg-energy-critical transition-all shadow-xl shadow-red-200/20 cursor-pointer"
                         >
                             Eliminar Permanentemente
                         </button>
                         <button 
                             @click="showDeleteModal = false"
-                            class="w-full py-5 rounded-3xl font-black text-xs uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all"
+                            class="w-full py-5 rounded-3xl font-black text-xs uppercase tracking-widest text-slate-400 hover:bg-slate-50 transition-all cursor-pointer"
                         >
                             Mantener Registro
                         </button>
                     </div>
                 </div>
             </div>
-        </div>
+        </Modal>
     </MainLayout>
 </template>
 

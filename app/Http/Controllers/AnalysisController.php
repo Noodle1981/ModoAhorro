@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contract;
 use App\Models\Entity;
 use App\Models\Equipment;
 use App\Models\EquipmentUsage;
@@ -404,6 +405,11 @@ class AnalysisController extends Controller
             return redirect()->route('dashboard');
         }
 
+        $contract = Contract::with('entity')->findOrFail($contractId);
+        if ($request->user()->cannot('update', $contract->entity)) {
+            abort(403);
+        }
+
         $parsedStart = Carbon::parse($startDate)->format('Y-m-d');
         $parsedEnd = Carbon::parse($endDate)->format('Y-m-d');
 
@@ -530,7 +536,10 @@ class AnalysisController extends Controller
             'usages' => 'required|array',
         ]);
 
-        $invoice = Invoice::findOrFail($request->invoice_id);
+        $invoice = Invoice::with('contract.entity')->findOrFail($request->invoice_id);
+        if ($request->user()->cannot('update', $invoice->contract->entity)) {
+            abort(403);
+        }
 
         DB::transaction(function () use ($request, $invoice) {
             foreach ($request->usages as $eqId => $data) {
@@ -588,7 +597,10 @@ class AnalysisController extends Controller
             'usages' => 'required|array',
         ]);
 
-        $invoice = Invoice::findOrFail($request->invoice_id);
+        $invoice = Invoice::with('contract.entity')->findOrFail($request->invoice_id);
+        if ($request->user()->cannot('update', $invoice->contract->entity)) {
+            abort(403);
+        }
 
         DB::transaction(function () use ($request, $invoice) {
             foreach ($request->usages as $eqId => $data) {
@@ -645,6 +657,10 @@ class AnalysisController extends Controller
      */
     public function showEngineResults(Request $request, Invoice $invoice)
     {
+        if ($request->user()->cannot('update', $invoice->contract->entity)) {
+            abort(403);
+        }
+
         $entity = $this->getActiveEntity($request);
         $engineResult = session('engine_result');
 

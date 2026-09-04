@@ -189,7 +189,9 @@ class InfrastructureController extends Controller
             }
         }
 
-        if ($request->user()->cannot('update', $equipment->room->entity)) {
+        $targetRoom = Room::with('entity')->findOrFail($validated['room_id']);
+        if ($request->user()->cannot('update', $equipment->room->entity) ||
+            $request->user()->cannot('update', $targetRoom->entity)) {
             abort(403);
         }
 

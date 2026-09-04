@@ -1,7 +1,9 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { shallowRef, computed, watch, onUnmounted } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import Modal from '@/Components/Modal.vue';
+import ConfirmDeleteModal from '@/Components/ConfirmDeleteModal.vue';
 import { 
     LayoutGrid, 
     Plus, 
@@ -96,14 +98,14 @@ const themeColors = computed(() => {
     };
 });
 
-const selectedRoomId = ref(props.rooms.length > 0 ? props.rooms[0].id : null);
+const selectedRoomId = shallowRef(props.rooms.length > 0 ? props.rooms[0].id : null);
 const selectedRoom = computed(() => props.rooms.find(r => r.id === selectedRoomId.value));
 
 // Modals State
-const showRoomModal = ref(false);
-const editingRoom = ref(null);
-const showEquipmentModal = ref(false);
-const editingEquipment = ref(null);
+const showRoomModal = shallowRef(false);
+const editingRoom = shallowRef(null);
+const showEquipmentModal = shallowRef(false);
+const editingEquipment = shallowRef(null);
 
 // Forms
 const roomForm = useForm({
@@ -140,13 +142,18 @@ const filteredTypes = computed(() => {
 });
 
 // Autocompletado de Modelos Oficiales Verificados
-const modelSuggestions = ref([]);
-const isSearchingModels = ref(false);
-const showModelDropdown = ref(false);
+const modelSuggestions = shallowRef([]);
+const isSearchingModels = shallowRef(false);
+const showModelDropdown = shallowRef(false);
 let searchDebounceTimer = null;
+let searchAbortController = null;
 
 const onBrandOrModelInput = () => {
     clearTimeout(searchDebounceTimer);
+    if (searchAbortController) {
+        searchAbortController.abort();
+    }
+
     searchDebounceTimer = setTimeout(async () => {
         const query = (eqForm.brand + ' ' + eqForm.model).trim();
         if (query.length < 2) {
@@ -154,21 +161,33 @@ const onBrandOrModelInput = () => {
             showModelDropdown.value = false;
             return;
         }
+        searchAbortController = new AbortController();
         try {
             isSearchingModels.value = true;
-            const res = await fetch(`/sistema/api/modelos-autocompletar?q=${encodeURIComponent(query)}`);
+            const res = await fetch(`/sistema/api/modelos-autocompletar?q=${encodeURIComponent(query)}`, {
+                signal: searchAbortController.signal,
+            });
             if (res.ok) {
                 const data = await res.json();
                 modelSuggestions.value = data;
                 showModelDropdown.value = data.length > 0;
             }
         } catch (e) {
-            console.error('Error buscando modelos oficiales:', e);
+            if (e.name !== 'AbortError') {
+                console.error('Error buscando modelos oficiales:', e);
+            }
         } finally {
             isSearchingModels.value = false;
         }
     }, 250);
 };
+
+onUnmounted(() => {
+    clearTimeout(searchDebounceTimer);
+    if (searchAbortController) {
+        searchAbortController.abort();
+    }
+});
 
 const selectModelSuggestion = (m) => {
     eqForm.brand = m.brand;
@@ -247,10 +266,24 @@ const submitRoom = () => {
     }
 };
 
+const roomToDelete = shallowRef(null);
+const isDeletingRoom = shallowRef(false);
+
 const deleteRoom = (room) => {
-    if (confirm(`¿Estás seguro de eliminar el ambiente "${room.name}"? Se perderán todos sus equipos asociados.`)) {
-        router.delete(route('gestion.rooms.destroy', room.id));
-    }
+    roomToDelete.value = room;
+};
+
+const confirmDeleteRoom = () => {
+    if (!roomToDelete.value) return;
+    isDeletingRoom.value = true;
+    router.delete(route('gestion.rooms.destroy', roomToDelete.value.id), {
+        onSuccess: () => {
+            roomToDelete.value = null;
+        },
+        onFinish: () => {
+            isDeletingRoom.value = false;
+        },
+    });
 };
 
 // Equipment Actions
@@ -308,10 +341,24 @@ const submitEq = () => {
     }
 };
 
+const equipmentToDelete = shallowRef(null);
+const isDeletingEquipment = shallowRef(false);
+
 const deleteEq = (eq) => {
-    if (confirm(`¿Eliminar ${eq.name} del inventario?`)) {
-        router.delete(route('gestion.equipment.destroy', eq.id));
-    }
+    equipmentToDelete.value = eq;
+};
+
+const confirmDeleteEquipment = () => {
+    if (!equipmentToDelete.value) return;
+    isDeletingEquipment.value = true;
+    router.delete(route('gestion.equipment.destroy', equipmentToDelete.value.id), {
+        onSuccess: () => {
+            equipmentToDelete.value = null;
+        },
+        onFinish: () => {
+            isDeletingEquipment.value = false;
+        },
+    });
 };
 
 const getCategoryIcon = (catName) => {
@@ -523,9 +570,8 @@ const getCategoryIcon = (catName) => {
         </div>
 
         <!-- Room Modal -->
-        <div v-if="showRoomModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6">
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" @click="showRoomModal = false"></div>
-            <div class="relative bg-white w-full max-w-md rounded-[32px] md:rounded-[48px] shadow-2xl p-8 md:p-12 space-y-6 md:space-y-8 animate-in zoom-in duration-300">
+        <Modal :show="showRoomModal" max-width="md" @close="showRoomModal = false">
+            <div class="p-8 md:p-12 space-y-6 md:space-y-8">
                 <div class="space-y-2">
                     <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter">{{ editingRoom ? 'Configurar Ambiente' : 'Nuevo Ambiente' }}</h2>
                     <p class="text-sm text-slate-400 font-medium">Cree un espacio funcional para organizar sus equipos.</p>
@@ -541,26 +587,24 @@ const getCategoryIcon = (catName) => {
                         <textarea v-model="roomForm.description" rows="3" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-medium text-slate-700 transition-all focus:ring-2" :class="themeColors.focusRingForm"></textarea>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-3 pt-4">
-                        <button type="submit" class="w-full sm:flex-1 bg-slate-900 text-white py-4 md:py-5 rounded-[18px] md:rounded-[24px] font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-200" :class="themeColors.hoverBg">
+                        <button type="submit" class="w-full sm:flex-1 bg-slate-900 text-white py-4 md:py-5 rounded-[18px] md:rounded-[24px] font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-200 cursor-pointer" :class="themeColors.hoverBg">
                             Confirmar
                         </button>
-                        <button type="button" @click="showRoomModal = false" class="w-full sm:w-auto px-8 py-4 md:py-5 text-slate-400 font-black text-xs uppercase tracking-widest order-last sm:order-none">
+                        <button type="button" @click="showRoomModal = false" class="w-full sm:w-auto px-8 py-4 md:py-5 text-slate-400 font-black text-xs uppercase tracking-widest order-last sm:order-none cursor-pointer">
                             Cancelar
                         </button>
                     </div>
                 </form>
             </div>
-        </div>
+        </Modal>
 
         <!-- Equipment Modal -->
-        <div v-if="showEquipmentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6">
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" @click="showEquipmentModal = false"></div>
-            <div class="relative bg-white w-full max-w-2xl rounded-[32px] md:rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-                <div class="px-6 md:px-8 pt-6 md:pt-8 pb-4 border-b border-slate-50">
-                    <div class="inline-flex items-center gap-2 px-2 py-0.5 bg-slate-900 text-white rounded-full text-[8px] font-black uppercase tracking-widest mb-2">
-                        {{ selectedRoom?.name }}
-                    </div>
-                    <h2 class="text-xl md:text-2xl font-black text-slate-900 tracking-tighter">{{ editingEquipment ? 'Especificaciones Técnicas' : 'Nuevo Activo Eléctrico' }}</h2>
+        <Modal :show="showEquipmentModal" max-width="2xl" @close="showEquipmentModal = false">
+            <div class="px-6 md:px-8 pt-6 md:pt-8 pb-4 border-b border-slate-50">
+                <div class="inline-flex items-center gap-2 px-2 py-0.5 bg-slate-900 text-white rounded-full text-[8px] font-black uppercase tracking-widest mb-2">
+                    {{ selectedRoom?.name }}
+                </div>
+                <h2 class="text-xl md:text-2xl font-black text-slate-900 tracking-tighter">{{ editingEquipment ? 'Especificaciones Técnicas' : 'Nuevo Activo Eléctrico' }}</h2>
                 </div>
 
                 <form @submit.prevent="submitEq" class="px-6 md:px-8 py-4 md:py-6 space-y-4 max-h-[85vh] overflow-y-auto custom-scrollbar">
@@ -734,15 +778,32 @@ const getCategoryIcon = (catName) => {
                 </form>
 
                 <div class="px-6 md:px-8 py-4 bg-slate-50 flex flex-col sm:flex-row gap-3">
-                    <button @click="submitEq" :disabled="eqForm.processing" class="w-full sm:flex-1 bg-slate-900 text-white py-3.5 md:py-4 rounded-[16px] md:rounded-[20px] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 transition-all" :class="themeColors.hoverBg">
+                    <button @click="submitEq" :disabled="eqForm.processing" class="w-full sm:flex-1 bg-slate-900 text-white py-3.5 md:py-4 rounded-[16px] md:rounded-[20px] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 transition-all cursor-pointer" :class="themeColors.hoverBg">
                         {{ editingEquipment ? 'Guardar Cambios' : 'Confirmar Registro' }}
                     </button>
-                    <button @click="showEquipmentModal = false" class="w-full sm:w-auto px-6 py-3.5 md:py-4 text-slate-400 font-black text-xs uppercase tracking-widest order-last sm:order-none">
+                    <button @click="showEquipmentModal = false" class="w-full sm:w-auto px-6 py-3.5 md:py-4 text-slate-400 font-black text-xs uppercase tracking-widest order-last sm:order-none cursor-pointer">
                         Cancelar
                     </button>
                 </div>
-            </div>
-        </div>
+        </Modal>
+        <!-- Delete Confirmation Modals -->
+        <ConfirmDeleteModal
+            :show="!!roomToDelete"
+            title="¿Eliminar ambiente?"
+            :message="`¿Estás seguro de eliminar el ambiente '${roomToDelete?.name}'? Se perderán todos sus equipos asociados.`"
+            :processing="isDeletingRoom"
+            @close="roomToDelete = null"
+            @confirm="confirmDeleteRoom"
+        />
+
+        <ConfirmDeleteModal
+            :show="!!equipmentToDelete"
+            title="¿Eliminar equipo?"
+            :message="`¿Eliminar '${equipmentToDelete?.name}' del inventario?`"
+            :processing="isDeletingEquipment"
+            @close="equipmentToDelete = null"
+            @confirm="confirmDeleteEquipment"
+        />
     </MainLayout>
 </template>
 

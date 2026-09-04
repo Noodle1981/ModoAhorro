@@ -11,7 +11,8 @@ import {
     X, 
     AlertTriangle
 } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { shallowRef, computed } from 'vue';
+import Modal from '@/Components/Modal.vue';
 
 const props = defineProps({
     coefficients: Array,
@@ -28,8 +29,8 @@ const grouped = computed(() => {
 });
 
 // Estado de Edición Rápida Inline
-const inlineEditingId = ref(null);
-const inlineCoeffValue = ref(1.0);
+const inlineEditingId = shallowRef(null);
+const inlineCoeffValue = shallowRef(1.0);
 
 const startInlineEdit = (coeff) => {
     inlineEditingId.value = coeff.id;
@@ -52,7 +53,7 @@ const saveInlineEdit = (coeff) => {
 };
 
 // Modal de Creación
-const isCreateModalOpen = ref(false);
+const isCreateModalOpen = shallowRef(false);
 const availableLabels = ['A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'];
 
 const createForm = useForm({
@@ -81,8 +82,8 @@ const submitCreate = () => {
 };
 
 // Modal de Eliminación
-const isDeleteModalOpen = ref(false);
-const coeffToDelete = ref(null);
+const isDeleteModalOpen = shallowRef(false);
+const coeffToDelete = shallowRef(null);
 
 const promptDelete = (coeff) => {
     coeffToDelete.value = coeff;
@@ -101,8 +102,8 @@ const confirmDelete = () => {
 };
 
 // Modal de Restablecimiento de Fábrica
-const isResetModalOpen = ref(false);
-const isResetting = ref(false);
+const isResetModalOpen = shallowRef(false);
+const isResetting = shallowRef(false);
 
 const confirmReset = () => {
     isResetting.value = true;
@@ -295,14 +296,14 @@ const confirmReset = () => {
         </div>
 
         <!-- MODAL DE CREACIÓN DE COEFICIENTE -->
-        <div v-if="isCreateModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-            <div class="relative w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <Modal :show="isCreateModalOpen" max-width="md" @close="isCreateModalOpen = false">
+            <div class="relative w-full overflow-hidden">
                 <div class="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50">
                     <div>
                         <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600 block">Matriz IRAM</span>
                         <h3 class="text-xl font-black text-slate-900">Nuevo Coeficiente</h3>
                     </div>
-                    <button @click="isCreateModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100">
+                    <button @click="isCreateModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 cursor-pointer">
                         <X :size="20" />
                     </button>
                 </div>
@@ -349,7 +350,7 @@ const confirmReset = () => {
                         <button 
                             type="button" 
                             @click="isCreateModalOpen = false" 
-                            class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl"
+                            class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl cursor-pointer"
                         >
                             Cancelar
                         </button>
@@ -363,11 +364,11 @@ const confirmReset = () => {
                     </div>
                 </form>
             </div>
-        </div>
+        </Modal>
 
         <!-- MODAL DE CONFIRMACIÓN DE BORRADO -->
-        <div v-if="isDeleteModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-            <div class="relative w-full max-w-md bg-white rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 space-y-6 animate-in fade-in zoom-in-95 duration-200">
+        <Modal :show="isDeleteModalOpen" max-width="md" @close="isDeleteModalOpen = false">
+            <div class="p-8 space-y-6">
                 <div class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
                     <AlertTriangle :size="28" />
                 </div>
@@ -379,19 +380,19 @@ const confirmReset = () => {
                     </p>
                 </div>
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                    <button @click="isDeleteModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl">
+                    <button @click="isDeleteModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl cursor-pointer">
                         Cancelar
                     </button>
-                    <button @click="confirmDelete" class="px-5 py-2.5 text-xs font-black text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-md">
+                    <button @click="confirmDelete" class="px-5 py-2.5 text-xs font-black text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-md cursor-pointer">
                         Eliminar
                     </button>
                 </div>
             </div>
-        </div>
+        </Modal>
 
         <!-- MODAL DE CONFIRMACIÓN DE RESTABLECIMIENTO -->
-        <div v-if="isResetModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-            <div class="relative w-full max-w-md bg-white rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 space-y-6 animate-in fade-in zoom-in-95 duration-200">
+        <Modal :show="isResetModalOpen" max-width="md" @close="isResetModalOpen = false">
+            <div class="p-8 space-y-6">
                 <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
                     <RefreshCw :size="28" />
                 </div>
@@ -402,19 +403,19 @@ const confirmReset = () => {
                     </p>
                 </div>
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                    <button @click="isResetModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl">
+                    <button @click="isResetModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl cursor-pointer">
                         Cancelar
                     </button>
                     <button 
                         @click="confirmReset" 
                         :disabled="isResetting"
-                        class="px-5 py-2.5 text-xs font-black text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-md disabled:opacity-50"
+                        class="px-5 py-2.5 text-xs font-black text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-md disabled:opacity-50 cursor-pointer"
                     >
                         {{ isResetting ? 'Restableciendo...' : 'Restablecer Valores' }}
                     </button>
                 </div>
             </div>
-        </div>
+        </Modal>
 
     </MainLayout>
 </template>

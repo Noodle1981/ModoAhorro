@@ -15,7 +15,8 @@ import {
     Calendar,
     Mail
 } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { shallowRef, computed } from 'vue';
+import Modal from '@/Components/Modal.vue';
 
 const props = defineProps({
     users: Array,
@@ -24,8 +25,8 @@ const props = defineProps({
 const page = usePage();
 const currentUserId = computed(() => page.props.auth?.user?.id);
 
-const searchQuery = ref('');
-const roleFilter = ref('all');
+const searchQuery = shallowRef('');
+const roleFilter = shallowRef('all');
 
 const filteredUsers = computed(() => {
     return props.users.filter(u => {
@@ -45,9 +46,9 @@ const totalAdmins = computed(() => props.users.filter(u => u.is_super_admin).len
 const totalStandard = computed(() => props.users.filter(u => !u.is_super_admin).length);
 
 // Modales de Creación / Edición
-const isModalOpen = ref(false);
-const isEditing = ref(false);
-const currentEditUser = ref(null);
+const isModalOpen = shallowRef(false);
+const isEditing = shallowRef(false);
+const currentEditUser = shallowRef(null);
 
 const form = useForm({
     name: '',
@@ -103,8 +104,8 @@ const toggleAdminRole = (user) => {
 };
 
 // Modal de Borrado
-const isDeleteModalOpen = ref(false);
-const userToDelete = ref(null);
+const isDeleteModalOpen = shallowRef(false);
+const userToDelete = shallowRef(null);
 
 const promptDelete = (user) => {
     if (user.id === currentUserId.value) return;
@@ -319,8 +320,8 @@ const confirmDelete = () => {
         </div>
 
         <!-- MODAL DE CREACIÓN / EDICIÓN -->
-        <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-            <div class="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <Modal :show="isModalOpen" max-width="lg" @close="isModalOpen = false">
+            <div class="relative w-full overflow-hidden">
                 
                 <div class="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50">
                     <div>
@@ -406,13 +407,12 @@ const confirmDelete = () => {
                         </button>
                     </div>
                 </form>
-
             </div>
-        </div>
+        </Modal>
 
         <!-- MODAL DE BORRADO -->
-        <div v-if="isDeleteModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-            <div class="relative w-full max-w-md bg-white rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 space-y-6 animate-in fade-in zoom-in-95 duration-200">
+        <Modal :show="isDeleteModalOpen" max-width="md" @close="isDeleteModalOpen = false">
+            <div class="p-8 space-y-6">
                 <div class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center">
                     <AlertTriangle :size="28" />
                 </div>
@@ -423,15 +423,15 @@ const confirmDelete = () => {
                     </p>
                 </div>
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-                    <button @click="isDeleteModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl">
+                    <button @click="isDeleteModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl cursor-pointer">
                         Cancelar
                     </button>
-                    <button @click="confirmDelete" class="px-5 py-2.5 text-xs font-black text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-md">
+                    <button @click="confirmDelete" class="px-5 py-2.5 text-xs font-black text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-md cursor-pointer">
                         Eliminar Cuenta
                     </button>
                 </div>
             </div>
-        </div>
+        </Modal>
 
     </MainLayout>
 </template>

@@ -15,7 +15,8 @@ import {
     Sparkles,
     CheckCircle2
 } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { shallowRef, computed } from 'vue';
+import Modal from '@/Components/Modal.vue';
 
 const props = defineProps({
     usersList: Array,
@@ -23,10 +24,10 @@ const props = defineProps({
     stats: Object,
 });
 
-const activeTab = ref('users'); // 'users' | 'plans'
+const activeTab = shallowRef('users'); // 'users' | 'plans'
 
-const searchQuery = ref('');
-const planFilter = ref('all');
+const searchQuery = shallowRef('');
+const planFilter = shallowRef('all');
 
 const filteredUsers = computed(() => {
     return props.usersList.filter(u => {
@@ -42,8 +43,8 @@ const filteredUsers = computed(() => {
 });
 
 // Modal de Cambiar Plan de Usuario
-const isPlanModalOpen = ref(false);
-const currentEditingUser = ref(null);
+const isPlanModalOpen = shallowRef(false);
+const currentEditingUser = shallowRef(null);
 const planForm = useForm({
     user_id: '',
     plan_id: props.plans.length > 0 ? props.plans[0].id : '',
@@ -66,7 +67,7 @@ const submitPlanChange = () => {
 };
 
 // Modal de Extender Membresía
-const isExtendModalOpen = ref(false);
+const isExtendModalOpen = shallowRef(false);
 const extendForm = useForm({
     user_id: '',
     days: 30,
@@ -89,8 +90,8 @@ const submitExtend = () => {
 };
 
 // Modal de Configurar Plan del Sistema
-const isEditPlanModalOpen = ref(false);
-const currentEditingPlan = ref(null);
+const isEditPlanModalOpen = shallowRef(false);
+const currentEditingPlan = shallowRef(null);
 const editPlanForm = useForm({
     name: '',
     price: 0,
@@ -431,14 +432,14 @@ const getPlanBadgeClass = (planName) => {
         </div>
 
         <!-- MODAL CAMBIAR PLAN DE USUARIO -->
-        <div v-if="isPlanModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-            <div class="relative w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <Modal :show="isPlanModalOpen" max-width="md" @close="isPlanModalOpen = false">
+            <div class="relative w-full overflow-hidden">
                 <div class="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50">
                     <div>
                         <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600 block">Suscripción de Usuario</span>
                         <h3 class="text-xl font-black text-slate-900">Cambiar Plan: {{ currentEditingUser?.user_name }}</h3>
                     </div>
-                    <button @click="isPlanModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100">
+                    <button @click="isPlanModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 cursor-pointer">
                         <X :size="20" />
                     </button>
                 </div>
@@ -458,7 +459,7 @@ const getPlanBadgeClass = (planName) => {
                     </div>
 
                     <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
-                        <button type="button" @click="isPlanModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl">
+                        <button type="button" @click="isPlanModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl cursor-pointer">
                             Cancelar
                         </button>
                         <button type="submit" :disabled="planForm.processing" class="bg-[#009966] hover:bg-[#008055] text-white font-black text-xs uppercase tracking-wider px-6 py-3 rounded-2xl shadow-md cursor-pointer disabled:opacity-50">
@@ -467,17 +468,17 @@ const getPlanBadgeClass = (planName) => {
                     </div>
                 </form>
             </div>
-        </div>
+        </Modal>
 
         <!-- MODAL EXTENDER MEMBRESÍA -->
-        <div v-if="isExtendModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-            <div class="relative w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <Modal :show="isExtendModalOpen" max-width="md" @close="isExtendModalOpen = false">
+            <div class="relative w-full overflow-hidden">
                 <div class="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50">
                     <div>
                         <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600 block">Renovación de Cuenta</span>
                         <h3 class="text-xl font-black text-slate-900">Extender Membresía: {{ currentEditingUser?.user_name }}</h3>
                     </div>
-                    <button @click="isExtendModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100">
+                    <button @click="isExtendModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 cursor-pointer">
                         <X :size="20" />
                     </button>
                 </div>
@@ -498,7 +499,7 @@ const getPlanBadgeClass = (planName) => {
                     </div>
 
                     <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
-                        <button type="button" @click="isExtendModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl">
+                        <button type="button" @click="isExtendModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl cursor-pointer">
                             Cancelar
                         </button>
                         <button type="submit" :disabled="extendForm.processing" class="bg-[#009966] hover:bg-[#008055] text-white font-black text-xs uppercase tracking-wider px-6 py-3 rounded-2xl shadow-md cursor-pointer disabled:opacity-50">
@@ -507,17 +508,17 @@ const getPlanBadgeClass = (planName) => {
                     </div>
                 </form>
             </div>
-        </div>
+        </Modal>
 
         <!-- MODAL EDITAR CONFIGURACIÓN DE PLAN DEL SISTEMA -->
-        <div v-if="isEditPlanModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-            <div class="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <Modal :show="isEditPlanModalOpen" max-width="lg" @close="isEditPlanModalOpen = false">
+            <div class="relative w-full overflow-hidden">
                 <div class="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50">
                     <div>
                         <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600 block">Arquitectura SaaS</span>
                         <h3 class="text-xl font-black text-slate-900">Configurar Plan: {{ currentEditingPlan?.name }}</h3>
                     </div>
-                    <button @click="isEditPlanModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100">
+                    <button @click="isEditPlanModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 cursor-pointer">
                         <X :size="20" />
                     </button>
                 </div>
@@ -591,7 +592,7 @@ const getPlanBadgeClass = (planName) => {
                     </div>
 
                     <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
-                        <button type="button" @click="isEditPlanModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl">
+                        <button type="button" @click="isEditPlanModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl cursor-pointer">
                             Cancelar
                         </button>
                         <button type="submit" :disabled="editPlanForm.processing" class="bg-[#009966] hover:bg-[#008055] text-white font-black text-xs uppercase tracking-wider px-6 py-3 rounded-2xl shadow-md cursor-pointer disabled:opacity-50">
@@ -600,7 +601,7 @@ const getPlanBadgeClass = (planName) => {
                     </div>
                 </form>
             </div>
-        </div>
+        </Modal>
 
     </MainLayout>
 </template>

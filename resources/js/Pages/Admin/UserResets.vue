@@ -13,7 +13,8 @@ import {
     Calendar,
     Sparkles
 } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { shallowRef, computed } from 'vue';
+import Modal from '@/Components/Modal.vue';
 
 const props = defineProps({
     activeTokens: Array,
@@ -23,8 +24,8 @@ const props = defineProps({
 const page = usePage();
 const flash = computed(() => page.props.flash || {});
 
-const searchQuery = ref('');
-const copiedToken = ref(null);
+const searchQuery = shallowRef('');
+const copiedToken = shallowRef(null);
 
 const filteredTokens = computed(() => {
     return props.activeTokens.filter(t => {
@@ -47,7 +48,7 @@ const generateForm = useForm({
     email: props.users.length > 0 ? props.users[0].email : '',
 });
 
-const isGenerateModalOpen = ref(false);
+const isGenerateModalOpen = shallowRef(false);
 
 const submitGenerate = () => {
     generateForm.post(route('sistema.users.resets.generate'), {
@@ -59,7 +60,7 @@ const submitGenerate = () => {
 };
 
 // Formulario de Forzar Contraseña
-const isForceModalOpen = ref(false);
+const isForceModalOpen = shallowRef(false);
 const forceForm = useForm({
     user_id: props.users.length > 0 ? props.users[0].id : '',
     new_password: '',
@@ -250,14 +251,14 @@ const revokeToken = (email) => {
         </div>
 
         <!-- MODAL GENERAR ENLACE -->
-        <div v-if="isGenerateModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-            <div class="relative w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <Modal :show="isGenerateModalOpen" max-width="md" @close="isGenerateModalOpen = false">
+            <div class="relative w-full overflow-hidden">
                 <div class="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50">
                     <div>
                         <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600 block">Recuperación</span>
                         <h3 class="text-xl font-black text-slate-900">Generar Enlace de Reseteo</h3>
                     </div>
-                    <button @click="isGenerateModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100">
+                    <button @click="isGenerateModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 cursor-pointer">
                         <X :size="20" />
                     </button>
                 </div>
@@ -277,7 +278,7 @@ const revokeToken = (email) => {
                     </div>
 
                     <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
-                        <button type="button" @click="isGenerateModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl">
+                        <button type="button" @click="isGenerateModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl cursor-pointer">
                             Cancelar
                         </button>
                         <button type="submit" :disabled="generateForm.processing" class="bg-[#009966] hover:bg-[#008055] text-white font-black text-xs uppercase tracking-wider px-6 py-3 rounded-2xl shadow-md cursor-pointer disabled:opacity-50">
@@ -286,17 +287,17 @@ const revokeToken = (email) => {
                     </div>
                 </form>
             </div>
-        </div>
+        </Modal>
 
         <!-- MODAL FORZAR NUEVA CONTRASEÑA -->
-        <div v-if="isForceModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-            <div class="relative w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <Modal :show="isForceModalOpen" max-width="md" @close="isForceModalOpen = false">
+            <div class="relative w-full overflow-hidden">
                 <div class="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50">
                     <div>
                         <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600 block">Acceso Directo</span>
                         <h3 class="text-xl font-black text-slate-900">Forzar Nueva Contraseña</h3>
                     </div>
-                    <button @click="isForceModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100">
+                    <button @click="isForceModalOpen = false" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 cursor-pointer">
                         <X :size="20" />
                     </button>
                 </div>
@@ -328,7 +329,7 @@ const revokeToken = (email) => {
                     </div>
 
                     <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
-                        <button type="button" @click="isForceModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl">
+                        <button type="button" @click="isForceModalOpen = false" class="px-5 py-2.5 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl cursor-pointer">
                             Cancelar
                         </button>
                         <button type="submit" :disabled="forceForm.processing" class="bg-[#009966] hover:bg-[#008055] text-white font-black text-xs uppercase tracking-wider px-6 py-3 rounded-2xl shadow-md cursor-pointer disabled:opacity-50">
@@ -337,7 +338,7 @@ const revokeToken = (email) => {
                     </div>
                 </form>
             </div>
-        </div>
+        </Modal>
 
     </MainLayout>
 </template>

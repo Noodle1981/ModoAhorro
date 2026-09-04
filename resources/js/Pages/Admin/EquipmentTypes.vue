@@ -14,7 +14,8 @@ import {
     Cpu, 
     Layers
 } from 'lucide-vue-next';
-import { ref, computed } from 'vue';
+import { shallowRef, computed } from 'vue';
+import Modal from '@/Components/Modal.vue';
 
 const props = defineProps({
     equipmentTypes: Array,
@@ -22,10 +23,10 @@ const props = defineProps({
 });
 
 // Filtros y Búsqueda
-const searchQuery = ref('');
-const selectedCategory = ref('all');
-const selectedTank = ref('all');
-const selectedStatus = ref('all');
+const searchQuery = shallowRef('');
+const selectedCategory = shallowRef('all');
+const selectedTank = shallowRef('all');
+const selectedStatus = shallowRef('all');
 
 const tanks = [
     { value: 0, name: 'Tanque 0 (Certeza / Standby)', badge: 'T0 Certeza', color: 'bg-emerald-500', text: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
@@ -64,13 +65,13 @@ const filteredTypes = computed(() => {
 });
 
 // Modales
-const isModalOpen = ref(false);
-const isEditing = ref(false);
-const activeTab = ref('general'); // 'general' | 'power' | 'engine'
-const currentTypeId = ref(null);
+const isModalOpen = shallowRef(false);
+const isEditing = shallowRef(false);
+const activeTab = shallowRef('general'); // 'general' | 'power' | 'engine'
+const currentTypeId = shallowRef(null);
 
-const isDeleteModalOpen = ref(false);
-const typeToDelete = ref(null);
+const isDeleteModalOpen = shallowRef(false);
+const typeToDelete = shallowRef(null);
 
 // Formulario reactivo
 const form = useForm({
@@ -393,8 +394,8 @@ const confirmDelete = () => {
         </div>
 
         <!-- MODAL DE CREACIÓN / EDICIÓN -->
-        <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs overflow-y-auto">
-            <div class="relative w-full max-w-2xl bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
+        <Modal :show="isModalOpen" max-width="2xl" @close="isModalOpen = false">
+            <div class="relative w-full overflow-hidden">
                 
                 <!-- Modal Header -->
                 <div class="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50">
@@ -685,13 +686,12 @@ const confirmDelete = () => {
                         </button>
                     </div>
                 </form>
-
             </div>
-        </div>
+        </Modal>
 
         <!-- MODAL DE CONFIRMACIÓN DE BORRADO -->
-        <div v-if="isDeleteModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-            <div class="relative w-full max-w-md bg-white rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 space-y-6 animate-in fade-in zoom-in-95 duration-200">
+        <Modal :show="isDeleteModalOpen" max-width="md" @close="isDeleteModalOpen = false">
+            <div class="p-8 space-y-6">
                 
                 <div class="w-14 h-14 rounded-2xl flex items-center justify-center" :class="(typeToDelete?.equipment_count || 0) > 0 ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600'">
                     <AlertTriangle :size="28" />
@@ -739,7 +739,7 @@ const confirmDelete = () => {
                 </div>
 
             </div>
-        </div>
+        </Modal>
 
     </MainLayout>
 </template>

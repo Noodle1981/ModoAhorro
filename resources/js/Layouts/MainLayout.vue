@@ -32,7 +32,7 @@ import {
     KeyRound,
     CreditCard
 } from 'lucide-vue-next';
-import { ref, computed, watchEffect } from 'vue';
+import { shallowRef, computed, watchEffect } from 'vue';
 
 const props = defineProps({
     title: {
@@ -54,9 +54,9 @@ const auth = computed(() => page.props.auth);
 const currentEntity = computed(() => auth.value.current_entity);
 const entities = computed(() => auth.value.entities);
 
-const isSidebarOpen = ref(true);
-const isEntityMenuOpen = ref(false);
-const activeCategory = ref(auth.value?.user?.is_super_admin ? 'Sistema' : 'Gestión Física');
+const isSidebarOpen = shallowRef(true);
+const isEntityMenuOpen = shallowRef(false);
+const activeCategory = shallowRef(auth.value?.user?.is_super_admin ? 'Sistema' : 'Gestión Física');
 
 const entityLogoPath = computed(() => {
     const type = currentEntity.value?.type;
@@ -226,9 +226,10 @@ const navigation = computed(() => [
     }
 ]);
 
+const visibleCategories = computed(() => navigation.value.filter(n => !n.hidden));
+
 const activeItems = computed(() => {
-    const categories = navigation.value.filter(n => !n.hidden);
-    return categories.find(n => n.name === activeCategory.value)?.items || [];
+    return visibleCategories.value.find(n => n.name === activeCategory.value)?.items || [];
 });
 
 const selectCategory = (name) => {
@@ -325,7 +326,7 @@ const isHomeView = computed(() => {
                 <div class="w-10 h-[1px] bg-white/10 my-2"></div>
 
                 <button 
-                    v-for="cat in navigation.filter(n => !n.hidden)" 
+                    v-for="cat in visibleCategories" 
                     :key="cat.name"
                     @click="selectCategory(cat.name)"
                     :class="[
