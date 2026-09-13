@@ -1,7 +1,7 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
-import { computed } from 'vue';
+import { useTheme } from '@/Composables/useTheme';
 import { 
     TrendingDown,
     Zap,
@@ -46,52 +46,7 @@ const getCategoryColor = (label) => {
     return categories.find(c => c.label === label)?.color || 'bg-slate-400';
 };
 
-const themeColors = computed(() => {
-    const type = props.entity?.type;
-    if (type === 'comercio') {
-        return {
-            text: 'text-purple-600',
-            bg: 'bg-purple-600',
-            bgLight: 'bg-purple-600/10',
-            borderLight: 'border-purple-200',
-            hoverText: 'hover:text-purple-600',
-            hoverBg: 'hover:bg-purple-600',
-            hoverBorder: 'hover:border-purple-200',
-            hoverBgLight: 'group-hover:bg-purple-50/30',
-            hoverBg5: 'group-hover:bg-purple-50',
-            shadowBg: 'shadow-purple-900/20',
-            rgba: 'rgba(147,51,234,0.3)',
-        };
-    }
-    if (type === 'oficina') {
-        return {
-            text: 'text-blue-600',
-            bg: 'bg-blue-600',
-            bgLight: 'bg-blue-600/10',
-            borderLight: 'border-blue-200',
-            hoverText: 'hover:text-blue-600',
-            hoverBg: 'hover:bg-blue-600',
-            hoverBorder: 'hover:border-blue-200',
-            hoverBgLight: 'group-hover:bg-blue-50/30',
-            hoverBg5: 'group-hover:bg-blue-50',
-            shadowBg: 'shadow-blue-900/20',
-            rgba: 'rgba(37,99,235,0.3)',
-        };
-    }
-    return {
-        text: 'text-emerald-600',
-        bg: 'bg-emerald-600',
-        bgLight: 'bg-emerald-600/10',
-        borderLight: 'border-emerald-200',
-        hoverText: 'hover:text-emerald-600',
-        hoverBg: 'hover:bg-emerald-600',
-        hoverBorder: 'hover:border-emerald-200',
-        hoverBgLight: 'group-hover:bg-emerald-50/30',
-        hoverBg5: 'group-hover:bg-emerald-50',
-        shadowBg: 'shadow-emerald-900/20',
-        rgba: 'rgba(16,185,129,0.3)',
-    };
-});
+const { themeColors } = useTheme(props.entity);
 </script>
 
 <template>

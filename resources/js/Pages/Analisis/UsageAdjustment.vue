@@ -1,7 +1,9 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { shallowRef, computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import { useTheme } from '@/Composables/useTheme';
+import { useFormatters } from '@/Composables/useFormatters';
 import { 
     AlertCircle, 
     BarChart3, 
@@ -18,47 +20,8 @@ const props = defineProps({
     flash: Object
 });
 
-const themeColors = computed(() => {
-    const type = props.entity?.type;
-    if (type === 'comercio') {
-        return {
-            text: 'text-purple-600',
-            bg: 'bg-purple-600',
-            bgLight: 'bg-purple-600/5',
-            borderLight: 'border-purple-600/20',
-            hoverBorder: 'hover:border-purple-600/20',
-            focusRing: 'focus:ring-purple-600/10',
-            borderBottom: 'border-purple-600',
-            groupHoverText: 'group-hover:text-purple-600',
-            groupHoverBg: 'group-hover:bg-purple-600/5',
-        };
-    }
-    if (type === 'oficina') {
-        return {
-            text: 'text-blue-600',
-            bg: 'bg-blue-600',
-            bgLight: 'bg-blue-600/5',
-            borderLight: 'border-blue-600/20',
-            hoverBorder: 'hover:border-blue-600/20',
-            focusRing: 'focus:ring-blue-600/10',
-            borderBottom: 'border-blue-600',
-            groupHoverText: 'group-hover:text-blue-600',
-            groupHoverBg: 'group-hover:bg-blue-600/5',
-        };
-    }
-    // Default / hogar (Emerald theme)
-    return {
-        text: 'text-emerald-600',
-        bg: 'bg-emerald-600',
-        bgLight: 'bg-emerald-600/5',
-        borderLight: 'border-emerald-600/20',
-        hoverBorder: 'hover:border-emerald-600/20',
-        focusRing: 'focus:ring-emerald-600/10',
-        borderBottom: 'border-emerald-600',
-        groupHoverText: 'group-hover:text-emerald-600',
-        groupHoverBg: 'group-hover:bg-emerald-600/5',
-    };
-});
+const { themeColors } = useTheme(props.entity);
+const { formatDate } = useFormatters();
 
 const getStatusClass = (unification) => {
     if (unification.is_calibrated) return 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
@@ -72,12 +35,6 @@ const getStatusText = (unification) => {
     return 'Pendiente';
 };
 
-const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    const [year, month, day] = dateString.split('T')[0].split('-');
-    return `${day}/${month}/${year.slice(-2)}`;
-};
-
 const calculateDays = (start, end) => {
     if (!start || !end) return 0;
     const s = new Date(start.split('T')[0]);
@@ -86,7 +43,7 @@ const calculateDays = (start, end) => {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 };
 
-const selectedPeriodKey = ref('all');
+const selectedPeriodKey = shallowRef('all');
 
 const availablePeriods = computed(() => {
     return (props.unifications || []).map(p => ({

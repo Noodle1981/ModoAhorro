@@ -2,6 +2,8 @@
 import { computed } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import { useTheme } from '@/Composables/useTheme';
+import { useFormatters } from '@/Composables/useFormatters';
 import { 
     Zap, 
     ArrowLeft, 
@@ -90,11 +92,7 @@ const getClimateLimitation = (eqId) => {
     return { isLimited: false };
 };
 
-const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    const [year, month, day] = dateString.split('T')[0].split('-');
-    return `${day}/${month}/${year.slice(-2)}`;
-};
+const { formatDate } = useFormatters();
 
 // Funciones de ayuda para Heladeras
 const isFridge = (name, typeName) => {
@@ -304,53 +302,7 @@ const handleMinuteSlider = (event, eqId) => {
     }
 };
 
-const themeColors = computed(() => {
-    const type = props.entity?.type;
-    if (type === 'comercio') {
-        return {
-            text: 'text-purple-600',
-            bg: 'bg-purple-600',
-            hex: '#9333ea',
-            bgLight: 'bg-purple-600/5',
-            bgLight2: 'bg-purple-600/10',
-            borderLight: 'border-purple-600/20',
-            hoverBg: 'hover:bg-purple-600',
-            groupHoverText: 'group-hover:text-purple-600',
-            focusRing: 'focus:ring-purple-600/20',
-            bgMuted: 'bg-purple-600/5',
-            borderMuted: 'border-purple-600/20',
-        };
-    }
-    if (type === 'oficina') {
-        return {
-            text: 'text-blue-600',
-            bg: 'bg-blue-600',
-            hex: '#2563eb',
-            bgLight: 'bg-blue-600/5',
-            bgLight2: 'bg-blue-600/10',
-            borderLight: 'border-blue-600/20',
-            hoverBg: 'hover:bg-blue-600',
-            groupHoverText: 'group-hover:text-blue-600',
-            focusRing: 'focus:ring-blue-600/20',
-            bgMuted: 'bg-blue-600/5',
-            borderMuted: 'border-blue-600/20',
-        };
-    }
-    // Default / hogar (Emerald theme)
-    return {
-        text: 'text-emerald-600',
-        bg: 'bg-emerald-600',
-        hex: '#059669',
-        bgLight: 'bg-emerald-600/5',
-        bgLight2: 'bg-emerald-600/10',
-        borderLight: 'border-emerald-600/20',
-        hoverBg: 'hover:bg-emerald-600',
-        groupHoverText: 'group-hover:text-emerald-600',
-        focusRing: 'focus:ring-emerald-600/20',
-        bgMuted: 'bg-emerald-600/5',
-        borderMuted: 'border-emerald-600/20',
-    };
-});
+const { themeColors } = useTheme(props.entity);
 
 // Smart Prompt Helpers
 const confirmCycleSuggestion = (eqId, suggestion) => {

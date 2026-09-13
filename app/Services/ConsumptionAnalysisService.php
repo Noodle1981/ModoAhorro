@@ -224,11 +224,29 @@ class ConsumptionAnalysisService
         return min($detectedDays, $totalDays);
     }
 
+    private array $invoiceClimateStatsCache = [];
+
+    private function getInvoiceClimateStats(Invoice $invoice, Locality $locality): array
+    {
+        $cacheKey = ($invoice->id ?? 'no_id') . '_' . $locality->id;
+        if (! isset($this->invoiceClimateStatsCache[$cacheKey])) {
+            $this->climateService->loadDataForInvoice($invoice);
+            $this->invoiceClimateStatsCache[$cacheKey] = $this->climateService->getClimateStats(
+                $locality->latitude,
+                $locality->longitude,
+                Carbon::parse($invoice->start_date),
+                Carbon::parse($invoice->end_date)
+            );
+        }
+
+        return $this->invoiceClimateStatsCache[$cacheKey];
+    }
+
     private function isWaterHeater(EquipmentUsage $usage): bool
     {
         $name = strtolower($usage->equipment->name);
         $type = strtolower($usage->equipment->type->name ?? '');
-        $keywords = ['termotanque', 'calefón', 'calefon', 'bomba de agua'];
+        $keywords = ['termotanque', 'calefón', 'calefon'];
 
         foreach ($keywords as $keyword) {
             if (str_contains($name, $keyword) || str_contains($type, $keyword)) {
@@ -247,15 +265,7 @@ class ConsumptionAnalysisService
                 return 1.0;
             }
 
-            $this->climateService->loadDataForInvoice($invoice);
-
-            $stats = $this->climateService->getClimateStats(
-                $locality->latitude,
-                $locality->longitude,
-                Carbon::parse($invoice->start_date),
-                Carbon::parse($invoice->end_date)
-            );
-
+            $stats = $this->getInvoiceClimateStats($invoice, $locality);
             $avgTemp = $stats['avg_temp_avg'] ?? 20;
 
             if ($avgTemp < 15) {
@@ -330,15 +340,7 @@ class ConsumptionAnalysisService
         try {
             $locality = $invoice->contract->entity->locality;
             if ($locality && $locality->latitude) {
-                $this->climateService->loadDataForInvoice($invoice);
-
-                $stats = $this->climateService->getClimateStats(
-                    $locality->latitude,
-                    $locality->longitude,
-                    Carbon::parse($invoice->start_date),
-                    Carbon::parse($invoice->end_date)
-                );
-
+                $stats = $this->getInvoiceClimateStats($invoice, $locality);
                 $avgTemp = $stats['avg_temp_avg'] ?? 20;
                 $climateCorrection = 1.0;
 

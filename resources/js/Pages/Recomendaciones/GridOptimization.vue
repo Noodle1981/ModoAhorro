@@ -1,7 +1,8 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { shallowRef } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import { useTheme } from '@/Composables/useTheme';
 import { 
     Clock, 
     Zap, 
@@ -39,71 +40,9 @@ const hourlyData = ref([
     { hour: '22', level: 40, peak: false },
 ]);
 
-// Recommendations are now coming from props
-const selectedTariff = ref(props.contract?.supply_type === 'trifasico' ? 'T1-G (Trifásica)' : 'T1-R (Simple)');
+const selectedTariff = shallowRef(props.contract?.supply_type === 'trifasico' ? 'T1-G (Trifásica)' : 'T1-R (Simple)');
 
-const themeColors = computed(() => {
-    const type = props.entity?.type;
-    if (type === 'comercio') {
-        return {
-            text: 'text-purple-600',
-            textMuted: 'text-purple-400',
-            textDark: 'text-purple-900',
-            textMedium: 'text-purple-700',
-            textLight: 'text-purple-100',
-            bg: 'bg-purple-600',
-            bg500: 'bg-purple-500',
-            bgLight: 'bg-purple-50',
-            borderLight: 'border-purple-100',
-            borderMuted: 'border-purple-200',
-            badgeBg: 'bg-purple-100',
-            gradient: 'from-purple-600 to-indigo-700',
-            hoverBg: 'hover:bg-purple-700',
-            shadow: 'shadow-purple-500/20',
-            buttonText: 'text-purple-600',
-            buttonBgHover: 'hover:bg-purple-50'
-        };
-    }
-    if (type === 'oficina') {
-        return {
-            text: 'text-blue-600',
-            textMuted: 'text-blue-400',
-            textDark: 'text-blue-900',
-            textMedium: 'text-blue-700',
-            textLight: 'text-blue-100',
-            bg: 'bg-blue-600',
-            bg500: 'bg-blue-500',
-            bgLight: 'bg-blue-50',
-            borderLight: 'border-blue-100',
-            borderMuted: 'border-blue-200',
-            badgeBg: 'bg-blue-100',
-            gradient: 'from-blue-600 to-indigo-700',
-            hoverBg: 'hover:bg-blue-700',
-            shadow: 'shadow-blue-500/20',
-            buttonText: 'text-blue-600',
-            buttonBgHover: 'hover:bg-blue-50'
-        };
-    }
-    // Default / hogar (Emerald theme)
-    return {
-        text: 'text-emerald-600',
-        textMuted: 'text-emerald-400',
-        textDark: 'text-emerald-900',
-        textMedium: 'text-emerald-700',
-        textLight: 'text-emerald-100',
-        bg: 'bg-emerald-600',
-        bg500: 'bg-emerald-500',
-        bgLight: 'bg-emerald-50',
-        borderLight: 'border-emerald-100',
-        borderMuted: 'border-emerald-200',
-        badgeBg: 'bg-emerald-100',
-        gradient: 'from-emerald-600 to-teal-700',
-        hoverBg: 'hover:bg-emerald-700',
-        shadow: 'shadow-emerald-500/20',
-        buttonText: 'text-emerald-600',
-        buttonBgHover: 'hover:bg-emerald-50'
-    };
-});
+const { themeColors } = useTheme(props.entity);
 </script>
 
 <template>

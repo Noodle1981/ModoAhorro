@@ -2,6 +2,8 @@
 import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import { useTheme } from '@/Composables/useTheme';
+import { useFormatters } from '@/Composables/useFormatters';
 import { 
     Activity, 
     ArrowLeft, 
@@ -110,35 +112,8 @@ const getTankColorClass = (key) => {
     }
 };
 
-const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    const [year, month, day] = dateString.split('T')[0].split('-');
-    return `${day}/${month}/${year.slice(-2)}`;
-};
-
-const themeColors = computed(() => {
-    const type = props.entity?.type;
-    if (type === 'comercio') {
-        return {
-            text: 'text-purple-600',
-            bg: 'bg-purple-600',
-            hoverBg: 'hover:bg-purple-600',
-        };
-    }
-    if (type === 'oficina') {
-        return {
-            text: 'text-blue-600',
-            bg: 'bg-blue-600',
-            hoverBg: 'hover:bg-blue-600',
-        };
-    }
-    // Default / hogar (Emerald theme)
-    return {
-        text: 'text-emerald-600',
-        bg: 'bg-emerald-600',
-        hoverBg: 'hover:bg-emerald-600',
-    };
-});
+const { formatDate } = useFormatters();
+const { themeColors } = useTheme(props.entity);
 </script>
 
 <template>

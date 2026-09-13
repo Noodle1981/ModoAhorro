@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { computed } from 'vue';
+import { useTheme } from '@/Composables/useTheme';
 import { 
     Zap, 
     ArrowRight,
@@ -61,34 +62,7 @@ const thermalActionLabel = computed(() => {
     return 'Diagnosticar Vivienda';
 });
 
-const themeColors = computed(() => {
-    const type = props.currentEntity?.type;
-    if (type === 'comercio') {
-        return {
-            text: 'text-purple-600',
-            bg: 'bg-purple-600',
-            bgLight: 'bg-purple-600/10',
-            border: 'border-purple-600/20',
-            hover: 'hover:bg-purple-500'
-        };
-    }
-    if (type === 'oficina') {
-        return {
-            text: 'text-blue-600',
-            bg: 'bg-blue-600',
-            bgLight: 'bg-blue-600/10',
-            border: 'border-blue-600/20',
-            hover: 'hover:bg-blue-500'
-        };
-    }
-    return {
-        text: 'text-emerald-600',
-        bg: 'bg-emerald-600',
-        bgLight: 'bg-emerald-600/10',
-        border: 'border-emerald-600/20',
-        hover: 'hover:bg-emerald-500'
-    };
-});
+const { themeColors } = useTheme(props.currentEntity);
 
 const hasProfile = props.currentEntity?.thermal_profile;
 const profile = props.currentEntity?.thermal_profile || {};

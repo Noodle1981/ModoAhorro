@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import { useTheme } from '@/Composables/useTheme';
 import { 
     FileText, 
     Plus, 
@@ -47,71 +48,7 @@ const activeEntity = computed(() => {
     return props.entities.find(e => e.id === props.active_entity_id);
 });
 
-const themeColors = computed(() => {
-    const type = activeEntity.value?.type;
-    if (type === 'comercio') {
-        return {
-            text: 'text-purple-600',
-            bg: 'bg-purple-600',
-            bgLight: 'bg-purple-600/10',
-            borderLight: 'border-purple-600/20',
-            hoverBg: 'hover:bg-purple-600',
-            focusRing: 'focus:ring-purple-600/10',
-            focusBorder: 'focus:border-purple-600/30',
-            focusText: 'group-focus-within:text-purple-600',
-            borderBottomLight: 'border-b-purple-600/30',
-            checkboxText: 'text-purple-600 focus:ring-purple-600/20',
-            bgSoft: 'bg-purple-50',
-            borderSoft: 'border-purple-100',
-            textSoft: 'text-purple-900',
-            textSoftAccent: 'text-purple-600 bg-purple-50',
-            bgSoftAccent: 'bg-purple-600 text-white shadow-lg shadow-purple-200',
-            focusRingForm: 'focus:ring-purple-600/20',
-            focusRingInput: 'focus:ring-purple-600'
-        };
-    }
-    if (type === 'oficina') {
-        return {
-            text: 'text-blue-600',
-            bg: 'bg-blue-600',
-            bgLight: 'bg-blue-600/10',
-            borderLight: 'border-blue-600/20',
-            hoverBg: 'hover:bg-blue-600',
-            focusRing: 'focus:ring-blue-600/10',
-            focusBorder: 'focus:border-blue-600/30',
-            focusText: 'group-focus-within:text-blue-600',
-            borderBottomLight: 'border-b-blue-600/30',
-            checkboxText: 'text-blue-600 focus:ring-blue-600/20',
-            bgSoft: 'bg-blue-50',
-            borderSoft: 'border-blue-100',
-            textSoft: 'text-blue-900',
-            textSoftAccent: 'text-blue-600 bg-blue-50',
-            bgSoftAccent: 'bg-blue-600 text-white shadow-lg shadow-blue-200',
-            focusRingForm: 'focus:ring-blue-600/20',
-            focusRingInput: 'focus:ring-blue-600'
-        };
-    }
-    // Default / hogar
-    return {
-        text: 'text-emerald-600',
-        bg: 'bg-emerald-600',
-        bgLight: 'bg-emerald-600/10',
-        borderLight: 'border-emerald-600/20',
-        hoverBg: 'hover:bg-emerald-600',
-        focusRing: 'focus:ring-emerald-600/10',
-        focusBorder: 'focus:border-emerald-600/30',
-        focusText: 'group-focus-within:text-emerald-600',
-        borderBottomLight: 'border-b-emerald-600/30',
-        checkboxText: 'text-emerald-600 focus:ring-emerald-600/20',
-        bgSoft: 'bg-emerald-50',
-        borderSoft: 'border-emerald-100',
-        textSoft: 'text-emerald-900',
-        textSoftAccent: 'text-emerald-600 bg-emerald-50',
-        bgSoftAccent: 'bg-emerald-600 text-white shadow-lg shadow-emerald-200',
-        focusRingForm: 'focus:ring-emerald-600/20',
-        focusRingInput: 'focus:ring-emerald-600'
-    };
-});
+const { themeColors } = useTheme(activeEntity);
 
 const openCreateModal = () => {
     editingContract.value = null;

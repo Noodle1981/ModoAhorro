@@ -15,17 +15,17 @@ class Entity extends Model
         parent::boot();
 
         static::created(function ($entity) {
-            if ($entity->type === 'comercio') {
-                $entity->rooms()->createMany([
-                    ['name' => 'Cocina', 'description' => 'Área de preparación industrial'],
-                    ['name' => 'Salón', 'description' => 'Atención al público'],
-                    ['name' => 'Depósito / Cámara', 'description' => 'Almacenamiento y refrigeración'],
-                    ['name' => 'Baños / Servicios', 'description' => 'Áreas comunes'],
-                ]);
+            $defaultRooms = config("entity_types.{$entity->type}.default_rooms");
+            if (is_array($defaultRooms) && ! empty($defaultRooms)) {
+                foreach ($defaultRooms as $roomName) {
+                    $entity->rooms()->create([
+                        'name' => $roomName,
+                    ]);
+                }
             } else {
                 $entity->rooms()->createMany([
-                    ['name' => 'Portables'],
-                    ['name' => 'Eventos / Tareas Extras'],
+                    ['name' => 'Portátiles'],
+                    ['name' => 'Temporales'],
                 ]);
             }
         });

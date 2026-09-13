@@ -1,7 +1,8 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { shallowRef, computed, watch } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import { useTheme } from '@/Composables/useTheme';
 import { 
     LayoutGrid, 
     Plus, 
@@ -30,80 +31,16 @@ const props = defineProps({
     flash: Object
 });
 
-const themeColors = computed(() => {
-    const type = props.entity?.type;
-    if (type === 'comercio') {
-        return {
-            text: 'text-purple-600',
-            bg: 'bg-purple-600',
-            bgLight: 'bg-purple-600/10',
-            borderLight: 'border-purple-600/20',
-            hoverBg: 'hover:bg-purple-600',
-            hoverText: 'hover:text-purple-600',
-            focusRing: 'focus:ring-purple-600/10',
-            focusRingForm: 'focus:ring-purple-600/20',
-            focusRingInput: 'focus:ring-purple-600',
-            borderBottom: 'border-purple-600',
-            groupHoverText: 'group-hover:text-purple-600',
-            
-            // Room card specific (Comercio = Deep Purple theme)
-            roomBg: 'bg-purple-950 shadow-purple-900/20',
-            roomTextLight: 'text-purple-300',
-            roomTextMuted: 'text-purple-200/60',
-            roomBtn: 'text-purple-950 hover:bg-purple-600 hover:text-white shadow-purple-950/20'
-        };
-    }
-    if (type === 'oficina') {
-        return {
-            text: 'text-blue-600',
-            bg: 'bg-blue-600',
-            bgLight: 'bg-blue-600/10',
-            borderLight: 'border-blue-600/20',
-            hoverBg: 'hover:bg-blue-600',
-            hoverText: 'hover:text-blue-600',
-            focusRing: 'focus:ring-blue-600/10',
-            focusRingForm: 'focus:ring-blue-600/20',
-            focusRingInput: 'focus:ring-blue-600',
-            borderBottom: 'border-blue-600',
-            groupHoverText: 'group-hover:text-blue-600',
-            
-            // Room card specific (Oficina = Deep Blue theme)
-            roomBg: 'bg-blue-950 shadow-blue-900/20',
-            roomTextLight: 'text-blue-300',
-            roomTextMuted: 'text-blue-200/60',
-            roomBtn: 'text-blue-950 hover:bg-blue-600 hover:text-white shadow-blue-950/20'
-        };
-    }
-    // Default / hogar (Emerald theme)
-    return {
-        text: 'text-emerald-600',
-        bg: 'bg-emerald-600',
-        bgLight: 'bg-emerald-600/10',
-        borderLight: 'border-emerald-600/20',
-        hoverBg: 'hover:bg-emerald-600',
-        hoverText: 'hover:text-emerald-600',
-        focusRing: 'focus:ring-emerald-600/10',
-        focusRingForm: 'focus:ring-emerald-600/20',
-        focusRingInput: 'focus:ring-emerald-600',
-        borderBottom: 'border-emerald-600',
-        groupHoverText: 'group-hover:text-emerald-600',
-        
-        // Room card specific (Hogar = Deep Emerald theme)
-        roomBg: 'bg-emerald-950 shadow-emerald-900/20',
-        roomTextLight: 'text-emerald-300',
-        roomTextMuted: 'text-emerald-200/60',
-        roomBtn: 'text-emerald-950 hover:bg-emerald-600 hover:text-white shadow-emerald-950/20'
-    };
-});
+const { themeColors } = useTheme(props.entity);
 
-const selectedRoomId = ref(props.rooms.length > 0 ? props.rooms[0].id : null);
+const selectedRoomId = shallowRef(props.rooms.length > 0 ? props.rooms[0].id : null);
 const selectedRoom = computed(() => props.rooms.find(r => r.id === selectedRoomId.value));
 
 // Modals State
-const showRoomModal = ref(false);
-const editingRoom = ref(null);
-const showEquipmentModal = ref(false);
-const editingEquipment = ref(null);
+const showRoomModal = shallowRef(false);
+const editingRoom = shallowRef(null);
+const showEquipmentModal = shallowRef(false);
+const editingEquipment = shallowRef(null);
 
 // Forms
 const roomForm = useForm({

@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import { useTheme } from '@/Composables/useTheme';
 import { 
     Activity, 
     PieChart as PieIcon, 
@@ -111,38 +112,7 @@ const pieOptions = {
     cutout: '70%'
 };
 
-const themeColors = computed(() => {
-    const type = props.entity?.type;
-    if (type === 'comercio') {
-        return {
-            text: 'text-purple-600',
-            bg: 'bg-purple-600',
-            hoverBg: 'hover:bg-purple-700',
-            shadow: 'shadow-purple-500/20',
-            bgLight: 'bg-purple-500/10',
-            borderLight: 'border-purple-500/20',
-        };
-    }
-    if (type === 'oficina') {
-        return {
-            text: 'text-blue-600',
-            bg: 'bg-blue-600',
-            hoverBg: 'hover:bg-blue-700',
-            shadow: 'shadow-blue-500/20',
-            bgLight: 'bg-blue-500/10',
-            borderLight: 'border-blue-500/20',
-        };
-    }
-    // Default / hogar (Emerald theme)
-    return {
-        text: 'text-emerald-600',
-        bg: 'bg-emerald-600',
-        hoverBg: 'hover:bg-emerald-700',
-        shadow: 'shadow-emerald-500/20',
-        bgLight: 'bg-emerald-500/10',
-        borderLight: 'border-emerald-500/20',
-    };
-});
+const { themeColors } = useTheme(props.entity);
 
 // Lógica de Residual para la barra
 const residualAmount = computed(() => {

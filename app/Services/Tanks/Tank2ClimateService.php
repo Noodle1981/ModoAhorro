@@ -165,11 +165,6 @@ class Tank2ClimateService
 
     public function isEligible(Equipment $eq): bool
     {
-        // Si ya tiene un patrón definido por el usuario, ya fue procesado por el Tanque de Certeza (T1)
-        if ($eq->has_defined_pattern) {
-            return false;
-        }
-
         $logic = $eq->type?->consumption_logic ?? '';
 
         // Excluimos lógicas comerciales que van a otros tanques

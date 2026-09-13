@@ -1,7 +1,9 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, shallowRef, computed, watch } from 'vue';
 import { Head, useForm, router, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import { useTheme } from '@/Composables/useTheme';
+import { useFormatters } from '@/Composables/useFormatters';
 import { 
     Receipt, 
     Plus, 
@@ -24,72 +26,15 @@ const props = defineProps({
     flash: Object
 });
 
-const themeColors = computed(() => {
-    const type = props.entity?.type;
-    if (type === 'comercio') {
-        return {
-            text: 'text-purple-600',
-            bg: 'bg-purple-600',
-            bgLight: 'bg-purple-600/10',
-            borderLight: 'border-purple-600/20',
-            hoverBg: 'hover:bg-purple-600',
-            focusRing: 'focus:ring-purple-600/10',
-            focusBorder: 'focus:border-purple-600/30',
-            focusText: 'group-focus-within:text-purple-600',
-            checkboxText: 'text-purple-600 focus:ring-purple-600/20',
-            focusRingForm: 'focus:ring-purple-600/20',
-            focusRingInput: 'focus:ring-purple-600',
-            focusBorderInput: 'focus:border-purple-600/50',
-            textSoftAccent: 'text-purple-600 bg-purple-50',
-            bgSoftLight: 'bg-purple-600/5',
-            hoverText: 'hover:text-purple-600'
-        };
-    }
-    if (type === 'oficina') {
-        return {
-            text: 'text-blue-600',
-            bg: 'bg-blue-600',
-            bgLight: 'bg-blue-600/10',
-            borderLight: 'border-blue-600/20',
-            hoverBg: 'hover:bg-blue-600',
-            focusRing: 'focus:ring-blue-600/10',
-            focusBorder: 'focus:border-blue-600/30',
-            focusText: 'group-focus-within:text-blue-600',
-            checkboxText: 'text-blue-600 focus:ring-blue-600/20',
-            focusRingForm: 'focus:ring-blue-600/20',
-            focusRingInput: 'focus:ring-blue-600',
-            focusBorderInput: 'focus:border-blue-600/50',
-            textSoftAccent: 'text-blue-600 bg-blue-50',
-            bgSoftLight: 'bg-blue-600/5',
-            hoverText: 'hover:text-blue-600'
-        };
-    }
-    // Default / hogar
-    return {
-        text: 'text-emerald-600',
-        bg: 'bg-emerald-600',
-        bgLight: 'bg-emerald-600/10',
-        borderLight: 'border-emerald-600/20',
-        hoverBg: 'hover:bg-emerald-600',
-        focusRing: 'focus:ring-emerald-600/10',
-        focusBorder: 'focus:border-emerald-600/30',
-        focusText: 'group-focus-within:text-emerald-600',
-        checkboxText: 'text-emerald-600 focus:ring-emerald-600/20',
-        focusRingForm: 'focus:ring-emerald-600/20',
-        focusRingInput: 'focus:ring-emerald-600',
-        focusBorderInput: 'focus:border-emerald-600/50',
-        textSoftAccent: 'text-emerald-600 bg-emerald-50',
-        bgSoftLight: 'bg-emerald-600/5',
-        hoverText: 'hover:text-emerald-600'
-    };
-});
+const { themeColors } = useTheme(props.entity);
+const { formatDate } = useFormatters();
 
-const showModal = ref(false);
-const showDeleteModal = ref(false);
-const showAdvanced = ref(false);
-const editingInvoice = ref(null);
-const invoiceToDelete = ref(null);
-const isGuidedInstallment2 = ref(false);
+const showModal = shallowRef(false);
+const showDeleteModal = shallowRef(false);
+const showAdvanced = shallowRef(false);
+const editingInvoice = shallowRef(null);
+const invoiceToDelete = shallowRef(null);
+const isGuidedInstallment2 = shallowRef(false);
 
 const form = useForm({
     id: null,
@@ -258,13 +203,6 @@ const confirmDelete = () => {
             invoiceToDelete.value = null;
         }
     });
-};
-
-const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    // Parse as local date by splitting the ISO string
-    const [year, month, day] = dateString.split('T')[0].split('-');
-    return `${day}/${month}/${year.slice(-2)}`;
 };
 
 const calculateDays = (start, end) => {

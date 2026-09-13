@@ -1,7 +1,8 @@
 <script setup>
-import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import { useTheme } from '@/Composables/useTheme';
+import { useFormatters } from '@/Composables/useFormatters';
 import { 
     Calendar, 
     Zap, 
@@ -17,56 +18,8 @@ const props = defineProps({
     unifications: Array
 });
 
-const themeColors = computed(() => {
-    const type = props.entity?.type;
-    if (type === 'comercio') {
-        return {
-            text: 'text-purple-600',
-            textLight: 'text-purple-200',
-            bg: 'bg-purple-600',
-            bgLight: 'bg-purple-600/10',
-            borderLight: 'border-purple-600/20',
-            hoverBg: 'hover:bg-purple-600',
-            hoverBorderLight: 'hover:border-purple-500/20',
-            tankCard: 'bg-purple-600 shadow-purple-900/10',
-            tankZap: 'text-purple-500',
-            progressbarBg: 'bg-purple-500'
-        };
-    }
-    if (type === 'oficina') {
-        return {
-            text: 'text-blue-600',
-            textLight: 'text-blue-200',
-            bg: 'bg-blue-600',
-            bgLight: 'bg-blue-600/10',
-            borderLight: 'border-blue-600/20',
-            hoverBg: 'hover:bg-blue-600',
-            hoverBorderLight: 'hover:border-blue-500/20',
-            tankCard: 'bg-blue-600 shadow-blue-900/10',
-            tankZap: 'text-blue-500',
-            progressbarBg: 'bg-blue-500'
-        };
-    }
-    // Default / hogar
-    return {
-        text: 'text-emerald-600',
-        textLight: 'text-emerald-200',
-        bg: 'bg-emerald-600',
-        bgLight: 'bg-emerald-500/10',
-        borderLight: 'border-emerald-500/20',
-        hoverBg: 'hover:bg-emerald-600',
-        hoverBorderLight: 'hover:border-emerald-500/20',
-        tankCard: 'bg-emerald-600 shadow-emerald-900/10',
-        tankZap: 'text-emerald-500',
-        progressbarBg: 'bg-emerald-500'
-    };
-});
-
-const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    const [year, month, day] = dateString.split('T')[0].split('-');
-    return `${day}/${month}/${year.slice(-2)}`;
-};
+const { themeColors } = useTheme(props.entity);
+const { formatDate } = useFormatters();
 
 const calculateDays = (start, end) => {
     if (!start || !end) return 0;

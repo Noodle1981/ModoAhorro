@@ -1,7 +1,9 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { shallowRef, computed } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import { useTheme } from '@/Composables/useTheme';
+import { useFormatters } from '@/Composables/useFormatters';
 import { 
      Zap, Waves, LayoutGrid, TrendingDown, CheckCircle2, ChevronRight, ThermometerSun
 } from 'lucide-vue-next';
@@ -13,52 +15,13 @@ const props = defineProps({
     filters: Object
 });
 
-const thermalFuelTab = ref('electric');
+const thermalFuelTab = shallowRef('electric');
 
-const themeColors = computed(() => {
-    const type = props.entity?.type;
-    if (type === 'comercio') {
-        return {
-            text: 'text-purple-600',
-            bg: 'bg-purple-600',
-            bgLight: 'bg-purple-500/10',
-            borderLight: 'border-purple-500/20',
-            textLight: 'text-purple-400',
-            bgDark: 'bg-purple-950',
-            textDark: 'text-purple-950',
-            hoverBg: 'hover:bg-purple-600',
-            focusRing: 'focus:ring-purple-500/10'
-        };
-    }
-    if (type === 'oficina') {
-        return {
-            text: 'text-blue-600',
-            bg: 'bg-blue-600',
-            bgLight: 'bg-blue-500/10',
-            borderLight: 'border-blue-500/20',
-            textLight: 'text-blue-400',
-            bgDark: 'bg-blue-950',
-            textDark: 'text-blue-950',
-            hoverBg: 'hover:bg-blue-600',
-            focusRing: 'focus:ring-blue-500/10'
-        };
-    }
-    // Default / hogar (Emerald theme)
-    return {
-        text: 'text-emerald-600',
-        bg: 'bg-emerald-600',
-        bgLight: 'bg-emerald-500/10',
-        borderLight: 'border-emerald-500/20',
-        textLight: 'text-emerald-400',
-        bgDark: 'bg-emerald-950',
-        textDark: 'text-emerald-950',
-        hoverBg: 'hover:bg-emerald-600',
-        focusRing: 'focus:ring-emerald-500/10'
-    };
-});
+const { themeColors } = useTheme(props.entity);
+const { formatMoney } = useFormatters();
 
-const localArea = ref(props.filters.available_area);
-const localPeople = ref(props.filters.people_count);
+const localArea = shallowRef(props.filters.available_area);
+const localPeople = shallowRef(props.filters.people_count);
 
 let updateTimeout;
 const updateFilters = () => {
@@ -71,7 +34,6 @@ const updateFilters = () => {
     }, 400);
 };
 
-const formatMoney = (val) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(val);
 const waterData = computed(() => props.thermal.waterHeaterData);
 </script>
 

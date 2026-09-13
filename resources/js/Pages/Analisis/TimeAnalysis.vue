@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import { useTheme } from '@/Composables/useTheme';
 import { 
     Activity, 
      
@@ -36,70 +37,7 @@ const props = defineProps({
     evolution: { type: Array, default: () => [] }
 });
 
-const themeColors = computed(() => {
-    const type = props.entity?.type;
-    if (type === 'comercio') {
-        return {
-            text: 'text-purple-600',
-            bg: 'bg-purple-600',
-            hoverBg: 'hover:bg-purple-700',
-            shadow: 'shadow-purple-500/20',
-            bgLight: 'bg-purple-500/10',
-            borderLight: 'border-purple-500/20',
-            textLight: 'text-purple-100',
-            bgDark: 'bg-purple-950',
-            groupHoverText: 'group-hover:text-purple-600',
-            groupHoverText500: 'group-hover:text-purple-500',
-            focusRing: 'focus:ring-purple-500/10',
-            hoverText: 'hover:text-purple-500',
-            text400: 'text-purple-400',
-            hex: '#9333ea',
-            rgba: 'rgba(147, 51, 234, 0.1)',
-            rgbaBilled: 'rgba(147, 51, 234, 0.75)'
-        };
-    }
-    if (type === 'oficina') {
-        return {
-            text: 'text-blue-600',
-            bg: 'bg-blue-600',
-            hoverBg: 'hover:bg-blue-700',
-            shadow: 'shadow-blue-500/20',
-            bgLight: 'bg-blue-500/10',
-            borderLight: 'border-blue-500/20',
-            textLight: 'text-blue-100',
-            bgDark: 'bg-blue-950',
-            groupHoverText: 'group-hover:text-blue-600',
-            groupHoverText500: 'group-hover:text-blue-500',
-            focusRing: 'focus:ring-blue-500/10',
-            hoverText: 'hover:text-blue-500',
-            text400: 'text-blue-400',
-            hex: '#2563eb',
-            rgba: 'rgba(37, 99, 235, 0.1)',
-            rgbaBilled: 'rgba(37, 99, 235, 0.75)'
-        };
-    }
-    // Default / hogar (Emerald theme)
-    return {
-        text: 'text-emerald-600',
-        bg: 'bg-emerald-600',
-        hoverBg: 'hover:bg-emerald-700',
-        shadow: 'shadow-emerald-500/20',
-        bgLight: 'bg-emerald-500/10',
-        borderLight: 'border-emerald-500/20',
-        textLight: 'text-emerald-100',
-        bgDark: 'bg-emerald-950',
-        tableHoverBg: 'hover:bg-emerald-50/40',
-        tableActiveBg: 'bg-emerald-50/20',
-        groupHoverText: 'group-hover:text-emerald-600',
-        groupHoverText500: 'group-hover:text-emerald-500',
-        focusRing: 'focus:ring-emerald-500/10',
-        hoverText: 'hover:text-emerald-500',
-        text400: 'text-emerald-400',
-        hex: '#059669',
-        rgba: 'rgba(5, 150, 105, 0.1)',
-        rgbaBilled: 'rgba(5, 150, 105, 0.75)'
-    };
-});
+const { themeColors } = useTheme(props.entity);
 
 // 1. Chart: Engine Efficiency (Billed vs Theoretical vs Recommended)
 const motorData = computed(() => {

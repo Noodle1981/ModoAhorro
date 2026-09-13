@@ -675,19 +675,18 @@ class AnalysisController extends Controller
     private function getEquipmentTier(Equipment $equipment): string
     {
         // 1. Tanque 2: Base Crítica (Refrigeración, Conectividad o uso continuo)
-        // Tiene prioridad incluso sobre el patrón fijo para mantener la categoría visual
         if ($this->isCritical($equipment)) {
             return 'base_critica';
         }
 
-        // 2. Tanque 1: Certeza (Prioridad a la intención del usuario para el resto de equipos)
-        if ($equipment->has_defined_pattern) {
-            return 'certeza';
-        }
-
-        // 3. Tanque 3: Climatización (Sensible al clima)
+        // 2. Tanque 3: Climatización (Sensible al clima)
         if ($equipment->type?->is_thermal_sensitive) {
             return 'climatizacion';
+        }
+
+        // 3. Tanque 1: Certeza (Prioridad a la intención del usuario para el resto de equipos no críticos ni climáticos)
+        if ($equipment->has_defined_pattern) {
+            return 'certeza';
         }
 
         // 4. Tanque 4: Uso Variable (El resto)

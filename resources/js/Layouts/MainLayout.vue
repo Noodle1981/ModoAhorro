@@ -25,7 +25,8 @@ import {
     Thermometer,
     DollarSign
 } from 'lucide-vue-next';
-import { ref, computed, watchEffect } from 'vue';
+import { shallowRef, computed, watchEffect } from 'vue';
+import { useTheme } from '@/Composables/useTheme';
 
 const props = defineProps({
     title: {
@@ -47,9 +48,9 @@ const auth = computed(() => page.props.auth);
 const currentEntity = computed(() => auth.value.current_entity);
 const entities = computed(() => auth.value.entities);
 
-const isSidebarOpen = ref(true);
-const isEntityMenuOpen = ref(false);
-const activeCategory = ref(auth.value?.user?.is_super_admin ? 'Sistema' : 'Gestión Física');
+const isSidebarOpen = shallowRef(true);
+const isEntityMenuOpen = shallowRef(false);
+const activeCategory = shallowRef(auth.value?.user?.is_super_admin ? 'Sistema' : 'Gestión Física');
 
 const entityLogoPath = computed(() => {
     const type = currentEntity.value?.type;
@@ -67,50 +68,7 @@ const currentEntityIcon = computed(() => {
     return Building;
 });
 
-const themeColors = computed(() => {
-    const type = currentEntity.value?.type;
-    if (type === 'comercio') {
-        return {
-            text: 'text-purple-600',
-            bg: 'bg-purple-600',
-            bgLight: 'bg-purple-600/10',
-            hoverBg: 'hover:bg-purple-600',
-            hoverText: 'hover:text-purple-600',
-            groupHoverText: 'group-hover:text-purple-600',
-            borderHover: 'hover:border-purple-600/30',
-            activeMenuBg: 'bg-purple-50/50',
-            hoverMenuBg: 'hover:bg-purple-50',
-            logoBg: 'bg-purple-600 shadow-purple-900/50',
-        };
-    }
-    if (type === 'oficina') {
-        return {
-            text: 'text-blue-600',
-            bg: 'bg-blue-600',
-            bgLight: 'bg-blue-600/10',
-            hoverBg: 'hover:bg-blue-600',
-            hoverText: 'hover:text-blue-600',
-            groupHoverText: 'group-hover:text-blue-600',
-            borderHover: 'hover:border-blue-600/30',
-            activeMenuBg: 'bg-blue-50/50',
-            hoverMenuBg: 'hover:bg-blue-50',
-            logoBg: 'bg-blue-600 shadow-blue-900/50',
-        };
-    }
-    // Default / hogar (Emerald theme)
-    return {
-        text: 'text-emerald-600',
-        bg: 'bg-emerald-600',
-        bgLight: 'bg-emerald-600/10',
-        hoverBg: 'hover:bg-emerald-600',
-        hoverText: 'hover:text-emerald-600',
-        groupHoverText: 'group-hover:text-emerald-600',
-        borderHover: 'hover:border-emerald-600/30',
-        activeMenuBg: 'bg-emerald-50/50',
-        hoverMenuBg: 'hover:bg-emerald-50',
-        logoBg: 'bg-emerald-600 shadow-emerald-900/50',
-    };
-});
+const { themeColors } = useTheme(currentEntity);
 
 // Sincronizar categoría activa con la URL actual
 watchEffect(() => {

@@ -24,10 +24,11 @@ class StandbyAnalysisService
     {
         $entity->load(['rooms.equipment.type', 'rooms.equipment.category']);
 
-        // Obtener TODOS los equipos para la auditoría de 3 estados
+        // Obtener TODOS los equipos para la auditoría de 3 estados (excluyendo categorías sin standby relevante)
         $equipmentList = $entity->rooms
             ->flatMap(fn ($room) => $room->equipment)
             ->filter(fn ($eq) => $eq->is_active !== false)
+            ->filter(fn ($eq) => ! in_array($eq->category->name ?? $eq->type?->category?->name ?? '', self::EXCLUDED_CATEGORY_NAMES))
             ->values();
 
         // Calcular totales

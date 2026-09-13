@@ -1,7 +1,8 @@
 <script setup>
-import { computed } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
+import { useTheme } from '@/Composables/useTheme';
+import { useFormatters } from '@/Composables/useFormatters';
 import { 
     RefreshCcw, 
     TrendingDown, 
@@ -18,75 +19,8 @@ const props = defineProps({
     opportunities: Array
 });
 
-const formatMoney = (val) => {
-    return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(val);
-};
-
-const themeColors = computed(() => {
-    const type = props.entity?.type;
-    if (type === 'comercio') {
-        return {
-            text: 'text-purple-600',
-            bg: 'bg-purple-600',
-            hoverBg: 'hover:bg-purple-700',
-            shadow: 'shadow-purple-500/20',
-            bgLight: 'bg-purple-500/10',
-            borderLight: 'border-purple-500/20',
-            textLight: 'text-purple-400',
-            bgDark: 'bg-purple-950',
-            textDark: 'text-purple-950',
-            groupHoverText: 'group-hover:text-purple-600',
-            hoverShadow: 'hover:shadow-purple-500/10',
-            groupHoverBg: 'group-hover:bg-purple-600',
-            borderBottom: 'border-purple-600',
-            blurBg: 'bg-purple-500/10',
-            text100: 'text-purple-100',
-            text300: 'text-purple-300',
-            bg200Opacity: 'bg-purple-500/20'
-        };
-    }
-    if (type === 'oficina') {
-        return {
-            text: 'text-blue-600',
-            bg: 'bg-blue-600',
-            hoverBg: 'hover:bg-blue-700',
-            shadow: 'shadow-blue-500/20',
-            bgLight: 'bg-blue-500/10',
-            borderLight: 'border-blue-500/20',
-            textLight: 'text-blue-400',
-            bgDark: 'bg-blue-950',
-            textDark: 'text-blue-950',
-            groupHoverText: 'group-hover:text-blue-600',
-            hoverShadow: 'hover:shadow-blue-500/10',
-            groupHoverBg: 'group-hover:bg-blue-600',
-            borderBottom: 'border-blue-600',
-            blurBg: 'bg-blue-500/10',
-            text100: 'text-blue-100',
-            text300: 'text-blue-300',
-            bg200Opacity: 'bg-blue-500/20'
-        };
-    }
-    // Default / hogar (Emerald theme)
-    return {
-        text: 'text-emerald-600',
-        bg: 'bg-emerald-600',
-        hoverBg: 'hover:bg-emerald-700',
-        shadow: 'shadow-emerald-500/20',
-        bgLight: 'bg-emerald-500/10',
-        borderLight: 'border-emerald-500/20',
-        textLight: 'text-emerald-400',
-        bgDark: 'bg-emerald-950',
-        textDark: 'text-emerald-950',
-        groupHoverText: 'group-hover:text-emerald-600',
-        hoverShadow: 'hover:shadow-emerald-500/10',
-        groupHoverBg: 'group-hover:bg-emerald-600',
-        borderBottom: 'border-emerald-600',
-        blurBg: 'bg-emerald-500/10',
-        text100: 'text-emerald-100',
-        text300: 'text-emerald-300',
-        bg200Opacity: 'bg-emerald-500/20'
-    };
-});
+const { formatMoney } = useFormatters();
+const { themeColors } = useTheme(props.entity);
 </script>
 
 <template>
