@@ -29,6 +29,7 @@ const props = defineProps({
     localities: Array,
     currentWeather: Object,
     climateProfile: Object,
+    commercialCatalog: Array,
 });
 
 const form = useForm({
@@ -47,6 +48,8 @@ const form = useForm({
     business_type: props.entity.business_type || '',
     description: props.entity.description || '',
     comercio_type: props.entity.comercio_type || 'gastronomia',
+    business_category: props.entity.business_category || props.entity.comercio_type || 'gastronomia',
+    business_subcategory: props.entity.business_subcategory || (props.entity.comercio_type === 'gastronomia' ? 'heladeria_artesanal' : (props.entity.comercio_type === 'retail' ? 'retail_general' : 'heladeria_artesanal')),
     staff_count: props.entity.staff_count || '',
     visitors_count: props.entity.visitors_count || '',
     service_turns: props.entity.service_turns || 1,
@@ -95,6 +98,30 @@ watch(() => form.province_id, (newVal) => {
     const currentLocality = props.localities.find(l => l.id === form.locality_id);
     if (currentLocality && currentLocality.province_id !== parseInt(newVal)) {
         form.locality_id = '';
+    }
+});
+
+// Subcategorías comerciales disponibles
+const availableSubcategories = computed(() => {
+    if (!props.commercialCatalog || props.commercialCatalog.length === 0) {
+        return [];
+    }
+    const cat = props.commercialCatalog.find(c => c.key === form.business_category);
+    return cat ? cat.subcategories : [];
+});
+
+const selectedSubcategoryInfo = computed(() => {
+    return availableSubcategories.value.find(s => s.key === form.business_subcategory) || null;
+});
+
+// Sincronizar subcategoría cuando cambia la categoría
+watch(() => form.business_category, (newCat) => {
+    form.comercio_type = newCat;
+    if (props.commercialCatalog) {
+        const cat = props.commercialCatalog.find(c => c.key === newCat);
+        if (cat && cat.subcategories.length > 0) {
+            form.business_subcategory = cat.subcategories[0].key;
+        }
     }
 });
 
@@ -196,52 +223,83 @@ const climateZoneColor = computed(() => {
 
                         <!-- Commercial Specific Config — Solo para Comercio -->
                         <section v-if="isComercial">
-                            <h3 class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                <Store :size="14" /> Configuración Logística Comercial
+                            <h3 class="text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2" :class="accentColor">
+                                <Store :size="14" /> Configuración y Perfil Modular de Comercio
                             </h3>
                             
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
-                                <div class="space-y-3">
+                            <div class="space-y-4 bg-slate-50/50 p-4 sm:p-5 rounded-2xl border border-slate-100">
+                                <!-- Selector Jerárquico en 2 Niveles -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                     <div>
-                                        <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Rubro del Comercio</label>
-                                        <select v-model="form.comercio_type" class="w-full px-3.5 py-2.5 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans">
-                                            <option value="gastronomia">Gastronomía (Restaurante / Bar)</option>
-                                            <option value="retail">Retail / Venta al público</option>
-                                            <option value="oficina">Oficina / Corporativo</option>
+                                        <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Rubro Macro</label>
+                                        <select v-model="form.business_category" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold font-sans">
+                                            <option v-for="cat in commercialCatalog" :key="cat.key" :value="cat.key">
+                                                {{ cat.label }}
+                                            </option>
                                         </select>
                                     </div>
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Apertura</label>
-                                            <input v-model="form.opens_at" type="time" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans"/>
-                                        </div>
-                                        <div>
-                                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Cierre</label>
-                                            <input v-model="form.closes_at" type="time" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans"/>
-                                        </div>
+                                    <div>
+                                        <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Especialización (Sub-rubro)</label>
+                                        <select v-model="form.business_subcategory" class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold font-sans">
+                                            <option v-for="sub in availableSubcategories" :key="sub.key" :value="sub.key">
+                                                {{ sub.label }}
+                                            </option>
+                                        </select>
                                     </div>
                                 </div>
-                                <div class="space-y-3">
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Personal (Staff)</label>
-                                            <input v-model="form.staff_count" type="number" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans" placeholder="0"/>
+
+                                <!-- Tarjeta Informativa del Comportamiento Energético del Perfil -->
+                                <div v-if="selectedSubcategoryInfo" class="bg-purple-50/70 rounded-xl p-3.5 border border-purple-100/80 text-xs">
+                                    <div class="flex items-center justify-between gap-2 mb-1.5">
+                                        <span class="font-extrabold text-purple-900 text-xs flex items-center gap-1.5">
+                                            <Zap :size="13" class="text-purple-600" />
+                                            {{ selectedSubcategoryInfo.label }}
+                                        </span>
+                                        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-purple-200/70 text-purple-800">
+                                            Sensibilidad Térmica x{{ selectedSubcategoryInfo.thermal_sensitivity }}
+                                        </span>
+                                    </div>
+                                    <p class="text-slate-600 text-[11px] leading-relaxed">
+                                        {{ selectedSubcategoryInfo.description }}
+                                    </p>
+                                </div>
+
+                                <!-- Parámetros Operativos -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                                    <div class="space-y-3">
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Apertura</label>
+                                                <input v-model="form.opens_at" type="time" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans"/>
+                                            </div>
+                                            <div>
+                                                <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Cierre</label>
+                                                <input v-model="form.closes_at" type="time" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans"/>
+                                            </div>
                                         </div>
                                         <div>
-                                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">
-                                                {{ form.comercio_type === 'gastronomia' ? 'Comensales / día' : (form.comercio_type === 'oficina' ? 'Visitantes / día' : 'Clientes / día') }}
-                                            </label>
-                                            <input v-model="form.visitors_count" type="number" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans" placeholder="0"/>
+                                            <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Turnos de Servicio</label>
+                                            <div class="flex gap-2">
+                                                <button v-for="n in 3" :key="n" type="button" @click="form.service_turns = n"
+                                                    :class="['flex-1 py-2 rounded-xl border-2 transition-all text-[10px] font-black uppercase tracking-wider', form.service_turns === n ? 'border-purple-500 bg-white text-purple-600' : 'border-transparent bg-white/50 text-slate-400']"
+                                                >
+                                                    {{ n }} {{ n === 1 ? 'Turno' : 'Turnos' }}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Turnos de Servicio</label>
-                                        <div class="flex gap-2">
-                                            <button v-for="n in 3" :key="n" type="button" @click="form.service_turns = n"
-                                                :class="['flex-1 py-2 rounded-xl border-2 transition-all text-[10px] font-black uppercase tracking-wider', form.service_turns === n ? 'border-purple-500 bg-white text-purple-600' : 'border-transparent bg-white/50 text-slate-400']"
-                                            >
-                                                {{ n }} {{ n === 1 ? 'Turno' : 'Turnos' }}
-                                            </button>
+                                    <div class="space-y-3">
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">Personal (Staff)</label>
+                                                <input v-model="form.staff_count" type="number" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans" placeholder="0"/>
+                                            </div>
+                                            <div>
+                                                <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-1">
+                                                    {{ selectedSubcategoryInfo?.visitors_unit ? `${selectedSubcategoryInfo.visitors_unit} / día` : 'Clientes / día' }}
+                                                </label>
+                                                <input v-model="form.visitors_count" type="number" class="w-full px-3.5 py-2 bg-white border border-slate-100 rounded-xl text-xs font-bold font-sans" placeholder="0"/>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -21,8 +21,9 @@ class UserSeeder extends Seeder
         ], [
             'name' => 'Usuario de Prueba',
             'password' => Hash::make('password'),
-            'is_super_admin' => false,
         ]);
+        $user->is_super_admin = false;
+        $user->save();
 
         // 2. Obtener el Plan Gratuito
         $plan = Plan::where('name', 'Gratuito')->first();

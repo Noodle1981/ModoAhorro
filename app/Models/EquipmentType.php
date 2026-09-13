@@ -10,7 +10,7 @@ class EquipmentType extends Model
     use HasFactory;
 
     protected $fillable = [
-        'category_id', 'name', 'default_power_watts', 'default_avg_daily_use_hours',
+        'category_id', 'name', 'is_active', 'default_power_watts', 'default_avg_daily_use_hours',
         'default_standby_power_w', 'standby_power', 'is_shiftable', 'process_type',
         'load_factor', 'efficiency', 'intensity', 'is_climatization',
         'default_tank', 'is_thermal_sensitive', 'base_efficiency_ratio', 'thermal_efficiency_penalty',
@@ -20,6 +20,7 @@ class EquipmentType extends Model
     ];
 
     protected $casts = [
+        'is_active' => 'boolean',
         'is_climatization' => 'boolean',
         'is_inverter_capable' => 'boolean',
         'is_thermal_sensitive' => 'boolean',
@@ -82,7 +83,7 @@ class EquipmentType extends Model
 
     public function equipment()
     {
-        return $this->hasMany(Equipment::class);
+        return $this->hasMany(Equipment::class, 'type_id');
     }
 
     public function maintenanceTasks()

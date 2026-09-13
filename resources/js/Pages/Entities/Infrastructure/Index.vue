@@ -1,8 +1,10 @@
 <script setup>
-import { shallowRef, computed, watch } from 'vue';
+import { shallowRef, computed, watch, onUnmounted } from 'vue';
 import { Head, useForm, router } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import { useTheme } from '@/Composables/useTheme';
+import Modal from '@/Components/Modal.vue';
+import ConfirmDeleteModal from '@/Components/ConfirmDeleteModal.vue';
 import { 
     LayoutGrid, 
     Plus, 
@@ -55,6 +57,7 @@ const eqForm = useForm({
     room_id: '',
     category_id: '',
     type_id: '',
+    model_id: null,
     name: '',
     nominal_power_w: '',
     avg_daily_use_hours: '',
@@ -74,6 +77,69 @@ const filteredTypes = computed(() => {
     if (!eqForm.category_id) return [];
     return props.types.filter(t => t.category_id === eqForm.category_id);
 });
+
+// Autocompletado de Modelos Oficiales Verificados
+const modelSuggestions = shallowRef([]);
+const isSearchingModels = shallowRef(false);
+const showModelDropdown = shallowRef(false);
+let searchDebounceTimer = null;
+let searchAbortController = null;
+
+const onBrandOrModelInput = () => {
+    clearTimeout(searchDebounceTimer);
+    if (searchAbortController) {
+        searchAbortController.abort();
+    }
+
+    searchDebounceTimer = setTimeout(async () => {
+        const query = (eqForm.brand + ' ' + eqForm.model).trim();
+        if (query.length < 2) {
+            modelSuggestions.value = [];
+            showModelDropdown.value = false;
+            return;
+        }
+        searchAbortController = new AbortController();
+        try {
+            isSearchingModels.value = true;
+            const res = await fetch(`/sistema/api/modelos-autocompletar?q=${encodeURIComponent(query)}`, {
+                signal: searchAbortController.signal,
+            });
+            if (res.ok) {
+                const data = await res.json();
+                modelSuggestions.value = data;
+                showModelDropdown.value = data.length > 0;
+            }
+        } catch (e) {
+            if (e.name !== 'AbortError') {
+                console.error('Error buscando modelos oficiales:', e);
+            }
+        } finally {
+            isSearchingModels.value = false;
+        }
+    }, 250);
+};
+
+onUnmounted(() => {
+    clearTimeout(searchDebounceTimer);
+    if (searchAbortController) {
+        searchAbortController.abort();
+    }
+});
+
+const selectModelSuggestion = (m) => {
+    eqForm.brand = m.brand;
+    eqForm.model = m.model;
+    eqForm.model_id = m.id;
+    if (m.category_id) eqForm.category_id = m.category_id;
+    if (m.type_id) eqForm.type_id = m.type_id;
+    if (m.nominal_power_w) eqForm.nominal_power_w = m.nominal_power_w;
+    if (m.is_inverter !== undefined) eqForm.is_inverter = m.is_inverter;
+    if (m.energy_label) eqForm.energy_label = m.energy_label;
+    if (!eqForm.name || eqForm.name.trim() === '') {
+        eqForm.name = `${m.brand} ${m.model}`;
+    }
+    showModelDropdown.value = false;
+};
 
 // Auto-fill defaults when type changes
 watch(() => eqForm.type_id, (newTypeId) => {
@@ -137,10 +203,24 @@ const submitRoom = () => {
     }
 };
 
+const roomToDelete = shallowRef(null);
+const isDeletingRoom = shallowRef(false);
+
 const deleteRoom = (room) => {
-    if (confirm(`¿Estás seguro de eliminar el ambiente "${room.name}"? Se perderán todos sus equipos asociados.`)) {
-        router.delete(route('gestion.rooms.destroy', room.id));
-    }
+    roomToDelete.value = room;
+};
+
+const confirmDeleteRoom = () => {
+    if (!roomToDelete.value) return;
+    isDeletingRoom.value = true;
+    router.delete(route('gestion.rooms.destroy', roomToDelete.value.id), {
+        onSuccess: () => {
+            roomToDelete.value = null;
+        },
+        onFinish: () => {
+            isDeletingRoom.value = false;
+        },
+    });
 };
 
 // Equipment Actions
@@ -198,10 +278,24 @@ const submitEq = () => {
     }
 };
 
+const equipmentToDelete = shallowRef(null);
+const isDeletingEquipment = shallowRef(false);
+
 const deleteEq = (eq) => {
-    if (confirm(`¿Eliminar ${eq.name} del inventario?`)) {
-        router.delete(route('gestion.equipment.destroy', eq.id));
-    }
+    equipmentToDelete.value = eq;
+};
+
+const confirmDeleteEquipment = () => {
+    if (!equipmentToDelete.value) return;
+    isDeletingEquipment.value = true;
+    router.delete(route('gestion.equipment.destroy', equipmentToDelete.value.id), {
+        onSuccess: () => {
+            equipmentToDelete.value = null;
+        },
+        onFinish: () => {
+            isDeletingEquipment.value = false;
+        },
+    });
 };
 
 const getCategoryIcon = (catName) => {
@@ -413,9 +507,8 @@ const getCategoryIcon = (catName) => {
         </div>
 
         <!-- Room Modal -->
-        <div v-if="showRoomModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6">
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" @click="showRoomModal = false"></div>
-            <div class="relative bg-white w-full max-w-md rounded-[32px] md:rounded-[48px] shadow-2xl p-8 md:p-12 space-y-6 md:space-y-8 animate-in zoom-in duration-300">
+        <Modal :show="showRoomModal" max-width="md" @close="showRoomModal = false">
+            <div class="p-8 md:p-12 space-y-6 md:space-y-8">
                 <div class="space-y-2">
                     <h2 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter">{{ editingRoom ? 'Configurar Ambiente' : 'Nuevo Ambiente' }}</h2>
                     <p class="text-sm text-slate-400 font-medium">Cree un espacio funcional para organizar sus equipos.</p>
@@ -431,26 +524,24 @@ const getCategoryIcon = (catName) => {
                         <textarea v-model="roomForm.description" rows="3" class="w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-medium text-slate-700 transition-all focus:ring-2" :class="themeColors.focusRingForm"></textarea>
                     </div>
                     <div class="flex flex-col sm:flex-row gap-3 pt-4">
-                        <button type="submit" class="w-full sm:flex-1 bg-slate-900 text-white py-4 md:py-5 rounded-[18px] md:rounded-[24px] font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-200" :class="themeColors.hoverBg">
+                        <button type="submit" class="w-full sm:flex-1 bg-slate-900 text-white py-4 md:py-5 rounded-[18px] md:rounded-[24px] font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-200 cursor-pointer" :class="themeColors.hoverBg">
                             Confirmar
                         </button>
-                        <button type="button" @click="showRoomModal = false" class="w-full sm:w-auto px-8 py-4 md:py-5 text-slate-400 font-black text-xs uppercase tracking-widest order-last sm:order-none">
+                        <button type="button" @click="showRoomModal = false" class="w-full sm:w-auto px-8 py-4 md:py-5 text-slate-400 font-black text-xs uppercase tracking-widest order-last sm:order-none cursor-pointer">
                             Cancelar
                         </button>
                     </div>
                 </form>
             </div>
-        </div>
+        </Modal>
 
         <!-- Equipment Modal -->
-        <div v-if="showEquipmentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6">
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md" @click="showEquipmentModal = false"></div>
-            <div class="relative bg-white w-full max-w-2xl rounded-[32px] md:rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-                <div class="px-6 md:px-8 pt-6 md:pt-8 pb-4 border-b border-slate-50">
-                    <div class="inline-flex items-center gap-2 px-2 py-0.5 bg-slate-900 text-white rounded-full text-[8px] font-black uppercase tracking-widest mb-2">
-                        {{ selectedRoom?.name }}
-                    </div>
-                    <h2 class="text-xl md:text-2xl font-black text-slate-900 tracking-tighter">{{ editingEquipment ? 'Especificaciones Técnicas' : 'Nuevo Activo Eléctrico' }}</h2>
+        <Modal :show="showEquipmentModal" max-width="2xl" @close="showEquipmentModal = false">
+            <div class="px-6 md:px-8 pt-6 md:pt-8 pb-4 border-b border-slate-50">
+                <div class="inline-flex items-center gap-2 px-2 py-0.5 bg-slate-900 text-white rounded-full text-[8px] font-black uppercase tracking-widest mb-2">
+                    {{ selectedRoom?.name }}
+                </div>
+                <h2 class="text-xl md:text-2xl font-black text-slate-900 tracking-tighter">{{ editingEquipment ? 'Especificaciones Técnicas' : 'Nuevo Activo Eléctrico' }}</h2>
                 </div>
 
                 <form @submit.prevent="submitEq" class="px-6 md:px-8 py-4 md:py-6 space-y-4 max-h-[85vh] overflow-y-auto custom-scrollbar">
@@ -488,16 +579,73 @@ const getCategoryIcon = (catName) => {
 
                     <!-- Row 2: Asset Details -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
-                        <div class="space-y-4">
+                        <div class="space-y-4 relative">
                             <div class="space-y-1.5">
-                                <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Marca</label>
-                                <input v-model="eqForm.brand" type="text" placeholder="Ej: Samsung, Philips..." class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all focus:ring-2" :class="themeColors.focusRingForm" />
+                                <div class="flex items-center justify-between">
+                                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Marca</label>
+                                    <span v-if="eqForm.model_id" class="text-[9px] font-black text-emerald-600 uppercase tracking-wider flex items-center gap-1">
+                                        <Sparkles :size="10" /> Modelo Oficial
+                                    </span>
+                                </div>
+                                <input 
+                                    v-model="eqForm.brand" 
+                                    @input="onBrandOrModelInput"
+                                    type="text" 
+                                    placeholder="Ej: Samsung, Philips, LG..." 
+                                    class="w-full bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all focus:ring-2" 
+                                    :class="themeColors.focusRingForm" 
+                                />
                             </div>
-                            <div class="space-y-1.5">
+                            <div class="space-y-1.5 relative">
                                 <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Modelo / N° Serie</label>
                                 <div class="flex gap-2">
-                                    <input v-model="eqForm.model" type="text" placeholder="Modelo" class="flex-1 bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all focus:ring-2" :class="themeColors.focusRingForm" />
-                                    <input v-model="eqForm.serial_number" type="text" placeholder="S/N" class="w-1/3 bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all focus:ring-2" :class="themeColors.focusRingForm" />
+                                    <input 
+                                        v-model="eqForm.model" 
+                                        @input="onBrandOrModelInput"
+                                        type="text" 
+                                        placeholder="Ej: RT38, Inverter..." 
+                                        class="flex-1 bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all focus:ring-2" 
+                                        :class="themeColors.focusRingForm" 
+                                    />
+                                    <input 
+                                        v-model="eqForm.serial_number" 
+                                        type="text" 
+                                        placeholder="S/N" 
+                                        class="w-1/3 bg-slate-50 border-none rounded-xl p-3 text-sm font-bold text-slate-900 transition-all focus:ring-2" 
+                                        :class="themeColors.focusRingForm" 
+                                    />
+                                </div>
+
+                                <!-- Floating Autocomplete Suggestions -->
+                                <div 
+                                    v-if="showModelDropdown && modelSuggestions.length > 0"
+                                    class="absolute left-0 right-0 top-full mt-2 z-50 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 space-y-1 max-h-56 overflow-y-auto"
+                                >
+                                    <div class="px-3 py-1.5 text-[9px] font-black uppercase tracking-wider text-slate-400 border-b border-slate-50 flex items-center justify-between">
+                                        <span>Modelos Oficiales Homologados</span>
+                                        <button type="button" @click="showModelDropdown = false" class="text-slate-400 hover:text-slate-600">✕</button>
+                                    </div>
+                                    <button 
+                                        type="button"
+                                        v-for="sug in modelSuggestions" 
+                                        :key="sug.id"
+                                        @click="selectModelSuggestion(sug)"
+                                        class="w-full text-left p-2.5 rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-between group cursor-pointer"
+                                    >
+                                        <div>
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="text-xs font-black text-slate-900 group-hover:text-emerald-600">{{ sug.brand }} {{ sug.model }}</span>
+                                                <span v-if="sug.is_inverter" class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[8px] font-black uppercase">Inverter</span>
+                                            </div>
+                                            <p class="text-[10px] font-bold text-slate-400">
+                                                {{ sug.type?.name || sug.category?.name }} · {{ sug.nominal_power_w }}W
+                                                <span v-if="sug.energy_label"> · Etiqueta {{ sug.energy_label }}</span>
+                                            </p>
+                                        </div>
+                                        <span class="text-[10px] font-black text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-wider">
+                                            Auto-completar →
+                                        </span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -567,15 +715,32 @@ const getCategoryIcon = (catName) => {
                 </form>
 
                 <div class="px-6 md:px-8 py-4 bg-slate-50 flex flex-col sm:flex-row gap-3">
-                    <button @click="submitEq" :disabled="eqForm.processing" class="w-full sm:flex-1 bg-slate-900 text-white py-3.5 md:py-4 rounded-[16px] md:rounded-[20px] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 transition-all" :class="themeColors.hoverBg">
+                    <button @click="submitEq" :disabled="eqForm.processing" class="w-full sm:flex-1 bg-slate-900 text-white py-3.5 md:py-4 rounded-[16px] md:rounded-[20px] font-black text-xs uppercase tracking-widest shadow-xl shadow-slate-200 transition-all cursor-pointer" :class="themeColors.hoverBg">
                         {{ editingEquipment ? 'Guardar Cambios' : 'Confirmar Registro' }}
                     </button>
-                    <button @click="showEquipmentModal = false" class="w-full sm:w-auto px-6 py-3.5 md:py-4 text-slate-400 font-black text-xs uppercase tracking-widest order-last sm:order-none">
+                    <button @click="showEquipmentModal = false" class="w-full sm:w-auto px-6 py-3.5 md:py-4 text-slate-400 font-black text-xs uppercase tracking-widest order-last sm:order-none cursor-pointer">
                         Cancelar
                     </button>
                 </div>
-            </div>
-        </div>
+        </Modal>
+        <!-- Delete Confirmation Modals -->
+        <ConfirmDeleteModal
+            :show="!!roomToDelete"
+            title="¿Eliminar ambiente?"
+            :message="`¿Estás seguro de eliminar el ambiente '${roomToDelete?.name}'? Se perderán todos sus equipos asociados.`"
+            :processing="isDeletingRoom"
+            @close="roomToDelete = null"
+            @confirm="confirmDeleteRoom"
+        />
+
+        <ConfirmDeleteModal
+            :show="!!equipmentToDelete"
+            title="¿Eliminar equipo?"
+            :message="`¿Eliminar '${equipmentToDelete?.name}' del inventario?`"
+            :processing="isDeletingEquipment"
+            @close="equipmentToDelete = null"
+            @confirm="confirmDeleteEquipment"
+        />
     </MainLayout>
 </template>
 

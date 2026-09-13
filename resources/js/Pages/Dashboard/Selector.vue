@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { shallowRef } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { 
     Building, 
@@ -36,9 +36,9 @@ const hoverBgMap = {
 };
 
 // Creation State
-const showCreateModal = ref(false);
-const entityTypeToCreate = ref('');
-const newEntityName = ref('');
+const showCreateModal = shallowRef(false);
+const entityTypeToCreate = shallowRef('');
+const newEntityName = shallowRef('');
 
 const openCreateModal = (type) => {
     entityTypeToCreate.value = type;
@@ -68,9 +68,9 @@ const confirmCreate = () => {
 };
 
 // Deletion State
-const showDeleteModal = ref(false);
-const entityToDelete = ref(null);
-const deleteConfirmationText = ref('');
+const showDeleteModal = shallowRef(false);
+const entityToDelete = shallowRef(null);
+const deleteConfirmationText = shallowRef('');
 
 const openDeleteModal = (entity) => {
     entityToDelete.value = entity;
