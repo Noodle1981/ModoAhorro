@@ -59,6 +59,8 @@ class EnergyEngineService
      */
     public function processInvoice(Invoice $invoice, Collection $equipments): array
     {
+        $equipments->loadMissing(['type.category', 'category', 'room']);
+
         $entity = $invoice->contract->entity;
 
         // Cargar perfil comercial si aplica

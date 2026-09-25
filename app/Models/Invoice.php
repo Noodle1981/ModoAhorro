@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,7 +18,6 @@ class Invoice extends Model
         'invoice_date',
         'issue_date',
         'start_date',
-        'end_date',
         'end_date',
         'consumption_kwh',
         'energy_cost',
@@ -40,14 +40,17 @@ class Invoice extends Model
         'recommended_kwh',
     ];
 
-    protected $casts = [
-        'invoice_date' => 'date',
-        'issue_date' => 'date',
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'is_representative' => 'boolean',
-        'usage_locked' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'invoice_date' => 'date',
+            'issue_date' => 'date',
+            'start_date' => 'date',
+            'end_date' => 'date',
+            'is_representative' => 'boolean',
+            'usage_locked' => 'boolean',
+        ];
+    }
 
     public function contract()
     {
@@ -64,12 +67,16 @@ class Invoice extends Model
         return $this->hasMany(EquipmentUsage::class, 'invoice_id');
     }
 
-    public function getDaysInPeriodAttribute()
+    protected function daysInPeriod(): Attribute
     {
-        if ($this->start_date && $this->end_date) {
-            return Carbon::parse($this->start_date)->diffInDays(Carbon::parse($this->end_date)) + 1; // Inclusive
-        }
+        return Attribute::make(
+            get: function () {
+                if ($this->start_date && $this->end_date) {
+                    return Carbon::parse($this->start_date)->diffInDays(Carbon::parse($this->end_date)) + 1; // Inclusive
+                }
 
-        return 30; // Fallback
+                return 30; // Fallback
+            }
+        );
     }
 }

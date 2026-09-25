@@ -15,14 +15,17 @@ class Equipment extends Model
         'acquisition_year', 'energy_label', 'is_inverter', 'capacity', 'capacity_unit', 'extra_attributes',
     ];
 
-    protected $casts = [
-        'is_active' => 'boolean',
-        'is_validated' => 'boolean',
-        'has_defined_pattern' => 'boolean',
-        'installed_at' => 'date',
-        'removed_at' => 'date',
-        'extra_attributes' => 'array',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+            'is_validated' => 'boolean',
+            'has_defined_pattern' => 'boolean',
+            'installed_at' => 'date',
+            'removed_at' => 'date',
+            'extra_attributes' => 'array',
+        ];
+    }
 
     public function room()
     {

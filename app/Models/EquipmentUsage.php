@@ -12,13 +12,16 @@ class EquipmentUsage extends Model
         'kwh_reconciled', 'tank_assignment', 'audit_logs', 'cycles_per_period',
     ];
 
-    protected $casts = [
-        'audit_logs' => 'array',
-        'use_days_of_week' => 'array',
-        'tank_assignment' => 'integer',
-        'kwh_reconciled' => 'decimal:4',
-        'cycles_per_period' => 'float',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'audit_logs' => 'array',
+            'use_days_of_week' => 'array',
+            'tank_assignment' => 'integer',
+            'kwh_reconciled' => 'decimal:4',
+            'cycles_per_period' => 'float',
+        ];
+    }
 
     public function invoice()
     {

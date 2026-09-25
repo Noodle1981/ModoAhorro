@@ -658,11 +658,15 @@ class AdminController extends Controller
         $plans = Plan::all()->keyBy('id');
         $defaultPlan = Plan::where('name', 'Gratuito')->first() ?? $plans->first();
 
-        $users = User::with('entities')->orderBy('name')->get()->map(function ($user) use ($plans, $defaultPlan) {
-            $latestPivot = DB::table('entity_user')
-                ->where('user_id', $user->id)
-                ->orderBy('created_at', 'desc')
-                ->first();
+        // Cargar en una sola consulta indexada el pivote más reciente por usuario para evitar N+1
+        $latestPivots = DB::table('entity_user')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->unique('user_id')
+            ->keyBy('user_id');
+
+        $users = User::with('entities')->orderBy('name')->get()->map(function ($user) use ($plans, $defaultPlan, $latestPivots) {
+            $latestPivot = $latestPivots->get($user->id);
 
             $planId = $latestPivot && $latestPivot->plan_id ? $latestPivot->plan_id : ($defaultPlan?->id ?? 1);
             $plan = $plans->get($planId) ?? $defaultPlan;

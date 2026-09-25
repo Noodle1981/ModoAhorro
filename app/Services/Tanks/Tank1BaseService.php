@@ -71,7 +71,9 @@ class Tank1BaseService
             $criticalCategories = $opContext['commercial_profile']->getCriticalCategories();
         }
 
-        $categoryName = $eq->category->name ?? $eq->type?->category?->name ?? '';
+        $categoryName = ($eq->relationLoaded('category') && $eq->category)
+            ? $eq->category->name
+            : ($eq->type?->category?->name ?? '');
         $hours = $eq->avg_daily_use_hours ?? 0;
 
         // Es crítico si pertenece a una categoría esencial O si se usa las 24hs

@@ -68,19 +68,22 @@ class Entity extends Model
         'service_turns',
     ];
 
-    protected $casts = [
-        'thermal_profile' => 'array',
-        'has_gas' => 'boolean',
-        'has_solar' => 'boolean',
-        'has_business_activity' => 'boolean',
-        'construction_year' => 'integer',
-        'people_count' => 'integer',
-        'square_meters' => 'float',
-        'operating_days' => 'array',
-        'staff_count' => 'integer',
-        'visitors_count' => 'integer',
-        'service_turns' => 'integer',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'thermal_profile' => 'array',
+            'has_gas' => 'boolean',
+            'has_solar' => 'boolean',
+            'has_business_activity' => 'boolean',
+            'construction_year' => 'integer',
+            'people_count' => 'integer',
+            'square_meters' => 'float',
+            'operating_days' => 'array',
+            'staff_count' => 'integer',
+            'visitors_count' => 'integer',
+            'service_turns' => 'integer',
+        ];
+    }
 
     public function users()
     {

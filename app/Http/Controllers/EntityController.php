@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Commercial\Registry\CommercialProfileRegistry;
+use App\Http\Requests\UpdateEntityProfileRequest;
 use App\Models\Entity;
 use App\Models\Locality;
 use App\Models\Province;
@@ -56,7 +57,7 @@ class EntityController extends Controller
     /**
      * Update the entity details.
      */
-    public function update(Request $request)
+    public function update(UpdateEntityProfileRequest $request)
     {
         $currentEntityId = session('active_entity_id');
         $entity = Entity::findOrFail($currentEntityId);
@@ -65,29 +66,7 @@ class EntityController extends Controller
             abort(403);
         }
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'usage_type' => 'required|string|in:residencial,comercial,oficina',
-            'address_street' => 'nullable|string|max:255',
-            'address_postal_code' => 'nullable|string|max:20',
-            'locality_id' => 'nullable|exists:localities,id',
-            'square_meters' => 'nullable|numeric|min:1',
-            'people_count' => 'nullable|integer|min:0',
-            'construction_year' => 'nullable|integer|min:1900|max:'.date('Y'),
-            'has_gas' => 'boolean',
-            'has_solar' => 'boolean',
-            'has_business_activity' => 'boolean',
-            'business_type' => 'nullable|string|in:almacen,taller,venta',
-            'description' => 'nullable|string',
-            'comercio_type' => 'nullable|string|in:gastronomia,retail,oficina',
-            'business_category' => 'nullable|string|max:100',
-            'business_subcategory' => 'nullable|string|max:100',
-            'staff_count' => 'nullable|integer|min:0',
-            'visitors_count' => 'nullable|integer|min:0',
-            'service_turns' => 'nullable|integer|min:1|max:3',
-            'opens_at' => 'nullable|string',
-            'closes_at' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         $entity->update($validated);
 

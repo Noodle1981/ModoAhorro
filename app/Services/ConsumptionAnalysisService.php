@@ -468,7 +468,7 @@ class ConsumptionAnalysisService
 
             // 3. Obtener consumos de equipos (Usamos los de la factura representativa como base del inventario)
             // Si el usuario cargó inventarios diferentes en cada cuota (raro), tomamos los de la representativa.
-            $usages = $representativeInvoice->equipmentUsages()->with(['equipment.category', 'equipment.type'])->get();
+            $usages = $representativeInvoice->equipmentUsages()->with(['equipment.category', 'equipment.type', 'equipment.room'])->get();
 
             $simulatedEquipments = $usages->map(function ($usage) use ($representativeInvoice, $startDate, $endDate) {
                 // Creamos un clon temporal de la factura para ajustar el cálculo de días de este uso

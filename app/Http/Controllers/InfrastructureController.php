@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SaveEquipmentRequest;
+use App\Http\Requests\SaveRoomRequest;
 use App\Models\Entity;
 use App\Models\Equipment;
 use App\Models\EquipmentCategory;
@@ -46,13 +48,9 @@ class InfrastructureController extends Controller
     /**
      * Store a newly created room.
      */
-    public function storeRoom(Request $request)
+    public function storeRoom(SaveRoomRequest $request)
     {
-        $validated = $request->validate([
-            'entity_id' => 'required|exists:entities,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         $entity = Entity::findOrFail($validated['entity_id']);
         if ($request->user()->cannot('update', $entity)) {
@@ -67,12 +65,9 @@ class InfrastructureController extends Controller
     /**
      * Update the specified room.
      */
-    public function updateRoom(Request $request, Room $room)
+    public function updateRoom(SaveRoomRequest $request, Room $room)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         if ($request->user()->cannot('update', $room->entity)) {
             abort(403);
@@ -100,24 +95,9 @@ class InfrastructureController extends Controller
     /**
      * Manage Equipment
      */
-    public function storeEquipment(Request $request)
+    public function storeEquipment(SaveEquipmentRequest $request)
     {
-        $validated = $request->validate([
-            'room_id' => 'required|exists:rooms,id',
-            'category_id' => 'required|exists:equipment_categories,id',
-            'type_id' => 'required|exists:equipment_types,id',
-            'name' => 'required|string|max:255',
-            'nominal_power_w' => 'required|numeric|min:0',
-            'avg_daily_use_hours' => 'nullable|numeric|min:0|max:24',
-            'is_standby' => 'nullable|boolean',
-            'is_inverter' => 'nullable|boolean',
-            'brand' => 'nullable|string|max:255',
-            'model' => 'nullable|string|max:255',
-            'model_id' => 'nullable|exists:equipment_models,id',
-            'serial_number' => 'nullable|string|max:255',
-            'energy_label' => 'nullable|string|max:10',
-            'cantidad' => 'integer|min:1',
-        ]);
+        $validated = $request->validated();
 
         $validated['avg_daily_use_hours'] = $validated['avg_daily_use_hours'] ?? 0;
         $validated['is_inverter'] = $validated['is_inverter'] ?? false;
@@ -156,24 +136,9 @@ class InfrastructureController extends Controller
         return redirect()->back()->with('success', $cantidad > 1 ? "{$cantidad} equipos creados correctamente." : 'Equipo registrado correctamente.');
     }
 
-    public function updateEquipment(Request $request, Equipment $equipment)
+    public function updateEquipment(SaveEquipmentRequest $request, Equipment $equipment)
     {
-        $validated = $request->validate([
-            'room_id' => 'required|exists:rooms,id',
-            'category_id' => 'required|exists:equipment_categories,id',
-            'type_id' => 'required|exists:equipment_types,id',
-            'name' => 'required|string|max:255',
-            'nominal_power_w' => 'required|numeric|min:0',
-            'avg_daily_use_hours' => 'nullable|numeric|min:0|max:24',
-            'is_standby' => 'nullable|boolean',
-            'is_inverter' => 'nullable|boolean',
-            'brand' => 'nullable|string|max:255',
-            'model' => 'nullable|string|max:255',
-            'model_id' => 'nullable|exists:equipment_models,id',
-            'serial_number' => 'nullable|string|max:255',
-            'energy_label' => 'nullable|string|max:10',
-            'is_active' => 'required|boolean',
-        ]);
+        $validated = $request->validated();
 
         $validated['avg_daily_use_hours'] = $validated['avg_daily_use_hours'] ?? $equipment->avg_daily_use_hours;
         $validated['is_inverter'] = $validated['is_inverter'] ?? false;

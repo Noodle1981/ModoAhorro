@@ -1,7 +1,7 @@
-﻿---
+---
 description: Registro de desarrollo, decisiones de producto y evolución arquitectónica de ModoAhorro.
 tags: [PDR, evolución, arquitectura, historial, decisiones, comercial, admin]
-last_updated: 2026-08-17
+last_updated: 2026-09-25
 type: record
 owner: equipo_modoahorro
 ---
@@ -9,8 +9,8 @@ owner: equipo_modoahorro
 # Registro de Desarrollo de Producto (PDR) — ModoAhorro
 
 **Proyecto:** ModoAhorro  
-**Versión Actual:** 2.1 (Soporte B2B Modular, Super Admin Suite & Heladerías Artesanales)  
-**Última Actualización:** 2026-08-17  
+**Versión Actual:** 2.2 (Excelencia y Modernización Backend con Skills Laravel 13)  
+**Última Actualización:** 2026-09-25  
 **Roles:**
 - **Director de Proyecto (Arquitecto):** IA notebookLM
 - **Desarrollador Senior (Ejecutor):** IA Antigravity
@@ -42,6 +42,7 @@ owner: equipo_modoahorro
 | **v11** | Cuellos de botella climáticos, incoherencias de clasificación y servicios duplicados | **Optimización y Refactorización Laravel**: (1) Memoización de consultas climáticas en ConsumptionAnalysisService (suite de tests 6x más rápida: de 30.6s a 4.7s). (2) Corrección termodinámica en ACS removiendo bombas de agua. (3) Desbloqueo de equipos térmicos con patrón fijo en Tank2ClimateService y sincronización de tiers en AnalysisController. (4) Filtro de categorías excluidas en StandbyAnalysisService. (5) Ambientes del sistema desacoplados y centralizados en config/entity_types.php. (6) Eliminación de servicios huérfanos y duplicados garantizando PSR-4 estricto. |
 | **v12** | Vulnerabilidades de dependencias y ausencia de cabeceras HTTP de protección | **Blindaje de Seguridad Laravel (Skill laravel-security)**: (1) Actualización de dependencias y resolución del 100% de vulnerabilidades detectadas por composer audit (0 advertencias). (2) Creación y registro del middleware SecurityHeaders inyectando X-Content-Type-Options: nosniff, X-Frame-Options: SAMEORIGIN, X-XSS-Protection y Referrer-Policy. (3) Forzado de esquema HTTPS en ambiente de producción en AppServiceProvider::boot(). (4) Validación automatizada de cabeceras de respuesta en la suite de tests. |
 | **v13** | Duplicación de lógica de temas de interfaz (~1.000 líneas), ausencia de composables y componentes reutilizables | **Buenas Prácticas de Frontend Vue 3 (Skill ue-best-practices)**: (1) Creación de esources/js/Composables/useTheme.js y useFormatters.js. (2) Eliminación del 100% de la lógica de colorimetría y diseño duplicada en 17 archivos de vistas. (3) Creación de componentes reutilizables accesibles (Modal.vue, StatCard.vue). (4) Optimización de reactividad mediante shallowRef en estados primitivos de modales y filtros. (5) Build de Vite optimizado y 0 advertencias en ESLint. |
+| **v14** | Discrepancias con skills Laravel (sintaxis string en rutas, controladores con validación inline, ausencia de prevención N+1 y consultas en loop) | **Refactorización y Excelencia Backend (Skill laravel-best-practices)**: (1) Migración del 100% de `routes/web.php` a sintaxis canónica `[Controller::class, 'method']`. (2) Extracción de validaciones a Form Requests (`SaveContractRequest`, `SaveRoomRequest`, `SaveEquipmentRequest`, `UpdateEntityProfileRequest`). (3) Activación de `Model::preventLazyLoading` en `AppServiceProvider`. (4) Carga ansiosa preventiva (`loadMissing` y `with(['equipment.room'])`) en servicios del motor (`EnergyEngineService`, `ConsumptionAnalysisService`, `Tank1BaseService`). (5) Modernización de modelos a PHP 8.2+ con `casts(): array` y `Attribute::make()`. (6) Optimización de consulta en `AdminController@userPayments`. (7) 59/59 tests en verde y 0 alertas en `composer audit`. |
 
 ---
 

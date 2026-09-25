@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SaveContractRequest;
 use App\Models\Contract;
 use App\Models\Entity;
 use App\Models\Proveedor;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class ContractController extends Controller
@@ -54,24 +54,9 @@ class ContractController extends Controller
     /**
      * Store a newly created contract in storage.
      */
-    public function store(Request $request)
+    public function store(SaveContractRequest $request)
     {
-        $validated = $request->validate([
-            'entity_id' => 'required|exists:entities,id',
-            'proveedor_id' => 'required|exists:proveedores,id',
-            'supply_number' => 'required|string|max:255',
-            'meter_number' => 'nullable|string|max:255',
-            'contract_number' => 'nullable|string|max:255|unique:contracts,contract_number',
-            'rate_name' => 'required|string|max:255',
-            'start_date' => 'nullable|date',
-            'is_three_phase' => 'required|boolean',
-            'contracted_power_kw_p1' => 'required|numeric|min:0',
-            'contracted_power_kw_p2' => 'nullable|numeric|min:0',
-            'contracted_power_kw_p3' => 'nullable|numeric|min:0',
-            'is_active' => 'required|boolean',
-        ], [
-            'contract_number.unique' => 'Este número de contrato ya se encuentra registrado en el sistema.',
-        ]);
+        $validated = $request->validated();
 
         $entity = Entity::findOrFail($validated['entity_id']);
 
@@ -93,29 +78,9 @@ class ContractController extends Controller
     /**
      * Update the specified contract in storage.
      */
-    public function update(Request $request, Contract $contract)
+    public function update(SaveContractRequest $request, Contract $contract)
     {
-        $validated = $request->validate([
-            'entity_id' => 'required|exists:entities,id',
-            'proveedor_id' => 'required|exists:proveedores,id',
-            'supply_number' => 'required|string|max:255',
-            'meter_number' => 'nullable|string|max:255',
-            'contract_number' => [
-                'nullable',
-                'string',
-                'max:255',
-                Rule::unique('contracts', 'contract_number')->ignore($contract->id),
-            ],
-            'rate_name' => 'required|string|max:255',
-            'start_date' => 'nullable|date',
-            'is_three_phase' => 'required|boolean',
-            'contracted_power_kw_p1' => 'required|numeric|min:0',
-            'contracted_power_kw_p2' => 'nullable|numeric|min:0',
-            'contracted_power_kw_p3' => 'nullable|numeric|min:0',
-            'is_active' => 'required|boolean',
-        ], [
-            'contract_number.unique' => 'Este número de contrato ya pertenece a otro registro.',
-        ]);
+        $validated = $request->validated();
 
         // Security check: Ensure user owns the current and target entity
         if ($request->user()->cannot('update', $contract->entity) ||
