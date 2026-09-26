@@ -142,4 +142,61 @@ class SolarWaterService
             ],
         ];
     }
+
+    /**
+     * Calcula el ahorro térmico y retorno de inversión en campamentos mineros
+     * sustituyendo calentamiento eléctrico generado por diésel por colectores solares de tubos de vacío.
+     *
+     * @param  int  $peopleCount  Dotación del pabellón o campamento
+     * @param  float|null  $dieselCostPerLiter  Costo por litro de diésel puesto en cordillera (USD)
+     * @param  float  $minTemp  Temperatura mínima exterior (°C)
+     * @param  float  $solarFraction  Fracción solar de aporte térmico (0.70 a 0.80)
+     */
+    public function calculateMiningROI(
+        int $peopleCount,
+        ?float $dieselCostPerLiter = null,
+        float $minTemp = -5.0,
+        float $solarFraction = 0.75
+    ): array {
+        $costPerLiter = $dieselCostPerLiter ?? (float) config('mining.diesel_usd_per_liter', 1.35);
+        $dieselLitersPerKwh = (float) config('mining.diesel_liters_per_kwh', 0.28);
+        $co2KgPerKwh = (float) config('mining.co2_kg_per_kwh', 0.27);
+
+        // Demanda de agua en campamento minero (50L por persona)
+        $dailyLiters = $peopleCount * 50;
+
+        // ΔT térmico: agua de deshielo / alta montaña (-7°C de entrada vs 50°C de servicio)
+        $inletTemp = $minTemp - 2.0;
+        $targetTemp = 50.0;
+        $deltaT = max(10.0, $targetTemp - $inletTemp);
+
+        // Energía térmica requerida
+        $dailyKcal = $dailyLiters * self::CP_WATER * $deltaT;
+        $dailyKwh = $dailyKcal * self::KCAL_TO_KWH;
+        $monthlyThermalKwh = $dailyKwh * 30;
+
+        // Ahorro solar con tubos de vacío en alta montaña
+        $savedKwh = $monthlyThermalKwh * $solarFraction;
+
+        // Equivalente en litros de diésel ahorrados al grupo electrógeno
+        $dieselLitersAvoided = $savedKwh * $dieselLitersPerKwh;
+        $monthlySavingsUsd = $dieselLitersAvoided * $costPerLiter;
+        $annualSavingsUsd = $monthlySavingsUsd * 12;
+        $co2AvoidedKg = $savedKwh * $co2KgPerKwh;
+
+        return [
+            'people_count' => $peopleCount,
+            'daily_liters' => $dailyLiters,
+            'delta_t' => round($deltaT, 1),
+            'monthly_demand_kwh' => round($monthlyThermalKwh, 1),
+            'saved_kwh_monthly' => round($savedKwh, 1),
+            'diesel_liters_avoided_monthly' => round($dieselLitersAvoided, 1),
+            'diesel_liters_avoided_annual' => round($dieselLitersAvoided * 12, 1),
+            'monthly_savings_usd' => round($monthlySavingsUsd, 2),
+            'annual_savings_usd' => round($annualSavingsUsd, 2),
+            'co2_avoided_kg_monthly' => round($co2AvoidedKg, 1),
+            'solar_fraction' => $solarFraction,
+            'diesel_cost_per_liter_usd' => $costPerLiter,
+        ];
+    }
 }

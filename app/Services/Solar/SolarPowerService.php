@@ -11,7 +11,11 @@ class SolarPowerService
 
     const PEAK_SUN_HOURS = 4.5;
 
+    const PEAK_SUN_HOURS_ANDEAN = 6.5; // Puna / Cordillera sanjuanina
+
     const SYSTEM_EFFICIENCY = 0.80;
+
+    const SYSTEM_EFFICIENCY_ANDEAN = 0.82; // Mayor transparencia atmosférica en altura
 
     /**
      * Calcula la cobertura solar basada en espacio disponible y consumo.
@@ -19,10 +23,18 @@ class SolarPowerService
      * @param  float  $availableArea  Espacio disponible en m²
      * @param  float  $maxConsumption  Consumo mensual máximo (kWh)
      * @param  float  $avgConsumption  Consumo mensual promedio (kWh)
+     * @param  bool  $isAndeanAltitude  Si aplica parámetros de radiación andina de alta montaña
      * @return array
      */
-    public function calculateSolarCoverage($availableArea, $maxConsumption, $avgConsumption)
+    public function calculateSolarCoverage($availableArea, $maxConsumption, $avgConsumption, bool $isAndeanAltitude = false)
     {
+        $peakSunHours = $isAndeanAltitude
+            ? (float) config('mining.peak_sun_hours_andean', self::PEAK_SUN_HOURS_ANDEAN)
+            : self::PEAK_SUN_HOURS;
+
+        $efficiency = $isAndeanAltitude
+            ? (float) config('mining.andean_system_efficiency', self::SYSTEM_EFFICIENCY_ANDEAN)
+            : self::SYSTEM_EFFICIENCY;
         // Evitar división por cero
         if ($maxConsumption <= 0) {
             $maxConsumption = 1;
@@ -33,7 +45,7 @@ class SolarPowerService
 
         // A. ¿Cuánto NECESITA? (Target)
         // KwP necesarios para cubrir el consumo máximo
-        $targetKwp = $maxConsumption / (self::PEAK_SUN_HOURS * 30 * self::SYSTEM_EFFICIENCY);
+        $targetKwp = $maxConsumption / ($peakSunHours * 30 * $efficiency);
         $targetPanels = ceil($targetKwp * 1000 / self::PANEL_POWER_W);
         $targetArea = $targetPanels * self::AREA_PER_PANEL;
 
@@ -46,7 +58,7 @@ class SolarPowerService
         $kwpToInstall = ($panelsToInstall * self::PANEL_POWER_W) / 1000;
 
         // Generación Estimada del sistema resultante
-        $monthlyGeneration = $kwpToInstall * self::PEAK_SUN_HOURS * 30 * self::SYSTEM_EFFICIENCY;
+        $monthlyGeneration = $kwpToInstall * $peakSunHours * 30 * $efficiency;
 
         // Porcentajes de Cobertura
         $coverageSummer = min(100, ($monthlyGeneration / $maxConsumption) * 100);

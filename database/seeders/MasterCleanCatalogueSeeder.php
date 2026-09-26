@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\EnergyLabelCoefficient;
+use App\Models\EquipmentBenchmark;
 use App\Models\EquipmentCategory;
 use App\Models\EquipmentType;
 use Illuminate\Database\Seeder;
@@ -167,6 +168,74 @@ class MasterCleanCatalogueSeeder extends Seeder
                     'coefficient' => $coeff,
                 ]);
             }
+        }
+
+        // ── 4. BENCHMARKS DE EFICIENCIA PARA REEMPLAZO (Alta Montaña y Minería) ──
+        $benchmarks = [
+            [
+                'typeName' => 'Convector Eléctrico de Pared',
+                'catKey' => 'CALEF_IND',
+                'name' => 'Panel Radiante Infrarrojo Onda Larga 900W',
+                'watts' => 900,
+                'gain' => 0.40,
+                'ratio' => 1.67,
+                'label' => 'A+++',
+                'price' => 145000,
+                'search' => 'panel calefactor infrarrojo bajo consumo 900w',
+                'text' => 'Sustitución recomendada de convector resistivo por panel infrarrojo de onda larga. Calienta masas y personas directamente, minimizando pérdidas térmicas por apertura de puertas en el módulo.',
+            ],
+            [
+                'typeName' => 'Termotanque Industrial 300L',
+                'catKey' => 'AGUA_IND',
+                'name' => 'Colector Solar Tubos de Vacío 300L con Soporte Eléctrico',
+                'watts' => 1000,
+                'gain' => 0.75,
+                'ratio' => 4.00,
+                'label' => 'A+++',
+                'price' => 850000,
+                'search' => 'calefon solar termotanque tubos vacio heat pipe 300l',
+                'text' => 'Sustitución de calentamiento puramente resistivo por sistema solar térmico de tubos de vacío heat pipe anticongelamiento. Ahorro de 75% en generación diésel para agua caliente sanitaria.',
+            ],
+            [
+                'typeName' => 'Compresor de Tornillo',
+                'catKey' => 'COMPR',
+                'name' => 'Compresor de Tornillo con Variador VSD Inverter',
+                'watts' => 11000,
+                'gain' => 0.30,
+                'ratio' => 1.43,
+                'label' => 'A++',
+                'price' => 4200000,
+                'search' => 'compresor tornillo variador velocidad vsd inverter industrial',
+                'text' => 'Modulación continua de caudal de aire que evita picos de corriente y consumo en vacío en faena.',
+            ],
+            [
+                'typeName' => 'Traceado Eléctrico Cañería',
+                'catKey' => 'CALEF_IND',
+                'name' => 'Traceado Autorregulable con Termostato Electrónico',
+                'watts' => 250,
+                'gain' => 0.35,
+                'ratio' => 1.54,
+                'label' => 'A+',
+                'price' => 120000,
+                'search' => 'cable calefactor autorregulable cinta termostato digital',
+                'text' => 'Control automático con sonda de temperatura ambiente que interrumpe la carga al superar 3°C.',
+            ],
+        ];
+
+        foreach ($benchmarks as $b) {
+            $eqType = EquipmentType::where('name', $b['typeName'])->first();
+            EquipmentBenchmark::create([
+                'category_id' => $cats[$b['catKey']]->id ?? null,
+                'equipment_type_id' => $eqType?->id,
+                'name' => $b['name'],
+                'watts' => $b['watts'],
+                'efficiency_gain_factor' => $b['gain'],
+                'efficiency_ratio' => $b['ratio'],
+                'energy_label' => $b['label'],
+                'average_market_price' => $b['price'],
+                'meli_search_term' => $b['search'],
+                'recommendation_text' => $b['text'],
+            ]);
         }
 
         Schema::enableForeignKeyConstraints();
