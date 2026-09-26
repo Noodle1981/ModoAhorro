@@ -30,18 +30,22 @@ class DashboardController extends Controller
         // Get user's entities
         $userEntities = $user->entities()->with('locality')->get();
 
-        // Prepare data for Inertia
+        // Prepare data for Inertia: solo perfiles pabellón y oficina (hogar y comercio ocultos)
+        $targetTypes = ['pabellon', 'oficina'];
         $entitiesByType = [];
-        foreach ($entityTypes as $type => $config) {
-            // 'hogar', 'comercio', 'oficina' y 'pabellon' están habilitados.
-            $isEnabled = in_array($type, ['hogar', 'comercio', 'oficina', 'pabellon']);
+        foreach ($targetTypes as $type) {
+            if (! isset($entityTypes[$type])) {
+                continue;
+            }
+            $config = $entityTypes[$type];
+            $isEnabled = true;
 
             $entitiesByType[] = [
                 'type' => $type,
                 'name' => $config['label'],
                 'enabled' => $isEnabled,
                 'entities' => $userEntities->where('type', $type)->values(),
-                'can_add' => $isEnabled && ($userEntities->where('type', $type)->count() < $plan->max_entities),
+                'can_add' => $isEnabled && ($userEntities->where('type', $type)->count() < ($plan->max_entities ?? 20)),
                 // Dynamic styling classes from central config
                 'tailwind_bg' => $config['tailwind_bg'] ?? 'bg-slate-100',
                 'tailwind_text' => $config['tailwind_text'] ?? 'text-slate-600',

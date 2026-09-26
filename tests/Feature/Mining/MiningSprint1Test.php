@@ -228,9 +228,11 @@ class MiningSprint1Test extends TestCase
         $response->assertStatus(200);
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Dashboard/Selector')
-            ->has('entitiesByType', 4)
-            ->where('entitiesByType.3.type', 'pabellon')
-            ->where('entitiesByType.3.enabled', true)
+            ->has('entitiesByType', 2)
+            ->where('entitiesByType.0.type', 'pabellon')
+            ->where('entitiesByType.0.enabled', true)
+            ->where('entitiesByType.1.type', 'oficina')
+            ->where('entitiesByType.1.enabled', true)
         );
     }
 

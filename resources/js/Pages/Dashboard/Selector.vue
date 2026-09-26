@@ -129,10 +129,10 @@ const confirmDelete = () => {
                 <h1 class="text-4xl font-black text-slate-900 tracking-tight leading-tight">
                     Bienvenido, {{ user.name.split(' ')[0] }}
                 </h1>
-                <p class="text-slate-500 font-medium mt-2">Gestione la eficiencia de sus <span class="text-emerald-600 font-bold">Entidades</span>.</p>
+                <p class="text-slate-500 font-medium mt-2">Gestione la eficiencia energética de sus <span class="text-amber-600 font-bold">Pabellones y Oficinas</span>.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl">
                 <div v-for="type in entitiesByType" :key="type.type" 
                     :class="['group relative flex flex-col h-full rounded-3xl border transition-all duration-500', 
                         type.enabled 
