@@ -112,6 +112,26 @@ Una vez detectado el desvío entre la Línea Base de Buenas Prácticas y el cons
 * **¿Cómo funciona?**
   * Si un convector de resistencia eléctrica de 1.500 W consume en modo base más de lo esperado incluso en horario de desocupación mínima, el sistema sugiere su reemplazo por un **panel radiante de bajo consumo con termostato programable** o un **calefactor por infrarrojos de onda larga** (más eficiente en espacios de alta montaña con ventilación frecuente por apertura de puertas).
   * Si el termotanque individual de 3.000 W arroja desvíos sostenidos, el sistema puede recomendar la migración a un **sistema centralizado de agua caliente sanitaria** con caldera eficiente y distribución por tuberías con traceado inteligente.
+
+> 🌞 **Nota Técnica: Calefones Solares de Tubos de Vacío en Alta Montaña**
+>
+> La recomendación estrella de sustitución del termotanque eléctrico en campamentos de alta montaña es el **colector solar de tubos de vacío**, y es 100% factible en la cordillera sanjuanina por la siguiente razón física clave:
+>
+> **La irradiancia solar NO depende de la temperatura ambiente.** A +4.000 msnm hay menos atmósfera filtrando los rayos UV e infrarrojos, lo que resulta en una irradiancia de **6 a 8 kWh/m²/día** (comparable al desierto de Atacama y entre las más altas del planeta). Se puede estar a -20 °C y quemarse la piel porque el sol calienta a máxima potencia.
+>
+> | Tecnología | Clima de Alta Montaña | ¿Por qué? |
+> | :--- | :---: | :--- |
+> | Placa plana convencional | ❌ No viable | Se congela de noche, rompe cañerías |
+> | **Tubos de vacío (evacuated tubes)** | ✅ Viable | El vacío aísla el fluido del frío exterior. Opera de -40 °C a +200 °C |
+>
+> El vacío interior actúa como un termos perfecto: la temperatura exterior de -20 °C no le llega al fluido caloportador, pero la radiación solar sí penetra el vidrio y lo calienta igual. El sistema almacena el agua caliente en un termotanque acumulador muy bien aislado y solo usa respaldo eléctrico en días de tormenta o alta nubosidad.
+>
+> **Casos reales en minería andina:** Mina Escondida (BHP, Chile, 3.100 msnm), proyectos de litio en la Puna argentina y evaluaciones en Pascua Lama (4.500 msnm) han implementado o evaluado estos sistemas con éxito.
+>
+> **En el sistema ModoAhorro Pabellones:** Cuando el termotanque eléctrico de un pabellón acumula desvíos estructurales, la Salida 4 genera automáticamente una recomendación de sustitución por tubos de vacío con el ROI calculado:
+> *"Ahorro estimado: 80% del consumo eléctrico de ACS. Inversión estimada: USD 3.200 por pabellón. ROI: 5 a 7 meses según precio del combustible en cordillera."*
+
+
 * **¿Qué genera el sistema?** Un **informe de retorno de inversión (ROI)** estimado: cuánto costaría reemplazar el equipo vs. cuánto se ahorra en diésel en 6 o 12 meses. Eso le da a la gerencia un argumento económico concreto para aprobar la inversión en capital.
 * **Ejemplo:**
   > *"El Pabellón A-01 lleva 4 quincenas con desvío superior al 60% pese a las campañas de concientización. El sistema estima que reemplazar los 20 convectores actuales por paneles de bajo consumo con termostato requiere una inversión de USD 4.800 y genera un ahorro de USD 1.200/mes en combustible. El ROI se alcanza en 4 meses."*
