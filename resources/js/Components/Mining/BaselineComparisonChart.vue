@@ -1,15 +1,10 @@
 <script setup>
 import { computed } from 'vue';
 import { 
-    Zap, 
-    Flame, 
     Layers, 
-    TrendingUp, 
-    TrendingDown, 
     Gauge, 
     Clock, 
-    Activity, 
-    Info 
+    Activity 
 } from 'lucide-vue-next';
 
 const props = defineProps({

@@ -3,12 +3,10 @@ import { computed } from 'vue';
 import { 
     Building2, 
     Users, 
-    Zap, 
     Flame, 
     AlertTriangle, 
     CheckCircle2, 
     AlertCircle, 
-    ArrowUpRight,
     Leaf
 } from 'lucide-vue-next';
 
@@ -56,7 +54,6 @@ const verdictConfig = computed(() => {
 });
 
 const deltaPct = computed(() => props.pavilion.deviation?.delta_pct || 0);
-const deltaKwh = computed(() => props.pavilion.deviation?.delta_kwh || 0);
 const litersWasted = computed(() => props.pavilion.deviation?.liters_wasted || 0);
 </script>
 

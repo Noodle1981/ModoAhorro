@@ -1,23 +1,20 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/MainLayout.vue';
 import PavillionCard from '@/Components/Mining/PavillionCard.vue';
 import BaselineComparisonChart from '@/Components/Mining/BaselineComparisonChart.vue';
 import DeviationOutputPanel from '@/Components/Mining/DeviationOutputPanel.vue';
 import { 
-    Building2, 
     Flame, 
     Zap, 
     AlertCircle, 
     Leaf, 
     DollarSign, 
-    Activity, 
     Mountain,
     ShieldAlert,
     Gauge,
-    Layers,
-    ArrowUpRight
+    Layers
 } from 'lucide-vue-next';
 
 const props = defineProps({

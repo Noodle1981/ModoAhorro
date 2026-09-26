@@ -6,15 +6,10 @@ import {
     Leaf, 
     Wrench, 
     CheckSquare, 
-    FileText, 
-    DollarSign, 
-    Flame, 
-    Clock, 
-    ArrowRight,
     ShieldAlert
 } from 'lucide-vue-next';
 
-const props = defineProps({
+defineProps({
     outputs: {
         type: Object,
         required: true,
