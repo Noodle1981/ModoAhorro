@@ -234,6 +234,28 @@ Los equipos relevantes para la cordillera sanjuanina son radicalmente distintos 
 | **Iluminación LED de pasillo** | 40 W/tramo | Permanente nocturna + emergencias |
 | **Frigobares de módulo de guardia** | 100 W | Almacenamiento de medicamentos / guardia médica |
 
+### 4.3. Arquitectura de Despliegue, Ciberseguridad y Ciclo de Vida de Software
+
+Un factor crítico de adopción en minería corporativa (ISO 27001 / IEC 62443) es la **soberanía del dato y la resiliencia operativa**. ModoAhorro Pabellones está diseñado bajo un **modelo Single-Tenant On-Premise / Edge Gateway**, evitando las vulnerabilidades y barreras de un SaaS multi-tenant convencional:
+
+#### 1. Topología de Despliegue: Edge Local-First & VPC Privada
+* **Operación Local-First en Campamento (Edge Node):** Se instala en un servidor o appliance dentro de la red LAN del campamento cordillerano.
+  * **Resiliencia ante corte satelital:** Si un temporal de nieve o viento blanco interrumpe el enlace satelital (Starlink/microondas), **el sistema no se cae ni se bloquea**. El supervisor de campamento continúa cargando tableros y auditando desvíos en la red local sin interrupción.
+* **VPC Privada Corporativa (Single-Tenant):** Para operadoras que prefieren centralizar la gestión de múltiples yacimientos (ej. Veladero + Josemaría), se despliega en una VPC dedicada (AWS/Azure Gov o Datacenter de la minera), aislada de internet público y accesible únicamente vía VPN institucional.
+* **Soberanía Absoluta del Dato:** Los registros de consumo, capacidad de alojamiento y costos de generación diésel residen 100% dentro del perímetro seguro de la compañía minera. Ningún dato sensible sale a infraestructuras de terceros.
+
+#### 2. Ciberseguridad y Cero Intrusión OT
+* **Sin riesgo para la planta:** El software opera a nivel de gestión de habitabilidad e infraestructura civil (tableros seccionales de pabellones). **No se conecta ni interfiere con las redes críticas de control de procesos SCADA/DCS de la mina**, eliminando cualquier vector de ataque industrial.
+* **Zero Black-Box Telemetry:** Todos los cálculos matemáticos se resuelven en el propio servidor mediante algoritmos determinísticos. Cero envío de datos a modelos de lenguaje o APIs externas de inferencia.
+
+#### 3. Política de Actualizaciones, Parches (Fixes) y Mantenimiento Continuo
+¿Cómo se actualiza un sistema instalado en la cordillera o en una VPC cerrada sin exponer la seguridad?
+
+* **Empaquetado en Contenedores Inmutables (Docker):** Cada versión y fix se distribuye como una imagen de contenedor cifrada y firmada digitalmente con hash SHA-256.
+* **Migraciones Atómicas de Base de Datos:** Los scripts de migración (`php artisan migrate --force`) se ejecutan de manera transaccional durante el arranque del contenedor, garantizando compatibilidad retroactiva e integridad de los datos históricos.
+* **Flujo Automatizado vía Túnel Seguro:** En yacimientos conectados, un agente de despliegue (ej. Ansible o Watchtower) sincroniza parches de seguridad y mejoras de catálogo en ventanas programadas de mantenimiento con capacidad de rollback instantáneo (1 segundo).
+* **Compatibilidad Air-Gapped (100% Desconectado):** Para campamentos con directiva de aislamiento estricto, las actualizaciones se transfieren vía bastión seguro en un paquete `.tar.gz` verificado sin requerir acceso a internet.
+
 ---
 
 ## 📊 5. Alineación con la Rúbrica de Evaluación (100 Puntos)

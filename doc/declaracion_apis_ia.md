@@ -45,6 +45,23 @@ El proyecto está construido sobre tecnologías consolidadas de nivel empresaria
 
 ---
 
-### 4. Origen y Titularidad (Compre Local)
+### 4. Ciberseguridad, Soberanía de Datos y Modelo de Despliegue
+
+Para garantizar el cumplimiento con las normas de ciberseguridad industrial y confidencialidad minera:
+
+1. **Topología de Despliegue On-Premise / Edge (No SaaS Multi-Tenant):**
+   - El sistema se entrega para despliegue en servidor local del campamento (*Edge Node*) o en nube privada dedicada (*VPC Single-Tenant*).
+   - **Operación Local-First:** En caso de caída de enlace satelital cordillerano, la aplicación continúa funcionando en la red de área local (LAN) del campamento sin interrupciones.
+   - **Soberanía del Dato:** Toda la información de consumo de combustible, tableros y ocupación de personal reside exclusivamente dentro de la infraestructura del operador minero.
+
+2. **Seguridad y Actualizaciones de Software (Ciclo de Vida y Fixes):**
+   - **Contenedores Docker Inmutables:** El software se distribuye mediante imágenes versionadas y firmadas digitalmente con checksum SHA-256.
+   - **Migraciones Automáticas y Seguras:** Los cambios de esquema de base de datos se ejecutan de forma atómica y transaccional durante el arranque del contenedor, preservando la totalidad del historial.
+   - **Compatibilidad con Redes Air-Gapped:** Admite actualización desconectada vía paquetes empaquetados validados por personal de IT/Ciberseguridad de la compañía minera.
+   - **Segregación de Redes:** No requiere apertura de puertos entrantes ni interactúa con la red de control de planta (SCADA/DCS).
+
+---
+
+### 5. Origen y Titularidad (Compre Local)
 
 El 100% del diseño de arquitectura, modelado del gemelo digital de campamento y código fuente fue concebido y desarrollado en la **Provincia de San Juan, Argentina**, como parte de la oferta tecnológica de software local vinculable a través de CASETIC y CASEMI.
