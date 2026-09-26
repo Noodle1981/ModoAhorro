@@ -362,5 +362,6 @@ Un **Gemelo Digital** del campamento es una réplica virtual sincronizada en tie
 - ClimateService + Open-Meteo ya consume datos geoespaciales reales por coordenadas. Escalar a sensores propios es cambiar la fuente, no el paradigma.
 - SolarWaterService y SolarPowerService ya calculan con variables físicas reales (ΔT, irradiancia, HSP). El gemelo agrega la dimensión temporal continua.
 - El Motor de Desvío ya implementa Estimado vs. Real. El gemelo lo ejecuta automáticamente en tiempo real en vez de manualmente por quincena.
+- **Emulador Ciberfísico en Python:** Se ha documentado la arquitectura de un simulador en Python (`doc/simulador_gemelo_digital_python.md`) que genera telemetría sintética minuto a minuto combinando la física de IRAM 11605 con las 8.760 horas climáticas de Veladero de Open-Meteo, permitiendo calibrar y ensayar el gemelo digital en laboratorio.
 
 > *"ModoAhorro Pabellones no es un Excel más. Es la primera capa de datos estructurada que hace posible el Gemelo Digital del campamento minero sanjuanino. Lo que hoy se carga manualmente, mañana lo lee un sensor. Lo que hoy alerta un supervisor, mañana lo previene el sistema."*
