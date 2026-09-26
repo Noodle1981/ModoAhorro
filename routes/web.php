@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EntityController;
 use App\Http\Controllers\InfrastructureController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\MiningDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\Recommendations\ThermalComfortController;
@@ -42,6 +43,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Inicio / Resumen de Entidad (Panel con Sidebar)
     Route::get('/inicio', [DashboardController::class, 'home'])->name('home');
+
+    // Dashboard Minero (Campamentos y Alta Montaña)
+    Route::get('/mineria/dashboard', [MiningDashboardController::class, 'index'])->name('mining.dashboard');
 
     // Perfil de Usuario
     Route::get('/perfil', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -44,7 +44,7 @@ class BaselineEngine
             $roomKwh = 0.0;
 
             foreach ($room->equipment as $eq) {
-                $powerWatts = (float) ($eq->power_watts ?? $eq->type?->default_power_watts ?? 500);
+                $powerWatts = (float) ($eq->nominal_power_w ?? $eq->power_watts ?? $eq->type?->default_power_watts ?? 500);
                 $powerKw = $powerWatts / 1000.0;
                 $quantity = max(1, (int) ($eq->quantity ?? 1));
                 $categoryName = $eq->category?->name ?? $eq->type?->category?->name ?? 'General';
