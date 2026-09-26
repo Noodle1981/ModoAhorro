@@ -107,11 +107,21 @@ Una vez detectado el desvío entre la Línea Base de Buenas Prácticas y el cons
   * **Para la minera:** El reporte de "Onda Verde" es parte del **informe ESG (Environmental, Social & Governance)** que las operadoras presentan ante el Ministerio de Minería de San Juan, inversores internacionales y comunidades aledañas.
   * **Para el Hackatón:** Es el elemento de innovación social más potente de la propuesta. No sólo mide y penaliza: **premia y motiva**.
 
-> **Resumen de las tres salidas:**
+#### 🔧 Salida 4: Recomendación de Reemplazo por Equipos Más Eficientes
+* **¿Qué es?** Cuando el desvío es **estructural y persistente** (el pabellón sigue desviando aunque se haya capacitado y advertido al personal), el sistema detecta que el problema ya no es de hábito sino de **tecnología obsoleta o sobredimensionada** e incorpora una recomendación automática de sustitución de equipos.
+* **¿Cómo funciona?**
+  * Si un convector de resistencia eléctrica de 1.500 W consume en modo base más de lo esperado incluso en horario de desocupación mínima, el sistema sugiere su reemplazo por un **panel radiante de bajo consumo con termostato programable** o un **calefactor por infrarrojos de onda larga** (más eficiente en espacios de alta montaña con ventilación frecuente por apertura de puertas).
+  * Si el termotanque individual de 3.000 W arroja desvíos sostenidos, el sistema puede recomendar la migración a un **sistema centralizado de agua caliente sanitaria** con caldera eficiente y distribución por tuberías con traceado inteligente.
+* **¿Qué genera el sistema?** Un **informe de retorno de inversión (ROI)** estimado: cuánto costaría reemplazar el equipo vs. cuánto se ahorra en diésel en 6 o 12 meses. Eso le da a la gerencia un argumento económico concreto para aprobar la inversión en capital.
+* **Ejemplo:**
+  > *"El Pabellón A-01 lleva 4 quincenas con desvío superior al 60% pese a las campañas de concientización. El sistema estima que reemplazar los 20 convectores actuales por paneles de bajo consumo con termostato requiere una inversión de USD 4.800 y genera un ahorro de USD 1.200/mes en combustible. El ROI se alcanza en 4 meses."*
+
+> **Ciclo completo de mejora continua:**
 > ```
-> DESVÍO DETECTADO  →  📚 Capacitación (evidencia para RRHH)
->                   →  ⚠️  Penalización (registro auditable de reiteración)
->                   →  🌿 Onda Verde (badge de cumplimiento y reconocimiento)
+> DESVÍO DETECTADO  →  📚 Capacitación   (cambio de hábito)
+>                   →  ⚠️  Penalización   (registro auditable de reiteración)
+>                   →  🌿 Onda Verde      (badge de cumplimiento y reconocimiento)
+>                   →  🔧 Reemplazo       (ROI de sustitución por equipo más eficiente)
 > ```
 
 ---
