@@ -38,6 +38,11 @@ class Invoice extends Model
         'anomaly_reason',
         'usage_locked',
         'recommended_kwh',
+        'source_type',
+        'shift_code',
+        'demand_kw_peak',
+        'generator_hours',
+        'occupancy_count',
     ];
 
     protected function casts(): array
@@ -49,6 +54,9 @@ class Invoice extends Model
             'end_date' => 'date',
             'is_representative' => 'boolean',
             'usage_locked' => 'boolean',
+            'demand_kw_peak' => 'float',
+            'generator_hours' => 'float',
+            'occupancy_count' => 'integer',
         ];
     }
 

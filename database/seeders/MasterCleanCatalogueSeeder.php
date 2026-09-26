@@ -36,6 +36,10 @@ class MasterCleanCatalogueSeeder extends Seeder
             'SALUD' => EquipmentCategory::create(['name' => 'Salud y Cuidado Personal',     'description' => 'Secadores de pelo, afeitadoras, nebulizadores, equipos de salud.']),
             'MANT' => EquipmentCategory::create(['name' => 'Mantenimiento y Bombas',       'description' => 'Bombas de riego, filtrado de piscina, herramientas eléctricas.']),
             'CARGADORES' => EquipmentCategory::create(['name' => 'Cargadores',                   'description' => 'Cargadores de celulares, tablets, notebooks y dispositivos portátiles.']),
+            'CALEF_IND' => EquipmentCategory::create(['name' => 'Calefacción Industrial',       'description' => 'Convectores de pared, paneles infrarrojos, traceado eléctrico y calderas de alta montaña.']),
+            'AGUA_IND' => EquipmentCategory::create(['name' => 'Agua y Bombeo Industrial',     'description' => 'Termotanques de alto volumen, bombas sumergibles y sistemas ACS para campamentos.']),
+            'COMPR' => EquipmentCategory::create(['name' => 'Compresores y Aire Industrial',   'description' => 'Compresores de tornillo, sopladores y equipos neumáticos de faena.']),
+            'SEGURIDAD_IND' => EquipmentCategory::create(['name' => 'Seguridad y Detección',       'description' => 'Detectores de gases, sensores de monóxido y monitoreo 24/7 en campamentos.']),
         ];
 
         // ── 2. TIPOS DE EQUIPO ────────────────────────────────────────────────
@@ -102,6 +106,16 @@ class MasterCleanCatalogueSeeder extends Seeder
 
             // --- CARGADORES ---
             ['Cargador Móvil',           5,   25,   15,   'BASE_LOAD',          'hours',              0.90,  0,     0,    'CARGADORES', false, false, null],
+
+            // --- EQUIPOS MINEROS Y CAMPAMENTO ---
+            ['Convector Eléctrico de Pared', 500, 2500, 1500, 'CLIMATE_DEPENDENT', 'hours', 0.85, 0.20, 0, 'CALEF_IND', true, true, null],
+            ['Panel Radiante Infrarrojo', 400, 1500, 800, 'CLIMATE_DEPENDENT', 'hours', 0.85, 0.15, 0, 'CALEF_IND', true, true, null],
+            ['Traceado Eléctrico Cañería', 100, 2000, 500, 'BASE_LOAD', 'hours', 0.95, 0, 0, 'CALEF_IND', false, false, null],
+            ['Caldera Modular Propano/Gas', 3000, 30000, 12000, 'BASE_THERMAL_LOSS', 'hours', 0.90, 0.25, 0, 'CALEF_IND', true, true, null],
+            ['Termotanque Industrial 300L', 3000, 6000, 4500, 'BASE_THERMAL_LOSS', 'hours', 0.80, 0.20, 0, 'AGUA_IND', false, true, null],
+            ['Bomba Sumergible / Pozo', 1500, 7500, 3000, 'TURNS_BASED', 'hours', 0.75, 0, 0, 'AGUA_IND', false, false, null],
+            ['Compresor de Tornillo', 7500, 30000, 15000, 'CONTINUOUS_COMMERCIAL', 'hours', 0.85, 0, 0, 'COMPR', false, false, null],
+            ['Detector de Gas / CO', 5, 25, 10, 'BASE_LOAD', 'hours', 0.99, 0, 0, 'SEGURIDAD_IND', false, false, null],
         ];
 
         foreach ($types as $t) {

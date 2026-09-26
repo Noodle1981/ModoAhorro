@@ -7,6 +7,7 @@ use App\Domain\Commercial\Profiles\Gastronomy\CoffeeShopProfile;
 use App\Domain\Commercial\Profiles\Gastronomy\IceCreamShopProfile;
 use App\Domain\Commercial\Profiles\Gastronomy\PizzeriaProfile;
 use App\Domain\Commercial\Profiles\Gastronomy\RestaurantProfile;
+use App\Domain\Commercial\Profiles\Mining\MiningCampProfile;
 use App\Domain\Commercial\Profiles\Office\CorporateOfficeProfile;
 use App\Domain\Commercial\Profiles\Retail\RetailShopProfile;
 use App\Models\Entity;
@@ -35,6 +36,7 @@ class CommercialProfileRegistry
         $this->register(new RestaurantProfile);
         $this->register(new RetailShopProfile);
         $this->register(new CorporateOfficeProfile);
+        $this->register(new MiningCampProfile);
     }
 
     /**
@@ -60,6 +62,10 @@ class CommercialProfileRegistry
      */
     public function resolveForEntity(Entity $entity): ?CommercialEngineProfile
     {
+        if ($entity->type === 'pabellon') {
+            return $this->get('campamento_pabellon');
+        }
+
         if ($entity->type === 'oficina') {
             return $this->get('oficina_servicios');
         }

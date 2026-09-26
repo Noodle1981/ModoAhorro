@@ -66,6 +66,9 @@ class Entity extends Model
         'staff_count',
         'visitors_count',
         'service_turns',
+        'camp_shift_type',
+        'camp_capacity',
+        'module_type',
     ];
 
     protected function casts(): array
@@ -82,6 +85,7 @@ class Entity extends Model
             'staff_count' => 'integer',
             'visitors_count' => 'integer',
             'service_turns' => 'integer',
+            'camp_capacity' => 'integer',
         ];
     }
 

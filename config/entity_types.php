@@ -263,4 +263,81 @@ return [
             ],
         ],
     ],
+
+    'pabellon' => [
+        'label' => 'Pabellón de Campamento',
+        'label_plural' => 'Pabellones de Campamento',
+        'icon' => 'bi-building',
+        'icon_secondary' => 'bi-door-closed',
+        'color' => 'warning',
+        'tailwind_gradient' => 'from-amber-500 to-amber-700',
+        'tailwind_bg' => 'bg-amber-100',
+        'tailwind_text' => 'text-amber-700',
+        'route_prefix' => 'entities.home',
+
+        // Labels específicos
+        'rooms_label' => 'Módulos',
+        'rooms_icon' => 'bi-door-closed',
+        'people_label' => 'Dotación de Turno',
+        'people_icon' => 'bi-people',
+
+        // Comportamiento
+        'has_business_hours' => false,
+        'default_rooms' => ['Dormitorios', 'Baños y Vestuarios', 'Sala de Estar / Comedor', 'Portátiles', 'Temporales'],
+
+        // Módulos de recomendaciones habilitados
+        'recommendations' => [
+            'solar_panels' => [
+                'enabled' => true,
+                'label' => 'Microgrid Solar',
+                'icon' => 'bi-sun',
+                'color' => 'warning',
+                'description' => 'Calcula la generación fotovoltaica para el techo del pabellón y ahorro de diésel.',
+            ],
+            'solar_water_heater' => [
+                'enabled' => true,
+                'label' => 'Tubos de Vacío (ACS)',
+                'icon' => 'bi-droplet-half',
+                'color' => 'danger',
+                'description' => 'Calcula la sustitución de termotanques por colectores solares de tubos de vacío en alta montaña.',
+            ],
+            'replacements' => [
+                'enabled' => true,
+                'label' => 'Reemplazos Eficientes',
+                'icon' => 'bi-arrow-repeat',
+                'color' => 'primary',
+                'description' => 'Sustitución de convectores resistivos por paneles infrarrojos y termostatos programables.',
+            ],
+            'standby_analysis' => [
+                'enabled' => true,
+                'label' => 'Consumo de Base',
+                'icon' => 'bi-plug',
+                'color' => 'secondary',
+                'description' => 'Auditoría de cargas pasivas y traceado eléctrico en horas de faena.',
+            ],
+            'thermal' => [
+                'enabled' => true,
+                'label' => 'Aislación de Módulo',
+                'icon' => 'bi-thermometer-half',
+                'color' => 'info',
+                'description' => 'Evaluación de aislación térmica de contenedores y módulos prefab ante frío extremo.',
+            ],
+            'maintenance' => [
+                'enabled' => true,
+                'label' => 'Mantenimiento Preventivo',
+                'icon' => 'bi-tools',
+                'color' => 'secondary',
+                'description' => 'Cronograma de service de convectores, filtros de aire y termotanques.',
+            ],
+            'vacation' => [
+                'enabled' => false,
+            ],
+            'grid_optimization' => [
+                'enabled' => false,
+            ],
+            'dynamic_pricing' => [
+                'enabled' => false,
+            ],
+        ],
+    ],
 ];
