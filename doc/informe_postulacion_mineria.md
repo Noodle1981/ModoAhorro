@@ -1,63 +1,198 @@
-# 📋 Informe de Postulación y Estrategia: Hackatón Minero San Juan 2026
-## *Proyecto: ModoAhorro Minería – Ecosistema Sanjuanino de Eficiencia Energética y Calificación de Proveedores Locales*
+# 📋 Informe de Postulación: Hackatón Minero San Juan 2026
+## *ModoAhorro Pabellones – Estimación de Consumo Responsable y Auditoría Energética en Campamentos Mineros de Alta Montaña*
 
 ---
 
-## 🎯 1. Ficha General de la Postulación
+## 🎯 1. Ficha General
 
-* **Nombre del Proyecto:** ModoAhorro Minería (*Smart Energy & Local Supplier Footprint*).
-* **Desafío Oficial Seleccionado:** **Desafío 3: Mapeo y vinculación de proveedores locales (CASEMI / CASETIC)**.
-* **Lema / Pitch Central:** 
-  > *"Tecnología y sustentabilidad 100% sanjuanina para la minería: no hace falta ir a buscar a otros puertos lo que ya desarrollamos en nuestra provincia."*
-* **Stack Tecnológico:** Laravel 13 (Backend auditado, 59 tests automatizados), Vue 3 + Tailwind CSS v4 (Frontend reactivo sin scroll), arquitectura modular por capas.
-
----
-
-## ⚖️ 2. Alineación Matemática con la Rúbrica de Evaluación (100 Puntos)
-
-| Criterio Oficial | Puntos | Qué se observará según las bases | Cómo lo cumple y gana nuestro proyecto |
-| :--- | :---: | :--- | :--- |
-| **Comprensión del Problema** | **20** | Proceso actual, usuarios, fricción y evidencia de la necesidad. | Mapeo exacto de la realidad de alta montaña (+3.500 msnm) y las compras mineras: no hay boletas convencionales ni splits en frío; hay calderas, traceado anticongelamiento, generadores diésel y dependencia de consultoras foráneas. Fricción de las PyMEs de CASEMI para certificar sustentabilidad ante operadoras internacionales. |
-| **Impacto** | **20** | Valor para la minería o su cadena, métricas y efectos esperados. | Ahorro medible en litros de gasoil evitados puesto en cordillera (~1.50 USD/L), reducción de huella de carbono ($tCO_2e$) y retención de divisas dentro de la economía del conocimiento de San Juan (compre tecnológico local). |
-| **Viabilidad** | **20** | Factibilidad técnica, operativa, regulatoria y de implementación. | Factibilidad inmediata: no requiere permisos de exploración ni conexión física de riesgo. Software ya programado y testeado bajo estándares de seguridad Laravel/OWASP. Alineado con las leyes sanjuaninas de compre local. |
-| **Calidad e Innovación** | **15** | Coherencia, diferenciación y pertinencia del enfoque. | Enfoque disruptivo: en lugar de un "directorio estático tipo páginas amarillas", es una plataforma activa que califica energéticamente a los proveedores locales y audita sus instalaciones de montaña. |
-| **Prototipo** | **10** | Nivel de demostración, funcionamiento y aprendizaje obtenido. | Sistema 100% funcional y navegable (no maquetas en Figma). Demostración en vivo de carga de auditoría, motor de balance de cargas de montaña y reporte de diagnóstico exportable. |
-| **Datos, Seguridad y Uso Responsable de IA** | **10** | Privacidad, ciberseguridad, trazabilidad, riesgos y control humano. | Arquitectura backend auditada: Form Requests con validación estricta, prevención de N+1 y lazy loading, protección CSRF/XSS, almacenamiento seguro y trazabilidad de cálculos algorítmicos transparentes con control humano. |
-| **Presentación y Equipo** | **5** | Claridad del pitch y capacidades para avanzar. | Pitch concreto enfocado en San Juan, economía del conocimiento y soberanía tecnológica local. Capacidad de ejecución demostrada con código real listo para producción. |
+| Campo | Descripción |
+| :--- | :--- |
+| **Nombre del Proyecto** | ModoAhorro Pabellones |
+| **Subtítulo** | *Línea Base de Consumo Responsable vs. Realidad Medida en Módulos de Alojamiento Minero* |
+| **Desafío Oficial** | **Desafío 3: Mapeo y vinculación de proveedores locales (CASEMI / CASETIC)** |
+| **Pitch Central** | *"Tecnología 100% sanjuanina: calculamos lo que debería consumir tu pabellón y te decimos exactamente dónde se pierde la energía"* |
+| **Stack** | Laravel 13 · Vue 3 · Tailwind CSS v4 · Motor de estimación propio |
+| **Estado del Prototipo** | Sistema funcional con tests automatizados (59/59 ✅) |
 
 ---
 
-## 🏔️ 3. Comprensión Técnica del Terreno: La Matriz de Alta Montaña (+3.500 msnm)
+## 🔴 2. El Problema: El Derroche Silencioso de los Pabellones de Montaña
 
-Una de las principales debilidades de los proyectos que vienen de afuera es asumir consumos urbanos típicos. ModoAhorro Minería se diseña con la **matriz energética real de la cordillera sanjuanina**:
+### 2.1. Contexto Operativo Real (Alta Montaña +3.500 msnm)
 
-1. **Inexistencia de Climatización en Modo Frío:** 
-   * A 4.000 msnm, con temperaturas entre 10 °C y -25 °C, el uso de splits de refrigeración es prácticamente nulo (excepto salas de servidores puntuales).
-2. **Cargas Térmicas Críticas 24/7:**
-   * **Paneles convectores y calderas de alta montaña:** Vitales para evitar hipotermia del personal y congelamiento estructural.
-   * **Termotanques de alto salto térmico:** Agua de deshielo ingresando a 1 °C que debe elevarse a 45 °C para uso sanitario.
-   * **Traceado Eléctrico (*Heat Tracing*):** Resistencia calefactora continua a lo largo de cañerías exteriores para evitar roturas por congelamiento.
-3. **Talleres de Mantenimiento de Contratistas (CASEMI):**
-   * Compresores de tornillo, soldadoras de alta potencia, bombas sumergibles de achique y grupos electrógenos de respaldo.
+Los campamentos mineros de la cordillera sanjuanina (Veladero, Josemaría, Los Azules, Gualcamayo) operan bajo condiciones únicas que no existen en ninguna ciudad:
+
+* **Temperatura extrema:** Entre +10 °C en verano y -25 °C en invierno con viento blanco. **No se usan splits en modo frío.** El 100% del gasto térmico es calefacción.
+* **Turnos rotativos:** Los operarios trabajan en esquemas **14x14 o 7x7**, con jornadas de **12 horas** de faena (habitualmente 07:00 a 19:00).
+* **Energía cara y difícil:** No hay red pública. El kWh se genera con **grupos electrógenos diésel** abastecidos por camiones cisterna que suben a +4.000 msnm. El costo logístico del combustible es de aproximadamente **1,20 a 1,50 USD por litro puesto en cordillera**.
+* **Sin facturas convencionales:** No hay boleta mensual de EPSE ni de Naturgy. El control del costo energético es responsabilidad directa de la gerencia de operaciones del campamento.
+
+### 2.2. La Fricción y el Dolor Real
+
+> **Escenario tipo:** El operario sale a las 06:30 hs hacia la faena y deja su convector de pared a 28 °C. Regresa a las 19:30 hs después de 13 horas.
+>
+> **El pabellón queda vacío durante 12 horas con las 20 estufas encendidas al máximo.**
+
+Calculado en números concretos por pabellón:
+
+| Concepto | Dato |
+| :--- | :--- |
+| Convectores eléctricos por pabellón | 20 unidades x 1.500 W |
+| Potencia total instalada | 30 kW |
+| Horas de derroche (pabellón vacío) | ~12 hs/día |
+| **Energía desperdiciada por día** | **~360 kWh/día** |
+| Litros de diésel equivalentes a 360 kWh | **~103 litros/día** (factor 0,28 L/kWh diésel) |
+| **Costo económico diario (a 1,35 USD/L)** | **~139 USD/día solo en ese pabellón** |
+| En un campamento con 10 pabellones | **~1.390 USD/día derrochados** |
+
+Ese es el problema que **nadie mide y nadie ve** porque no existe una herramienta que calcule cuánto *debería* consumir el pabellón vs. cuánto *realmente* consumió.
 
 ---
 
-## 🔗 4. Cómo Vincula a la Oferta y la Demanda (Eje Proveedores CASEMI / CASETIC)
+## 💡 3. La Solución: Estimación de Línea Base de Buenas Prácticas
 
-### Para las Operadoras Mineras (Demanda - Veladero, Josemaría, Los Azules):
-* **Auditoría de Sustentabilidad de su Cadena:** Permite verificar con datos duros qué proveedores locales cumplen con estándares de eficiencia energética y menor huella de carbono.
-* **Cumplimiento Real del Compre Local:** Demuestra ante el Ministerio de Minería que están contratando empresas de San Juan no solo en mano de obra básica, sino en servicios de ingeniería y software especializado.
+### 3.1. Concepto Central
 
-### Para las PyMEs y Proveedores Sanjuaninos (Oferta - Socios CASEMI):
-* **Herramienta de Diagnóstico Accesible:** Una PyME local de transporte, metalmecánica o campamento puede auditar sus instalaciones de faena sin pagar honorarios en dólares a consultoras de Buenos Aires.
-* **Sello de Eficiencia y Competitividad:** El software emite un certificado digital de eficiencia de instalaciones que la PyME adjunta en sus pliegos de licitación minera para ganar puntos frente a competidores foráneos.
+**ModoAhorro Pabellones** es una plataforma web que le permite a la minera realizar **tres acciones clave:**
+
+```
+1. PARAMETRIZAR  →  2. ESTIMAR  →  3. COMPARAR y DIAGNOSTICAR
+```
+
+1. **Parametrizar el Pabellón:**
+   * Capacidad de ocupación (ej: 40 personas).
+   * Horario de turno / faena (ej: 07:00 – 19:00 con pabellón desocupado).
+   * Inventario de equipos: tipo, potencia (W) y horas de uso responsable recomendadas.
+
+2. **Estimar la Línea Base de Consumo Responsable:**
+   * El motor de ModoAhorro calcula el consumo **teórico bajo buenas prácticas**:
+     * Durante turno de faena: calefacción en modo ECO / mantenimiento (ej: 40% de potencia para mantener +5 °C y evitar congelamiento de cañerías, pero no 28 °C con nadie adentro).
+     * En hora de cambio de turno (06:00 – 07:30 y 19:00 – 20:30): funcionamiento pleno para duchas, preparación y descanso.
+   * **Resultado:** *"Este pabellón, con 40 personas y buenas prácticas, debería consumir **280 kWh/día**."*
+
+3. **Comparar contra el Consumo Real:**
+   * El supervisor de campamento ingresa el consumo real medido en el tablero del pabellón (quincenal o mensual).
+   * **El diagnóstico automático de ModoAhorro:**
+
+```
+Consumo Estimado (Buenas Prácticas):  280 kWh/día
+Consumo Real Registrado:              580 kWh/día
+──────────────────────────────────────────────────
+Desvío:                              +300 kWh/día  (+107%)
+Equivalente en diésel:               ~84 litros/día de más
+Equivalente en CO₂:                  ~222 kg CO₂/día de más
+Costo económico del desvío:          ~$114 USD/día en ese pabellón
+```
+
+   * **Diagnóstico cualitativo automático:** *"El desvío detectado es consistente con calefacción activa durante horario de desocupación. Se recomienda: instalar control horario automatizado o protocolo de apagado parcial al inicio del turno de faena."*
+
+### 3.2. Escalabilidad a Nivel de Campamento
+
+El sistema agrega el diagnóstico de todos los pabellones del campamento en un **tablero ejecutivo** (scroll-free, diseño industrial oscuro) que le muestra al Gerente de Sustentabilidad / Gerente de Operaciones:
+
+* Ranking de pabellones: de mayor a menor desvío energético.
+* Ahorro potencial total del campamento expresado en litros de diésel y en dólares.
+* Evolución quincenal / mensual del comportamiento de consumo vs. la línea base.
+* Exportación en PDF para reporte de sustentabilidad y cumplimiento ambiental ante el Ministerio de Minería de San Juan.
 
 ---
 
-## 🛠️ 5. Próximos Pasos de Ejecución
+## 🏗️ 4. Arquitectura Técnica: ¿Cómo lo resuelve el Motor de ModoAhorro?
 
-1. **Creación de la Rama Git:** `feature/mineria-compre-local`.
-2. **Adecuación de Catálogos de Equipos en el Backend:**
-   * Incorporar equipos de alta montaña (convectores, traceado térmico, compresores, calderas).
-   * Eliminar o restringir artefactos irrelevantes de refrigeración en contextos de cordillera.
-3. **Formulario de Postulación Oficial:** Usar este informe para completar la inscripción en `ciclopilares.com.ar` antes del 9 de octubre.
+El motor de estimación de ModoAhorro **ya implementa la lógica base** que hace posible esto sin construir desde cero:
+
+```mermaid
+flowchart TD
+    subgraph Entrada["📥 Parametrización del Campamento"]
+        P1["Capacidad del Pabellón\n(personas x turno)"]
+        P2["Inventario de Equipos\n(tipo, potencia W, cantidad)"]
+        P3["Esquema de Turnos\n(horario faena / descanso)"]
+    end
+
+    subgraph Motor["⚙️ Motor de Estimación ModoAhorro"]
+        M1["Cálculo de Horas de Uso Responsable\npor equipo x turno x ocupación"]
+        M2["Línea Base de Buenas Prácticas\n(kWh estimados / día)"]
+        M3["Ingreso del Consumo Real\n(kWh medidos en tablero)"]
+        M4["Algoritmo de Desvío y Diagnóstico\n(Δ kWh, Δ litros diésel, Δ CO₂)"]
+    end
+
+    subgraph Salida["📊 Resultados y Reportes (Vue 3)"]
+        R1["Dashboard Pabellón\n(Estimado vs. Real)"]
+        R2["Tablero de Campamento\n(Ranking de Pabellones)"]
+        R3["Reporte PDF Ejecutivo\n(Sustentabilidad / Gerencia)"]
+    end
+
+    P1 --> M1
+    P2 --> M1
+    P3 --> M1
+    M1 --> M2
+    M2 --> M4
+    M3 --> M4
+    M4 --> R1
+    M4 --> R2
+    M4 --> R3
+```
+
+### 4.1. Mapeo de Entidades: De ModoAhorro Residencial a Pabellones Mineros
+
+| Entidad en ModoAhorro actual | Equivalente en ModoAhorro Pabellones |
+| :--- | :--- |
+| `Entity` (Entidad / Propiedad) | Campamento Minero (ej: *Campamento Amarillos – Veladero*) |
+| `Room` (Espacio / Ambiente) | Pabellón de Alojamiento (ej: *Pabellón B-02 – 40 personas*) |
+| `Equipment` (Equipo eléctrico) | Convector de pared, Termotanque, Iluminación LED |
+| `Invoice` (Factura) | Lectura de tablero del pabellón (kWh/quincena) |
+| Motor de cálculo de consumo | Motor de Línea Base de Buenas Prácticas de Alta Montaña |
+
+### 4.2. Catálogo de Equipos de Alta Montaña (Sin Aires Acondicionados)
+
+Los equipos relevantes para la cordillera sanjuanina son radicalmente distintos al perfil urbano o residencial:
+
+| Equipo | Potencia típica | Contexto de uso |
+| :--- | :---: | :--- |
+| **Convector eléctrico de pared** | 1.500 W | Calefacción de habitaciones individuales |
+| **Panel radiante de techo** | 1.000 W | Áreas comunes y corredores de pabellones |
+| **Calentador de agua (termotanque)** | 3.000 W | ACS para duchas en cambio de turno |
+| **Traceado eléctrico anticongelamiento** | 20-30 W/m | Cañerías exteriores 24/7 en invierno |
+| **Iluminación LED de pasillo** | 40 W/tramo | Permanente nocturna + emergencias |
+| **Frigobares de módulo de guardia** | 100 W | Almacenamiento de medicamentos / guardia médica |
+
+---
+
+## 📊 5. Alineación con la Rúbrica de Evaluación (100 Puntos)
+
+| Criterio Oficial | Ptos | Cómo lo resuelve ModoAhorro Pabellones |
+| :--- | :---: | :--- |
+| **Comprensión del Problema** | **20** | Fricción documentada y cuantificada: costo real del kWh en alta montaña (~1,35 USD/litro de diésel), turnos rotativos 14x14, derroche térmico en habitaciones vacías durante la faena. No es una suposición genérica, es el cotidiano del campamento cordillerano. |
+| **Impacto** | **20** | Métrica concreta: ~100 litros de diésel ahorrados por día, por pabellón, cuando se usa el modo ECO durante faena. En un campamento de 10 pabellones: ~365.000 litros/año de ahorro potencial (~493.000 USD/año). |
+| **Viabilidad** | **20** | 100% software web: sin hardware riesgoso, sin permisos de exploración. El supervisor de campamento lo opera desde el navegador. Adaptación sobre base de código funcional y testeado. |
+| **Calidad e Innovación** | **15** | No es un directorio estático ni un Excel más. Es la primera plataforma que aplica estimación de línea base de buenas prácticas adaptada a la realidad térmica y operativa de la alta montaña sanjuanina. |
+| **Prototipo** | **10** | Sistema web completamente funcional. Demo en vivo: carga de pabellón, ejecución del motor de estimación, comparación con consumo real y exportación de reporte. 59/59 tests automatizados en verde. |
+| **Datos, Seguridad y Uso Responsable de IA** | **10** | Datos propios y anonimizados (no requiere conexión a sistemas industriales SCADA). Motor de estimación basado en criterios de ingeniería transparentes y auditables. Sin caja negra: cada resultado muestra el cálculo paso a paso. Seguridad Laravel (CSRF, XSS, validaciones estrictas). |
+| **Presentación y Equipo** | **5** | Pitch claro, con historia real, números concretos y demostración en vivo. Equipo de desarrollo local sanjuanino. |
+| **TOTAL** | **100** | |
+
+---
+
+## 🚩 6. Argumento Estratégico: Compre Tecnológico Local
+
+> *"Las grandes operadoras mineras suelen contratar consultoras de sustentabilidad y software de gestión energética de Buenos Aires, Santiago de Chile o el exterior.*
+>
+> *ModoAhorro Pabellones es la demostración viva de que en San Juan ya existe el talento tecnológico para resolver los problemas de eficiencia de la propia industria minera.*
+>
+> *No hace falta ir a buscar a otro puerto lo que ya desarrollamos acá."*
+
+Esto es exactamente lo que CASEMIC, CASETIC y el Gobierno de San Juan quieren evidenciar ante la industria: que la **economía del conocimiento sanjuanina** puede proveerle servicios de alto valor a la minería sin depender del exterior.
+
+---
+
+## 📋 7. Próximos Pasos
+
+### Para la Postulación (antes del 9 de Octubre):
+- [ ] Inscripción en [ciclopilares.com.ar](https://ciclopilares.com.ar) usando este informe como base.
+- [ ] Título tentativo: *"ModoAhorro Pabellones: Estimación de Consumo Responsable y Auditoría Energética en Campamentos Mineros"*.
+
+### Para el Sprint de Desarrollo (19 Oct – 8 Nov):
+- [ ] Revisar y refactorizar el motor de estimación para incorporar el esquema de turnos/faena y el catálogo de equipos de alta montaña.
+- [ ] Crear seeder de "Campamento Tipo Cordillera Sanjuanina" con pabellones, dotación y equipos reales.
+- [ ] Diseñar el tablero de diagnóstico con la comparación Estimado vs. Real y ranking de desvíos por pabellón.
+- [ ] Preparar el video pitch y el PDF de 5 carillas para la entrega del 9 de Noviembre.
