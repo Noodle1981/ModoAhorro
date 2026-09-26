@@ -6,11 +6,11 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
         <!-- Primary Meta Tags -->
-        <title>ModoAhorro — Software de Análisis, Diagnóstico y Eficiencia Energética</title>
-        <meta name="title" content="ModoAhorro — Software de Análisis, Diagnóstico y Eficiencia Energética">
-        <meta name="description" content="Descubrí exactamente qué equipo consumió cada peso de tu factura de luz. Plataforma de inteligencia y diagnóstico energético para hogares, oficinas y comercios sin hardware.">
-        <meta name="keywords" content="eficiencia energética, ahorro de energía, calcular consumo eléctrico, factura de luz argentina, consumo standby, proyectos solares fotovoltaicos, auditoria energética hogar comercio">
-        <meta name="author" content="ModoAhorro">
+        <title>ModoAhorro Minería — Eficiencia Energética y Auditoría en Campamentos</title>
+        <meta name="title" content="ModoAhorro Minería — Eficiencia Energética y Auditoría en Campamentos">
+        <meta name="description" content="Auditoría energética y estimación de línea base para pabellones mineros en alta montaña. Detectá desvíos térmicos, optimizá turnos y reducí el consumo de diésel sin hardware invasivo.">
+        <meta name="keywords" content="eficiencia energética minería, campamentos mineros, alta montaña, ahorro diésel cordillera, auditoría pabellones, san juan minería, casemi casetic">
+        <meta name="author" content="ModoAhorro Minería">
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
         <meta name="theme-color" content="#059669">
         <link rel="canonical" href="{{ url()->current() }}">
@@ -18,17 +18,17 @@
         <!-- Open Graph / Facebook / WhatsApp -->
         <meta property="og:type" content="website">
         <meta property="og:url" content="{{ url()->current() }}">
-        <meta property="og:site_name" content="ModoAhorro">
-        <meta property="og:title" content="ModoAhorro — Inteligencia y Diagnóstico Energético">
-        <meta property="og:description" content="Descubrí qué artefactos consumen cada peso de tu factura de luz. Diagnóstico preciso sin instalar sensores costosos.">
+        <meta property="og:site_name" content="ModoAhorro Minería">
+        <meta property="og:title" content="ModoAhorro Minería — Auditoría Energética en Campamentos">
+        <meta property="og:description" content="Estimación de línea base vs lecturas reales de tablero en pabellones mineros cordilleranos. Erradicá el derroche térmico en horas de faena.">
         <meta property="og:image" content="{{ asset('images/landing/logo.png') }}">
         <meta property="og:locale" content="es_AR">
 
         <!-- Twitter Card -->
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:url" content="{{ url()->current() }}">
-        <meta name="twitter:title" content="ModoAhorro — Inteligencia y Diagnóstico Energético">
-        <meta name="twitter:description" content="Descubrí qué artefactos consumen cada peso de tu factura de luz. Diagnóstico preciso sin sensores.">
+        <meta name="twitter:title" content="ModoAhorro Minería — Auditoría Energética en Campamentos">
+        <meta name="twitter:description" content="Estimación de línea base vs lecturas de tablero en pabellones mineros cordilleranos.">
         <meta name="twitter:image" content="{{ asset('images/landing/logo.png') }}">
 
         <!-- Favicons -->
@@ -48,10 +48,10 @@
             "@@graph": [
                 {
                     "@@type": "SoftwareApplication",
-                    "name": "ModoAhorro",
-                    "applicationCategory": "BusinessApplication, UtilitiesApplication",
+                    "name": "ModoAhorro Minería",
+                    "applicationCategory": "BusinessApplication, EnergyEfficiencyApplication",
                     "operatingSystem": "Web Browser",
-                    "description": "Plataforma de software para análisis, conciliación de facturas eléctricas y diagnóstico de eficiencia energética.",
+                    "description": "Plataforma de software sanjuanina para análisis, auditoría y cálculo de línea base de consumo responsable en campamentos mineros de alta montaña.",
                     "offers": {
                         "@@type": "Offer",
                         "price": "0",
@@ -60,7 +60,7 @@
                 },
                 {
                     "@@type": "Organization",
-                    "name": "ModoAhorro",
+                    "name": "ModoAhorro Minería",
                     "url": "{{ url('/') }}",
                     "logo": "{{ asset('images/landing/logo.png') }}"
                 }
@@ -85,41 +85,42 @@
                 <!-- Logo Brand -->
                 <a href="/" class="flex items-center gap-3 group">
                     <img src="/images/landing/modo_ahorro_banner.png" alt="ModoAhorro Logo" class="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105" />
+                    <span class="text-xs bg-slate-900 text-amber-400 font-black px-2.5 py-1 rounded-lg uppercase tracking-wider hidden sm:inline-block border border-amber-400/20">Minería</span>
                 </a>
 
                 <!-- Navigation Links -->
                 <nav class="flex items-center gap-4">
                     <a href="#como-funciona" class="hidden md:inline-block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors px-3 py-2">
-                        Cómo funciona
+                        Metodología
                     </a>
                     <a href="#entidades" class="hidden md:inline-block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors px-3 py-2">
-                        Entidades
+                        Pabellones
                     </a>
                     <a href="#carrusel-metricas" class="hidden md:inline-block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors px-3 py-2">
-                        Análisis
+                        Línea Base
                     </a>
                     <a href="#capturas-sistema" class="hidden md:inline-block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors px-3 py-2">
                         Panel
                     </a>
                     <a href="#recomendaciones" class="hidden md:inline-block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors px-3 py-2">
-                        Recomendaciones
+                        4 Salidas
                     </a>
                     <a href="#rubros" class="hidden md:inline-block text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors px-3 py-2">
-                        Rubros
+                        Módulos
                     </a>
 
                     @if (Route::has('login'))
                         @auth
                             <a href="{{ url('/dashboard') }}" class="inline-flex items-center justify-center bg-[#009966] hover:bg-[#008055] text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-md shadow-[#009966]/20 transition-all hover:-translate-y-0.5">
-                                Ir al panel →
+                                Panel Minero →
                             </a>
                         @else
                             <a href="{{ route('login') }}" class="text-sm font-bold text-slate-700 hover:text-[#009966] transition-colors px-4 py-2">
-                                Iniciar sesión
+                                Acceso Operador
                             </a>
                             @if (Route::has('register'))
                                 <a href="{{ Route::has('register') ? route('register') : route('login') }}" class="inline-flex items-center justify-center bg-[#009966] hover:bg-[#008055] text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-md shadow-[#009966]/20 transition-all hover:-translate-y-0.5">
-                                    Registrarme gratis
+                                    Registrar Campamento
                                 </a>
                             @endif
                         @endauth
@@ -138,23 +139,23 @@
                         <!-- Left Column: Copy & CTAs -->
                         <div class="lg:col-span-7 text-left">
                             <span class="text-xs font-black uppercase tracking-widest text-[#009966] block mb-4">
-                                Control Total de Consumo
+                                Alta Montaña (+3.500 msnm) · Tecnología Sanjuanina
                             </span>
 
                             <h1 class="text-4xl sm:text-5xl lg:text-[3.25rem] font-black text-slate-900 tracking-tight leading-[1.12]">
-                                Dejá de adivinar por qué vino alta tu factura. <br class="hidden sm:inline" />
-                                <span class="text-[#009966]">Sabé qué equipo consumió cada peso.</span>
+                                Auditoría energética y línea base para campamentos. <br class="hidden sm:inline" />
+                                <span class="text-[#009966]">Erradicá el derroche en pabellones de faena.</span>
                             </h1>
 
                             <p class="mt-6 text-base sm:text-lg text-slate-600 font-medium leading-relaxed max-w-xl">
-                                ModoAhorro concilia tus facturas reales de luz con tus artefactos físicos, clima zonal y horarios operativos. Sin suposiciones ni sensores costosos.
+                                ModoAhorro estima el consumo responsable según turnos (14x14) y dotación activa, contrastándolo con lecturas reales de tablero para cuantificar litros de diésel y emisiones evitadas.
                             </p>
 
                             <!-- CTAs -->
                             <div class="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                                 @if (Route::has('register'))
                                     <a href="{{ Route::has('register') ? route('register') : route('login') }}" class="inline-flex items-center justify-center bg-[#009966] hover:bg-[#008055] text-white font-bold text-base px-8 py-4 rounded-2xl shadow-lg shadow-[#009966]/25 transition-all hover:-translate-y-0.5 text-center">
-                                        Registrarme gratis →
+                                        Probar en mi campamento →
                                     </a>
                                 @else
                                     <a href="{{ route('login') }}" class="inline-flex items-center justify-center bg-[#009966] hover:bg-[#008055] text-white font-bold text-base px-8 py-4 rounded-2xl shadow-lg shadow-[#009966]/25 transition-all hover:-translate-y-0.5 text-center">
@@ -162,7 +163,7 @@
                                     </a>
                                 @endif
                                 <a href="#como-funciona" class="inline-flex items-center justify-center border border-slate-200 hover:border-slate-300 bg-white text-slate-700 font-bold text-base px-7 py-4 rounded-2xl shadow-xs transition-all hover:bg-slate-50 text-center">
-                                    Ver cómo funciona
+                                    Ver metodología
                                 </a>
                             </div>
 
@@ -170,15 +171,15 @@
                             <div class="mt-8 pt-6 border-t border-slate-100 flex flex-wrap items-center gap-y-2 gap-x-6 text-xs font-semibold text-slate-500">
                                 <span class="inline-flex items-center gap-1.5">
                                     <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                                    Sin instalar hardware
+                                    Sin sensores invasivos en faena
                                 </span>
                                 <span class="inline-flex items-center gap-1.5">
                                     <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                                    Hogares, Oficinas y Comercios
+                                    Pabellones y Oficinas de Campamento
                                 </span>
                                 <span class="inline-flex items-center gap-1.5">
                                     <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-                                    Diagnóstico en minutos
+                                    Datos reales climáticos (Open-Meteo)
                                 </span>
                             </div>
                         </div>
@@ -199,7 +200,7 @@
                                         <div class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></div>
                                         <div class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></div>
                                     </div>
-                                    <span class="text-[11px] font-bold text-slate-400">ModoAhorro · Análisis en Vivo</span>
+                                    <span class="text-[11px] font-bold text-slate-400">ModoAhorro · Diagnóstico de Pabellón</span>
                                     <span class="w-8"></span>
                                 </div>
 
@@ -211,19 +212,19 @@
 
                             <!-- Floating Badge 1 (Bottom Left) -->
                             <div class="absolute -bottom-6 -left-4 sm:-left-6 bg-white/95 backdrop-blur-md p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 shadow-xl flex items-center gap-3.5 transform -rotate-2 hover:rotate-0 transition-transform">
-                                <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                                <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shrink-0">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                                 </div>
                                 <div>
-                                    <p class="text-xs font-bold text-slate-400 leading-none uppercase tracking-wider">Ahorro detectado</p>
-                                    <p class="text-base font-black text-slate-900 mt-1">-$24.500 <span class="text-xs font-bold text-emerald-600">/ mes</span></p>
+                                    <p class="text-xs font-bold text-slate-400 leading-none uppercase tracking-wider">Desvío de Faena</p>
+                                    <p class="text-base font-black text-slate-900 mt-1">~84 L/día <span class="text-xs font-bold text-amber-600">diésel evitable</span></p>
                                 </div>
                             </div>
 
                             <!-- Floating Badge 2 (Top Right) -->
                             <div class="hidden sm:flex absolute -top-5 -right-4 bg-white/95 backdrop-blur-md py-2.5 px-4 rounded-2xl border border-slate-200/80 shadow-lg items-center gap-2.5 transform rotate-2 hover:rotate-0 transition-transform">
                                 <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                <span class="text-xs font-bold text-slate-700">Calibración 98.4%</span>
+                                <span class="text-xs font-bold text-slate-700">Onda Verde Certificada</span>
                             </div>
 
                         </div>
@@ -252,13 +253,13 @@
                     <div class="text-center max-w-3xl mx-auto mb-16">
                         <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 border border-white/25 text-white text-xs font-black uppercase tracking-widest mb-4 backdrop-blur-md shadow-xs">
                             <span class="w-2 h-2 rounded-full bg-emerald-200 animate-pulse"></span>
-                            Metodología de Análisis
+                            Metodología de Auditoría en Alta Montaña
                         </span>
                         <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
-                            Así funciona el motor de análisis
+                            De la lectura de tablero a la acción en campamento
                         </h2>
                         <p class="mt-5 text-emerald-50/90 font-medium text-base sm:text-lg lg:text-xl leading-relaxed max-w-2xl mx-auto">
-                            En <span class="text-white font-extrabold underline decoration-white/40 underline-offset-4">4 pasos estructurados</span> obtenés la radiografía exacta de consumo de tus instalaciones.
+                            En <span class="text-white font-extrabold underline decoration-white/40 underline-offset-4">4 pasos estructurados</span> obtenés la línea base y la detección de derroches en tus pabellones.
                         </p>
                     </div>
 
@@ -273,15 +274,15 @@
                                         <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                                     </div>
                                 </div>
-                                <span class="text-[10px] font-black uppercase tracking-widest text-emerald-200 block mb-2">Ingreso Rápido</span>
-                                <h3 class="text-xl font-black text-white tracking-tight mb-3">Cargás tu factura</h3>
+                                <span class="text-[10px] font-black uppercase tracking-widest text-emerald-200 block mb-2">Ingreso de Tablero</span>
+                                <h3 class="text-xl font-black text-white tracking-tight mb-3">Lectura del Tablero</h3>
                                 <p class="text-emerald-50/85 text-sm font-medium leading-relaxed">
-                                    Subís los datos clave de tu factura de luz o gas. Sin integraciones bancarias ni accesos complejos.
+                                    Cargás los kWh registrados por el medidor o tablero del pabellón en el período o turno analizado. Sin boletas convencionales.
                                 </p>
                             </div>
                             <div class="mt-8 pt-4 border-t border-white/15 flex items-center justify-between text-xs font-bold text-emerald-200">
                                 <span>Paso 1</span>
-                                <span class="text-white font-black group-hover:translate-x-1 transition-transform flex items-center gap-1">Entrada &rarr;</span>
+                                <span class="text-white font-black group-hover:translate-x-1 transition-transform flex items-center gap-1">Lectura &rarr;</span>
                             </div>
                         </div>
 
@@ -294,10 +295,10 @@
                                         <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
                                     </div>
                                 </div>
-                                <span class="text-[10px] font-black uppercase tracking-widest text-emerald-200 block mb-2">Inventario Base</span>
-                                <h3 class="text-xl font-black text-white tracking-tight mb-3">Registrás tus equipos</h3>
+                                <span class="text-[10px] font-black uppercase tracking-widest text-emerald-200 block mb-2">Dotación & Equipos</span>
+                                <h3 class="text-xl font-black text-white tracking-tight mb-3">Parámetros del Turno</h3>
                                 <p class="text-emerald-50/85 text-sm font-medium leading-relaxed">
-                                    Indicás los artefactos principales: heladeras, aires, iluminación. El catálogo ya incluye potencias estándar.
+                                    Indicás dotación activa de personas, horario de faena (ej. 07:00 a 19:00) y artefactos térmicos instalados (convectores, termotanques).
                                 </p>
                             </div>
                             <div class="mt-8 pt-4 border-t border-white/15 flex items-center justify-between text-xs font-bold text-emerald-200">
@@ -315,15 +316,15 @@
                                         <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
                                     </div>
                                 </div>
-                                <span class="text-[10px] font-black uppercase tracking-widest text-emerald-200 block mb-2">Motor de Tanques</span>
-                                <h3 class="text-xl font-black text-white tracking-tight mb-3">El motor analiza</h3>
+                                <span class="text-[10px] font-black uppercase tracking-widest text-emerald-200 block mb-2">Clima & Tanques</span>
+                                <h3 class="text-xl font-black text-white tracking-tight mb-3">Cálculo de Línea Base</h3>
                                 <p class="text-emerald-50/85 text-sm font-medium leading-relaxed">
-                                    El sistema distribuye el consumo real de la factura usando datos climáticos de tu zona y horarios operativos.
+                                    El motor cruza temperaturas reales de cordillera (Open-Meteo) y calcula cuánto *debería* consumir el módulo con buenas prácticas.
                                 </p>
                             </div>
                             <div class="mt-8 pt-4 border-t border-white/15 flex items-center justify-between text-xs font-bold text-emerald-200">
                                 <span>Paso 3</span>
-                                <span class="text-white font-black group-hover:translate-x-1 transition-transform flex items-center gap-1">Cálculo &rarr;</span>
+                                <span class="text-white font-black group-hover:translate-x-1 transition-transform flex items-center gap-1">Línea Base &rarr;</span>
                             </div>
                         </div>
 
@@ -336,15 +337,15 @@
                                         <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                                     </div>
                                 </div>
-                                <span class="text-[10px] font-black uppercase tracking-widest text-emerald-200 block mb-2">Diagnóstico Claro</span>
-                                <h3 class="text-xl font-black text-white tracking-tight mb-3">Ves tu dinero</h3>
+                                <span class="text-[10px] font-black uppercase tracking-widest text-emerald-200 block mb-2">Desvío & Acción</span>
+                                <h3 class="text-xl font-black text-white tracking-tight mb-3">Las 4 Salidas</h3>
                                 <p class="text-emerald-50/85 text-sm font-medium leading-relaxed">
-                                    Recibís un desglose puntual de qué consume cada equipo y recomendaciones concretas para optimizar.
+                                    Detectás el desvío exacto en litros de diésel y disparás: Capacitación RRHH, Alerta de Reiteración, Onda Verde o ROI de Reemplazo.
                                 </p>
                             </div>
                             <div class="mt-8 pt-4 border-t border-white/15 flex items-center justify-between text-xs font-bold text-emerald-200">
                                 <span>Paso 4</span>
-                                <span class="text-white font-black group-hover:translate-x-1 transition-transform flex items-center gap-1">Ahorro Real &rarr;</span>
+                                <span class="text-white font-black group-hover:translate-x-1 transition-transform flex items-center gap-1">Acción Real &rarr;</span>
                             </div>
                         </div>
 
@@ -354,80 +355,80 @@
             </section>
 
 
-            <!-- 4. ENTITY TYPES ("Un sistema. Tres mundos.") -->
+            <!-- 4. ENTITY TYPES ("Módulos del Campamento") -->
             <section id="entidades" class="py-20 lg:py-28 bg-white border-b border-slate-100">
                 <div class="max-w-6xl mx-auto px-6">
                     
                     <div class="text-center max-w-2xl mx-auto mb-16">
                         <span class="text-xs font-black uppercase tracking-widest text-emerald-600 block mb-3">
-                            Modelos de Consumo
+                            Modelado de Campamento
                         </span>
                         <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                            Un sistema. Tres mundos.
+                            Un sistema. Toda la infraestructura.
                         </h2>
                         <p class="mt-4 text-slate-600 font-medium text-base sm:text-lg">
-                            Ya seas propietario, empleado o comerciante, el sistema entiende tu contexto y ajusta sus métricas.
+                            Diseñado específicamente para la realidad operativa y modular de los campamentos mineros de alta montaña.
                         </p>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                         
-                        <!-- Card 1: Hogar -->
+                        <!-- Card 1: Pabellón de Alojamiento -->
                         <div class="bg-slate-50 rounded-3xl p-8 border border-slate-200/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative flex flex-col justify-between border-t-4 border-t-emerald-500">
                             <div>
                                 <div class="w-16 h-16 rounded-2xl bg-white border border-emerald-100 shadow-xs flex items-center justify-center mb-6">
-                                    <img src="/images/entities/logo_hogar.png" alt="Eficiencia energética en el Hogar" class="w-12 h-12 object-contain" loading="lazy" decoding="async" />
+                                    <img src="/images/entities/logo_hogar.png" alt="Pabellón de Alojamiento Minero" class="w-12 h-12 object-contain" loading="lazy" decoding="async" />
                                 </div>
-                                <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Residencial</span>
-                                <h3 class="text-2xl font-black text-slate-900 mt-1">Tu hogar</h3>
+                                <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Alojamiento (24/7)</span>
+                                <h3 class="text-2xl font-black text-slate-900 mt-1">Pabellón de Alojamiento</h3>
                                 <p class="mt-3 text-slate-600 text-sm font-medium leading-relaxed">
-                                    Analizamos tu consumo doméstico equipo por equipo: heladeras, aires acondicionados, calefones. Sabés exactamente qué consume cada uno y dónde ahorrar.
+                                    Auditoría de módulos de descanso de operarios: estufas convectoras, termotanques de alto salto térmico e iluminación. Detectá el derroche en horas de faena.
                                 </p>
                             </div>
                             <div class="mt-8 pt-6 border-t border-slate-200/60">
                                 <a href="{{ Route::has('register') ? route('register') : route('login') }}" class="inline-flex items-center text-sm font-bold text-emerald-600 hover:text-emerald-800 transition-colors">
-                                    Empezar en mi hogar →
+                                    Auditar pabellones →
                                 </a>
                             </div>
                         </div>
 
-                        <!-- Card 2: Oficina -->
+                        <!-- Card 2: Pabellón Administrativo / Oficina Técnica -->
                         <div class="bg-slate-50 rounded-3xl p-8 border border-slate-200/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative flex flex-col justify-between border-t-4 border-t-blue-500">
                             <div>
                                 <div class="w-16 h-16 rounded-2xl bg-white border border-blue-100 shadow-xs flex items-center justify-center mb-6">
-                                    <img src="/images/entities/logo_oficina.png" alt="Control de consumo en Oficinas" class="w-12 h-12 object-contain" loading="lazy" decoding="async" />
+                                    <img src="/images/entities/logo_oficina.png" alt="Pabellón Administrativo y Salas de Control" class="w-12 h-12 object-contain" loading="lazy" decoding="async" />
                                 </div>
-                                <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Corporativo</span>
-                                <h3 class="text-2xl font-black text-slate-900 mt-1">Tu oficina</h3>
+                                <span class="text-xs font-bold text-blue-600 uppercase tracking-wider">Administración & Control</span>
+                                <h3 class="text-2xl font-black text-slate-900 mt-1">Oficina & Supervisión</h3>
                                 <p class="mt-3 text-slate-600 text-sm font-medium leading-relaxed">
-                                    Control de consumo por área, por turno laboral y por infraestructura clave. Diseñado para equipos de trabajo que necesitan números reales.
+                                    Salas de control de operaciones, enfermería y puestos técnicos: horario administrativo, puestos informáticos, racks de servidores y telecomunicaciones.
                                 </p>
                             </div>
                             <div class="mt-8 pt-6 border-t border-slate-200/60">
                                 <a href="{{ Route::has('register') ? route('register') : route('login') }}" class="inline-flex items-center text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors">
-                                    Empezar en mi oficina →
+                                    Auditar oficinas de mina →
                                 </a>
                             </div>
                         </div>
 
-                        <!-- Card 3: Comercio -->
+                        <!-- Card 3: Módulos de Servicios y Comedores -->
                         <div class="bg-slate-50 rounded-3xl p-8 border border-slate-200/70 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative flex flex-col justify-between border-t-4 border-t-purple-500">
                             <div>
                                 <div class="w-16 h-16 rounded-2xl bg-white border border-purple-100 shadow-xs flex items-center justify-center mb-6">
-                                    <img src="/images/entities/logo_comercio.png" alt="Gestión de energía en Comercios" class="w-12 h-12 object-contain" loading="lazy" decoding="async" />
+                                    <img src="/images/entities/logo_comercio.png" alt="Comedores y Servicios de Campamento" class="w-12 h-12 object-contain" loading="lazy" decoding="async" />
                                 </div>
                                 <div class="flex items-center justify-between mb-2">
-                                    <span class="text-xs font-bold text-purple-600 uppercase tracking-wider">Comercial</span>
-                                    <span class="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 tracking-wider">Beta Privada</span>
+                                    <span class="text-xs font-bold text-purple-600 uppercase tracking-wider">Servicios Generales</span>
+                                    <span class="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 tracking-wider">Turnos Rotativos</span>
                                 </div>
-                                <h3 class="text-2xl font-black text-slate-900 mt-1">Tu comercio</h3>
+                                <h3 class="text-2xl font-black text-slate-900 mt-1">Comedores & Servicios</h3>
                                 <p class="mt-3 text-slate-600 text-sm font-medium leading-relaxed">
-                                    El sistema entiende tu rubro. Diseñamos perfiles a medida según tu actividad comercial (gastronomía, cámaras de frío, servicios).
+                                    Cocinas industriales, cámaras de frío continuo, lavandería y salas de bombas. Modelado por turnos de servicio y picos de despacho de viandas.
                                 </p>
                             </div>
                             <div class="mt-8 pt-6 border-t border-slate-200/60">
-                                <a href="https://wa.me/5492644533704?text=Hola!%20Me%20interesa%20solicitar%20un%20perfil%20a%20medida%20para%20mi%20comercio%20en%20ModoAhorro" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-sm font-bold text-purple-600 hover:text-purple-800 transition-colors">
-                                    Consultar por mi rubro →
+                                <a href="https://wa.me/5492644533704?text=Hola!%20Me%20interesa%20solicitar%20un%20diagnostico%20para%20un%20campamento%20minero%20en%20ModoAhorro" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-sm font-bold text-purple-600 hover:text-purple-800 transition-colors">
+                                    Consultar por campamento →
                                 </a>
                             </div>
                         </div>
@@ -751,40 +752,40 @@
             </section>
 
 
-            <!-- 7. RECOMENDACIONES INTELIGENTES -->
+            <!-- 7. RECOMENDACIONES INTELIGENTES (LAS 4 SALIDAS DE VALOR) -->
             <section id="recomendaciones" class="py-20 lg:py-28 bg-slate-50 border-b border-slate-100">
                 <div class="max-w-6xl mx-auto px-6">
                     
                     <div class="text-center max-w-3xl mx-auto mb-16">
                         <span class="text-xs font-black uppercase tracking-widest text-emerald-600 block mb-3">
-                            Módulos de Ahorro y Eficiencia
+                            Las 4 Salidas de Valor Minero
                         </span>
                         <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                            De los datos a la acción: Ahorro real y cuantificado
+                            De los datos a la acción: Ahorro de diésel y gestión de hábitos
                         </h2>
                         <p class="mt-4 text-slate-600 font-medium text-base sm:text-lg">
-                            El sistema no da consejos genéricos. Modela proyecciones financieras, retorno de inversión y medidas de optimización específicas para tu caso.
+                            El sistema traduce el desvío entre la línea base y la lectura real en acciones de RRHH, certificaciones ESG y reemplazos con amortización demostrada.
                         </p>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         
-                        <!-- Card 1: Solar -->
+                        <!-- Card 1: Solar Tubos de Vacío -->
                         <div class="group relative bg-white p-8 sm:p-9 rounded-[2.5rem] border border-slate-200/80 shadow-xs hover:shadow-2xl transition-all duration-500 flex flex-col justify-between overflow-hidden min-h-[380px]">
                             <div class="relative z-10">
                                 <div class="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-100/80 text-amber-600 flex items-center justify-center mb-8 shadow-xs group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
                                     <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
                                 </div>
-                                <span class="text-xs font-black uppercase tracking-widest text-amber-600 block mb-2">Generación Limpia</span>
-                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Proyecto Solar Fotovoltaico</h3>
+                                <span class="text-xs font-black uppercase tracking-widest text-amber-600 block mb-2">Energía Térmica Solar</span>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Tubos de Vacío (ACS)</h3>
                                 <p class="text-slate-600 text-sm leading-relaxed font-medium">
-                                    Dimensionamiento de paneles según tu curva de consumo real, cálculo de amortización y porcentaje de cobertura energética.
+                                    Sustitución de termotanques eléctricos por colectores de tubos de vacío en alta montaña. Aislamiento térmico a -25 °C con 6-8 kWh/m²/día de sol andino.
                                 </p>
                             </div>
                             <div class="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between relative z-10">
-                                <span class="text-xs font-bold text-slate-400">Retorno estimado en años</span>
+                                <span class="text-xs font-bold text-slate-400">ROI: 5 a 7 meses</span>
                                 <div class="flex items-center gap-1.5 text-amber-600 font-black uppercase tracking-wider text-xs">
-                                    <span>ROI Real</span>
+                                    <span>80% Ahorro ACS</span>
                                     <svg class="w-4 h-4 group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
                                 </div>
                             </div>
@@ -792,22 +793,22 @@
                             <svg class="absolute -bottom-14 -right-14 w-60 h-60 text-amber-500/10 group-hover:text-amber-500/20 -rotate-12 group-hover:rotate-45 transition-all duration-700 pointer-events-none" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
                         </div>
 
-                        <!-- Card 2: Reemplazos -->
+                        <!-- Card 2: Reemplazos de Convectores -->
                         <div class="group relative bg-white p-8 sm:p-9 rounded-[2.5rem] border border-slate-200/80 shadow-xs hover:shadow-2xl transition-all duration-500 flex flex-col justify-between overflow-hidden min-h-[380px]">
                             <div class="relative z-10">
                                 <div class="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100/80 text-emerald-600 flex items-center justify-center mb-8 shadow-xs group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
                                     <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
                                 </div>
-                                <span class="text-xs font-black uppercase tracking-widest text-emerald-600 block mb-2">Eficiencia de Equipos</span>
-                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Reemplazos Eficientes</h3>
+                                <span class="text-xs font-black uppercase tracking-widest text-emerald-600 block mb-2">Modernización Tecnológica</span>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Reemplazos con ROI</h3>
                                 <p class="text-slate-600 text-sm leading-relaxed font-medium">
-                                    Comparativa de ahorro al renovar artefactos antiguos por tecnología Inverter o etiquetas Clase A+++ con cálculo exacto de ROI.
+                                    Renovación de convectores de resistencia obsoletos por paneles radiantes infrarrojos programables con termostato de presencia en dormitorios.
                                 </p>
                             </div>
                             <div class="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between relative z-10">
-                                <span class="text-xs font-bold text-slate-400">Costo-beneficio directo</span>
+                                <span class="text-xs font-bold text-slate-400">Amortización en diésel</span>
                                 <div class="flex items-center gap-1.5 text-emerald-600 font-black uppercase tracking-wider text-xs">
-                                    <span>Clase A+++</span>
+                                    <span>-40% kW Térmicos</span>
                                     <svg class="w-4 h-4 group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
                                 </div>
                             </div>
@@ -815,96 +816,96 @@
                             <svg class="absolute -bottom-14 -right-14 w-60 h-60 text-emerald-500/10 group-hover:text-emerald-500/20 -rotate-12 group-hover:rotate-45 transition-all duration-700 pointer-events-none" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
                         </div>
 
-                        <!-- Card 3: Standby -->
+                        <!-- Card 3: Salida 1 - Capacitacion RRHH -->
+                        <div class="group relative bg-white p-8 sm:p-9 rounded-[2.5rem] border border-slate-200/80 shadow-xs hover:shadow-2xl transition-all duration-500 flex flex-col justify-between overflow-hidden min-h-[380px]">
+                            <div class="relative z-10">
+                                <div class="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-100/80 text-blue-600 flex items-center justify-center mb-8 shadow-xs group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                </div>
+                                <span class="text-xs font-black uppercase tracking-widest text-blue-600 block mb-2">Gestión de Hábitos</span>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Capacitación e Inducción</h3>
+                                <p class="text-slate-600 text-sm leading-relaxed font-medium">
+                                    Informes objetivos para Recursos Humanos: evidencia clara del costo de dejar calefacción al 100% en dormitorios vacíos durante la jornada de 12 horas.
+                                </p>
+                            </div>
+                            <div class="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between relative z-10">
+                                <span class="text-xs font-bold text-slate-400">Concientización de turno</span>
+                                <div class="flex items-center gap-1.5 text-blue-600 font-black uppercase tracking-wider text-xs">
+                                    <span>RRHH Activo</span>
+                                    <svg class="w-4 h-4 group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                                </div>
+                            </div>
+                            <!-- Background Watermark Icon -->
+                            <svg class="absolute -bottom-14 -right-14 w-60 h-60 text-blue-500/10 group-hover:text-blue-500/20 rotate-12 group-hover:rotate-45 transition-all duration-700 pointer-events-none" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        </div>
+
+                        <!-- Card 4: Salida 2 - Registro de Desvíos -->
                         <div class="group relative bg-white p-8 sm:p-9 rounded-[2.5rem] border border-slate-200/80 shadow-xs hover:shadow-2xl transition-all duration-500 flex flex-col justify-between overflow-hidden min-h-[380px]">
                             <div class="relative z-10">
                                 <div class="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-100/80 text-rose-600 flex items-center justify-center mb-8 shadow-xs group-hover:scale-110 group-hover:bg-rose-600 group-hover:text-white transition-all duration-300">
                                     <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                                 </div>
-                                <span class="text-xs font-black uppercase tracking-widest text-rose-600 block mb-2">Consumo Standby</span>
-                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Consumo Fantasma</h3>
+                                <span class="text-xs font-black uppercase tracking-widest text-rose-600 block mb-2">Auditoría Operativa</span>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Registro de Desvíos</h3>
                                 <p class="text-slate-600 text-sm leading-relaxed font-medium">
-                                    Detección de pérdidas parásitas en artefactos enchufados en reposo y su impacto económico acumulado a fin de mes.
+                                    Trazabilidad auditable cuando un pabellón acumula desvíos reiterados (3+ quincenas), permitiendo medidas operativas sin culpar a personas individuales.
                                 </p>
                             </div>
                             <div class="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between relative z-10">
-                                <span class="text-xs font-bold text-slate-400">Sin inversión previa</span>
+                                <span class="text-xs font-bold text-slate-400">Detección de patrones</span>
                                 <div class="flex items-center gap-1.5 text-rose-600 font-black uppercase tracking-wider text-xs">
-                                    <span>Cero Costo</span>
+                                    <span>Alerta Activa</span>
                                     <svg class="w-4 h-4 group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
                                 </div>
                             </div>
                             <!-- Background Watermark Icon -->
-                            <svg class="absolute -bottom-14 -right-14 w-60 h-60 text-rose-500/10 group-hover:text-rose-500/20 rotate-12 group-hover:rotate-45 transition-all duration-700 pointer-events-none" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                            <svg class="absolute -bottom-14 -right-14 w-60 h-60 text-rose-500/10 group-hover:text-rose-500/20 -rotate-12 group-hover:rotate-45 transition-all duration-700 pointer-events-none" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                         </div>
 
-                        <!-- Card 4: Grid Optimization -->
-                        <div class="group relative bg-white p-8 sm:p-9 rounded-[2.5rem] border border-slate-200/80 shadow-xs hover:shadow-2xl transition-all duration-500 flex flex-col justify-between overflow-hidden min-h-[380px]">
-                            <div class="relative z-10">
-                                <div class="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-100/80 text-blue-600 flex items-center justify-center mb-8 shadow-xs group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
-                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                </div>
-                                <span class="text-xs font-black uppercase tracking-widest text-blue-600 block mb-2">Gestión Tarifaria</span>
-                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Optimización de Horarios</h3>
-                                <p class="text-slate-600 text-sm leading-relaxed font-medium">
-                                    Estrategias para desplazar el funcionamiento de equipos de gran potencia hacia bandas horarias con tarifas más económicas.
-                                </p>
-                            </div>
-                            <div class="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between relative z-10">
-                                <span class="text-xs font-bold text-slate-400">Tarifas pico y valle</span>
-                                <div class="flex items-center gap-1.5 text-blue-600 font-black uppercase tracking-wider text-xs">
-                                    <span>Time-of-Use</span>
-                                    <svg class="w-4 h-4 group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
-                                </div>
-                            </div>
-                            <!-- Background Watermark Icon -->
-                            <svg class="absolute -bottom-14 -right-14 w-60 h-60 text-blue-500/10 group-hover:text-blue-500/20 -rotate-12 group-hover:rotate-45 transition-all duration-700 pointer-events-none" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        </div>
-
-                        <!-- Card 5: Thermal Comfort -->
+                        <!-- Card 5: Salida 3 - Onda Verde -->
                         <div class="group relative bg-white p-8 sm:p-9 rounded-[2.5rem] border border-slate-200/80 shadow-xs hover:shadow-2xl transition-all duration-500 flex flex-col justify-between overflow-hidden min-h-[380px]">
                             <div class="relative z-10">
                                 <div class="w-16 h-16 rounded-2xl bg-teal-50 border border-teal-100/80 text-teal-600 flex items-center justify-center mb-8 shadow-xs group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300">
-                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
                                 </div>
-                                <span class="text-xs font-black uppercase tracking-widest text-teal-600 block mb-2">Confort y Aislación</span>
-                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Salud y Desempeño Térmico</h3>
+                                <span class="text-xs font-black uppercase tracking-widest text-teal-600 block mb-2">Reconocimiento ESG</span>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Distintivo Onda Verde</h3>
                                 <p class="text-slate-600 text-sm leading-relaxed font-medium">
-                                    Evaluación del aislamiento de tus ambientes, inercia térmica y medidas pasivas para reducir el uso de climatización.
+                                    Reconocimiento visible a pabellones que cumplen con la línea base responsable. Genera incentivo positivo y datos exportables para balances de sustentabilidad.
                                 </p>
                             </div>
                             <div class="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between relative z-10">
-                                <span class="text-xs font-bold text-slate-400">Pérdidas de calor y frío</span>
+                                <span class="text-xs font-bold text-slate-400">Reporte para Minería</span>
                                 <div class="flex items-center gap-1.5 text-teal-600 font-black uppercase tracking-wider text-xs">
-                                    <span>Inercia</span>
+                                    <span>Badge ESG</span>
                                     <svg class="w-4 h-4 group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
                                 </div>
                             </div>
                             <!-- Background Watermark Icon -->
-                            <svg class="absolute -bottom-14 -right-14 w-60 h-60 text-teal-500/10 group-hover:text-teal-500/20 rotate-12 group-hover:rotate-45 transition-all duration-700 pointer-events-none" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+                            <svg class="absolute -bottom-14 -right-14 w-60 h-60 text-teal-500/10 group-hover:text-teal-500/20 rotate-12 group-hover:rotate-45 transition-all duration-700 pointer-events-none" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
                         </div>
 
-                        <!-- Card 6: Maintenance & Vacations -->
+                        <!-- Card 6: Hibridacion Fotovoltaica -->
                         <div class="group relative bg-white p-8 sm:p-9 rounded-[2.5rem] border border-slate-200/80 shadow-xs hover:shadow-2xl transition-all duration-500 flex flex-col justify-between overflow-hidden min-h-[380px]">
                             <div class="relative z-10">
                                 <div class="w-16 h-16 rounded-2xl bg-purple-50 border border-purple-100/80 text-purple-600 flex items-center justify-center mb-8 shadow-xs group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
-                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
                                 </div>
-                                <span class="text-xs font-black uppercase tracking-widest text-purple-600 block mb-2">Mantenimiento & Ausencias</span>
-                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Mantenimiento y Vacaciones</h3>
+                                <span class="text-xs font-black uppercase tracking-widest text-purple-600 block mb-2">Microgrid Cordillerano</span>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Generación Fotovoltaica</h3>
                                 <p class="text-slate-600 text-sm leading-relaxed font-medium">
-                                    Seguimiento de limpieza de filtros, service periódico y planes de consumo mínimo durante periodos de cierre o vacaciones.
+                                    Dimensionamiento de paneles Tier 1 sobre techos modulares de campamento con cálculo de cobertura estacional y reducción de horas de generador.
                                 </p>
                             </div>
                             <div class="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between relative z-10">
-                                <span class="text-xs font-bold text-slate-400">Prevención de desgaste</span>
+                                <span class="text-xs font-bold text-slate-400">Irradiancia andina real</span>
                                 <div class="flex items-center gap-1.5 text-purple-600 font-black uppercase tracking-wider text-xs">
-                                    <span>Protección</span>
+                                    <span>HSP 6.5</span>
                                     <svg class="w-4 h-4 group-hover:translate-x-1.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
                                 </div>
                             </div>
                             <!-- Background Watermark Icon -->
-                            <svg class="absolute -bottom-14 -right-14 w-60 h-60 text-purple-500/10 group-hover:text-purple-500/20 -rotate-12 group-hover:rotate-45 transition-all duration-700 pointer-events-none" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                            <svg class="absolute -bottom-14 -right-14 w-60 h-60 text-purple-500/10 group-hover:text-purple-500/20 -rotate-12 group-hover:rotate-45 transition-all duration-700 pointer-events-none" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
                         </div>
 
                     </div>
@@ -913,166 +914,86 @@
             </section>
 
 
-            <!-- 8. MÓDULOS POR RUBRO -->
+            <!-- 8. MÓDULOS DE CAMPAMENTO -->
             <section id="rubros" class="py-20 lg:py-28 bg-white border-b border-slate-100">
                 <div class="max-w-6xl mx-auto px-6">
                     
                     <div class="text-center max-w-3xl mx-auto mb-16">
                         <span class="text-xs font-black uppercase tracking-widest text-purple-600 block mb-3">
-                            Adaptabilidad Comercial
+                            Adaptabilidad Operativa
                         </span>
                         <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                            El sistema entiende tu negocio
+                            El sistema entiende tu campamento
                         </h2>
                         <p class="mt-4 text-slate-600 font-medium text-base sm:text-lg">
-                            No todos los comercios consumen igual. Con el motor de ModoAhorro podemos diseñar perfiles específicos por rubro.
+                            Cada tipo de módulo tiene patrones de carga y factores de ocupación diferentes en la cordillera sanjuanina.
                         </p>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
                         
-                        <!-- Rubro 1: Gastronomía -->
+                        <!-- Rubro 1: Pabellones de Alojamiento -->
                         <div class="group relative bg-linear-to-br from-white via-white to-amber-50/30 rounded-[2.5rem] p-8 sm:p-9 border border-slate-200/80 hover:border-amber-300/80 shadow-xs hover:shadow-2xl transition-all duration-500 flex flex-col justify-between overflow-hidden">
-                            <!-- Glowing Aura Blur -->
                             <div class="absolute -top-16 -right-16 w-48 h-48 bg-amber-400/15 rounded-full blur-3xl group-hover:scale-150 group-hover:bg-amber-400/25 transition-all duration-700 pointer-events-none"></div>
                             
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-6">
                                     <div class="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-600 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
-                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M18 2v6a3 3 0 0 1-3 3 3 3 0 0 1-3-3V2"/><path d="M15 11v11"/><path d="M5 2v4a3 3 0 0 0 3 3 3 3 0 0 0 3-3V2"/><path d="M8 9v13"/></svg>
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                                     </div>
-                                    <span class="px-3.5 py-1 rounded-full bg-amber-100/70 text-amber-800 text-[10px] font-black uppercase tracking-widest border border-amber-200/50">Rubro 01</span>
+                                    <span class="px-3.5 py-1 rounded-full bg-amber-100/70 text-amber-800 text-[10px] font-black uppercase tracking-widest border border-amber-200/50">Módulo 01</span>
                                 </div>
-                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Gastronomía</h3>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Pabellones de Descanso</h3>
                                 <p class="text-slate-600 text-sm leading-relaxed font-medium mb-6">
-                                    Prioriza refrigeración comercial intensiva, campanas de extracción y altas cargas de consumo en horarios pico de despacho.
+                                    Modelado para turnos 14x14 o 7x7: calefacción en modo ECO anticongelamiento durante faena y potencia plena en descanso.
                                 </p>
-                                <!-- Feature Chips -->
                                 <div class="flex flex-wrap gap-2 mb-6">
-                                    <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Refrigeración continua</span>
-                                    <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Campanas & Motores</span>
+                                    <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Faena 07:00 a 19:00</span>
+                                    <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">ACS en cambio de turno</span>
                                 </div>
                             </div>
                             
-                            <!-- Bottom Telemetry Bar -->
                             <div class="pt-4 border-t border-slate-100 flex items-center justify-between relative z-10">
                                 <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
                                     <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                                    <span>Picos en turnos de servicio</span>
+                                    <span>Sensible a conducta humana</span>
                                 </div>
-                                <span class="text-xs font-black uppercase tracking-wider text-amber-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">Modo Cocina &rarr;</span>
+                                <span class="text-xs font-black uppercase tracking-wider text-amber-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">Modo Pabellón &rarr;</span>
                             </div>
 
-                            <!-- Watermark Silhouette (Slides smoothly on hover) -->
-                            <svg class="absolute -bottom-8 -right-8 w-52 h-52 text-amber-500/5 group-hover:text-amber-500/15 group-hover:scale-110 group-hover:-translate-x-2 group-hover:-translate-y-2 transition-all duration-700 pointer-events-none stroke-current" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M18 2v6a3 3 0 0 1-3 3 3 3 0 0 1-3-3V2"/><path d="M15 11v11"/><path d="M5 2v4a3 3 0 0 0 3 3 3 3 0 0 0 3-3V2"/><path d="M8 9v13"/></svg>
+                            <svg class="absolute -bottom-8 -right-8 w-52 h-52 text-amber-500/5 group-hover:text-amber-500/15 group-hover:scale-110 group-hover:-translate-x-2 group-hover:-translate-y-2 transition-all duration-700 pointer-events-none stroke-current" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                         </div>
 
-                        <!-- Rubro 2: Retail & Comercio General -->
+                        <!-- Rubro 2: Oficinas y Salas de Supervisión -->
                         <div class="group relative bg-linear-to-br from-white via-white to-blue-50/30 rounded-[2.5rem] p-8 sm:p-9 border border-slate-200/80 hover:border-blue-300/80 shadow-xs hover:shadow-2xl transition-all duration-500 flex flex-col justify-between overflow-hidden">
-                            <!-- Glowing Aura Blur -->
                             <div class="absolute -top-16 -right-16 w-48 h-48 bg-blue-400/15 rounded-full blur-3xl group-hover:scale-150 group-hover:bg-blue-400/25 transition-all duration-700 pointer-events-none"></div>
                             
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-6">
                                     <div class="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-200/80 text-blue-600 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
-                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                                     </div>
-                                    <span class="px-3.5 py-1 rounded-full bg-blue-100/70 text-blue-800 text-[10px] font-black uppercase tracking-widest border border-blue-200/50">Rubro 02</span>
+                                    <span class="px-3.5 py-1 rounded-full bg-blue-100/70 text-blue-800 text-[10px] font-black uppercase tracking-widest border border-blue-200/50">Módulo 02</span>
                                 </div>
-                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Retail & Comercio General</h3>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Administración & Sala de Control</h3>
                                 <p class="text-slate-600 text-sm leading-relaxed font-medium mb-6">
-                                    Ajusta el análisis según el flujo de clientes, horarios comerciales continuos y alta densidad de iluminación.
+                                    Horario administrativo continuo, servidores 24/7 de telecomunicaciones y puestos informáticos de ingenieros y supervisores.
                                 </p>
-                                <!-- Feature Chips -->
                                 <div class="flex flex-wrap gap-2 mb-6">
-                                    <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Flujo continuo</span>
-                                    <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Densidad Lumínica</span>
+                                    <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Racks IT 24/7</span>
+                                    <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Turno técnico</span>
                                 </div>
                             </div>
                             
-                            <!-- Bottom Telemetry Bar -->
                             <div class="pt-4 border-t border-slate-100 flex items-center justify-between relative z-10">
                                 <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
                                     <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                                    <span>Horario corrido comercial</span>
+                                    <span>Carga crítica continua</span>
                                 </div>
-                                <span class="text-xs font-black uppercase tracking-wider text-blue-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">Modo Retail &rarr;</span>
+                                <span class="text-xs font-black uppercase tracking-wider text-blue-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">Modo Oficina &rarr;</span>
                             </div>
 
-                            <!-- Watermark Silhouette -->
-                            <svg class="absolute -bottom-8 -right-8 w-52 h-52 text-blue-500/5 group-hover:text-blue-500/15 group-hover:scale-110 group-hover:-translate-x-2 group-hover:-translate-y-2 transition-all duration-700 pointer-events-none stroke-current" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                        </div>
-
-                        <!-- Rubro 3: Oficinas & Servicios -->
-                        <div class="group relative bg-linear-to-br from-white via-white to-indigo-50/30 rounded-[2.5rem] p-8 sm:p-9 border border-slate-200/80 hover:border-indigo-300/80 shadow-xs hover:shadow-2xl transition-all duration-500 flex flex-col justify-between overflow-hidden">
-                            <!-- Glowing Aura Blur -->
-                            <div class="absolute -top-16 -right-16 w-48 h-48 bg-indigo-400/15 rounded-full blur-3xl group-hover:scale-150 group-hover:bg-indigo-400/25 transition-all duration-700 pointer-events-none"></div>
-                            
-                            <div class="relative z-10">
-                                <div class="flex items-center justify-between mb-6">
-                                    <div class="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-200/80 text-indigo-600 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/><line x1="8" y1="6" x2="8" y2="6.01"/><line x1="16" y1="6" x2="16" y2="6.01"/><line x1="8" y1="10" x2="8" y2="10.01"/><line x1="16" y1="10" x2="16" y2="10.01"/><line x1="8" y1="14" x2="8" y2="14.01"/><line x1="16" y1="14" x2="16" y2="14.01"/><line x1="8" y1="18" x2="8" y2="18.01"/><line x1="16" y1="18" x2="16" y2="18.01"/></svg>
-                                    </div>
-                                    <span class="px-3.5 py-1 rounded-full bg-indigo-100/70 text-indigo-800 text-[10px] font-black uppercase tracking-widest border border-indigo-200/50">Rubro 03</span>
-                                </div>
-                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Oficinas & Servicios</h3>
-                                <p class="text-slate-600 text-sm leading-relaxed font-medium mb-6">
-                                    Evalúa la carga de climatización, racks de servidores, puestos de trabajo informáticos y standby nocturno.
-                                </p>
-                                <!-- Feature Chips -->
-                                <div class="flex flex-wrap gap-2 mb-6">
-                                    <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Climatización central</span>
-                                    <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Servidores & Standby</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Bottom Telemetry Bar -->
-                            <div class="pt-4 border-t border-slate-100 flex items-center justify-between relative z-10">
-                                <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
-                                    <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-                                    <span>Cero consumo fuera de hora</span>
-                                </div>
-                                <span class="text-xs font-black uppercase tracking-wider text-indigo-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">Modo Oficina &rarr;</span>
-                            </div>
-
-                            <!-- Watermark Silhouette -->
-                            <svg class="absolute -bottom-8 -right-8 w-52 h-52 text-indigo-500/5 group-hover:text-indigo-500/15 group-hover:scale-110 group-hover:-translate-x-2 group-hover:-translate-y-2 transition-all duration-700 pointer-events-none stroke-current" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/><line x1="8" y1="6" x2="8" y2="6.01"/><line x1="16" y1="6" x2="16" y2="6.01"/><line x1="8" y1="10" x2="8" y2="10.01"/><line x1="16" y1="10" x2="16" y2="10.01"/><line x1="8" y1="14" x2="8" y2="14.01"/><line x1="16" y1="14" x2="16" y2="14.01"/><line x1="8" y1="18" x2="8" y2="18.01"/><line x1="16" y1="18" x2="16" y2="18.01"/></svg>
-                        </div>
-
-                        <!-- Rubro 4: Heladerías y Frío Comercial -->
-                        <div class="group relative bg-linear-to-br from-white via-white to-purple-50/30 rounded-[2.5rem] p-8 sm:p-9 border border-slate-200/80 hover:border-purple-300/80 shadow-xs hover:shadow-2xl transition-all duration-500 flex flex-col justify-between overflow-hidden">
-                            <!-- Glowing Aura Blur -->
-                            <div class="absolute -top-16 -right-16 w-48 h-48 bg-purple-400/15 rounded-full blur-3xl group-hover:scale-150 group-hover:bg-purple-400/25 transition-all duration-700 pointer-events-none"></div>
-                            
-                            <div class="relative z-10">
-                                <div class="flex items-center justify-between mb-6">
-                                    <div class="w-16 h-16 rounded-2xl bg-purple-50 border border-purple-200/80 text-purple-600 flex items-center justify-center shrink-0 shadow-xs group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
-                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="4.93" y2="19.07"/></svg>
-                                    </div>
-                                    <span class="px-3.5 py-1 rounded-full bg-purple-100/70 text-purple-800 text-[10px] font-black uppercase tracking-widest border border-purple-200/50">Rubro 04</span>
-                                </div>
-                                <h3 class="text-2xl font-black text-slate-900 tracking-tight mb-3">Heladerías & Frío Comercial</h3>
-                                <p class="text-slate-600 text-sm leading-relaxed font-medium mb-6">
-                                    Contempla vitrinas de frío permanente y alta sensibilidad a picos estacionales de temperatura exterior de verano.
-                                </p>
-                                <!-- Feature Chips -->
-                                <div class="flex flex-wrap gap-2 mb-6">
-                                    <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Frío Permanente</span>
-                                    <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">Picos de Verano</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Bottom Telemetry Bar -->
-                            <div class="pt-4 border-t border-slate-100 flex items-center justify-between relative z-10">
-                                <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
-                                    <span class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
-                                    <span>Compresión continua 24/7</span>
-                                </div>
-                                <span class="text-xs font-black uppercase tracking-wider text-purple-600 group-hover:translate-x-1 transition-transform flex items-center gap-1">Modo Frío &rarr;</span>
-                            </div>
-
-                            <!-- Watermark Silhouette -->
-                            <svg class="absolute -bottom-8 -right-8 w-52 h-52 text-purple-500/5 group-hover:text-purple-500/15 group-hover:scale-110 group-hover:-translate-x-2 group-hover:-translate-y-2 transition-all duration-700 pointer-events-none stroke-current" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="4.93" y2="19.07"/></svg>
+                            <svg class="absolute -bottom-8 -right-8 w-52 h-52 text-blue-500/5 group-hover:text-blue-500/15 group-hover:scale-110 group-hover:-translate-x-2 group-hover:-translate-y-2 transition-all duration-700 pointer-events-none stroke-current" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                         </div>
 
                     </div>
@@ -1080,8 +1001,8 @@
                     <!-- Nota al pie -->
                     <div class="mt-12 text-center">
                         <div class="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold px-5 py-2.5 rounded-full shadow-xs">
-                            <span class="text-emerald-600 font-extrabold">Configuración a medida:</span>
-                            <span>El motor de tanques se adapta a las particularidades de tu rubro comercial.</span>
+                            <span class="text-emerald-600 font-extrabold">Compre Tecnológico Sanjuanino:</span>
+                            <span>Software local para resolver desafíos reales de la minería de nuestra provincia.</span>
                         </div>
                     </div>
 
@@ -1089,30 +1010,30 @@
             </section>
 
 
-            <!-- 9. PROGRAMA PILOTO / ACCESO ANTICIPADO -->
+            <!-- 9. PROGRAMA PILOTO / CONTACTO MINERO -->
             <section class="py-20 lg:py-28 bg-[#009966] text-white relative overflow-hidden">
                 <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-400/20 via-transparent to-transparent pointer-events-none"></div>
                 <div class="max-w-4xl mx-auto px-6 relative z-10">
                     <div class="bg-white/10 backdrop-blur-md rounded-3xl p-8 sm:p-14 border border-white/20 shadow-2xl text-center">
                         
                         <span class="text-xs font-black uppercase tracking-widest text-emerald-200 block mb-4">
-                            Acceso Anticipado
+                            Implementación en Campamentos
                         </span>
 
                         <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
-                            Probá la plataforma en tus espacios
+                            Audita tu campamento con tecnología sanjuanina
                         </h2>
 
                         <p class="mt-6 text-emerald-50 text-base sm:text-lg font-medium leading-relaxed max-w-2xl mx-auto">
-                            El sistema está operativo y en validación continua. Al sumarte al programa de adopción temprana, contás con acceso a las herramientas de análisis y soporte prioritario.
+                            Plataforma operativa para operadoras y contratistas de campamento. Prototipo funcional y adaptable a turnos 14x14, 7x7 y microgrids aisladas.
                         </p>
 
                         <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                             <a href="{{ route('login') }}" class="inline-flex items-center justify-center bg-white hover:bg-emerald-50 text-[#009966] font-extrabold text-base px-8 py-4 rounded-2xl shadow-xl transition-all hover:-translate-y-0.5">
-                                Ingresar a la plataforma →
+                                Acceder al Sistema →
                             </a>
-                            <a href="https://wa.me/5492644533704?text=Hola!%20Me%20gustaria%20solicitar%20un%20acceso%20beta%20a%20ModoAhorro" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center border border-white/40 hover:border-white bg-white/10 hover:bg-white/20 text-white font-bold text-base px-7 py-4 rounded-2xl backdrop-blur-xs transition-all">
-                                Solicitar invitación
+                            <a href="https://wa.me/5492644533704?text=Hola!%20Me%20interesa%20conocer%20ModoAhorro%20Mineria%20para%20campamentos" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center border border-white/40 hover:border-white bg-white/10 hover:bg-white/20 text-white font-bold text-base px-7 py-4 rounded-2xl backdrop-blur-xs transition-all">
+                                Contactar al Equipo
                             </a>
                         </div>
 
