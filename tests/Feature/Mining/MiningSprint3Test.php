@@ -93,4 +93,54 @@ class MiningSprint3Test extends TestCase
             ->has('pavilions.2.outputs.penalty')
         );
     }
+
+    public function test_mining_user_can_select_entity_view_rooms_and_equipment_and_switch_entity(): void
+    {
+        $this->seed(MasterCleanCatalogueSeeder::class);
+        $this->seed(MiningCampDemoSeeder::class);
+
+        $user = User::where('email', 'mineria@modoahorro.com')->first();
+        $this->assertNotNull($user);
+
+        // 1. Selector de entidades muestra pabellones y oficina
+        $resSelector = $this->actingAs($user)->get('/entidades');
+        $resSelector->assertStatus(200);
+
+        // 2. Activar Pabellón A-01
+        $pabellonA = $user->entities()->where('name', 'like', 'Pabellón A-01%')->first();
+        $this->assertNotNull($pabellonA);
+
+        $resActivate = $this->actingAs($user)->get("/entidades/{$pabellonA->id}/activate");
+        $resActivate->assertRedirect(route('home'));
+
+        // 3. Ver infraestructura de Pabellón A-01 con sus rooms y equipos
+        $resInfra = $this->actingAs($user)
+            ->withSession(['active_entity_id' => $pabellonA->id])
+            ->get('/gestion/infraestructura');
+
+        $resInfra->assertStatus(200);
+        $resInfra->assertInertia(fn (Assert $page) => $page
+            ->component('Entities/Infrastructure/Index')
+            ->where('entity.id', $pabellonA->id)
+            ->has('rooms')
+        );
+
+        // 4. Cambiar a Pabellón Administrativo (Oficina)
+        $oficina = $user->entities()->where('type', 'oficina')->first();
+        $this->assertNotNull($oficina);
+
+        $resActivateOficina = $this->actingAs($user)->get("/entidades/{$oficina->id}/activate");
+        $resActivateOficina->assertRedirect(route('home'));
+
+        $resInfraOficina = $this->actingAs($user)
+            ->withSession(['active_entity_id' => $oficina->id])
+            ->get('/gestion/infraestructura');
+
+        $resInfraOficina->assertStatus(200);
+        $resInfraOficina->assertInertia(fn (Assert $page) => $page
+            ->component('Entities/Infrastructure/Index')
+            ->where('entity.id', $oficina->id)
+            ->has('rooms')
+        );
+    }
 }
