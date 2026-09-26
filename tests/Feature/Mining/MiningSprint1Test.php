@@ -6,8 +6,6 @@ use App\Domain\Commercial\Profiles\Mining\MiningCampProfile;
 use App\Domain\Commercial\Registry\CommercialProfileRegistry;
 use App\Models\Contract;
 use App\Models\Entity;
-use App\Models\EquipmentCategory;
-use App\Models\EquipmentType;
 use App\Models\Invoice;
 use App\Models\Locality;
 use App\Models\Proveedor;
@@ -22,6 +20,7 @@ class MiningSprint1Test extends TestCase
     use RefreshDatabase;
 
     protected Province $province;
+
     protected Locality $locality;
 
     protected function setUp(): void
@@ -104,7 +103,7 @@ class MiningSprint1Test extends TestCase
 
     public function test_mining_camp_profile_operational_load_calculation(): void
     {
-        $profile = new MiningCampProfile();
+        $profile = new MiningCampProfile;
 
         $context = [
             'staff_count' => 80,
