@@ -86,7 +86,38 @@ Costo económico del desvío:          ~$114 USD/día en ese pabellón
 
    * **Diagnóstico cualitativo automático:** *"El desvío detectado es consistente con calefacción activa durante horario de desocupación. Se recomienda: instalar control horario automatizado o protocolo de apagado parcial al inicio del turno de faena."*
 
-### 3.2. Escalabilidad a Nivel de Campamento
+### 3.2. Las Tres Salidas de Valor: Lo que hace el Software con el Desvío
+
+Una vez detectado el desvío entre la Línea Base de Buenas Prácticas y el consumo real, el sistema genera **tres salidas de valor concretas** orientadas 100% al comportamiento humano (no a procesos industriales que el software no puede controlar):
+
+#### 📚 Salida 1: Capacitación de Recursos Humanos
+* **¿Qué es?** El desvío detectado se convierte en **evidencia documentada y objetiva** para que el área de RRHH o el supervisor de turno use en charlas de inducción, entrenamiento y concientización energética.
+* **¿Cómo se usa?** El sistema genera un reporte por pabellón que muestra, de forma clara y sin culpar a nadie individualmente, *cuándo* ocurre el desvío (horario de faena = pabellón vacío con calefacción al máximo) y *cuánto* cuesta ese hábito en pesos y en litros de diésel.
+* **Ejemplo:** *"En la charla de seguridad del lunes, el supervisor muestra que el Pabellón B-02 desvió 300 kWh la semana pasada, equivalente a 84 litros de combustible. Eso es lo que costó no apagar o bajar la estufa al salir a la faena."*
+
+#### ⚠️ Salida 2: Registro de Penalizaciones y Desvíos Reiterativos
+* **¿Qué es?** Si un pabellón supera la línea base de forma reiterada (ej: 3 quincenas consecutivas con más del 50% de desvío), el sistema genera una **alerta formal y un registro histórico auditable** que la gerencia puede usar para aplicar protocolos disciplinarios o de revisión de procedimientos.
+* **¿Cómo se usa?** La gerencia de operaciones ve el historial de desvíos por pabellón. Si el desvío es estructural (no puntual), queda documentado para justificar inversiones en automatización (ej: termostatos programables, control horario) o para aplicar las políticas internas del campamento.
+* **Lo que NO hace:** No señala a ningún operario individualmente. Registra el comportamiento del pabellón como unidad colectiva.
+
+#### 🌿 Salida 3: "Onda Verde" – Reconocimiento de Buenas Prácticas
+* **¿Qué es?** Los pabellones que cumplen o están por debajo de la Línea Base de Buenas Prácticas reciben un **badge digital o certificación de eficiencia** visible en el tablero del campamento.
+* **¿Para qué sirve?**
+  * **Para los operarios:** Gamificación positiva. El pabellón "más verde" del mes es reconocido públicamente. Genera orgullo de equipo y competencia sana entre pabellones.
+  * **Para la minera:** El reporte de "Onda Verde" es parte del **informe ESG (Environmental, Social & Governance)** que las operadoras presentan ante el Ministerio de Minería de San Juan, inversores internacionales y comunidades aledañas.
+  * **Para el Hackatón:** Es el elemento de innovación social más potente de la propuesta. No sólo mide y penaliza: **premia y motiva**.
+
+> **Resumen de las tres salidas:**
+> ```
+> DESVÍO DETECTADO  →  📚 Capacitación (evidencia para RRHH)
+>                   →  ⚠️  Penalización (registro auditable de reiteración)
+>                   →  🌿 Onda Verde (badge de cumplimiento y reconocimiento)
+> ```
+
+---
+
+### 3.3. Escalabilidad a Nivel de Campamento
+
 
 El sistema agrega el diagnóstico de todos los pabellones del campamento en un **tablero ejecutivo** (scroll-free, diseño industrial oscuro) que le muestra al Gerente de Sustentabilidad / Gerente de Operaciones:
 
