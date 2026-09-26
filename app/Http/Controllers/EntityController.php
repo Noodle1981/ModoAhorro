@@ -110,7 +110,7 @@ class EntityController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'type' => 'required|string|in:hogar,comercio,oficina',
+            'type' => 'required|string|in:hogar,comercio,oficina,pabellon',
             'name' => 'required|string|max:255',
         ]);
 

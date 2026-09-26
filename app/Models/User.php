@@ -75,7 +75,7 @@ class User extends Authenticatable
             return Plan::find($pivot->plan_id);
         }
 
-        // Fallback: Plan Gratuito por defecto
-        return Plan::where('name', 'Gratuito')->first();
+        // Fallback: Plan Gratuito por defecto o primer plan disponible
+        return Plan::where('name', 'Gratuito')->first() ?? Plan::first();
     }
 }

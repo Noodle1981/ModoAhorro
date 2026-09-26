@@ -8,11 +8,14 @@ use App\Models\Contract;
 use App\Models\Entity;
 use App\Models\Invoice;
 use App\Models\Locality;
+use App\Models\Plan;
 use App\Models\Proveedor;
 use App\Models\Province;
+use App\Models\User;
 use App\Models\UtilityCompany;
 use Database\Seeders\MasterCleanCatalogueSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class MiningSprint1Test extends TestCase
@@ -205,5 +208,58 @@ class MiningSprint1Test extends TestCase
         $this->assertEquals(360.50, $invoice->generator_hours);
         $this->assertEquals('generator', $invoice->source_type);
         $this->assertEquals(95, $invoice->occupancy_count);
+    }
+
+    public function test_pabellon_is_enabled_in_dashboard_selector(): void
+    {
+        $plan = Plan::create([
+            'name' => 'Mining Enterprise Pro',
+            'max_entities' => 10,
+            'allowed_entity_types' => ['pabellon', 'oficina', 'comercio'],
+            'price' => 0,
+        ]);
+
+        $user = User::factory()->create([
+            'is_super_admin' => false,
+        ]);
+
+        $response = $this->actingAs($user)->get('/entidades');
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn (Assert $page) => $page
+            ->component('Dashboard/Selector')
+            ->has('entitiesByType', 4)
+            ->where('entitiesByType.3.type', 'pabellon')
+            ->where('entitiesByType.3.enabled', true)
+        );
+    }
+
+    public function test_user_can_create_pabellon_via_entity_store(): void
+    {
+        $plan = Plan::create([
+            'name' => 'Mining Enterprise Pro',
+            'max_entities' => 10,
+            'allowed_entity_types' => ['pabellon', 'oficina', 'comercio'],
+            'price' => 0,
+        ]);
+
+        $user = User::factory()->create([
+            'is_super_admin' => false,
+        ]);
+
+        $response = $this->actingAs($user)->post('/entidades/nueva', [
+            'type' => 'pabellon',
+            'name' => 'Pabellón Andes 01',
+        ]);
+
+        $response->assertRedirect(route('gestion.entity.edit'));
+        $this->assertDatabaseHas('entities', [
+            'name' => 'Pabellón Andes 01',
+            'type' => 'pabellon',
+        ]);
+
+        $created = Entity::where('name', 'Pabellón Andes 01')->first();
+        $this->assertNotNull($created);
+        $this->assertEquals($created->id, session('active_entity_id'));
     }
 }

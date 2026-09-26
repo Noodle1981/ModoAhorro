@@ -87,7 +87,8 @@ watchEffect(() => {
         else if (url.startsWith('/sistema/catalogo') || url.startsWith('/sistema/modelos') || url.startsWith('/sistema/eficiencia') || url.startsWith('/sistema/benchmarks')) activeCategory.value = 'Configuración';
         else activeCategory.value = 'Dashboard';
     } else {
-        if (url.startsWith('/analisis')) activeCategory.value = 'Análisis';
+        if (url.startsWith('/mineria')) activeCategory.value = 'Gestión Física';
+        else if (url.startsWith('/analisis')) activeCategory.value = 'Análisis';
         else if (url.startsWith('/recomendaciones')) activeCategory.value = 'Recomendaciones';
         else activeCategory.value = 'Gestión Física';
     }
@@ -102,10 +103,11 @@ const navigation = computed(() => [
         bgColor: 'bg-emerald-600',
         hidden: auth.value?.user?.is_super_admin,
         items: [
+            ...(currentEntity.value?.type === 'pabellon' ? [{ name: 'Auditoría Campamento', icon: LayoutDashboard, href: route('mining.dashboard') }] : []),
             { name: 'Desempeño Térmico', icon: Thermometer, href: currentEntity.value ? route('gestion.thermal.index', currentEntity.value.id) : '#' },
             { name: 'Perfil de Entidad', icon: Home, href: route('gestion.entity.edit') },
             { name: 'Contratos', icon: FileText, href: route('gestion.contracts') },
-            { name: 'Facturas', icon: Briefcase, href: route('gestion.invoices') },
+            { name: currentEntity.value?.type === 'pabellon' ? 'Lecturas de Tablero' : 'Facturas', icon: Briefcase, href: route('gestion.invoices') },
             { name: 'Unificaciones', icon: RefreshCw, href: route('gestion.unifications') },
             { name: 'Infraestructura', icon: Building, href: route('gestion.infrastructure') },
         ]

@@ -40,7 +40,7 @@ class MiningCampDemoSeeder extends Seeder
             [
                 'name' => 'Supervisor de Campamento Veladero',
                 'password' => Hash::make('password'),
-                'is_super_admin' => true,
+                'is_super_admin' => false,
             ]
         );
 

@@ -33,9 +33,8 @@ class DashboardController extends Controller
         // Prepare data for Inertia
         $entitiesByType = [];
         foreach ($entityTypes as $type => $config) {
-            // User request: 'hogar', 'comercio' and 'oficina' are enabled.
-            // Others are grayed out regardless of plan.
-            $isEnabled = in_array($type, ['hogar', 'comercio', 'oficina']);
+            // 'hogar', 'comercio', 'oficina' y 'pabellon' están habilitados.
+            $isEnabled = in_array($type, ['hogar', 'comercio', 'oficina', 'pabellon']);
 
             $entitiesByType[] = [
                 'type' => $type,

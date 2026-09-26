@@ -22,14 +22,14 @@ class PlanSeeder extends Seeder
             'allowed_entity_types' => ['hogar'],
         ]);
 
-        // Plan Premium - Hogar, Oficina, Comercio (hasta 3)
+        // Plan Premium - Hogar, Oficina, Comercio, Pabellón (hasta 5)
         Plan::updateOrCreate([
             'name' => 'Premium',
         ], [
-            'features' => 'Hasta 3 entidades (hogar, oficina, comercio)',
+            'features' => 'Hasta 5 entidades (hogar, oficina, comercio, pabellón)',
             'price' => 15.00,
-            'max_entities' => 3,
-            'allowed_entity_types' => ['hogar', 'oficina', 'comercio'],
+            'max_entities' => 5,
+            'allowed_entity_types' => ['hogar', 'oficina', 'comercio', 'pabellon'],
         ]);
 
         // Plan Enterprise - Ilimitado
@@ -39,7 +39,7 @@ class PlanSeeder extends Seeder
             'features' => 'Entidades ilimitadas, soporte prioritario',
             'price' => 50.00,
             'max_entities' => 999,
-            'allowed_entity_types' => ['hogar', 'oficina', 'comercio'],
+            'allowed_entity_types' => ['hogar', 'oficina', 'comercio', 'pabellon'],
         ]);
     }
 }

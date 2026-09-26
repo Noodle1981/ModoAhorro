@@ -25,14 +25,16 @@ const iconMap = {
     'hogar': Home,
     'comercio': ShoppingBag,
     'oficina': Building,
-    'industria': Factory
+    'industria': Factory,
+    'pabellon': Building
 };
 
 // Dynamic Hover classes map for buttons
 const hoverBgMap = {
     'hogar': 'hover:bg-emerald-600',
     'comercio': 'hover:bg-purple-600',
-    'oficina': 'hover:bg-blue-600'
+    'oficina': 'hover:bg-blue-600',
+    'pabellon': 'hover:bg-amber-600'
 };
 
 // Creation State
@@ -42,7 +44,13 @@ const newEntityName = shallowRef('');
 
 const openCreateModal = (type) => {
     entityTypeToCreate.value = type;
-    const defaultName = type === 'comercio' ? 'Nuevo Comercio' : (type === 'oficina' ? 'Nueva Oficina' : 'Nuevo Hogar');
+    const defaultName = type === 'comercio' 
+        ? 'Nuevo Comercio' 
+        : (type === 'oficina' 
+            ? 'Nueva Oficina' 
+            : (type === 'pabellon' 
+                ? 'Nuevo Pabellón' 
+                : 'Nuevo Hogar'));
     newEntityName.value = defaultName;
     showCreateModal.value = true;
 };
