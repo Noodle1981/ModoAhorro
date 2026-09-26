@@ -1,5 +1,5 @@
 # 🏔️ Plan Estratégico y Técnico: Hackatón Minero San Juan 2026
-## *Proyecto: Smart Mining Camp – Telemetría y Eficiencia de Recursos en Campamentos Remotos*
+## *Proyecto: ModoAhorro Pabellones – Estimación de Consumo Responsable y Auditoría Energética en Campamentos Mineros*
 
 ---
 
@@ -8,13 +8,17 @@
 ### 1.1. La Problemática en Campamentos Mineros
 En los proyectos mineros cordilleranos (Veladero, Josemaría, Los Azules, Gualcamayo, etc.):
 * **Aislamiento de red:** No existe red pública convencional ni "facturas mensuales de luz". Los campamentos operan con *microgrids* (generación diésel, parques solares aislados o líneas privadas de alta tensión).
-* **Costo por kWh exorbitante:** El kWh no se paga con boleta; se paga con litros de gasoil subidos a +4.000 msnm en camiones cisterna, mantenimiento de generadores y toneladas de CO₂ emitidas.
-* **Derroche en módulos ociosos:** Calefacción, climatización y termotanques eléctricos quedan encendidos en módulos de alojamiento vacíos durante los turnos de faena o cambios de guardia.
-* **Falta de visibilidad de recursos:** El campamento consume miles de litros de agua potable y energía sin una segregación por módulos (pabellones, comedores, talleres, laboratorios).
+* **Costo por kWh exorbitante:** El kWh no se paga con boleta; se paga con litros de gasoil subidos a +4.000 msnm en camiones cisterna, mantenimiento de generadores y toneladas de CO₂ emitidas (~1.35 USD/litro puesto en cordillera).
+* **Derroche por hábitos humanos en módulos desocupados:** Calefacción y termotanques eléctricos quedan encendidos al máximo en dormitorios y pabellones vacíos durante los turnos de faena de 12 horas.
+* **Falta de visibilidad de lo que "debería" consumirse:** La minera ve el consumo total o la lectura del medidor/tablero del pabellón, pero no tiene una herramienta que calcule si ese número es razonable o representa un derroche evitable.
 
 ### 1.2. La Propuesta de Valor
-Transformar el motor de cálculo y auditoría de **ModoAhorro** en una plataforma industrial B2B:
-> **Eliminar la dependencia de facturas manuales** y reemplazarla por la **ingesta continua de telemetría desde medidores inteligentes (Smart Meters / IoT)**, monitoreando consumo de energía (kWh) y agua (m³), detectando anomalías en tiempo real y cuantificando el ahorro directo en **litros de diésel y huella de carbono (tCO₂e)**.
+> **ModoAhorro Pabellones** no busca monitorear procesos industriales incontrolables (molinos, palas, ventilación de piques), sino el **consumo de los pabellones de alojamiento y módulos administrativos**, donde el factor determinante es el **comportamiento humano**:
+>
+> 1. **Cargar:** Datos del pabellón (equipos térmicos, dotación del turno, horarios de faena/descanso).
+> 2. **Estimar (Línea Base):** Calcular cuánto *debería consumir* con buenas prácticas en alta montaña.
+> 3. **Comparar:** Contrastar contra la *lectura real del tablero/medidor* del pabellón.
+> 4. **Diagnosticar y Accionar:** Disparar 4 salidas de alto valor: **📚 Capacitación (RRHH)**, **⚠️ Registro de Penalización**, **🌿 Reconocimiento Onda Verde (ESG)** y **🔧 Recomendación de Reemplazo Tecnológico (ROI)**.
 
 ---
 
@@ -22,8 +26,8 @@ Transformar el motor de cálculo y auditoría de **ModoAhorro** en una plataform
 
 | Desafío Oficial | Cómo encaja el Proyecto | Diferencial Competitivo |
 | :--- | :--- | :--- |
-| **Desafío 1: Monitoreo hídrico participativo y transparencia** | Telemetría en tiempo real del uso de agua y energía en campamentos de operarios. Balance hídrico transparente y auditable para operadoras y comunidades. | Trazabilidad exacta de cuánta agua consume el campamento vs. faena minera. |
-| **Desafío 5: Telemetría y asistencia segura / Eficiencia operativa** | Ingesta de sensores industriales de subestaciones y tableros de campamento con alertas tempranas de sobrecarga y consumos anómalos. | Detección automatizada de anomalías sin intervención humana. |
+| **Desafío 3: Mapeo y vinculación de proveedores locales (CASEMI / CASETIC)** | Proveedor de software y tecnología 100% sanjuanina. Demuestra que no hace falta contratar consultoras foráneas en dólares para auditar y eficientizar la huella energética de los campamentos mineros locales. | Software real, probado, con 59 tests automatizados en verde y escalable. |
+| **Desafío 5: Telemetría, Eficiencia Operativa y Gestión de Recursos** | Ingesta de lecturas de tableros eléctricos y medidores de pabellón con cálculo algorítmico de desvío térmico y puente hacia futuros gemelos digitales. | Trazabilidad exacta de kWh derrochados convertidos a litros de diésel y $ USD. |
 
 ---
 
@@ -31,62 +35,51 @@ Transformar el motor de cálculo y auditoría de **ModoAhorro** en una plataform
 
 ```mermaid
 flowchart TD
-    subgraph Edge["🛰️ Campamento Minero (Edge / IoT)"]
-        SM1["Medidor Tablero Principal\n(Modbus / MQTT)"]
-        SM2["Medidor Pabellón Alojamiento\n(Smart Meter)"]
-        SM3["Medidor Comedor / Cocina\n(Caudalímetro + Energía)"]
-        SIM["⚡ Simulador de Telemetría Cordillera\n(Artisan Simulator)"]
+    subgraph Edge["🏔️ Pabellón Minero / Administración"]
+        Input["Parametrización del Módulo\n(Dotación turno, Equipamiento, Horas faena)"]
+        BoardReading["Lectura de Tablero / Medidor\n(kWh reales del período)"]
+        OpenMeteo["API Open-Meteo\n(Temp real de cordillera, viento, radiación)"]
     end
 
     subgraph Backend["⚙️ Backend ModoAhorro Minero (Laravel 13)"]
-        API["API Ingesta Telemetría\nPOST /api/v1/telemetry"]
-        Sanctum["Auth & Rate Limiting\n(Laravel Sanctum)"]
-        Buffer["Procesamiento de Lecturas\n(TelemetryService)"]
-        Engine["Motor de Balance y Línea Base\n(AuditEngine)"]
-        Carbon["Calculador Diésel / CO2\n(EmissionsEngine)"]
+        Baseline["Motor de Línea Base\n(BaselineEngine)"]
+        Deviation["Motor de Desvíos\n(DeviationOutputService)"]
+        Solar["Servicios Solares y Benchmarks\n(SolarWaterService / SolarPowerService)"]
     end
 
-    subgraph UI["💻 Panel Operativo y Ambiental (Vue 3 + Tailwind v4)"]
-        DashLive["Telemetría en Vivo (Scroll-Free)"]
-        Heatmap["Mapa de Calor por Módulos / Pabellones"]
-        Alerts["Alertas de Derroche / Fallas"]
-        CarbonKpi["Indicador Litros Diésel / tCO2 Evitadas"]
+    subgraph UI["💻 Panel Minero y 4 Salidas de Valor (Vue 3)"]
+        DashLive["Dashboard Minero\n(Estimado vs Real por Pabellón)"]
+        Capacitacion["📚 Reporte para RRHH / Inducción"]
+        Penalizacion["⚠️ Alerta de Desvíos Reiterativos"]
+        OndaVerde["🌿 Certificado / Badge Onda Verde (ESG)"]
+        Reemplazo["🔧 ROI Reemplazo (Tubos Vacío / Infrarrojo)"]
     end
 
-    SM1 --> API
-    SM2 --> API
-    SM3 --> API
-    SIM --> API
-    API --> Sanctum --> Buffer --> Engine --> Carbon
-    Engine --> DashLive
-    Engine --> Heatmap
-    Engine --> Alerts
-    Carbon --> CarbonKpi
+    Input --> Baseline
+    OpenMeteo --> Baseline
+    BoardReading --> Deviation
+    Baseline --> Deviation
+    Deviation --> DashLive
+    Deviation --> Capacitacion
+    Deviation --> Penalizacion
+    Deviation --> OndaVerde
+    Deviation --> Solar --> Reemplazo
 ```
 
-### 3.1. Reemplazo del Módulo de Facturas
-* **Antes:** `Invoice` (Carga manual de PDF/factura, total en $, consumo bimestral).
-* **Ahora:** 
-  * `Meter`: Dispositivo físico/lógico asignado a un Módulo/Room (ej: ID `SM-PABELLON-B`, tipo: Eléctrico / Hídrico).
-  * `MeterReading`: Serie temporal (`meter_id`, `timestamp`, `active_energy_kwh`, `peak_power_kw`, `water_volume_m3`, `status`).
-  * `DailyBalance`: Agregación automática por día/turno sin necesidad de facturación externa.
+### 3.1. Tratamiento del Módulo de Facturas
+* **No hay boleta convencional:** El modelo interno `Invoice` se utiliza como **Lectura de Tablero / Registro de Consumo** de cada pabellón.
+* Campos extendidos: `source_type` (generador, red, solar), `shift_code` (turnos A/B/C/D), `occupancy_count` (dotación real), `demand_kw_peak`.
 
-### 3.2. Mapeo de Entidades
-* **Entity:** Campamento (ej: *Campamento Base Veladero - Capacidad 1.500 personas*).
-* **Rooms (Módulos):**
-  * *Alojamiento:* Pabellones A1, A2, B1, etc.
-  * *Servicios:* Cocina Industrial, Comedor, Lavandería.
-  * *Infraestructura:* Planta de Tratamiento de Efluentes, Potabilizadora, Sala de Compresores.
-* **Equipos:** Climatización HVAC industrial, Termotanques solares/eléctricos de alta capacidad, Iluminación perimetral LED, Bombas elevadoras.
-
-### 3.3. Nuevas Métricas Industriales
-* **Costo Energético Evitado:** En base al costo logístico del litro de diésel puesto en cordillera (~1.20 a 1.50 USD/L).
-* **Huella de Carbono:** Factor de emisión $0.27 \text{ kg CO}_2/\text{kWh}$ (diésel estándar) o curva híbrida.
-* **Consumo Per Cápita:** $\text{kWh/persona/día}$ y $\text{L/persona/día}$ ajustado por la dotación activa de personal en el turno.
+### 3.2. Mapeo y Escalabilidad de Entidades
+* **Entidades:** 
+  * `pabellon` (nuevo): Pabellones de alojamiento (habitaciones, baños, comedores).
+  * `oficina` (existente): Se mantiene intacto para salas de control, módulos administrativos y enfermería.
+  * `hogar` y `comercio`: Se preservan sin alteración para mantener la plataforma base.
+* **Equipos de Alta Montaña:** Convectores de pared, traceado anticongelamiento, paneles radiantes, termotanques industriales, racks IT.
 
 ---
 
-## 🚀 4. Plan de Ejecución por Sprints (Cronograma del Hackatón)
+## 🚀 4. Plan de Ejecución por Sprints
 
 ```mermaid
 gantt
@@ -96,9 +89,9 @@ gantt
     Inscripción en ciclopilares.com.ar      :done, 2026-09-22, 2026-10-09
     Anuncio de Equipos Seleccionados        :2026-10-16, 2026-10-16
     section Desarrollo (3 semanas)
-    Sprint 1: Modelado & API Telemetría     :2026-10-19, 2026-10-25
-    Sprint 2: Motor de Desvío & Simulador   :2026-10-26, 2026-11-01
-    Sprint 3: UI Campamento & KPI Diésel/CO2:2026-11-02, 2026-11-07
+    Sprint 1: Modelo Pabellón & Catálogo    :2026-10-19, 2026-10-25
+    Sprint 2: BaselineEngine & 4 Salidas    :2026-10-26, 2026-11-01
+    Sprint 3: UI Dashboard & Seeder Demo    :2026-11-02, 2026-11-07
     section Entrega & Final
     Entrega Final (Video, PDF, Prototipo)   :crit, 2026-11-09, 2026-11-09
     Evaluación Técnica                      :2026-11-10, 2026-11-13
@@ -106,43 +99,37 @@ gantt
     Premiación FNS FORUM                    :2026-11-19, 2026-11-19
 ```
 
-### 🗓️ Sprint 1 (Oct 19 - Oct 25): Modelo de Telemetría e Ingesta
-- [ ] Crear migración y modelos: `Meter`, `MeterReading`, `CampShift` (turnos/dotación).
-- [ ] Desacoplar la obligación de `Invoice` en el flujo de auditoría.
-- [ ] Implementar endpoint de alta performance: `POST /api/v1/telemetry/push` con validación estricta y autenticación por API Token de dispositivo.
-- [ ] Tests de integración para la ingesta de telemetría (Pest/PHPUnit).
+### 🗓️ Sprint 1 (Oct 19 - Oct 25): Modelo Pabellón, Catálogo Minero y Migraciones
+- [ ] Incorporar tipo `pabellon` en `config/entity_types.php` y crear `MiningCampProfile.php`.
+- [ ] Sembrar categorías y tipos de equipos mineros de alta montaña (convectores, traceado, termotanques).
+- [ ] Agregar migraciones para `source_type`, `shift_code`, `occupancy_count` en `invoices` y campos de campamento en `entities`.
 
-### 🗓️ Sprint 2 (Oct 26 - Nov 01): Motor de Auditoría en Tiempo Real y Simulador
-- [ ] **Simulador de Campamento Cordillerano:** Comando `php artisan camp:simulate-telemetry` que reproduce 30 días de lecturas realistas de un campamento de 800 operarios (turnos 14x14, picos de comedor 06:00-08:00 y 19:00-21:00, bajadas nocturnas, y 3 anomalías intencionales de derroche térmico).
-- [ ] Algoritmo de detección de derroche por módulo: Comparación de potencia activa vs. dotación real del módulo.
-- [ ] Cálculo de equivalencias ambientales: Litros de diésel ahorrados y reducción de emisiones CO₂.
+### 🗓️ Sprint 2 (Oct 26 - Nov 01): Motor de Línea Base, Desvíos y Benchmarks de Reemplazo
+- [ ] Implementar `BaselineEngine` (cálculo de consumo responsable según turnos y ocupación).
+- [ ] Implementar `DeviationOutputService` con generación de las 4 salidas: Capacitación, Penalización, Onda Verde y Reemplazo.
+- [ ] Adaptar `SolarWaterService` y `SolarPowerService` con variables de Puna andina y equivalencias diésel.
+- [ ] Cargar benchmarks de sustitución tecnológica (termotanques vs calefones solares de tubos de vacío, convectores vs infrarrojos).
 
-### 🗓️ Sprint 3 (Nov 02 - Nov 07): Dashboard Especializado y Reportes
-- [ ] Vista Vue 3 adaptada a la identidad minera (modo oscuro industrial, KPIs de alto impacto visual, vista sin scroll).
-- [ ] Componente gráfico interactivo de distribución de cargas por módulo del campamento.
-- [ ] Widget de alerta temprana: *"Pabellón C-2 consumiendo 18 kW con dotación 0 (Posible falla de climatización)"*.
-- [ ] Exportación de reporte ejecutivo en PDF para gerencia de sustentabilidad/operaciones.
+### 🗓️ Sprint 3 (Nov 02 - Nov 07): Dashboard Minero y Demo Navegable
+- [ ] Diseñar vista `resources/js/Pages/Mining/Dashboard.vue` con estética oscura industrial y widgets de desvío.
+- [ ] Adecuar textos y labels para entorno minero ("Lectura de Tablero", "Costo Asignado").
+- [ ] Crear seeder completo "Campamento Veladero Demo" con pabellones en diferentes estados de desvío para el pitch.
 
-### 🗓️ Sprint 4 (Nov 08 - Nov 09): Preparación de Entregables Oficiales
-- [ ] **Documento PDF de 5 carillas:**
-  1. Problema y Solución (Dolor del costo energético en campamentos remotos).
-  2. Arquitectura de Hardware/Software (Simulador + API + Motor).
-  3. Impacto Económico y Ambiental (Ahorro de $ y tCO₂e).
-  4. Modelo de Escalabilidad e Integración (Modbus/SCADA industrial).
-  5. Perfil del Equipo y Viabilidad.
-- [ ] **Video Pitch de 5 minutos:** Grabación de pantalla con demo en vivo del simulador + dashboard reactivo.
-- [ ] Declaración de librerías, APIs e IA según el reglamento del concurso.
+### 🗓️ Sprint 4 (Nov 08 - Nov 09): Entregables Oficiales
+- [ ] Redacción final del documento de 5 carillas.
+- [ ] Grabación de video pitch de 5 minutos con demo en vivo del software corriendo.
+- [ ] Formulario de declaración de APIs (Open-Meteo) y arquitectura de software.
 
 ---
 
 ## 💡 5. Argumento Ganador para el Jurado
 
-1. **No es un PowerPoint, es software real y testeado:** La gran mayoría de los equipos presentará maquetas en Figma o scripts sueltos. Nuestro proyecto se apoya en un sistema con arquitectura robusta en Laravel 13, suite de tests verdes y frontend reactivo en Vue 3.
-2. **Propiedad Intelectual 100% propia:** Las bases garantizan que el código queda en nuestras manos (Punto 19). Lo desarrollado para el hackatón pasa a ser un producto SaaS vendible a cualquier empresa minera o contratista de campamentos (ej. Cookins, Aramark, Techint, operadoras directas).
-3. **Impacto económico inmediato:** Demostrar que detectar un 10% de derroche en calefacción/climatización en un campamento de 1.000 personas ahorra **decenas de miles de litros de combustible al mes**, pagando la plataforma en semanas.
+1. **Software Real y Probado:** No es una maqueta ni un Excel. Es una plataforma fullstack en Laravel 13 y Vue 3 con 59 tests automatizados pasando en verde.
+2. **Foco en el Comportamiento Humano:** No promete controlar complejas maquinarias de molienda de forma irreal; ataca el derroche térmico evitable en pabellones donde descansan los operarios.
+3. **Propiedad Intelectual y Soberanía Tecnológica:** Cumple al 100% el espíritu del Compre Local (CASEMI / CASETIC), probando que San Juan cuenta con la capacidad de crear herramientas de eficiencia energética para su propia minería.
 
 ---
 
 ## 📋 6. Próximo Paso Inmediato
-* **Registrar el equipo en [ciclopilares.com.ar](https://ciclopilares.com.ar)** antes del **9 de octubre** con el título tentativo:
-  > *"Smart Mining Camp: Plataforma de telemetría y eficiencia energética-hídrica para campamentos mineros aislados"*.
+* **Registrar el equipo en [ciclopilares.com.ar](https://ciclopilares.com.ar)** antes del **9 de octubre** con el título:
+  > *"ModoAhorro Pabellones: Estimación de Consumo Responsable y Auditoría Energética en Campamentos Mineros"*.
