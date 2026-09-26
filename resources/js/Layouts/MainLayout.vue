@@ -33,6 +33,7 @@ import {
     CreditCard
 } from 'lucide-vue-next';
 import { shallowRef, computed, watchEffect } from 'vue';
+import { useTheme } from '@/Composables/useTheme';
 
 
 const props = defineProps({
