@@ -11,8 +11,8 @@
 | **Subtítulo** | *Línea Base de Consumo Responsable vs. Realidad Medida en Módulos de Alojamiento Minero* |
 | **Desafío Oficial** | **Desafío 3: Mapeo y vinculación de proveedores locales (CASEMI / CASETIC)** |
 | **Pitch Central** | *"Tecnología 100% sanjuanina: calculamos lo que debería consumir tu pabellón y te decimos exactamente dónde se pierde la energía"* |
-| **Stack** | Laravel 13 · Vue 3 · Tailwind CSS v4 · Motor de estimación propio |
-| **Estado del Prototipo** | Sistema funcional con tests automatizados (59/59 ✅) |
+| **Stack** | Laravel 11/13 · Vue 3 · Tailwind CSS v4 · Motor de estimación propio |
+| **Estado del Prototipo** | Sistema funcional en producción local con tests automatizados (74/74 ✅) |
 
 ---
 
@@ -271,30 +271,35 @@ Esto es exactamente lo que CASEMIC, CASETIC y el Gobierno de San Juan quieren ev
 
 ---
 
-### 7.2. Sprint de Desarrollo del Prototipo (19 Oct – 8 Nov)
+### 7.2. Estado de Ejecución de Sprints de Desarrollo
 
-#### Sprint 1 (Oct 19 – Oct 25): Adaptación del Motor al Contexto Minero
-- [ ] Crear perfil de Locality cordillerano: coordenadas de campamentos tipo (Veladero ~-29.35°, -70.05°) para disparar Open-Meteo con datos reales de alta montaña.
-- [ ] Ajustar SolarWaterService: reemplazar $electricityTariff por equivalente kWh/diésel en cordillera (~USD 0.38/kWh a 1.35 USD/litro).
-- [ ] Ajustar SolarPowerService: actualizar HSP de 4.5 a 6.5 (irradiancia real de Puna sanjuanina).
-- [ ] Crear catálogo de equipos de alta montaña: convectores, paneles radiantes, traceado anticongelamiento, termotanques industriales.
+#### Sprint 1: Adaptación del Modelo y Catálogo Minero (COMPLETADO ✅)
+- [x] Configuración de entidad `pabellon` en `config/entity_types.php` con módulos y recomendaciones mineras.
+- [x] Perfil de dominio `MiningCampProfile.php` con sensibilidad térmica andina (1.50) y registro dinámico.
+- [x] Catálogo de equipos industriales y de campamento en `MasterCleanCatalogueSeeder.php` (convectores, traceado, termotanques 300L, calderas).
+- [x] Migraciones de base de datos para campos mineros en `invoices` y `entities`.
+- [x] Pruebas unitarias e integración en `MiningSprint1Test.php` (6 tests / 33 aserciones).
 
-#### Sprint 2 (Oct 26 – Nov 01): Línea Base de Buenas Prácticas y Desvío
-- [ ] Crear modelo CampShift (turnos de faena vs. descanso con dotación real por pabellón).
-- [ ] Motor de Línea Base: consumo estimado por pabellón según dotación activa y turno.
-- [ ] Motor de Desvío: comparación automática contra lectura real del tablero (kWh/quincena).
-- [ ] Generación de las 4 salidas de valor: Capacitación · Penalización · Onda Verde · ROI de Reemplazo.
+#### Sprint 2: Motor de Línea Base, Benchmarks y 4 Salidas (COMPLETADO ✅)
+- [x] Configuración central minera en `config/mining.php` (diésel USD/L, factor L/kWh, CO₂).
+- [x] Adaptación andina en `SolarPowerService` (6.5 HSP, eficiencia 0.82) y retorno diésel en `SolarWaterService`.
+- [x] Benchmarks de reemplazo para alta montaña en tabla `equipment_benchmarks` (paneles infrarrojos, tubos de vacío heat pipe).
+- [x] Motor de Línea Base en `BaselineEngine.php` (cálculo de consumo responsable vs lectura real).
+- [x] Generador de las 4 Salidas de Valor en `DeviationOutputService.php` (Capacitación, Penalización, Onda Verde, Reemplazo).
+- [x] Pruebas automatizadas en `MiningSprint2Test.php` (6 tests / 46 aserciones).
 
-#### Sprint 3 (Nov 02 – Nov 07): Dashboard Minero y Reportes
-- [ ] Vista Vue 3 en modo oscuro industrial: KPIs de litros diésel / tCO₂ / USD ahorrados por pabellón.
-- [ ] Ranking de pabellones por desvío energético a nivel de campamento completo.
-- [ ] Reporte PDF ejecutivo exportable para gerencia de sustentabilidad y auditoría CASEMI.
-- [ ] Seeder de demo: "Campamento Cordillera Sanjuanina" con 6 pabellones, dotaciones y desvíos simulados para el pitch del 18 de noviembre.
+#### Sprint 3: Dashboard Minero y Seeder Demo Veladero (COMPLETADO ✅)
+- [x] Seeder interactivo `MiningCampDemoSeeder.php` ("Campamento Base Veladero" a 4.100 msnm con los 4 casos del pitch).
+- [x] Controlador y ruteo `MiningDashboardController.php` en `/mineria/dashboard`.
+- [x] Vistas y componentes Vue 3 en modo oscuro industrial: `Dashboard.vue`, `PavillionCard.vue`, `BaselineComparisonChart.vue` y `DeviationOutputPanel.vue`.
+- [x] Compilación de producción con Vite (`npm run build` en 1.5s) y validación ESLint con 0 warnings.
+- [x] Suite completa del proyecto en verde: 74 tests automatizados / 399 aserciones.
 
-#### Sprint 4 (Nov 08 – Nov 09): Entregables Oficiales del Hackatón
-- [ ] PDF de 5 carillas (Problema → Solución → Impacto → Arquitectura → Equipo).
-- [ ] Video pitch de ≤5 minutos con demo en vivo del sistema funcionando.
-- [ ] Declaración de uso de librerías, APIs e IA según el reglamento oficial.
+#### Sprint 4: Entregables Oficiales del Hackatón (EN CURSO)
+- [x] Documento oficial de postulación técnica actualizado (`doc/informe_postulacion_mineria.md`).
+- [x] Guión técnico minuto a minuto para el Video Pitch ≤5 min (`doc/guion_video_pitch_mineria.md`).
+- [x] Declaración oficial de APIs e Inteligencia Artificial (`doc/declaracion_apis_ia.md`).
+- [ ] Grabación del Video Pitch (a realizar por el equipo humano con la demo en vivo).
 
 ---
 
