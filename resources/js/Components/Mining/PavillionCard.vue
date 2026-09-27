@@ -63,14 +63,14 @@ const litersWasted = computed(() => props.pavilion.deviation?.liters_wasted || 0
         :class="[
             'relative cursor-pointer rounded-xl border p-4 transition-all duration-200 select-none shadow-md',
             isSelected 
-                ? 'ring-2 ring-amber-500 bg-slate-800 border-amber-500/80' 
+                ? 'ring-2 ring-emerald-500 bg-slate-800 border-emerald-500/80' 
                 : 'bg-slate-900/90 border-slate-800 hover:border-slate-700 hover:bg-slate-850'
         ]"
     >
         <!-- Header con Nombre y Badge de Veredicto -->
         <div class="flex items-start justify-between gap-2 mb-3">
             <div class="flex items-center gap-2">
-                <div class="p-2 rounded-lg bg-slate-800 text-amber-400 border border-slate-700">
+                <div class="p-2 rounded-lg bg-slate-800 text-emerald-400 border border-slate-700">
                     <Building2 class="w-5 h-5" />
                 </div>
                 <div>
@@ -83,7 +83,7 @@ const litersWasted = computed(() => props.pavilion.deviation?.liters_wasted || 0
                             {{ pavilion.occupancy }} personas
                         </span>
                         <span>•</span>
-                        <span class="text-amber-300 font-mono text-xs">Turno {{ pavilion.shift_type }}</span>
+                        <span class="text-emerald-300 font-mono text-xs">Turno {{ pavilion.shift_type }}</span>
                     </p>
                 </div>
             </div>

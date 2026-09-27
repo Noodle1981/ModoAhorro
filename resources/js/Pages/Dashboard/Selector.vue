@@ -33,8 +33,8 @@ const iconMap = {
 const hoverBgMap = {
     'hogar': 'hover:bg-emerald-600',
     'comercio': 'hover:bg-purple-600',
-    'oficina': 'hover:bg-blue-600',
-    'pabellon': 'hover:bg-amber-600'
+    'oficina': 'hover:bg-emerald-600',
+    'pabellon': 'hover:bg-emerald-600'
 };
 
 // Creation State
@@ -129,7 +129,7 @@ const confirmDelete = () => {
                 <h1 class="text-4xl font-black text-slate-900 tracking-tight leading-tight">
                     Bienvenido, {{ user.name.split(' ')[0] }}
                 </h1>
-                <p class="text-slate-500 font-medium mt-2">Gestione la eficiencia energética de sus <span class="text-amber-600 font-bold">Pabellones y Oficinas</span>.</p>
+                <p class="text-slate-500 font-medium mt-2">Gestione la eficiencia energética de sus <span class="text-emerald-600 font-bold">Pabellones y Oficinas</span>.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl">

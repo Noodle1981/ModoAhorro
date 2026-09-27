@@ -49,7 +49,7 @@ const selectPavilion = (pavilion) => {
                 <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <div class="flex items-center gap-2 mb-2">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                                 <Mountain class="w-3.5 h-3.5" />
                                 {{ kpis.altitude_msnm }} msnm • Puna Sanjuanina
                             </span>
@@ -68,7 +68,7 @@ const selectPavilion = (pavilion) => {
                     <div class="flex items-center gap-3 self-start md:self-center">
                         <Link 
                             :href="route('gestion.invoices')"
-                            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-amber-500/20"
+                            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-emerald-500/20"
                         >
                             <Zap class="w-4 h-4" />
                             Cargar Lectura de Tablero
@@ -140,7 +140,7 @@ const selectPavilion = (pavilion) => {
             <div class="space-y-3">
                 <div class="flex items-center justify-between">
                     <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                        <Layers class="w-4 h-4 text-amber-500" />
+                        <Layers class="w-4 h-4 text-emerald-500" />
                         Pabellones y Módulos de Campamento (Selecciona uno para auditar)
                     </h2>
                     <span class="text-xs text-slate-400 font-mono">
@@ -164,7 +164,7 @@ const selectPavilion = (pavilion) => {
                 <div class="border-t border-slate-800 pt-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-3">
-                            <span class="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                            <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                                 <Gauge class="w-5 h-5" />
                             </span>
                             <div>
@@ -189,7 +189,7 @@ const selectPavilion = (pavilion) => {
                 <!-- Panel de las 4 Salidas de Valor -->
                 <div class="space-y-3">
                     <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-                        <ShieldAlert class="w-4 h-4 text-amber-500" />
+                        <ShieldAlert class="w-4 h-4 text-emerald-500" />
                         Plan de Acción: Las 4 Salidas de Valor
                     </h3>
 

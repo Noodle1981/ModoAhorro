@@ -40,18 +40,18 @@ const categories = computed(() => {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
             <div>
                 <h4 class="text-base font-semibold text-slate-100 flex items-center gap-2">
-                    <Gauge class="w-5 h-5 text-amber-500" />
+                    <Gauge class="w-5 h-5 text-emerald-500" />
                     Balance de Consumo: Línea Base vs Lectura Real
                 </h4>
                 <p class="text-xs text-slate-400 mt-0.5">
-                    Fuente de Suministro: <span class="text-amber-300 font-medium">{{ pavilion.supply_source }}</span>
+                    Fuente de Suministro: <span class="text-emerald-300 font-medium">{{ pavilion.supply_source }}</span>
                 </p>
             </div>
 
             <!-- Chips de Información Operativa -->
             <div class="flex items-center gap-2 flex-wrap">
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-slate-950 text-slate-300 border border-slate-800">
-                    <Activity class="w-3.5 h-3.5 text-amber-400" />
+                    <Activity class="w-3.5 h-3.5 text-emerald-400" />
                     Pico: {{ pavilion.latest_reading?.demand_kw_peak || 0 }} kW
                 </span>
                 <span v-if="pavilion.latest_reading?.generator_hours > 0" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-slate-950 text-slate-300 border border-slate-800">
