@@ -27,10 +27,9 @@ class MiningDashboardController extends Controller
                 'locality.province',
                 'rooms.equipment.type.category',
                 'rooms.equipment.category',
-                'contracts.invoices' => function ($q) {
+                'invoices' => function ($q) {
                     $q->orderBy('end_date', 'desc');
                 },
-                'contracts.proveedor',
             ]);
 
         if ($user && ! $user->is_super_admin) {
@@ -48,10 +47,9 @@ class MiningDashboardController extends Controller
                     'locality.province',
                     'rooms.equipment.type.category',
                     'rooms.equipment.category',
-                    'contracts.invoices' => function ($q) {
+                    'invoices' => function ($q) {
                         $q->orderBy('end_date', 'desc');
                     },
-                    'contracts.proveedor',
                 ])
                 ->get();
         }
@@ -69,8 +67,7 @@ class MiningDashboardController extends Controller
             $baseline = $this->baselineEngine->calculateBaseline($entity, [], $occupancy, 30);
 
             // Obtener última lectura de tablero cargada
-            $latestInvoice = $entity->contracts
-                ->flatMap->invoices
+            $latestInvoice = $entity->invoices
                 ->sortByDesc('end_date')
                 ->first();
 
@@ -81,8 +78,7 @@ class MiningDashboardController extends Controller
             $deviation = $this->baselineEngine->calculateDeviation((float) $baseline['baseline_kwh'], $actualKwh);
 
             // Contar períodos consecutivos en sobreconsumo
-            $recentInvoices = $entity->contracts
-                ->flatMap->invoices
+            $recentInvoices = $entity->invoices
                 ->sortByDesc('end_date')
                 ->take(3);
 
@@ -115,8 +111,7 @@ class MiningDashboardController extends Controller
             }
 
             // Datos de la fuente de suministro
-            $contract = $entity->contracts->where('is_active', true)->first() ?? $entity->contracts->first();
-            $fuenteSuministro = $contract?->proveedor?->name ?? 'Red de Campamento';
+            $fuenteSuministro = $latestInvoice?->source_type ?? 'Red de Campamento';
 
             $pavilionsData[] = [
                 'id' => $entity->id,

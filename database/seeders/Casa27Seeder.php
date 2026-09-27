@@ -283,7 +283,8 @@ class Casa27Seeder extends Seeder
 
         foreach ($invoices as $inv) {
             Invoice::updateOrCreate(['invoice_number' => $inv['num']], [
-                'contract_id' => $contract->id,
+                'entity_id' => $entity->id,
+                'contract_id' => $contract?->id,
                 'issue_date' => $inv['date'],
                 'start_date' => $inv['start'],
                 'end_date' => $inv['end'],

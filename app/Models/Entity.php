@@ -33,7 +33,7 @@ class Entity extends Model
 
     public function invoices()
     {
-        return $this->hasManyThrough(Invoice::class, Contract::class, 'entity_id', 'contract_id');
+        return $this->hasMany(Invoice::class);
     }
 
     public function contracts()

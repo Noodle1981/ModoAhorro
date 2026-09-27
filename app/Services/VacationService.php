@@ -14,9 +14,7 @@ class VacationService
      */
     private function getRealTariff(Entity $entity): float
     {
-        $invoice = Invoice::whereHas('contract', function ($q) use ($entity) {
-            $q->where('entity_id', $entity->id);
-        })->latest('end_date')->first();
+        $invoice = Invoice::where('entity_id', $entity->id)->latest('end_date')->first();
 
         if ($invoice
             && ($invoice->total_energy_consumed_kwh ?? 0) > 0
@@ -40,9 +38,7 @@ class VacationService
         $startDate = Carbon::now();
         $endDate = Carbon::now()->addDays($days);
 
-        $invoices = Invoice::whereHas('contract', function ($query) use ($entity) {
-            $query->where('entity_id', $entity->id);
-        })
+        $invoices = Invoice::where('entity_id', $entity->id)
             ->where(function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('start_date', [$startDate, $endDate])
                     ->orWhereBetween('end_date', [$startDate, $endDate])

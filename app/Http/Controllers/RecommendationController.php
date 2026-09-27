@@ -189,7 +189,7 @@ class RecommendationController extends Controller
             return redirect()->route('dashboard');
         }
 
-        $contract = $entity->contracts()->where('is_active', true)->first();
+        $contract = null;
 
         // Equipos de alta potencia (Hornos, Lavavajillas, etc.)
         $heavyEquipments = Equipment::whereHas('room', fn ($q) => $q->where('entity_id', $entity->id))

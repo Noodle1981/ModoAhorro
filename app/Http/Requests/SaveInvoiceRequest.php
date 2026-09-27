@@ -23,15 +23,15 @@ class SaveInvoiceRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'contract_id' => 'required|exists:contracts,id',
-            'invoice_number' => 'required|string|max:255',
+            'contract_id' => 'nullable',
+            'invoice_number' => 'nullable|string|max:255',
             'tariff' => 'nullable|string|max:50',
-            'invoice_date' => 'required|date',
-            'issue_date' => 'nullable|date|after:start_date',
+            'invoice_date' => 'nullable|date',
+            'issue_date' => 'nullable|date',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'total_energy_consumed_kwh' => 'required|numeric|min:0',
-            'total_amount' => 'required|numeric|min:0',
+            'total_amount' => 'nullable|numeric|min:0',
             'cost_for_energy' => 'nullable|numeric|min:0',
             'cost_for_power' => 'nullable|numeric|min:0',
             'taxes' => 'nullable|numeric|min:0',

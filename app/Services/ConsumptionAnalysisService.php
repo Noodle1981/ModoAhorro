@@ -76,7 +76,7 @@ class ConsumptionAnalysisService
 
         // ❄️ CÁLCULO ESPECÍFICO PARA HELADERAS
         if ($this->isFridge($usage)) {
-            $entity = $invoice->contract->entity;
+            $entity = $invoice->entity ?? $invoice->contract?->entity;
             if ($entity->type === 'comercio') {
                 return $this->calculateCommercialFridgeConsumption($usage, $invoice);
             }
@@ -165,7 +165,7 @@ class ConsumptionAnalysisService
 
         // 5. Cálculo Proporcional a Personas (Modelo Determinista)
         if ($equipmentType->usage_unit === 'people_proportional') {
-            $entity = $invoice->contract->entity;
+            $entity = $invoice->entity ?? $invoice->contract?->entity;
             $peopleCount = $entity->people_count ?? 1;
             $socialCoeff = $equipmentType->social_coefficient;
 
@@ -260,7 +260,7 @@ class ConsumptionAnalysisService
     private function getWaterHeaterClimateFactor(EquipmentUsage $usage, Invoice $invoice): float
     {
         try {
-            $locality = $invoice->contract->entity->locality;
+            $locality = ($invoice->entity ?? $invoice->contract?->entity)?->locality;
             if (! $locality || ! $locality->latitude || ! $locality->longitude) {
                 return 1.0;
             }
@@ -330,7 +330,7 @@ class ConsumptionAnalysisService
         }
 
         $baseLoadFactor = 0.25;
-        $peopleCount = $invoice->contract->entity->people_count ?? 1;
+        $peopleCount = ($invoice->entity ?? $invoice->contract?->entity)->people_count ?? 1;
         $peopleCount = max(1, min($peopleCount, 15));
 
         $activityFactorPerPerson = 0.015;
@@ -338,7 +338,7 @@ class ConsumptionAnalysisService
         $consumption = $powerKw * 24 * $daysInPeriod * $totalLoadFactor;
 
         try {
-            $locality = $invoice->contract->entity->locality;
+            $locality = ($invoice->entity ?? $invoice->contract?->entity)?->locality;
             if ($locality && $locality->latitude) {
                 $stats = $this->getInvoiceClimateStats($invoice, $locality);
                 $avgTemp = $stats['avg_temp_avg'] ?? 20;
@@ -371,7 +371,7 @@ class ConsumptionAnalysisService
         $daysInPeriod = Carbon::parse($invoice->start_date)->diffInDays(Carbon::parse($invoice->end_date));
         $daysInPeriod = max(1, $daysInPeriod);
 
-        $entity = $invoice->contract->entity;
+        $entity = $invoice->entity ?? $invoice->contract?->entity;
 
         // En comercio, el factor de carga base es mayor (0.40 vs 0.25) por apertura constante
         $baseLoadFactor = 0.40;
@@ -389,7 +389,7 @@ class ConsumptionAnalysisService
 
     private function calculateTurnsBasedConsumption(EquipmentUsage $usage, Invoice $invoice): float
     {
-        $entity = $invoice->contract->entity;
+        $entity = $invoice->entity ?? $invoice->contract?->entity;
         $equipmentType = $usage->equipment->type;
         $powerKw = ($usage->equipment->nominal_power_w ?? $equipmentType->default_power_watts ?? 0) / 1000;
 
@@ -406,7 +406,7 @@ class ConsumptionAnalysisService
 
     private function calculateServiceHoursConsumption(EquipmentUsage $usage, Invoice $invoice): float
     {
-        $entity = $invoice->contract->entity;
+        $entity = $invoice->entity ?? $invoice->contract?->entity;
         $equipmentType = $usage->equipment->type;
         $powerKw = ($usage->equipment->nominal_power_w ?? $equipmentType->default_power_watts ?? 0) / 1000;
 
@@ -452,7 +452,7 @@ class ConsumptionAnalysisService
 
         return DB::transaction(function () use ($invoices) {
             $representativeInvoice = $invoices->sortBy('installment_number')->first();
-            $entity = $representativeInvoice->contract->entity;
+            $entity = $representativeInvoice->entity ?? $representativeInvoice->contract?->entity;
 
             // 1. Calcular totales del periodo unificado
             $totalBilledKwh = $invoices->sum('total_energy_consumed_kwh');
@@ -598,7 +598,7 @@ class ConsumptionAnalysisService
     {
         $this->climateService->loadDataForInvoice($invoice);
 
-        $locality = $invoice->contract->entity->locality;
+        $locality = ($invoice->entity ?? $invoice->contract?->entity)?->locality;
         if (! $locality || ! $locality->latitude || ! $locality->longitude) {
             return [
                 'success' => false,

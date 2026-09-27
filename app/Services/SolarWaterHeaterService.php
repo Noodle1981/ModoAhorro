@@ -18,7 +18,7 @@ class SolarWaterHeaterService
     public function calculateWaterHeaterData(Entity $entity, ?int $peopleCountOverride = null): array
     {
         // Load invoices
-        $entity->load(['locality', 'contracts.invoices']);
+        $entity->load(['locality', 'invoices']);
 
         // Use override or entity value, default to 1 to avoid TypeError
         $peopleCount = $peopleCountOverride ?? $entity->people_count ?? 1;
@@ -30,10 +30,7 @@ class SolarWaterHeaterService
         }
 
         // Calculate average tariff
-        $invoices = $entity->contracts()
-            ->with('invoices')
-            ->get()
-            ->flatMap(fn ($contract) => $contract->invoices);
+        $invoices = $entity->invoices;
 
         $averageTariff = $this->calculateAverageTariff($invoices);
 

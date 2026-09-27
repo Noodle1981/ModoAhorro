@@ -106,8 +106,7 @@ const navigation = computed(() => [
             ...(currentEntity.value?.type === 'pabellon' ? [{ name: 'Auditoría Campamento', icon: LayoutDashboard, href: route('mining.dashboard') }] : []),
             { name: 'Desempeño Térmico', icon: Thermometer, href: currentEntity.value ? route('gestion.thermal.index', currentEntity.value.id) : '#' },
             { name: 'Perfil de Entidad', icon: Home, href: route('gestion.entity.edit') },
-            { name: 'Contratos', icon: FileText, href: route('gestion.contracts') },
-            { name: currentEntity.value?.type === 'pabellon' ? 'Lecturas de Tablero' : 'Facturas', icon: Briefcase, href: route('gestion.invoices') },
+            { name: currentEntity.value?.type === 'pabellon' ? 'Lecturas de Tablero' : 'Facturas y Medición', icon: Briefcase, href: route('gestion.invoices') },
             { name: 'Unificaciones', icon: RefreshCw, href: route('gestion.unifications') },
             { name: 'Infraestructura', icon: Building, href: route('gestion.infrastructure') },
         ]

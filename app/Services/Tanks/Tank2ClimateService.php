@@ -28,7 +28,7 @@ class Tank2ClimateService
     {
         $tankConsumption = 0;
         $logs = [];
-        $entity = $invoice->contract->entity;
+        $entity = $invoice->entity ?? $invoice->contract?->entity;
 
         $targetEquipments = $equipments->filter(function ($eq) {
             return $eq->tank_assignment === null && $this->isEligible($eq);

@@ -19,7 +19,7 @@ class BudgetService
     public function calculateBudgetData(Entity $entity): array
     {
         // Load necessary relationships
-        $entity->load(['locality', 'contracts.invoices.equipmentUsages']);
+        $entity->load(['locality', 'invoices.equipmentUsages']);
 
         // Get climate profile
         $climateProfile = null;
@@ -28,11 +28,10 @@ class BudgetService
         }
 
         // Get all invoices
-        $invoices = $entity->contracts()
-            ->with('invoices.equipmentUsages')
-            ->get()
-            ->flatMap(fn ($contract) => $contract->invoices)
-            ->sortByDesc('end_date');
+        $invoices = $entity->invoices()
+            ->with('equipmentUsages')
+            ->orderByDesc('end_date')
+            ->get();
 
         $latestInvoice = $invoices->first();
 

@@ -89,8 +89,9 @@ class MiningCampDemoSeeder extends Seeder
         $typeAire = EquipmentType::where('name', 'Aire Acondicionado Split')->first();
 
         // ── PABELLÓN A-01: Desvío Crítico (+65%) ──────────────────────────────
-        $pabellonA = Entity::create([
+        $pabellonA = Entity::firstOrCreate([
             'name' => 'Pabellón A-01 (Dormitorios Turno A)',
+        ], [
             'type' => 'pabellon',
             'usage_type' => 'comercial',
             'locality_id' => $locality->id,
@@ -107,49 +108,46 @@ class MiningCampDemoSeeder extends Seeder
         $roomBaniosA = Room::firstOrCreate(['entity_id' => $pabellonA->id, 'name' => 'Baños y Vestuarios A']);
 
         for ($i = 1; $i <= 20; $i++) {
-            Equipment::create([
+            Equipment::firstOrCreate([
                 'room_id' => $roomDormA->id,
+                'name' => "Convector Eléctrico Hab. A-{$i}",
+            ], [
                 'type_id' => $typeConvector?->id,
                 'category_id' => $catCalef?->id,
-                'name' => "Convector Eléctrico Hab. A-{$i}",
                 'nominal_power_w' => 1500,
                 'has_defined_pattern' => true,
             ]);
         }
 
         for ($i = 1; $i <= 2; $i++) {
-            Equipment::create([
+            Equipment::firstOrCreate([
                 'room_id' => $roomBaniosA->id,
+                'name' => "Termotanque Industrial 300L N°{$i}",
+            ], [
                 'type_id' => $typeTermotanque?->id,
                 'category_id' => $catAgua?->id,
-                'name' => "Termotanque Industrial 300L N°{$i}",
                 'nominal_power_w' => 4500,
                 'has_defined_pattern' => true,
             ]);
         }
 
         for ($i = 1; $i <= 8; $i++) {
-            Equipment::create([
+            Equipment::firstOrCreate([
                 'room_id' => $roomDormA->id,
+                'name' => "Luminaria LED Pasillo A-{$i}",
+            ], [
                 'type_id' => $typeLED?->id,
                 'category_id' => $catIlum?->id,
-                'name' => "Luminaria LED Pasillo A-{$i}",
                 'nominal_power_w' => 40,
                 'has_defined_pattern' => true,
             ]);
         }
 
-        $contractA = Contract::create([
-            'entity_id' => $pabellonA->id,
-            'proveedor_id' => $fuenteDiesel->id,
-            'contract_number' => 'CT-GEN-VELADERO-A01',
-            'is_active' => true,
-        ]);
-
         // Lectura de Tablero simulada (+65% sobre línea base esperada de ~12.500 kWh)
-        Invoice::create([
-            'contract_id' => $contractA->id,
+        Invoice::updateOrCreate([
             'invoice_number' => 'TAB-A01-OCT2026',
+        ], [
+            'entity_id' => $pabellonA->id,
             'issue_date' => now()->subDays(2),
             'start_date' => now()->subDays(30),
             'end_date' => now(),
@@ -164,8 +162,9 @@ class MiningCampDemoSeeder extends Seeder
         ]);
 
         // ── PABELLÓN B-02: Eficiente / Onda Verde (-3%) ───────────────────────
-        $pabellonB = Entity::create([
+        $pabellonB = Entity::firstOrCreate([
             'name' => 'Pabellón B-02 (Sustentable / Piloto Infrarrojo)',
+        ], [
             'type' => 'pabellon',
             'usage_type' => 'comercial',
             'locality_id' => $locality->id,
@@ -182,36 +181,32 @@ class MiningCampDemoSeeder extends Seeder
         $roomBaniosB = Room::firstOrCreate(['entity_id' => $pabellonB->id, 'name' => 'Baños y Vestuarios B']);
 
         for ($i = 1; $i <= 18; $i++) {
-            Equipment::create([
+            Equipment::firstOrCreate([
                 'room_id' => $roomDormB->id,
+                'name' => "Panel Radiante Infrarrojo B-{$i}",
+            ], [
                 'type_id' => $typePanelInfra?->id,
                 'category_id' => $catCalef?->id,
-                'name' => "Panel Radiante Infrarrojo B-{$i}",
                 'nominal_power_w' => 900,
                 'has_defined_pattern' => true,
             ]);
         }
 
-        Equipment::create([
+        Equipment::firstOrCreate([
             'room_id' => $roomBaniosB->id,
+            'name' => 'Calefón Solar Tubos de Vacío 300L (Apoyo 1kW)',
+        ], [
             'type_id' => $typeTermotanque?->id,
             'category_id' => $catAgua?->id,
-            'name' => 'Calefón Solar Tubos de Vacío 300L (Apoyo 1kW)',
             'nominal_power_w' => 1000,
             'has_defined_pattern' => true,
         ]);
 
-        $contractB = Contract::create([
-            'entity_id' => $pabellonB->id,
-            'proveedor_id' => $fuenteHibrida->id,
-            'contract_number' => 'CT-HIB-VELADERO-B02',
-            'is_active' => true,
-        ]);
-
         // Lectura de Tablero simulada (-3% sobre línea base: cumplidor Onda Verde)
-        Invoice::create([
-            'contract_id' => $contractB->id,
+        Invoice::updateOrCreate([
             'invoice_number' => 'TAB-B02-OCT2026',
+        ], [
+            'entity_id' => $pabellonB->id,
             'issue_date' => now()->subDays(2),
             'start_date' => now()->subDays(30),
             'end_date' => now(),
@@ -226,8 +221,9 @@ class MiningCampDemoSeeder extends Seeder
         ]);
 
         // ── PABELLÓN C-03: Desvío Reincidente (+107% y 3 períodos) ───────────
-        $pabellonC = Entity::create([
+        $pabellonC = Entity::firstOrCreate([
             'name' => 'Pabellón C-03 (Contratistas Turno 7x7)',
+        ], [
             'type' => 'pabellon',
             'usage_type' => 'comercial',
             'locality_id' => $locality->id,
@@ -243,28 +239,23 @@ class MiningCampDemoSeeder extends Seeder
         $roomDormC = Room::firstOrCreate(['entity_id' => $pabellonC->id, 'name' => 'Dormitorios C']);
 
         for ($i = 1; $i <= 18; $i++) {
-            Equipment::create([
+            Equipment::firstOrCreate([
                 'room_id' => $roomDormC->id,
+                'name' => "Convector Eléctrico C-{$i}",
+            ], [
                 'type_id' => $typeConvector?->id,
                 'category_id' => $catCalef?->id,
-                'name' => "Convector Eléctrico C-{$i}",
                 'nominal_power_w' => 2000,
                 'has_defined_pattern' => true,
             ]);
         }
 
-        $contractC = Contract::create([
-            'entity_id' => $pabellonC->id,
-            'proveedor_id' => $fuenteDiesel->id,
-            'contract_number' => 'CT-GEN-VELADERO-C03',
-            'is_active' => true,
-        ]);
-
         // 3 Períodos consecutivos para activar Acta de Penalización
         for ($i = 2; $i >= 0; $i--) {
-            Invoice::create([
-                'contract_id' => $contractC->id,
+            Invoice::updateOrCreate([
                 'invoice_number' => 'TAB-C03-P'.(3 - $i),
+            ], [
+                'entity_id' => $pabellonC->id,
                 'issue_date' => now()->subDays($i * 30 + 1),
                 'start_date' => now()->subDays(($i + 1) * 30),
                 'end_date' => now()->subDays($i * 30),
@@ -280,8 +271,9 @@ class MiningCampDemoSeeder extends Seeder
         }
 
         // ── OFICINA SUPERVISIÓN: Pabellón Administrativo ──────────────────────
-        $oficina = Entity::create([
+        $oficina = Entity::firstOrCreate([
             'name' => 'Pabellón Administrativo y Supervisión Mina',
+        ], [
             'type' => 'oficina',
             'usage_type' => 'comercial',
             'comercio_type' => 'oficina',
@@ -298,46 +290,43 @@ class MiningCampDemoSeeder extends Seeder
         $roomOffice = Room::firstOrCreate(['entity_id' => $oficina->id, 'name' => 'Sala de Ingeniería y Racks']);
 
         for ($i = 1; $i <= 6; $i++) {
-            Equipment::create([
+            Equipment::firstOrCreate([
                 'room_id' => $roomOffice->id,
+                'name' => "Estación de Trabajo {$i}",
+            ], [
                 'type_id' => $typePC?->id,
                 'category_id' => $catIT?->id,
-                'name' => "Estación de Trabajo {$i}",
                 'nominal_power_w' => 250,
                 'has_defined_pattern' => true,
             ]);
         }
 
         for ($i = 1; $i <= 2; $i++) {
-            Equipment::create([
+            Equipment::firstOrCreate([
                 'room_id' => $roomOffice->id,
+                'name' => "Servidor Rack IT {$i}",
+            ], [
                 'type_id' => $typeServer?->id,
                 'category_id' => $catIT?->id,
-                'name' => "Servidor Rack IT {$i}",
                 'nominal_power_w' => 400,
                 'has_defined_pattern' => true,
             ]);
         }
 
-        Equipment::create([
+        Equipment::firstOrCreate([
             'room_id' => $roomOffice->id,
+            'name' => 'Sistema VRF Climatización Oficina',
+        ], [
             'type_id' => $typeAire?->id,
             'category_id' => $catClima?->id,
-            'name' => 'Sistema VRF Climatización Oficina',
             'nominal_power_w' => 4500,
             'has_defined_pattern' => true,
         ]);
 
-        $contractOffice = Contract::create([
-            'entity_id' => $oficina->id,
-            'proveedor_id' => $fuenteGrid->id,
-            'contract_number' => 'CT-GRID-VELADERO-ADM',
-            'is_active' => true,
-        ]);
-
-        Invoice::create([
-            'contract_id' => $contractOffice->id,
+        Invoice::updateOrCreate([
             'invoice_number' => 'TAB-ADM-OCT2026',
+        ], [
+            'entity_id' => $oficina->id,
             'issue_date' => now()->subDays(2),
             'start_date' => now()->subDays(30),
             'end_date' => now(),

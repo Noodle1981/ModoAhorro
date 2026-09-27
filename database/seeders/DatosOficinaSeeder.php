@@ -106,7 +106,7 @@ class DatosOficinaSeeder extends Seeder
         foreach ($invoicesData as $data) {
             $createdInvoices[] = Invoice::firstOrCreate(
                 ['invoice_number' => $data['invoice_number']],
-                array_merge($data, ['contract_id' => $contract->id, 'status' => 'paid'])
+                array_merge($data, ['entity_id' => $entity->id, 'contract_id' => $contract->id, 'status' => 'paid'])
             );
         }
 

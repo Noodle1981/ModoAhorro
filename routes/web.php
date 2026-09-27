@@ -61,12 +61,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Grupos Funcionales
     Route::prefix('gestion')->name('gestion.')->group(function () {
-        // Contratos
-        Route::get('/contratos', [ContractController::class, 'index'])->name('contracts');
-        Route::post('/contratos', [ContractController::class, 'store'])->name('contracts.store');
-        Route::put('/contratos/{contract}', [ContractController::class, 'update'])->name('contracts.update');
-        Route::delete('/contratos/{contract}', [ContractController::class, 'destroy'])->name('contracts.destroy');
-        Route::patch('/contratos/{contract}/toggle', [ContractController::class, 'toggleActive'])->name('contracts.toggle');
+        // Facturas y Lecturas Directas
+        Route::redirect('/contratos', '/gestion/facturas')->name('contracts');
 
         // Módulo Térmico
         Route::prefix('thermal')->name('thermal.')->group(function () {

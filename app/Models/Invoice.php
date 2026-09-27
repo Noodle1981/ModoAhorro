@@ -11,7 +11,17 @@ class Invoice extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::creating(function ($invoice) {
+            if (empty($invoice->entity_id) && ! empty($invoice->contract_id)) {
+                $invoice->entity_id = $invoice->contract?->entity_id;
+            }
+        });
+    }
+
     protected $fillable = [
+        'entity_id',
         'contract_id',
         'invoice_number',
         'tariff',
@@ -58,6 +68,11 @@ class Invoice extends Model
             'generator_hours' => 'float',
             'occupancy_count' => 'integer',
         ];
+    }
+
+    public function entity()
+    {
+        return $this->belongsTo(Entity::class);
     }
 
     public function contract()

@@ -61,7 +61,7 @@ class EnergyEngineService
     {
         $equipments->loadMissing(['type.category', 'category', 'room']);
 
-        $entity = $invoice->contract->entity;
+        $entity = $invoice->entity ?? $invoice->contract?->entity;
 
         // Cargar perfil comercial si aplica
         $this->commercialProfile = $this->getCommercialProfile($entity);

@@ -16,15 +16,18 @@ trait GroupsInvoices
      */
     protected function getUnifiedPeriods(Entity $entity)
     {
-        return Invoice::whereHas('contract', function ($q) use ($entity) {
-            $q->where('entity_id', $entity->id);
-        })
-            ->with(['contract.proveedor', 'equipmentUsages:id,invoice_id,tank_assignment,consumption_kwh,kwh_reconciled,equipment_id'])
+        return Invoice::where(function ($query) use ($entity) {
+                $query->where('entity_id', $entity->id)
+                    ->orWhereHas('contract', function ($q) use ($entity) {
+                        $q->where('entity_id', $entity->id);
+                    });
+            })
+            ->with(['equipmentUsages:id,invoice_id,tank_assignment,consumption_kwh,kwh_reconciled,equipment_id'])
             ->get()
             ->groupBy(function ($item) {
-                return $item->contract_id.'_'.$item->start_date.'_'.$item->end_date;
+                return ($item->entity_id ?? $item->contract_id).'_'.$item->start_date.'_'.$item->end_date;
             })
-            ->map(function ($group) {
+            ->map(function ($group) use ($entity) {
                 $first = $group->first();
                 $total_kwh = $group->sum('total_energy_consumed_kwh');
                 $total_amount = $group->sum('total_amount');
@@ -55,10 +58,13 @@ trait GroupsInvoices
                     }
                 }
 
+                $identifier = $first->entity_id ?? $first->contract_id ?? $entity->id;
+
                 return [
-                    'id' => $first->contract_id.'_'.Carbon::parse($first->start_date)->format('Ymd').'_'.Carbon::parse($first->end_date)->format('Ymd'),
-                    'contract_id' => $first->contract_id,
-                    'contract_name' => ($first->contract->proveedor->name ?? 'S/P').' (#'.$first->contract->supply_number.')',
+                    'id' => $identifier.'_'.Carbon::parse($first->start_date)->format('Ymd').'_'.Carbon::parse($first->end_date)->format('Ymd'),
+                    'contract_id' => $identifier,
+                    'entity_id' => $identifier,
+                    'contract_name' => $entity->name,
                     'start_date' => Carbon::parse($first->start_date)->format('Y-m-d'),
                     'end_date' => Carbon::parse($first->end_date)->format('Y-m-d'),
                     'total_kwh' => $total_kwh,

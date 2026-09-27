@@ -209,7 +209,7 @@ class ClimateService
             return ['success' => true, 'message' => 'Datos ya verificados en esta solicitud', 'cached' => true];
         }
 
-        $locality = $invoice->contract->entity->locality ?? null;
+        $locality = $invoice->entity->locality ?? $invoice->contract?->entity?->locality ?? null;
 
         if (! $locality) {
             return ['success' => false, 'message' => 'La entidad no tiene localidad asignada'];

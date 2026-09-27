@@ -22,7 +22,10 @@ import {
 
 const props = defineProps({
     entity: Object,
-    contracts: Array,
+    contracts: {
+        type: Array,
+        default: () => []
+    },
     invoices: Array,
     flash: Object
 });
@@ -39,7 +42,8 @@ const isGuidedInstallment2 = shallowRef(false);
 
 const form = useForm({
     id: null,
-    contract_id: '',
+    entity_id: props.entity?.id,
+    contract_id: null,
     invoice_number: '',
     tariff: '',
     invoice_date: '',
@@ -56,11 +60,6 @@ const form = useForm({
     total_installments: 2,
     bimonthly_consumption_kwh: '',
 });
-
-// Setup default contract if only one exists
-if (props.contracts.length === 1) {
-    form.contract_id = props.contracts[0].id;
-}
 
 // Auto-calculate total amount based on breakdown
 watch(() => [
@@ -117,7 +116,7 @@ const openCreateModal = () => {
     editingInvoice.value = null;
     isGuidedInstallment2.value = false;
     form.reset();
-    if (props.contracts.length === 1) form.contract_id = props.contracts[0].id;
+    form.entity_id = props.entity?.id;
     showModal.value = true;
 };
 
@@ -125,7 +124,8 @@ const openEditModal = (invoice) => {
     editingInvoice.value = invoice;
     isGuidedInstallment2.value = false;
     form.id = invoice.id;
-    form.contract_id = invoice.contract_id;
+    form.entity_id = invoice.entity_id || props.entity?.id;
+    form.contract_id = invoice.contract_id || null;
     form.invoice_number = invoice.invoice_number;
     form.tariff = invoice.tariff || '';
     form.invoice_date = toISODate(invoice.invoice_date);
@@ -227,7 +227,7 @@ const filteredInvoices = computed(() => {
 const hasPartner = (invoice) => {
     if (invoice.installment_number !== 1) return true;
     return props.invoices.some(inv => 
-        inv.contract_id === invoice.contract_id &&
+        ((inv.entity_id && inv.entity_id === invoice.entity_id) || (inv.contract_id && inv.contract_id === invoice.contract_id) || (!inv.entity_id && !inv.contract_id)) &&
         inv.start_date === invoice.start_date &&
         inv.end_date === invoice.end_date &&
         inv.installment_number === 2
@@ -238,7 +238,8 @@ const openCreateInstallment2Modal = (invoice) => {
     editingInvoice.value = null;
     isGuidedInstallment2.value = true;
     form.reset();
-    form.contract_id = invoice.contract_id;
+    form.entity_id = invoice.entity_id || props.entity?.id;
+    form.contract_id = invoice.contract_id || null;
     form.tariff = invoice.tariff || '';
     form.start_date = toISODate(invoice.start_date);
     form.end_date = toISODate(invoice.end_date);
@@ -280,7 +281,6 @@ const openCreateInstallment2Modal = (invoice) => {
                         />
                     </div>
                     <button 
-                        v-if="contracts.length > 0"
                         @click="openCreateModal"
                         :class="['bg-slate-900 text-white px-5 py-2 rounded-2xl flex items-center gap-2 font-black text-xs uppercase tracking-wider shadow-sm transition-all hover:scale-105 active:scale-95 shrink-0 cursor-pointer', themeColors.hoverBg]"
                     >
@@ -310,20 +310,8 @@ const openCreateInstallment2Modal = (invoice) => {
                 </div>
             </div>
 
-            <!-- No Contracts Warning -->
-            <div v-if="contracts.length === 0" class="flex-1 bg-amber-50 rounded-3xl p-12 text-center border border-dashed border-amber-200 flex flex-col items-center justify-center">
-                <div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                    <AlertTriangle :size="36" class="text-amber-500" />
-                </div>
-                <h3 class="text-xl font-black text-amber-900 tracking-tight mb-2">Falta Contrato de Suministro</h3>
-                <p class="text-amber-700/70 font-medium max-w-sm mx-auto mb-8 text-xs">No puede cargar facturas sin antes registrar un contrato o medidor activo para esta entidad.</p>
-                <Link :href="route('gestion.contracts')" class="bg-amber-600 text-white px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-amber-700 transition-all shadow-md">
-                    Configurar Contrato
-                </Link>
-            </div>
-
             <!-- Empty State -->
-            <div v-else-if="filteredInvoices.length === 0" class="flex-1 bg-white rounded-3xl p-12 text-center border border-dashed border-slate-200 shadow-inner flex flex-col items-center justify-center">
+            <div v-if="filteredInvoices.length === 0" class="flex-1 bg-white rounded-3xl p-12 text-center border border-dashed border-slate-200 shadow-inner flex flex-col items-center justify-center">
                 <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
                     <Receipt :size="36" class="text-slate-300" />
                 </div>
@@ -443,26 +431,17 @@ const openCreateInstallment2Modal = (invoice) => {
 
                 <form @submit.prevent="submit" class="px-12 py-10 space-y-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- Contract & Number -->
+                        <!-- Number & Tariff -->
                         <div class="space-y-6">
                             <div class="space-y-2">
-                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contrato de Suministro</label>
-                                <select v-model="form.contract_id" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-bold text-slate-900 focus:ring-2 transition-all appearance-none', themeColors.focusRingForm]">
-                                    <option v-for="c in contracts" :key="c.id" :value="c.id">#{{ c.supply_number }} - {{ c.proveedor.name }}</option>
-                                </select>
-                                <p v-if="form.errors.contract_id" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.contract_id }}</p>
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Identificador / Medidor / N° Factura</label>
+                                <input v-model="form.invoice_number" type="text" placeholder="Ej: MEDIDOR-01, TAB-A, FACT-00124" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 transition-all', themeColors.focusRingForm]" />
+                                <p v-if="form.errors.invoice_number" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.invoice_number }}</p>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="space-y-2">
-                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">N° de Factura</label>
-                                    <input v-model="form.invoice_number" type="text" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 transition-all', themeColors.focusRingForm]" />
-                                    <p v-if="form.errors.invoice_number" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.invoice_number }}</p>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tarifa</label>
-                                    <input v-model="form.tariff" type="text" placeholder="Ej: T1R2" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 transition-all uppercase', themeColors.focusRingForm]" />
-                                    <p v-if="form.errors.tariff" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.tariff }}</p>
-                                </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Tarifa / Modalidad</label>
+                                <input v-model="form.tariff" type="text" placeholder="Ej: Minera MT, T1R2, Autogeneración" :class="['w-full bg-slate-50 border-none rounded-2xl p-4 text-sm font-black text-slate-900 focus:ring-2 transition-all uppercase', themeColors.focusRingForm]" />
+                                <p v-if="form.errors.tariff" class="text-[10px] text-energy-critical font-bold ml-1">{{ form.errors.tariff }}</p>
                             </div>
                         </div>
 
